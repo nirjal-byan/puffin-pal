@@ -9,15 +9,15 @@ if (
   process.env.NODE_ENV === "production" ||
   !["localhost", "127.0.0.1"].includes(url.hostname) ||
   url.port !== "5433" ||
-  database !== "hisab_dev"
+  database !== "puffinpal_dev"
 ) {
   throw new Error(
-    "Reset is restricted to the local hisab_dev database on port 5433",
+    "Reset is restricted to the local puffinpal_dev database on port 5433",
   );
 }
-if (process.env.PRISMA_RESET_CONFIRM !== "hisab_dev") {
+if (process.env.PRISMA_RESET_CONFIRM !== "puffinpal_dev") {
   throw new Error(
-    "This deletes local data. Run PRISMA_RESET_CONFIRM=hisab_dev make prisma.reset from the repo root to confirm.",
+    "This deletes local data. Run PRISMA_RESET_CONFIRM=puffinpal_dev make prisma.reset from the repo root to confirm.",
   );
 }
 const compose = fileURLToPath(
@@ -32,7 +32,7 @@ function run(command, args, options = {}) {
 run("docker", [
   "compose",
   "-p",
-  "hisab",
+  "puffinpal",
   "-f",
   compose,
   "exec",

@@ -4,11 +4,11 @@ import {
   SetMetadata,
   UnauthorizedException,
 } from "@nestjs/common";
-import type { Permission } from "@hisab/permissions";
+import type { Permission } from "@puffinpal/permissions";
 import type { AuthenticatedRequest, TenantContext } from "./auth.types.js";
 
-export const PUBLIC_ROUTE = "hisab:public";
-export const REQUIRED_PERMISSIONS = "hisab:permissions";
+export const PUBLIC_ROUTE = "puffinpal:public";
+export const REQUIRED_PERMISSIONS = "puffinpal:permissions";
 export const Public = () => SetMetadata(PUBLIC_ROUTE, true);
 export const RequirePermissions = (...permissions: Permission[]) =>
   SetMetadata(REQUIRED_PERMISSIONS, permissions);

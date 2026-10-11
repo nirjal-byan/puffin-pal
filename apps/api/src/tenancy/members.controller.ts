@@ -10,7 +10,7 @@ import {
 } from "@nestjs/common";
 import { ApiBearerAuth, ApiProperty, ApiTags } from "@nestjs/swagger";
 import { IsIn } from "class-validator";
-import { ROLES, type Role } from "@hisab/permissions";
+import { ROLES, type Role } from "@puffinpal/permissions";
 import { CurrentTenant, RequirePermissions } from "../auth/auth.decorators.js";
 import { CreateMemberDto } from "../auth/auth.dto.js";
 import { AuthService } from "../auth/auth.service.js";

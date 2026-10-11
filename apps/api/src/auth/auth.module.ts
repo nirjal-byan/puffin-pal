@@ -19,13 +19,13 @@ import { PermissionsGuard } from "./permissions.guard.js";
           signOptions: {
             algorithm: "HS256" as const,
             expiresIn: 900,
-            issuer: "hisab",
-            audience: "hisab-api",
+            issuer: "puffinpal",
+            audience: "puffinpal-api",
           },
           verifyOptions: {
             algorithms: ["HS256"],
-            issuer: "hisab",
-            audience: "hisab-api",
+            issuer: "puffinpal",
+            audience: "puffinpal-api",
           },
         };
       },

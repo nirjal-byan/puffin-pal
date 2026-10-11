@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { Reflector } from "@nestjs/core";
 import { ForbiddenException } from "@nestjs/common";
-import { hasPermission, canAssignRole, isRole } from "@hisab/permissions";
+import { hasPermission, canAssignRole, isRole } from "@puffinpal/permissions";
 import { PermissionsGuard } from "../dist/src/auth/permissions.guard.js";
 import { REQUIRED_PERMISSIONS } from "../dist/src/auth/auth.decorators.js";
 

@@ -5,7 +5,7 @@ import {
   Injectable,
 } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
-import { hasPermission, type Permission } from "@hisab/permissions";
+import { hasPermission, type Permission } from "@puffinpal/permissions";
 import { PUBLIC_ROUTE, REQUIRED_PERMISSIONS } from "./auth.decorators.js";
 import type { AuthenticatedRequest } from "./auth.types.js";
 

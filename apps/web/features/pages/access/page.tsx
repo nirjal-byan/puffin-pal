@@ -1,4 +1,4 @@
-import type { Permission } from "@hisab/permissions";
+import type { Permission } from "@puffinpal/permissions";
 import type { Session } from "../../../lib/api";
 import AccessLayout from "./layout";
 export default function AccessPage({

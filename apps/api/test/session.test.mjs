@@ -12,14 +12,14 @@ const jwt = new JwtService({
   secret,
   signOptions: {
     algorithm: "HS256",
-    issuer: "hisab",
-    audience: "hisab-api",
+    issuer: "puffinpal",
+    audience: "puffinpal-api",
     expiresIn: 900,
   },
   verifyOptions: {
     algorithms: ["HS256"],
-    issuer: "hisab",
-    audience: "hisab-api",
+    issuer: "puffinpal",
+    audience: "puffinpal-api",
   },
 });
 async function setup() {
@@ -78,7 +78,7 @@ test("refresh rejects expired, tampered, password-invalidated, and invalid membe
   const { service, user, membership, token } = await setup();
   const expired = await jwt.signAsync(
     { sub: "user-1", organizationId: "org-1", kind: "refresh" },
-    { audience: "hisab-refresh", expiresIn: -1 },
+    { audience: "puffinpal-refresh", expiresIn: -1 },
   );
   await assert.rejects(service.refresh(expired));
   await assert.rejects(service.refresh(`${token}invalid`));
@@ -103,7 +103,7 @@ test("logout clears the protected cookie and rejects cross-origin requests", () 
     { headers: { origin: process.env.WEB_ORIGIN ?? "http://localhost:3000" } },
     response,
   );
-  assert.equal(cleared.name, "hisab_refresh");
+  assert.equal(cleared.name, "puffinpal_refresh");
   assert.equal(cleared.options.httpOnly, true);
   assert.equal(cleared.options.sameSite, "lax");
   assert.equal(cleared.options.path, "/api/v1/auth");

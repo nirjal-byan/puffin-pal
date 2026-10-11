@@ -12,7 +12,7 @@ if (!["localhost", "127.0.0.1"].includes(url.hostname) || url.port !== "5433") {
     "Integration tests require the local PostgreSQL service on port 5433",
   );
 }
-const database = `hisab_auth_test_${Date.now()}_${randomBytes(4).toString("hex")}`;
+const database = `puffinpal_auth_test_${Date.now()}_${randomBytes(4).toString("hex")}`;
 url.pathname = `/${database}`;
 function execute(command, args, options = {}) {
   const result = spawnSync(command, args, { encoding: "utf8", ...options });
@@ -23,7 +23,7 @@ function execute(command, args, options = {}) {
 const psql = (statement) =>
   execute("docker", [
     "exec",
-    "hisab-postgres",
+    "puffinpal-postgres",
     "psql",
     "-U",
     decodeURIComponent(url.username),

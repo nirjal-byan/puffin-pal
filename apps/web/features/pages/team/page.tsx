@@ -2,7 +2,7 @@
 import { PasswordInput } from "../../../components/password-input";
 import PageLayout from "./layout";
 import { useState, type FormEvent } from "react";
-import { ROLES, canAssignRole, type Role } from "@hisab/permissions";
+import { ROLES, canAssignRole, type Role } from "@puffinpal/permissions";
 import { roleLabel, type Member } from "../../../lib/api";
 import type { WorkspaceApi } from "../../../lib/api";
 

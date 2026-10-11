@@ -5,11 +5,11 @@ import { JwtService } from "@nestjs/jwt";
 import { createApplication } from "../dist/src/app.factory.js";
 import { DATABASE } from "../dist/src/database.module.js";
 
-const password = "Hisab-test-password-123";
+const password = "PuffinPal-test-password-123";
 test("authentication, tenant isolation, live roles and credential abuse protections", async (t) => {
   assert.match(
     new URL(process.env.DATABASE_URL).pathname,
-    /^\/hisab_auth_test_/,
+    /^\/puffinpal_auth_test_/,
   );
   const app = await createApplication(true);
   await app.listen(0, "127.0.0.1");
@@ -200,8 +200,8 @@ test("authentication, tenant isolation, live roles and credential abuse protecti
           { sub: a.user.id, organizationId: a.organization.id },
           {
             algorithm: "HS256",
-            issuer: "hisab",
-            audience: "hisab-api",
+            issuer: "puffinpal",
+            audience: "puffinpal-api",
             expiresIn: -1,
           },
         );
@@ -216,7 +216,7 @@ test("authentication, tenant isolation, live roles and credential abuse protecti
         await expect("/auth/me", { token: restored.accessToken }, 200);
         await expect(
           "/auth/me",
-          { token: cookie.slice("hisab_refresh=".length) },
+          { token: cookie.slice("puffinpal_refresh=".length) },
           401,
         );
         await expect(
@@ -232,7 +232,7 @@ test("authentication, tenant isolation, live roles and credential abuse protecti
           headers: { cookie },
         });
         assert.equal(logout.status, 200);
-        assert.match(logout.cookie, /hisab_refresh=;/);
+        assert.match(logout.cookie, /puffinpal_refresh=;/);
         await expect("/auth/refresh", { method: "POST" }, 401);
       },
     );
@@ -269,24 +269,24 @@ test("authentication, tenant isolation, live roles and credential abuse protecti
           tokenA.slice(0, -8) + "tampered",
           jwt.sign(claims, {
             expiresIn: -1,
-            issuer: "hisab",
-            audience: "hisab-api",
+            issuer: "puffinpal",
+            audience: "puffinpal-api",
           }),
           jwt.sign(claims, {
             expiresIn: 900,
             issuer: "other",
-            audience: "hisab-api",
+            audience: "puffinpal-api",
           }),
           jwt.sign(claims, {
             expiresIn: 900,
-            issuer: "hisab",
+            issuer: "puffinpal",
             audience: "other",
           }),
           jwt.sign(
             { sub: a.user.id, organizationId: b.organization.id },
-            { expiresIn: 900, issuer: "hisab", audience: "hisab-api" },
+            { expiresIn: 900, issuer: "puffinpal", audience: "puffinpal-api" },
           ),
-          jwt.sign(claims, { issuer: "hisab", audience: "hisab-api" }),
+          jwt.sign(claims, { issuer: "puffinpal", audience: "puffinpal-api" }),
         ])
           await expect("/auth/me", { token: invalid }, 401);
       },

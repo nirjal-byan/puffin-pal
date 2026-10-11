@@ -1,5 +1,5 @@
 "use client";
-import type { Permission } from "@hisab/permissions";
+import type { Permission } from "@puffinpal/permissions";
 import { roleLabel, type Session } from "../lib/api";
 import Link from "next/link";
 import { NAV, ICON_PATHS, sectionForTab, tabHref, type Tab, type NavigationSection } from "../lib/navigation";

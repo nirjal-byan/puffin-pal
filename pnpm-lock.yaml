@@ -20,7 +20,7 @@ importers:
 
   apps/api:
     dependencies:
-      '@hisab/permissions':
+      '@puffinpal/permissions':
         specifier: workspace:*
         version: link:../../packages/permissions
       '@nestjs/common':
@@ -93,7 +93,7 @@ importers:
 
   apps/web:
     dependencies:
-      '@hisab/permissions':
+      '@puffinpal/permissions':
         specifier: workspace:*
         version: link:../../packages/permissions
       '@repo/ui':

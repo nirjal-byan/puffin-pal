@@ -7,7 +7,7 @@ import {
 } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
 import { JwtService } from "@nestjs/jwt";
-import { isRole } from "@hisab/permissions";
+import { isRole } from "@puffinpal/permissions";
 import { DATABASE } from "../database.module.js";
 import type { Database } from "../database/client.js";
 import { PUBLIC_ROUTE } from "./auth.decorators.js";

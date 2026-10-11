@@ -8,7 +8,7 @@ import { DATABASE } from "../dist/src/database.module.js";
 const password = "Invoice-test-password-123";
 test("draft invoice creation: calculations, isolation, permissions, concurrency and rollback", async (t) => {
   const url = new URL(process.env.DATABASE_URL);
-  assert.match(url.pathname, /^\/hisab_auth_test_/);
+  assert.match(url.pathname, /^\/puffinpal_auth_test_/);
   const app = await createApplication(true);
   await app.listen(0, "127.0.0.1");
   const db = app.get(DATABASE);
@@ -211,7 +211,7 @@ test("draft invoice creation: calculations, isolation, permissions, concurrency 
           "docker",
           [
             "exec",
-            "hisab-postgres",
+            "puffinpal-postgres",
             "psql",
             "-U",
             decodeURIComponent(url.username),

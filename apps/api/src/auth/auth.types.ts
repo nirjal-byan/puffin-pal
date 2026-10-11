@@ -1,4 +1,4 @@
-import type { Role } from "@hisab/permissions";
+import type { Role } from "@puffinpal/permissions";
 import type { Request } from "express";
 
 export interface TenantContext {

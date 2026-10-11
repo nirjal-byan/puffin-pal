@@ -1,4 +1,4 @@
-import type { Permission } from "@hisab/permissions";
+import type { Permission } from "@puffinpal/permissions";
 
 export type Tab =
   | "overview"

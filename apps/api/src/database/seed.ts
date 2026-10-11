@@ -16,20 +16,20 @@ try {
   await db.transaction(async (tx) => {
     const organization =
       (await tx.orm.public.Organization.where({
-        slug: "hisab-demo",
+        slug: "puffinpal-demo",
       }).first()) ??
       (await tx.orm.public.Organization.create({
         name: "PuffinPal Demo",
-        slug: "hisab-demo",
+        slug: "puffinpal-demo",
       }));
     const user =
       (await tx.orm.public.User.where({
         organizationId: organization.id,
-        email: "owner@hisab.test",
+        email: "owner@puffinpal.test",
       }).first()) ??
       (await tx.orm.public.User.create({
         organizationId: organization.id,
-        email: "owner@hisab.test",
+        email: "owner@puffinpal.test",
         fullName: "Demo Owner",
         passwordHash,
       }));

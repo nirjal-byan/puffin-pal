@@ -5,7 +5,7 @@ import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { InvoiceForm } from "../../invoices/components/invoice-form";
 import { recentlyCreatedInvoice } from "../../invoices/api/invoices";
-import type { Permission } from "@hisab/permissions";
+import type { Permission } from "@puffinpal/permissions";
 import {
   ApiError,
   apiRequest,
@@ -51,7 +51,7 @@ export default function WorkspacePage({
   const [theme, setTheme] = useState<"light" | "dark">(() => {
     if (typeof window === "undefined") return "light";
     try {
-      const saved = localStorage.getItem("hisab-theme");
+      const saved = localStorage.getItem("puffinpal-theme");
       if (saved === "light" || saved === "dark") return saved;
     } catch {}
     return window.matchMedia("(prefers-color-scheme: dark)").matches
@@ -63,7 +63,7 @@ export default function WorkspacePage({
     const next = theme === "light" ? "dark" : "light";
     setTheme(next);
     try {
-      localStorage.setItem("hisab-theme", next);
+      localStorage.setItem("puffinpal-theme", next);
     } catch {}
   }
   function recordNotification(message: string) {

@@ -1,5 +1,5 @@
 {
-  "name": "@hisab/api",
+  "name": "@puffinpal/api",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -9,7 +9,7 @@
     "start": "node dist/src/main.js",
     "check-types": "tsc --noEmit",
     "lint": "eslint src --max-warnings 0",
-    "predev": "pnpm --filter @hisab/permissions build && pnpm --filter database build && prisma contract emit",
+    "predev": "pnpm --filter @puffinpal/permissions build && pnpm --filter database build && prisma contract emit",
     "lint:fix": "eslint src --fix --max-warnings 0",
     "prisma:format": "prisma contract format",
     "prisma:generate": "prisma contract emit",
@@ -21,10 +21,10 @@
     "prisma:reset": "node scripts/reset-local-db.mjs",
     "database:seed": "pnpm --filter database build && pnpm run build && node dist/src/database/seed.js",
     "test": "node --test test/password.test.mjs test/permissions.test.mjs test/account-settings.test.mjs test/session.test.mjs test/invoice-calculations.test.mjs",
-    "test:e2e": "pnpm --filter @hisab/permissions build && pnpm --filter database build && pnpm run build && node scripts/test-auth-e2e.mjs"
+    "test:e2e": "pnpm --filter @puffinpal/permissions build && pnpm --filter database build && pnpm run build && node scripts/test-auth-e2e.mjs"
   },
   "dependencies": {
-    "@hisab/permissions": "workspace:*",
+    "@puffinpal/permissions": "workspace:*",
     "@nestjs/common": "^11.0.0",
     "@nestjs/core": "^11.0.0",
     "@nestjs/jwt": "^12.0.2",

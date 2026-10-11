@@ -9,7 +9,7 @@ make install
 make services.start
 cp apps/api/.env.example apps/api/.env  # only when .env does not already exist
 make build.packages
-make prisma.migrate.dev
+make prisma.migrate.deploy
 make run
 ```
 

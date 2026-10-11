@@ -114,13 +114,13 @@ export class AuthController {
     const cookie = request.headers.cookie
       ?.split(";")
       .map((part) => part.trim())
-      .find((part) => part.startsWith("hisab_refresh="));
+      .find((part) => part.startsWith("puffinpal_refresh="));
     if (!cookie) throw new UnauthorizedException("Sign in to continue");
     try {
-      return await this.auth.refresh(cookie.slice("hisab_refresh=".length));
+      return await this.auth.refresh(cookie.slice("puffinpal_refresh=".length));
     } catch (error) {
       if (error instanceof UnauthorizedException)
-        response.clearCookie("hisab_refresh", this.cookieOptions());
+        response.clearCookie("puffinpal_refresh", this.cookieOptions());
       throw error;
     }
   }
@@ -133,7 +133,7 @@ export class AuthController {
     @Res({ passthrough: true }) response: Response,
   ) {
     this.checkOrigin(request);
-    response.clearCookie("hisab_refresh", this.cookieOptions());
+    response.clearCookie("puffinpal_refresh", this.cookieOptions());
     return { message: "Signed out successfully." };
   }
 
@@ -152,7 +152,7 @@ export class AuthController {
   ) {
     response.setHeader("Cache-Control", "no-store");
     response.cookie(
-      "hisab_refresh",
+      "puffinpal_refresh",
       await this.auth.createRefreshToken(userId, organizationId),
       { ...this.cookieOptions(), maxAge: 7 * 24 * 60 * 60 * 1000 },
     );

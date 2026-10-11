@@ -46,19 +46,19 @@ run:
 
 run.api:
 	@printf "\033[0;32m>>> Starting API app\033[0m\n"
-	pnpm run dev --filter @hisab/api
+	pnpm run dev --filter @puffinpal/api
 
 run.web:
 	@printf "\033[0;32m>>> Starting Web app\033[0m\n"
-	pnpm run dev --filter @hisab/web
+	pnpm run dev --filter @puffinpal/web
 
 services.start:
 	@printf "\033[0;32m>>> Starting local services\033[0m\n"
-	cd services && docker compose -p hisab up -d
+	cd services && docker compose -p puffinpal up -d
 
 services.stop:
 	@printf "\033[0;32m>>> Stopping local services\033[0m\n"
-	cd services && docker compose -p hisab down
+	cd services && docker compose -p puffinpal down
 
 typecheck:
 	@printf "\033[0;32m>>> Running type checks\033[0m\n"

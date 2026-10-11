@@ -14,7 +14,7 @@ import {
   isRole,
   permissionsFor,
   type Role,
-} from "@hisab/permissions";
+} from "@puffinpal/permissions";
 import { DATABASE } from "../database.module.js";
 import type { Database } from "../database/client.js";
 import type {
@@ -277,7 +277,7 @@ export class AuthService {
         kind: "refresh",
         passwordVersion: this.passwordVersion(user.passwordHash),
       },
-      { audience: "hisab-refresh", expiresIn: 7 * 24 * 60 * 60 },
+      { audience: "puffinpal-refresh", expiresIn: 7 * 24 * 60 * 60 },
     );
   }
 
@@ -285,7 +285,7 @@ export class AuthService {
     let payload: Record<string, unknown>;
     try {
       payload = await this.jwt.verifyAsync<Record<string, unknown>>(token, {
-        audience: "hisab-refresh",
+        audience: "puffinpal-refresh",
       });
     } catch {
       throw new UnauthorizedException("Your session expired. Sign in again.");

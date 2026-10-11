@@ -95,11 +95,11 @@ any insert rolls back everything. Existing rows, numbering and endpoints are pre
 ## Verification
 
 ```sh
-pnpm --filter @hisab/api build
-pnpm --filter @hisab/api check-types
-pnpm --filter @hisab/api lint
-pnpm --filter @hisab/api test
-KEEP_TEST_DATABASE=1 pnpm --filter @hisab/api test:e2e
+pnpm --filter @puffinpal/api build
+pnpm --filter @puffinpal/api check-types
+pnpm --filter @puffinpal/api lint
+pnpm --filter @puffinpal/api test
+KEEP_TEST_DATABASE=1 pnpm --filter @puffinpal/api test:e2e
 ```
 
 The integration runner creates a separate local test database and applies existing

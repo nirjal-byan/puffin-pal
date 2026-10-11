@@ -11,7 +11,7 @@ import {
   MinLength,
 } from "class-validator";
 import { ApiProperty } from "@nestjs/swagger";
-import { ROLES, type Role } from "@hisab/permissions";
+import { ROLES, type Role } from "@puffinpal/permissions";
 
 const normalize = ({ value }: { value: unknown }) =>
   typeof value === "string" ? value.trim().toLowerCase() : value;

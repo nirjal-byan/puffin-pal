@@ -32,11 +32,11 @@ and email addresses are normalized to lowercase.
 Login: `POST /api/v1/auth/login` with `organizationSlug`, `email` and `password`.
 Both return a 15-minute `accessToken`, safe user/organization details, current role
 and permissions. Paste the token into Swagger's **Authorize** dialog, or send
-`Authorization: Bearer <accessToken>`. Tokens are bound to issuer `hisab` and audience
-`hisab-api`; only HS256 is accepted. Signup/login also set a seven-day HttpOnly
+`Authorization: Bearer <accessToken>`. Tokens are bound to issuer `puffinpal` and audience
+`puffinpal-api`; only HS256 is accepted. Signup/login also set a seven-day HttpOnly
 refresh cookie scoped to `/api/v1/auth`, with SameSite=Lax and Secure in production.
 `POST /auth/refresh` exchanges that cookie for a fresh access token and current
-permissions. The refresh token has a separate `hisab-refresh` audience and a
+permissions. The refresh token has a separate `puffinpal-refresh` audience and a
 password-version fingerprint, so it cannot authorize business requests and a
 password change invalidates previous refresh tokens. Its seven-day lifetime is
 fixed, rather than extended on every refresh.
@@ -78,12 +78,14 @@ All paths below are under `/api/v1`.
 | `GET /clients`, `GET /clients/:id`                | All four roles                  |
 | `POST /clients`, `PATCH /clients/:id`             | OWNER, ADMIN, PROJECT_MANAGER   |
 | `GET /invoices`, `GET /invoices/:invoiceId/items` | All four roles                  |
+| `POST /invoices`                                | OWNER, ADMIN, PROJECT_MANAGER   |
 | `GET /expenses`, `GET /retainers`                 | All four roles                  |
 | `GET /members`                                    | OWNER, ADMIN                    |
 | `POST /members`, `PATCH /members/:userId/role`    | Subject to the role rules below |
 
 List routes accept `limit` (1–100, default 20) and `offset` (default 0).
-Financial write workflows and deletion endpoints are not implemented yet.
+Draft invoice creation is implemented. Invoice editing, deletion, issuance, and
+other financial write workflows are not implemented yet.
 
 ## Role policy
 
@@ -123,13 +125,13 @@ raw SQL/background jobs must enforce their own explicit tenant context.
 ## Verification
 
 ```sh
-pnpm exec turbo run build --filter=@hisab/api
-pnpm --filter @hisab/api test
-pnpm --filter @hisab/api test:e2e
+pnpm exec turbo run build --filter=@puffinpal/api
+pnpm --filter @puffinpal/api test
+pnpm --filter @puffinpal/api test:e2e
 make lint
 make typecheck
 ```
 
 The integration runner requires local Docker/PostgreSQL. It creates a uniquely named
 temporary database, replays migrations, exercises actual HTTP requests, closes the
-API, and removes that database. It never seeds or resets `hisab_dev`.
+API, and removes that database. It never seeds or resets `puffinpal_dev`.
