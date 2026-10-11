@@ -97,6 +97,6 @@ Backend: build, lint, type checks, unit tests and existing HTTP integration test
 Test databases are retained when checks run with `KEEP_TEST_DATABASE=1`; development
 data is not reset and no destructive cleanup is executed.
 
-Recommended next task: invoice detail view and draft editing, with an explicit item
-ordering policy and continued tenant/RBAC checks. Server-side client search can be
-added when client volumes outgrow the paginated selector.
+Invoice detail view, version-protected draft editing, explicit item ordering and
+safe deletion are now implemented; see [Task 3](invoice-drafts.md). Server-side client
+search can be added when client volumes outgrow the paginated selector.

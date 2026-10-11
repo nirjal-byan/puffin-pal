@@ -28,3 +28,14 @@ export interface CreatedInvoice extends FinancialRecord {
   total: string;
   items: InvoiceItem[];
 }
+
+export interface InvoiceDetail extends Omit<CreatedInvoice, "status"> {
+  status: "DRAFT" | "PENDING" | "PAID" | "OVERDUE" | "CANCELLED";
+  version: number;
+  clientId: string;
+  client: import("../../../lib/api").Client;
+  issueDate: string;
+  dueDate: string;
+  notes: string | null;
+  updatedAt: string;
+}

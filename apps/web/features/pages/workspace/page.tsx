@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import { InvoiceDetailPage } from "../../invoices/components/invoice-detail-page";
 import { InvoiceForm } from "../../invoices/components/invoice-form";
 import { recentlyCreatedInvoice } from "../../invoices/api/invoices";
 import type { Permission } from "@puffinpal/permissions";
@@ -18,7 +19,14 @@ import {
   type Session,
 } from "../../../lib/api";
 import type { WorkspaceApi } from "../../../lib/api";
-import { NAV, DESCRIPTION, sectionForTab, resolveTab, tabHref, type Tab } from "../../../lib/navigation";
+import {
+  NAV,
+  DESCRIPTION,
+  sectionForTab,
+  resolveTab,
+  tabHref,
+  type Tab,
+} from "../../../lib/navigation";
 import { Navbar } from "../../../components/navbar";
 import { Sidebar } from "../../../components/sidebar";
 import { Footer } from "../../../components/footer";
@@ -39,10 +47,14 @@ export default function WorkspacePage({
   onProfileChange,
   initialTab,
   creatingInvoice = false,
+  invoiceId,
+  editingInvoice = false,
 }: {
   session: Session;
   initialTab?: Tab;
   creatingInvoice?: boolean;
+  invoiceId?: string;
+  editingInvoice?: boolean;
   onSignOut: (expired?: boolean) => void;
   onProfileChange: (profile: Profile) => void;
 }) {
@@ -108,6 +120,7 @@ export default function WorkspacePage({
   useEffect(() => {
     if (
       creatingInvoice ||
+      invoiceId ||
       ["overview", "access", "profile", "password"].includes(tab) ||
       !allowed
     )
@@ -131,7 +144,7 @@ export default function WorkspacePage({
         }
       });
     return () => controller.abort();
-  }, [tab, offset, revision, api, allowed, creatingInvoice]);
+  }, [tab, offset, revision, api, allowed, creatingInvoice, invoiceId]);
   // Reset page-specific state when URL navigation (including history) changes tabs.
   if (previousTab !== tab) {
     setPreviousTab(tab);
@@ -195,20 +208,34 @@ export default function WorkspacePage({
       <main className="workspace-main">
         <header className="topbar">
           <span>
-            {activeSection.label} <span className="breadcrumb">/</span> {creatingInvoice ? "Create Invoice" : currentNav.label}
+            {activeSection.label} <span className="breadcrumb">/</span>{" "}
+            {invoiceId
+              ? editingInvoice
+                ? "Edit Draft"
+                : "Invoice Details"
+              : creatingInvoice
+                ? "Create Invoice"
+                : currentNav.label}
           </span>
           <span className="topbar-slug">{session.organization.slug}</span>
         </header>
-        <div key={`${tab}-${creatingInvoice}`} className="workspace-content page-transition">
+        <div
+          key={`${tab}-${creatingInvoice}`}
+          className="workspace-content page-transition"
+        >
           <div className="page-heading">
             <div>
               <span className="eyebrow">{session.organization.name}</span>
               <h1>
-                {creatingInvoice
-                  ? "Create Invoice"
-                  : currentNav.label === "My access"
-                    ? "Your workspace access"
-                    : currentNav.label}
+                {invoiceId
+                  ? editingInvoice
+                    ? "Edit Draft"
+                    : "Invoice Details"
+                  : creatingInvoice
+                    ? "Create Invoice"
+                    : currentNav.label === "My access"
+                      ? "Your workspace access"
+                      : currentNav.label}
               </h1>
               <p className="muted">
                 {creatingInvoice
@@ -218,6 +245,7 @@ export default function WorkspacePage({
             </div>
             <div className="page-heading-actions">
               {!creatingInvoice &&
+                !invoiceId &&
                 tab === "invoices" &&
                 can("invoices:create") && (
                   <Link className="button primary" href="/invoices/new">
@@ -225,6 +253,7 @@ export default function WorkspacePage({
                   </Link>
                 )}
               {!creatingInvoice &&
+                !invoiceId &&
                 !["overview", "access", "profile", "password"].includes(tab) &&
                 allowed && (
                   <button
@@ -259,25 +288,37 @@ export default function WorkspacePage({
               </button>
             </div>
           )}
-          {!creatingInvoice && tab === "invoices" && recentDraft && (
-            <section className="panel invoice-saved-card" role="status">
-              <div>
-                <span className="eyebrow">Draft saved successfully</span>
-                <strong>{recentDraft.invoiceNumber}</strong>
-                <p>
-                  {recentDraft.items.length} line items · Total{" "}
-                  {recentDraft.total}
-                </p>
-              </div>
-              <span className="role-badge">Draft</span>
-            </section>
-          )}
+          {!creatingInvoice &&
+            !invoiceId &&
+            tab === "invoices" &&
+            recentDraft && (
+              <section className="panel invoice-saved-card" role="status">
+                <div>
+                  <span className="eyebrow">Draft saved successfully</span>
+                  <strong>{recentDraft.invoiceNumber}</strong>
+                  <p>
+                    {recentDraft.items.length} line items · Total{" "}
+                    {recentDraft.total}
+                  </p>
+                </div>
+                <span className="role-badge">Draft</span>
+              </section>
+            )}
           {notice && (
             <p className="notice" role="status">
               {notice}
             </p>
           )}
-          {creatingInvoice ? (
+          {invoiceId ? (
+            <InvoiceDetailPage
+              key={`${invoiceId}-${editingInvoice}`}
+              id={invoiceId}
+              editing={editingInvoice}
+              api={api}
+              permissions={session.permissions}
+              currency={session.organization.currency}
+            />
+          ) : creatingInvoice ? (
             can("invoices:create") ? (
               <InvoiceForm
                 api={api}
@@ -365,6 +406,11 @@ export default function WorkspacePage({
                   key={`${tab}-${revision}-${offset}`}
                   rows={rows as FinancialRecord[]}
                   currency={session.organization.currency}
+                  permissions={session.permissions}
+                  onDeleted={() => {
+                    reload();
+                    router.push("/invoices");
+                  }}
                   api={api}
                 />
               )}

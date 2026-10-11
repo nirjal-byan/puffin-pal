@@ -1,4 +1,7 @@
 "use client";
+import Link from "next/link";
+import type { Permission } from "@puffinpal/permissions";
+import { InvoiceActions } from "../features/invoices/components/invoice-actions";
 import { useEffect, useState } from "react";
 import {
   errorMessage,
@@ -92,7 +95,11 @@ export function FinancialPanel({
   rows,
   currency,
   api,
+  permissions = [],
+  onDeleted = () => {},
 }: {
+  permissions?: readonly Permission[];
+  onDeleted?: () => void;
   tab: FinancialTab;
   rows: FinancialRecord[];
   currency: string;
@@ -145,15 +152,37 @@ export function FinancialPanel({
                 <tr key={row.id}>
                   <td>
                     {tab === "invoices" ? (
-                      <button
-                        className="text-button"
-                        type="button"
-                        onClick={() =>
-                          setSelected(selected === row.id ? null : row.id)
-                        }
-                      >
-                        {row.invoiceNumber} ↗
-                      </button>
+                      <div className="invoice-list-actions">
+                        <Link
+                          className="text-button invoice-number"
+                          href={`/invoices/${row.id}`}
+                        >
+                          {row.invoiceNumber} ↗
+                        </Link>
+                        <button
+                          className="text-button"
+                          type="button"
+                          onClick={() =>
+                            setSelected(selected === row.id ? null : row.id)
+                          }
+                        >
+                          Show items
+                        </button>
+                        {row.version !== undefined && (
+                          <InvoiceActions
+                            invoice={{
+                              id: row.id,
+                              invoiceNumber: row.invoiceNumber ?? "Invoice",
+                              status: row.status,
+                              version: row.version,
+                            }}
+                            api={api}
+                            permissions={permissions}
+                            onDeleted={onDeleted}
+                            onReload={onDeleted}
+                          />
+                        )}
+                      </div>
                     ) : (
                       <strong>{row.title ?? row.clientName}</strong>
                     )}

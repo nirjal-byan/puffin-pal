@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useState, type FormEvent } from "react";
-import { errorMessage, type WorkspaceApi } from "../../../lib/api";
+import { ApiError, errorMessage, type WorkspaceApi } from "../../../lib/api";
 import { useCreateInvoice } from "../hooks/use-create-invoice";
 import {
   addLine,
@@ -9,9 +9,11 @@ import {
   newLine,
   invoicePayload,
   validateInvoice,
+  invoiceDraft,
 } from "../schemas/invoice.schema";
 import type {
   CreatedInvoice,
+  InvoiceDetail,
   InvoiceDraft,
   InvoiceLine,
 } from "../types/invoice.types";
@@ -21,20 +23,32 @@ import { InvoiceSummary } from "./invoice-summary";
 export function InvoiceForm({
   api,
   onCreated,
+  initialInvoice,
+  onReload,
 }: {
   api: WorkspaceApi;
+  initialInvoice?: InvoiceDetail;
+  onReload?: () => void;
   onCreated: (invoice: CreatedInvoice) => void;
 }) {
-  const [draft, setDraft] = useState<InvoiceDraft>(() => ({
-    clientId: "",
-    issueDate: new Date().toISOString().slice(0, 10),
-    dueDate: "",
-    notes: "",
-    items: [newLine("first-item")],
-  }));
+  const [draft, setDraft] = useState<InvoiceDraft>(() =>
+    initialInvoice
+      ? invoiceDraft(initialInvoice)
+      : {
+          clientId: "",
+          issueDate: new Date().toISOString().slice(0, 10),
+          dueDate: "",
+          notes: "",
+          items: [newLine("first-item")],
+        },
+  );
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [failure, setFailure] = useState("");
-  const { save, saving } = useCreateInvoice(api);
+  const [conflict, setConflict] = useState(false);
+  const { save, saving } = useCreateInvoice(api, initialInvoice);
+  const cancelHref = initialInvoice
+    ? `/invoices/${initialInvoice.id}`
+    : "/invoices";
   function update(patch: Partial<InvoiceDraft>) {
     setDraft((current) => ({ ...current, ...patch }));
   }
@@ -48,16 +62,19 @@ export function InvoiceForm({
   }
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (saving) return;
+    if (saving || conflict) return;
     const nextErrors = validateInvoice(draft);
     setErrors(nextErrors);
     setFailure("");
     if (Object.keys(nextErrors).length) return;
     try {
-      const invoice = await save(invoicePayload(draft));
+      const payload = invoicePayload(draft);
+      if (initialInvoice) payload.notes = draft.notes.trim();
+      const invoice = await save(payload);
       if (invoice) onCreated(invoice);
     } catch (error) {
       setFailure(errorMessage(error));
+      if (error instanceof ApiError && error.status === 409) setConflict(true);
     }
   }
   return (
@@ -66,7 +83,7 @@ export function InvoiceForm({
         <span className="role-badge">Draft</span>
         <div>
           <Link
-            href="/invoices"
+            href={cancelHref}
             className={`button secondary ${saving ? "invoice-disabled-link" : ""}`}
             aria-disabled={saving}
             tabIndex={saving ? -1 : 0}
@@ -76,8 +93,16 @@ export function InvoiceForm({
           >
             Cancel
           </Link>
-          <button type="submit" className="button primary" disabled={saving}>
-            {saving ? "Saving draft…" : "Save as Draft"}
+          <button
+            type="submit"
+            className="button primary"
+            disabled={saving || conflict}
+          >
+            {saving
+              ? "Saving draft…"
+              : initialInvoice
+                ? "Save Changes"
+                : "Save as Draft"}
           </button>
         </div>
       </div>
@@ -85,6 +110,18 @@ export function InvoiceForm({
         <p className="alert" role="alert">
           {failure}
         </p>
+      )}
+      {conflict && (
+        <div className="notice" role="alert">
+          Your changes have not been saved. Review the latest invoice before
+          editing again.
+          <Link className="text-button" href={cancelHref}>
+            Review latest invoice
+          </Link>
+          <button type="button" className="button secondary" onClick={onReload}>
+            Discard my changes and reload
+          </button>
+        </div>
       )}
       {Object.keys(errors).length > 0 && (
         <p className="invoice-validation-summary" role="alert">
@@ -95,6 +132,7 @@ export function InvoiceForm({
         <div className="invoice-form-sections">
           <InvoiceClientSelect
             api={api}
+            initialClient={initialInvoice?.client}
             value={draft.clientId}
             onChange={(clientId) => update({ clientId })}
             error={errors.clientId}

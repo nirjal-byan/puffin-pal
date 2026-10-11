@@ -13,8 +13,9 @@ The frontend uses the live API. You can:
 - Review your current permissions on My access and refresh them after a role change.
 
 Use two different organization accounts to check that records remain separate.
-Expenses and retainers remain read-only. Invoice editing, issuance and deletion
-are not implemented. See [invoice UI and architecture](../../knowledge/invoice-frontend.md).
+Expenses and retainers remain read-only. Invoice details, draft editing and safe
+draft deletion are available at `/invoices/[id]` and `/invoices/[id]/edit`. Issuance
+remains future work. See [draft lifecycle](../../knowledge/invoice-drafts.md). See [invoice UI and architecture](../../knowledge/invoice-frontend.md).
 
 Access tokens stay in React memory and expire after 15 minutes. A seven-day
 HttpOnly refresh cookie restores the session after reloads and silently renews

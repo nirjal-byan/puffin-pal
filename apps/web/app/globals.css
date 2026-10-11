@@ -3267,3 +3267,24 @@ tr:hover td {
     object-position: 50% 72%;
   }
 }
+
+/* Invoice detail, draft actions and permanent deletion confirmation. */
+.invoice-actions { display: flex; flex-wrap: wrap; gap: .65rem; align-items: center; }
+.invoice-number { overflow-wrap: anywhere; min-width: 0; }
+.invoice-list-actions { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; }
+.invoice-document { overflow: hidden; }
+.invoice-document .panel-heading { flex-wrap: wrap; gap: .75rem; }
+.invoice-document-meta, .invoice-document-bottom { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 2rem; padding: 1.5rem; }
+.invoice-document p { overflow-wrap: anywhere; }
+.invoice-document dl { display: grid; grid-template-columns: auto minmax(0, 1fr); align-content: start; gap: .65rem 1rem; margin: 0; }
+.invoice-document dd { margin: 0; text-align: right; overflow-wrap: anywhere; }
+.invoice-notes { white-space: pre-wrap; }
+.invoice-delete-dialog { border: 1px solid var(--border); border-radius: 1rem; padding: 1.5rem; width: min(32rem, calc(100vw - 2rem)); background: var(--background); color: var(--foreground); }
+.invoice-delete-dialog::backdrop { background: rgb(0 0 0 / .5); }
+.invoice-delete-dialog p { margin: 1rem 0; }
+.button.danger { background: #b42318; color: white; }
+@media (max-width: 640px) {
+  .invoice-document-meta, .invoice-document-bottom { grid-template-columns: minmax(0, 1fr); gap: 1.25rem; padding: 1rem; }
+  .invoice-form-actions { flex-wrap: wrap; gap: 1rem; }
+}
+.workspace-layout[data-theme="dark"] .invoice-delete-dialog { background: #18231d; }

@@ -109,5 +109,5 @@ and a test-only trigger that fails the second item insert to verify actual rollb
 The trigger exists only in that isolated test database. No development database
 reset or destructive command was run for this implementation.
 
-Invoice editing, issuance, emailing, PDF generation, payments and frontend changes
-are outside this task.
+Invoice detail reads, draft editing and safe deletion are documented in
+[invoice-drafts.md](invoice-drafts.md). Issuance, emailing, PDFs and payments remain future work.

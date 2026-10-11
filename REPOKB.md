@@ -13,7 +13,7 @@ Prisma migrations: `apps/api/prisma/migrations`.
 Local service project: `puffinpal`; PostgreSQL volume: `puffinpal_postgres_data`.
 
 Tenant foreign keys prevent cross-organization references. JWT authentication, current membership checks, permission guards and tenant-scoped
-API reads and atomic draft invoice creation are implemented. Financial retention rules, remaining business write workflows,
+API reads, atomic draft invoice creation, version-protected editing and safe draft deletion are implemented. Financial retention rules, remaining business write workflows,
 BullMQ and S3 integration remain to be implemented. Users are scoped to organizations with per-tenant email uniqueness.
 
 See [authentication](knowledge/authentication.md) for endpoints and security boundaries.

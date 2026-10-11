@@ -1,5 +1,11 @@
 "use client";
-import { Suspense, useCallback, useEffect, useState, useSyncExternalStore } from "react";
+import {
+  Suspense,
+  useCallback,
+  useEffect,
+  useState,
+  useSyncExternalStore,
+} from "react";
 import {
   apiRequest,
   ApiError,
@@ -18,9 +24,13 @@ import WorkspacePage from "./page";
 function SessionEntry({
   initialTab,
   creatingInvoice = false,
+  invoiceId,
+  editingInvoice = false,
 }: {
   initialTab?: Tab;
   creatingInvoice?: boolean;
+  invoiceId?: string;
+  editingInvoice?: boolean;
 }) {
   const session = useSyncExternalStore(
     subscribeSession,
@@ -116,10 +126,12 @@ function SessionEntry({
         </p>
       )}
       <WorkspacePage
-        key={session.user.id}
+        key={`${session.user.id}-${invoiceId ?? "list"}-${editingInvoice}`}
         session={session}
         initialTab={initialTab}
         creatingInvoice={creatingInvoice}
+        invoiceId={invoiceId}
+        editingInvoice={editingInvoice}
         onProfileChange={onProfileChange}
         onSignOut={onSignOut}
       />
@@ -127,9 +139,20 @@ function SessionEntry({
   );
 }
 
-export default function DashboardEntry(props: { initialTab?: Tab; creatingInvoice?: boolean }) {
+export default function DashboardEntry(props: {
+  initialTab?: Tab;
+  creatingInvoice?: boolean;
+  invoiceId?: string;
+  editingInvoice?: boolean;
+}) {
   return (
-    <Suspense fallback={<main className="session-loading" role="status">Loading your workspace…</main>}>
+    <Suspense
+      fallback={
+        <main className="session-loading" role="status">
+          Loading your workspace…
+        </main>
+      }
+    >
       <SessionEntry {...props} />
     </Suspense>
   );

@@ -78,14 +78,18 @@ All paths below are under `/api/v1`.
 | `GET /clients`, `GET /clients/:id`                | All four roles                  |
 | `POST /clients`, `PATCH /clients/:id`             | OWNER, ADMIN, PROJECT_MANAGER   |
 | `GET /invoices`, `GET /invoices/:invoiceId/items` | All four roles                  |
+| `GET /invoices/:id`                             | All four roles                  |
+| `PATCH /invoices/:id`                           | OWNER, ADMIN, PROJECT_MANAGER   |
+| `DELETE /invoices/:id`                          | OWNER, ADMIN (DRAFT only)        |
 | `POST /invoices`                                | OWNER, ADMIN, PROJECT_MANAGER   |
 | `GET /expenses`, `GET /retainers`                 | All four roles                  |
 | `GET /members`                                    | OWNER, ADMIN                    |
 | `POST /members`, `PATCH /members/:userId/role`    | Subject to the role rules below |
 
 List routes accept `limit` (1–100, default 20) and `offset` (default 0).
-Draft invoice creation is implemented. Invoice editing, deletion, issuance, and
-other financial write workflows are not implemented yet.
+Draft invoice creation, detail reads, editing and deletion are implemented.
+See [draft lifecycle](invoice-drafts.md) for version checks and DRAFT restrictions.
+Invoice issuance and other financial write workflows are not implemented yet.
 
 ## Role policy
 

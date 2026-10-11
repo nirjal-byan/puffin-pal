@@ -36,6 +36,7 @@ export interface Member {
 export interface FinancialRecord {
   id: string;
   invoiceNumber?: string;
+  version?: number;
   title?: string;
   clientName?: string;
   status?: string;

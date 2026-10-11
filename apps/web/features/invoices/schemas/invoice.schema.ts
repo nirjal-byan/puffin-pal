@@ -103,3 +103,29 @@ export function invoicePayload(draft: InvoiceDraft): CreateInvoicePayload {
     })),
   };
 }
+
+export function invoiceDraft(
+  invoice: import("../types/invoice.types").InvoiceDetail,
+): InvoiceDraft {
+  return {
+    clientId: invoice.clientId,
+    issueDate: invoice.issueDate.slice(0, 10),
+    dueDate: invoice.dueDate.slice(0, 10),
+    notes: invoice.notes ?? "",
+    items: invoice.items.map((item) => ({
+      id: item.id,
+      description: item.description,
+      quantity: String(item.quantity),
+      unitPrice: item.unitPrice,
+    })),
+  };
+}
+export function draftActions(
+  status: string | undefined,
+  permissions: readonly Permission[],
+) {
+  return {
+    edit: status === "DRAFT" && permissions.includes("invoices:update"),
+    delete: status === "DRAFT" && permissions.includes("invoices:delete"),
+  };
+}

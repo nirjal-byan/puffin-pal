@@ -48,7 +48,7 @@ try {
   });
   const result = spawnSync(
     process.execPath,
-    ["--test", "test/auth.e2e.test.mjs", "test/invoices.e2e.test.mjs"],
+    ["--test", "test/auth.e2e.test.mjs", "test/invoices.e2e.test.mjs", "test/invoice-drafts.e2e.test.mjs"],
     { cwd: api, env: environment, stdio: "inherit" },
   );
   if (result.status !== 0) process.exitCode = result.status ?? 1;

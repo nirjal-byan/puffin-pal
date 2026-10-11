@@ -165,3 +165,84 @@ test("permissions and a synchronous gate prevent forbidden or duplicated submiss
   );
   assert.equal(await gate(async () => "retry"), "retry");
 });
+
+test("edit prepopulation keeps decimal strings, notes, dates and item order", async () => {
+  const { invoiceDraft, draftActions } =
+    await import("../features/invoices/schemas/invoice.schema.ts");
+  const invoice = {
+    clientId: "client-a",
+    issueDate: "2026-10-10T00:00:00Z",
+    dueDate: "2026-11-10T00:00:00Z",
+    notes: null,
+    items: [
+      { id: "z", description: "First", quantity: 3, unitPrice: "0.10" },
+      { id: "a", description: "Second", quantity: 2, unitPrice: "12.25" },
+    ],
+  };
+  const populated = invoiceDraft(invoice);
+  assert.equal(populated.issueDate, "2026-10-10");
+  assert.equal(populated.notes, "");
+  assert.deepEqual(
+    populated.items.map((i) => i.id),
+    ["z", "a"],
+  );
+  assert.equal(invoicePreview(populated.items), "24.80");
+  assert.deepEqual(draftActions("DRAFT", ["invoices:read"]), {
+    edit: false,
+    delete: false,
+  });
+  assert.deepEqual(draftActions("DRAFT", ["invoices:update"]), {
+    edit: true,
+    delete: false,
+  });
+  assert.deepEqual(
+    draftActions("DRAFT", ["invoices:update", "invoices:delete"]),
+    { edit: true, delete: true },
+  );
+  assert.deepEqual(
+    draftActions("PAID", ["invoices:update", "invoices:delete"]),
+    { edit: false, delete: false },
+  );
+});
+
+test("edit/delete API contracts include version and invalidate snapshots only after success", async () => {
+  const { updateInvoice, deleteInvoice, clearRecentInvoice } =
+    await import("../features/invoices/api/invoices.ts");
+  const result = { id: "inv-a", organizationId: "org-a" };
+  rememberCreatedInvoice(result);
+  const failure = Object.assign(new Error("Invoice changed. Reload."), {
+    status: 409,
+  });
+  const input = { ...invoicePayload(draft()), notes: "" };
+  await assert.rejects(
+    updateInvoice(
+      async () => {
+        throw failure;
+      },
+      "inv-a",
+      input,
+      1,
+    ),
+    (error) => error.status === 409,
+  );
+  assert.equal(recentlyCreatedInvoice("org-a"), result);
+  let call;
+  const api = async (path, options) => {
+    call = { path, ...options };
+    return result;
+  };
+  await updateInvoice(api, "inv-a", input, 2);
+  assert.equal(call.method, "PATCH");
+  assert.equal(call.body.expectedVersion, 2);
+  assert.equal(call.body.notes, "");
+  assert.equal(recentlyCreatedInvoice("org-a"), null);
+  rememberCreatedInvoice(result);
+  await deleteInvoice(api, "inv-a", 3);
+  assert.deepEqual(call, {
+    path: "/invoices/inv-a",
+    method: "DELETE",
+    body: { expectedVersion: 3 },
+  });
+  assert.equal(recentlyCreatedInvoice("org-a"), null);
+  clearRecentInvoice();
+});

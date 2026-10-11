@@ -15,3 +15,42 @@ export function rememberCreatedInvoice(invoice: CreatedInvoice) {
 export function recentlyCreatedInvoice(organizationId: string) {
   return recent?.organizationId === organizationId ? recent : null;
 }
+
+export function clearRecentInvoice() {
+  recent = null;
+}
+export function getInvoice(
+  api: WorkspaceApi,
+  id: string,
+  signal?: AbortSignal,
+) {
+  return api<import("../types/invoice.types").InvoiceDetail>(
+    `/invoices/${id}`,
+    { signal },
+  );
+}
+export async function updateInvoice(
+  api: WorkspaceApi,
+  id: string,
+  input: CreateInvoicePayload,
+  expectedVersion: number,
+) {
+  const invoice = await api<CreatedInvoice>(`/invoices/${id}`, {
+    method: "PATCH",
+    body: { ...input, expectedVersion },
+  });
+  clearRecentInvoice();
+  return invoice;
+}
+export async function deleteInvoice(
+  api: WorkspaceApi,
+  id: string,
+  expectedVersion: number,
+) {
+  const result = await api<{ message: string }>(`/invoices/${id}`, {
+    method: "DELETE",
+    body: { expectedVersion },
+  });
+  clearRecentInvoice();
+  return result;
+}

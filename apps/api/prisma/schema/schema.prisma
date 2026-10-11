@@ -102,6 +102,7 @@ model Invoice {
   organizationId String
   clientId       String
   invoiceNumber  String
+  version        Int                  @default(1)
   status         InvoiceStatus        @default(DRAFT)
   issueDate      DateTime
   dueDate        DateTime
@@ -128,6 +129,7 @@ model InvoiceItem {
   invoiceId      String
   description    String
   quantity       Int            @default(1)
+  position       Int            @default(0)
   unitPrice      Numeric(12, 2)
   amount         Numeric(12, 2)
 

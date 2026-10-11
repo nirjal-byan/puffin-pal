@@ -4,12 +4,14 @@ import { useEffect, useState } from "react";
 import { errorMessage, type Client, type WorkspaceApi } from "../../../lib/api";
 export function InvoiceClientSelect({
   api,
+  initialClient,
   value,
   onChange,
   error,
   disabled,
 }: {
   api: WorkspaceApi;
+  initialClient?: Client;
   value: string;
   onChange: (id: string) => void;
   error?: string;
@@ -60,7 +62,9 @@ export function InvoiceClientSelect({
       field.toLowerCase().includes(search.toLowerCase()),
     ),
   );
-  const selected = clients.find((client) => client.id === value);
+  const selected =
+    clients.find((client) => client.id === value) ??
+    (initialClient?.id === value ? initialClient : undefined);
   return (
     <section className="panel invoice-section">
       <div className="panel-heading">
