@@ -637,6 +637,19 @@ small {
   flex: 1;
   min-width: 0;
 }
+/* Keep the desktop shell stationary; only the main pane scrolls. */
+@media (min-width: 761px) {
+  .workspace-layout {
+    height: 100dvh;
+    min-height: 0;
+    overflow: hidden;
+  }
+  .workspace-layout .workspace-main {
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior-y: contain;
+  }
+}
 .topbar {
   display: flex;
   justify-content: space-between;
@@ -3288,3 +3301,23 @@ tr:hover td {
   .invoice-form-actions { flex-wrap: wrap; gap: 1rem; }
 }
 .workspace-layout[data-theme="dark"] .invoice-delete-dialog { background: #18231d; }
+
+.company-logo-picker { display: grid; gap: 12px; min-width: 0; }
+.company-logo-label { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 550; }
+.company-logo-label .optional { font-size: 10px; }
+.company-logo-upload { display: flex; align-items: center; gap: 18px; padding: 18px; border: 1px dashed var(--border); border-radius: 8px; }
+.company-logo-preview { display: grid; place-items: center; flex: 0 0 72px; width: 72px; height: 72px; padding: 4px; border: 1px solid var(--border); border-radius: 12px; background: var(--background); color: var(--muted); }
+.company-logo-preview img, .company-logo-thumbnail { object-fit: contain; border-radius: 8px; }
+.company-logo-controls { min-width: 0; }
+.company-logo-buttons { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; margin-bottom: 8px; }
+.company-logo-buttons .button { margin: 0; }
+.company-logo-file-input { display: none; }
+.company-logo-form { display: grid; gap: 20px; }
+.company-logo-description { font-size: 12px; line-height: 1.6; }
+.company-logo-form .settings-save { justify-self: start; margin: 0; }
+.company-logo-settings { margin-top: 24px; }
+@media (max-width: 480px) {
+  .company-logo-upload { padding: 14px; gap: 12px; align-items: flex-start; }
+  .company-logo-preview { flex-basis: 56px; width: 56px; height: 56px; }
+  .company-logo-preview img { width: 48px; height: 48px; }
+}

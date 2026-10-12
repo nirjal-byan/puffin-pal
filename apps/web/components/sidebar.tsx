@@ -2,6 +2,7 @@
 import type { Permission } from "@puffinpal/permissions";
 import { roleLabel, type Session } from "../lib/api";
 import Link from "next/link";
+import Image from "next/image";
 import { NAV, ICON_PATHS, sectionForTab, tabHref, type Tab, type NavigationSection } from "../lib/navigation";
 
 export function Sidebar({
@@ -23,7 +24,10 @@ export function Sidebar({
       <h2 className="sidebar-title">{section?.label ?? "My access"}</h2>
       <div className="organization-card">
         <span className="organization-icon">
-          {session.organization.name.slice(0, 1).toUpperCase()}
+          {session.organization.logoUrl ? (
+            <Image src={session.organization.logoUrl} alt={`${session.organization.name} logo`}
+              width={36} height={36} unoptimized className="company-logo-thumbnail" />
+          ) : session.organization.name.slice(0, 1).toUpperCase()}
         </span>
         <div>
           <strong>{session.organization.name}</strong>

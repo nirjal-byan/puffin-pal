@@ -1,3 +1,4 @@
+import { OrganizationLogoDto } from "./organization-logo.dto.js";
 import {
   Body,
   Controller,
@@ -74,6 +75,15 @@ export class AuthController {
   @RequirePermissions("profile:read")
   me(@CurrentTenant() tenant: TenantContext) {
     return this.auth.me(tenant);
+  }
+  @Patch("organization/logo")
+  @ApiBearerAuth()
+  @RequirePermissions("organization:update")
+  updateOrganizationLogo(
+    @CurrentTenant() tenant: TenantContext,
+    @Body() input: OrganizationLogoDto,
+  ) {
+    return this.auth.updateOrganizationLogo(tenant, input.logoUrl);
   }
   @Patch("me")
   @ApiBearerAuth()

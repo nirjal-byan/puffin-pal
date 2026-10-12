@@ -5,6 +5,7 @@ export interface RegistrationDraft {
   middleName: string;
   lastName: string;
   email: string;
+  logoUrl: string | null;
   organizationName: string;
   organizationSlug: string;
   companyWebsite: string;
@@ -21,6 +22,7 @@ export function createRegistrationDraft(slug = ""): RegistrationDraft {
     middleName: "",
     lastName: "",
     email: "",
+    logoUrl: null,
     organizationName: "",
     organizationSlug: slug,
     companyWebsite: "",

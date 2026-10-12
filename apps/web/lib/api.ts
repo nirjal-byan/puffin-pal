@@ -11,7 +11,13 @@ export interface User {
 }
 export interface Profile {
   user: User;
-  organization: { id: string; name: string; slug: string; currency: string };
+  organization: {
+    id: string;
+    name: string;
+    slug: string;
+    currency: string;
+    logoUrl?: string | null;
+  };
   role: Role;
   permissions: Permission[];
 }

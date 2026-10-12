@@ -17,6 +17,7 @@ const tests = requestedTests.length
       "test/invoices.e2e.test.mjs",
       "test/invoice-drafts.e2e.test.mjs",
       "test/invoice-issuance.e2e.test.mjs",
+      "test/organization-logo.e2e.test.mjs",
     ];
 const api = fileURLToPath(new URL("../", import.meta.url));
 config({ path: `${api}/.env`, quiet: true });

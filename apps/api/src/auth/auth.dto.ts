@@ -1,3 +1,4 @@
+import { IsOrganizationLogo } from "./organization-logo.dto.js";
 import { Transform } from "class-transformer";
 import {
   IsEmail,
@@ -37,6 +38,14 @@ export class LoginDto {
   password!: string;
 }
 export class SignupDto extends LoginDto {
+  @ApiProperty({
+    required: false,
+    description: "Optional company logo image data URL",
+  })
+  @IsOptional()
+  @IsOrganizationLogo()
+  logoUrl?: string;
+
   @ApiProperty({ example: "My Company" })
   @IsString()
   @MinLength(1)

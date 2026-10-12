@@ -1,4 +1,5 @@
 "use client";
+import { CompanyLogoPicker } from "../../../components/company-logo-picker";
 import { PasswordInput } from "../../../components/password-input";
 import {
   suggestedSlug,
@@ -12,7 +13,9 @@ export function RegistrationFields({
   step,
   draft,
   onDraftChange,
+  onLogoBusyChange,
 }: {
+  onLogoBusyChange: (busy: boolean) => void;
   step: number;
   draft: RegistrationDraft;
   onDraftChange: (patch: Partial<RegistrationDraft>) => void;
@@ -97,6 +100,11 @@ export function RegistrationFields({
         hidden={step !== 1}
         aria-label="Company details"
       >
+        <CompanyLogoPicker
+          value={draft.logoUrl}
+          onChange={(logoUrl) => onDraftChange({ logoUrl })}
+          onBusyChange={onLogoBusyChange}
+        />
         <div className="registration-pair">
           <label>
             Company name <span className="required-mark">*</span>

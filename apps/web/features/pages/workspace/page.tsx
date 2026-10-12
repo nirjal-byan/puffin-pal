@@ -27,6 +27,7 @@ import {
   tabHref,
   type Tab,
 } from "../../../lib/navigation";
+import { CompanyLogoSettings } from "../../../components/company-logo-settings";
 import { Navbar } from "../../../components/navbar";
 import { Sidebar } from "../../../components/sidebar";
 import { Footer } from "../../../components/footer";
@@ -347,13 +348,24 @@ export default function WorkspacePage({
           ) : tab === "overview" ? (
             <OverviewPage session={session} navigate={navigate} />
           ) : tab === "profile" || tab === "password" ? (
-            <CurrentSettingsPage
-              key={tab}
-              user={session.user}
-              api={api}
-              onProfileChange={onProfileChange}
-              onSaved={recordNotification}
-            />
+            <>
+              <CurrentSettingsPage
+                key={tab}
+                user={session.user}
+                api={api}
+                onProfileChange={onProfileChange}
+                onSaved={recordNotification}
+              />
+              {tab === "profile" &&
+                session.permissions.includes("organization:update") && (
+                  <CompanyLogoSettings
+                    organization={session.organization}
+                    api={api}
+                    onProfileChange={onProfileChange}
+                    onSaved={recordNotification}
+                  />
+                )}
+            </>
           ) : tab === "access" ? (
             <AccessPage
               session={session}

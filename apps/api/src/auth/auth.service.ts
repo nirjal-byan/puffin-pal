@@ -25,6 +25,7 @@ import type {
   SignupDto,
 } from "./auth.dto.js";
 import type { TenantContext } from "./auth.types.js";
+import { validOrganizationLogo } from "./organization-logo.dto.js";
 import { hashPassword, verifyPassword } from "./password.js";
 
 const DUMMY_HASH = `scrypt:32768:8:1:${"0".repeat(32)}:${"0".repeat(128)}`;
@@ -52,6 +53,8 @@ export class AuthService {
         : input.fullName.trim();
     if (fullName.length > 120)
       throw new BadRequestException("Full name must be at most 120 characters");
+    if (input.logoUrl !== undefined && !validOrganizationLogo(input.logoUrl))
+      throw new BadRequestException("Invalid organization logo");
     const passwordHash = await hashPassword(input.password);
     let tenant: TenantContext;
     try {
@@ -59,6 +62,7 @@ export class AuthService {
         const organization = await tx.orm.public.Organization.create({
           name: input.organizationName.trim(),
           slug: input.organizationSlug,
+          ...(input.logoUrl ? { logoUrl: input.logoUrl } : {}),
           ...(input.companyWebsite ? { website: input.companyWebsite } : {}),
           ...(input.employeeCount
             ? { employeeCount: input.employeeCount }
@@ -143,7 +147,7 @@ export class AuthService {
     const organization = await this.db.orm.public.Organization.where({
       id: tenant.organizationId,
     })
-      .select("id", "name", "slug", "currency")
+      .select("id", "name", "slug", "currency", "logoUrl")
       .first();
     if (!user || !organization) throw new UnauthorizedException();
     return {
@@ -152,6 +156,20 @@ export class AuthService {
       role: tenant.role,
       permissions: permissionsFor(tenant.role),
     };
+  }
+
+  async updateOrganizationLogo(tenant: TenantContext, logoUrl: string | null) {
+    if (tenant.role !== "OWNER" && tenant.role !== "ADMIN")
+      throw new ForbiddenException(
+        "Only owners and admins can change the company logo",
+      );
+    if (!validOrganizationLogo(logoUrl))
+      throw new BadRequestException("Invalid organization logo");
+    const [organization] = await this.db.orm.public.Organization.where({
+      id: tenant.organizationId,
+    }).updateAll({ logoUrl });
+    if (!organization) throw new NotFoundException("Organization not found");
+    return this.me(tenant);
   }
 
   async updateProfile(tenant: TenantContext, input: UpdateProfileDto) {

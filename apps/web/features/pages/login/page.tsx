@@ -22,6 +22,7 @@ export default function LoginPage({
   const [signupStep, setSignupStep] = useState(0);
   const [signup, setSignup] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [logoBusy, setLogoBusy] = useState(false);
   const [error, setError] = useState("");
   const formAreaRef = useRef<HTMLElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
@@ -89,6 +90,10 @@ export default function LoginPage({
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (signup && logoBusy) {
+      setError("Wait for the company logo to finish preparing.");
+      return;
+    }
     if (signup && !validateStep(event.currentTarget)) return;
     if (signup && signupStep === 1 && !registrationDraft.employeeCount) {
       setError("Choose the number of employees before continuing.");
@@ -128,6 +133,9 @@ export default function LoginPage({
             ? {
                 ...credentials,
                 organizationName: String(data.get("organizationName")),
+                ...(registrationDraft.logoUrl
+                  ? { logoUrl: registrationDraft.logoUrl }
+                  : {}),
                 fullName: [
                   data.get("firstName"),
                   data.get("middleName"),
@@ -212,6 +220,7 @@ export default function LoginPage({
           <fieldset disabled={busy} className="form-fields">
             {signup ? (
               <RegistrationFields
+                onLogoBusyChange={setLogoBusy}
                 step={signupStep}
                 draft={registrationDraft}
                 onDraftChange={(patch) =>
@@ -260,9 +269,7 @@ export default function LoginPage({
                     placeholder={
                       signup ? "At least 12 characters" : "Your password"
                     }
-                    autoComplete={
-                      signup ? "new-password" : "current-password"
-                    }
+                    autoComplete={signup ? "new-password" : "current-password"}
                   />
                 </label>
               </>
