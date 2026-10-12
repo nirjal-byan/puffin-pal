@@ -34,7 +34,7 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'f2ee70e027cd89598d87bec91f125b6a3c6be501b574355a0744e49d6fb89e67'>;
+  StorageHashBase<'b88d448873684081b756852cff15ea4827cafb47d4fa22b8871417ca2c91606b'>;
 export type ExecutionHash =
   ExecutionHashBase<'c252ac17c1612439aa7cced86d835cc8cd192e72d452da2e9d747b2d85ac39d5'>;
 export type ProfileHash =
@@ -271,16 +271,24 @@ export type FieldOutputTypes = {
       readonly title: CodecTypes['pg/text@1']['output'];
     };
     readonly Invoice: {
+      readonly billingCompanyName: CodecTypes['pg/text@1']['output'] | null;
+      readonly billingEmail: CodecTypes['pg/text@1']['output'] | null;
+      readonly billingName: CodecTypes['pg/text@1']['output'] | null;
+      readonly billingTaxId: CodecTypes['pg/text@1']['output'] | null;
       readonly clientId: CodecTypes['pg/text@1']['output'];
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly currency: CodecTypes['pg/text@1']['output'] | null;
       readonly dueDate: CodecTypes['pg/timestamptz-temporal@1']['output'];
       readonly id: CodecTypes['pg/text@1']['output'];
       readonly invoiceNumber: CodecTypes['pg/text@1']['output'];
       readonly issueDate: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly issuedAt: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
+      readonly issuedByUserId: CodecTypes['pg/text@1']['output'] | null;
       readonly notes: CodecTypes['pg/text@1']['output'] | null;
       readonly organizationId: CodecTypes['pg/text@1']['output'];
       readonly pdfUrl: CodecTypes['pg/text@1']['output'] | null;
-      readonly status: 'DRAFT' | 'PENDING' | 'PAID' | 'OVERDUE' | 'CANCELLED';
+      readonly sellerName: CodecTypes['pg/text@1']['output'] | null;
+      readonly status: 'DRAFT' | 'ISSUED' | 'PENDING' | 'PAID' | 'OVERDUE' | 'CANCELLED';
       readonly subtotal: Numeric<12, 2>;
       readonly tax: Numeric<12, 2>;
       readonly total: Numeric<12, 2>;
@@ -363,16 +371,24 @@ export type FieldInputTypes = {
       readonly title: CodecTypes['pg/text@1']['input'];
     };
     readonly Invoice: {
+      readonly billingCompanyName: CodecTypes['pg/text@1']['input'] | null;
+      readonly billingEmail: CodecTypes['pg/text@1']['input'] | null;
+      readonly billingName: CodecTypes['pg/text@1']['input'] | null;
+      readonly billingTaxId: CodecTypes['pg/text@1']['input'] | null;
       readonly clientId: CodecTypes['pg/text@1']['input'];
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly currency: CodecTypes['pg/text@1']['input'] | null;
       readonly dueDate: CodecTypes['pg/timestamptz-temporal@1']['input'];
       readonly id: CodecTypes['pg/text@1']['input'];
       readonly invoiceNumber: CodecTypes['pg/text@1']['input'];
       readonly issueDate: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly issuedAt: CodecTypes['pg/timestamptz-temporal@1']['input'] | null;
+      readonly issuedByUserId: CodecTypes['pg/text@1']['input'] | null;
       readonly notes: CodecTypes['pg/text@1']['input'] | null;
       readonly organizationId: CodecTypes['pg/text@1']['input'];
       readonly pdfUrl: CodecTypes['pg/text@1']['input'] | null;
-      readonly status: 'DRAFT' | 'PENDING' | 'PAID' | 'OVERDUE' | 'CANCELLED';
+      readonly sellerName: CodecTypes['pg/text@1']['input'] | null;
+      readonly status: 'DRAFT' | 'ISSUED' | 'PENDING' | 'PAID' | 'OVERDUE' | 'CANCELLED';
       readonly subtotal: CodecTypes['pg/numeric@1']['input'];
       readonly tax: CodecTypes['pg/numeric@1']['input'];
       readonly total: CodecTypes['pg/numeric@1']['input'];
@@ -465,16 +481,24 @@ export type StorageColumnTypes = {
       readonly unitPrice: Numeric<12, 2>;
     };
     readonly invoices: {
+      readonly billingCompanyName: CodecTypes['pg/text@1']['output'] | null;
+      readonly billingEmail: CodecTypes['pg/text@1']['output'] | null;
+      readonly billingName: CodecTypes['pg/text@1']['output'] | null;
+      readonly billingTaxId: CodecTypes['pg/text@1']['output'] | null;
       readonly clientId: CodecTypes['pg/text@1']['output'];
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly currency: CodecTypes['pg/text@1']['output'] | null;
       readonly dueDate: CodecTypes['pg/timestamptz-temporal@1']['output'];
       readonly id: CodecTypes['pg/text@1']['output'];
       readonly invoiceNumber: CodecTypes['pg/text@1']['output'];
+      readonly issuedAt: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
       readonly issueDate: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly issuedByUserId: CodecTypes['pg/text@1']['output'] | null;
       readonly notes: CodecTypes['pg/text@1']['output'] | null;
       readonly organizationId: CodecTypes['pg/text@1']['output'];
       readonly pdfUrl: CodecTypes['pg/text@1']['output'] | null;
-      readonly status: 'DRAFT' | 'PENDING' | 'PAID' | 'OVERDUE' | 'CANCELLED';
+      readonly sellerName: CodecTypes['pg/text@1']['output'] | null;
+      readonly status: 'DRAFT' | 'ISSUED' | 'PENDING' | 'PAID' | 'OVERDUE' | 'CANCELLED';
       readonly subtotal: Numeric<12, 2>;
       readonly tax: Numeric<12, 2>;
       readonly total: Numeric<12, 2>;
@@ -557,16 +581,24 @@ export type StorageColumnInputTypes = {
       readonly unitPrice: CodecTypes['pg/numeric@1']['input'];
     };
     readonly invoices: {
+      readonly billingCompanyName: CodecTypes['pg/text@1']['input'] | null;
+      readonly billingEmail: CodecTypes['pg/text@1']['input'] | null;
+      readonly billingName: CodecTypes['pg/text@1']['input'] | null;
+      readonly billingTaxId: CodecTypes['pg/text@1']['input'] | null;
       readonly clientId: CodecTypes['pg/text@1']['input'];
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly currency: CodecTypes['pg/text@1']['input'] | null;
       readonly dueDate: CodecTypes['pg/timestamptz-temporal@1']['input'];
       readonly id: CodecTypes['pg/text@1']['input'];
       readonly invoiceNumber: CodecTypes['pg/text@1']['input'];
+      readonly issuedAt: CodecTypes['pg/timestamptz-temporal@1']['input'] | null;
       readonly issueDate: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly issuedByUserId: CodecTypes['pg/text@1']['input'] | null;
       readonly notes: CodecTypes['pg/text@1']['input'] | null;
       readonly organizationId: CodecTypes['pg/text@1']['input'];
       readonly pdfUrl: CodecTypes['pg/text@1']['input'] | null;
-      readonly status: 'DRAFT' | 'PENDING' | 'PAID' | 'OVERDUE' | 'CANCELLED';
+      readonly sellerName: CodecTypes['pg/text@1']['input'] | null;
+      readonly status: 'DRAFT' | 'ISSUED' | 'PENDING' | 'PAID' | 'OVERDUE' | 'CANCELLED';
       readonly subtotal: CodecTypes['pg/numeric@1']['input'];
       readonly tax: CodecTypes['pg/numeric@1']['input'];
       readonly total: CodecTypes['pg/numeric@1']['input'];
@@ -644,16 +676,24 @@ export namespace Models {
     readonly [RelationKeys]?: 'organization';
   };
   export type public_Invoice = {
+    billingCompanyName: CodecTypes['pg/text@1']['output'] | null;
+    billingEmail: CodecTypes['pg/text@1']['output'] | null;
+    billingName: CodecTypes['pg/text@1']['output'] | null;
+    billingTaxId: CodecTypes['pg/text@1']['output'] | null;
     clientId: CodecTypes['pg/text@1']['output'];
     createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+    currency: CodecTypes['pg/text@1']['output'] | null;
     dueDate: CodecTypes['pg/timestamptz-temporal@1']['output'];
     id: CodecTypes['pg/text@1']['output'];
     invoiceNumber: CodecTypes['pg/text@1']['output'];
     issueDate: CodecTypes['pg/timestamptz-temporal@1']['output'];
+    issuedAt: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
+    issuedByUserId: CodecTypes['pg/text@1']['output'] | null;
     notes: CodecTypes['pg/text@1']['output'] | null;
     organizationId: CodecTypes['pg/text@1']['output'];
     pdfUrl: CodecTypes['pg/text@1']['output'] | null;
-    status: 'DRAFT' | 'PENDING' | 'PAID' | 'OVERDUE' | 'CANCELLED';
+    sellerName: CodecTypes['pg/text@1']['output'] | null;
+    status: 'DRAFT' | 'ISSUED' | 'PENDING' | 'PAID' | 'OVERDUE' | 'CANCELLED';
     subtotal: Numeric<12, 2>;
     tax: Numeric<12, 2>;
     total: Numeric<12, 2>;
@@ -995,6 +1035,26 @@ type ContractBase = Omit<
             };
             readonly invoices: {
               columns: {
+                readonly billingCompanyName: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                };
+                readonly billingEmail: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                };
+                readonly billingName: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                };
+                readonly billingTaxId: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                };
                 readonly clientId: {
                   readonly nativeType: 'text';
                   readonly codecId: 'pg/text@1';
@@ -1005,6 +1065,11 @@ type ContractBase = Omit<
                   readonly codecId: 'pg/timestamptz-temporal@1';
                   readonly nullable: false;
                   readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
+                };
+                readonly currency: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
                 };
                 readonly dueDate: {
                   readonly nativeType: 'timestamptz';
@@ -1026,6 +1091,16 @@ type ContractBase = Omit<
                   readonly codecId: 'pg/timestamptz-temporal@1';
                   readonly nullable: false;
                 };
+                readonly issuedAt: {
+                  readonly nativeType: 'timestamptz';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                  readonly nullable: true;
+                };
+                readonly issuedByUserId: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                };
                 readonly notes: {
                   readonly nativeType: 'text';
                   readonly codecId: 'pg/text@1';
@@ -1037,6 +1112,11 @@ type ContractBase = Omit<
                   readonly nullable: false;
                 };
                 readonly pdfUrl: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                };
+                readonly sellerName: {
                   readonly nativeType: 'text';
                   readonly codecId: 'pg/text@1';
                   readonly nullable: true;
@@ -1434,7 +1514,14 @@ type ContractBase = Omit<
             };
             readonly InvoiceStatus: {
               readonly kind: 'valueSet';
-              readonly values: readonly ['DRAFT', 'PENDING', 'PAID', 'OVERDUE', 'CANCELLED'];
+              readonly values: readonly [
+                'DRAFT',
+                'ISSUED',
+                'PENDING',
+                'PAID',
+                'OVERDUE',
+                'CANCELLED',
+              ];
             };
             readonly Role: {
               readonly kind: 'valueSet';
@@ -1630,6 +1717,22 @@ type ContractBase = Omit<
           };
           readonly Invoice: {
             readonly fields: {
+              readonly billingCompanyName: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly billingEmail: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly billingName: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly billingTaxId: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
               readonly clientId: {
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
@@ -1640,6 +1743,10 @@ type ContractBase = Omit<
                   readonly kind: 'scalar';
                   readonly codecId: 'pg/timestamptz-temporal@1';
                 };
+              };
+              readonly currency: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
               readonly dueDate: {
                 readonly nullable: false;
@@ -1663,6 +1770,17 @@ type ContractBase = Omit<
                   readonly codecId: 'pg/timestamptz-temporal@1';
                 };
               };
+              readonly issuedAt: {
+                readonly nullable: true;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                };
+              };
+              readonly issuedByUserId: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
               readonly notes: {
                 readonly nullable: true;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
@@ -1672,6 +1790,10 @@ type ContractBase = Omit<
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
               readonly pdfUrl: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly sellerName: {
                 readonly nullable: true;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
@@ -1756,15 +1878,23 @@ type ContractBase = Omit<
               readonly table: 'invoices';
               readonly namespaceId: 'public';
               readonly fields: {
+                readonly billingCompanyName: { readonly column: 'billingCompanyName' };
+                readonly billingEmail: { readonly column: 'billingEmail' };
+                readonly billingName: { readonly column: 'billingName' };
+                readonly billingTaxId: { readonly column: 'billingTaxId' };
                 readonly clientId: { readonly column: 'clientId' };
                 readonly createdAt: { readonly column: 'createdAt' };
+                readonly currency: { readonly column: 'currency' };
                 readonly dueDate: { readonly column: 'dueDate' };
                 readonly id: { readonly column: 'id' };
                 readonly invoiceNumber: { readonly column: 'invoiceNumber' };
                 readonly issueDate: { readonly column: 'issueDate' };
+                readonly issuedAt: { readonly column: 'issuedAt' };
+                readonly issuedByUserId: { readonly column: 'issuedByUserId' };
                 readonly notes: { readonly column: 'notes' };
                 readonly organizationId: { readonly column: 'organizationId' };
                 readonly pdfUrl: { readonly column: 'pdfUrl' };
+                readonly sellerName: { readonly column: 'sellerName' };
                 readonly status: { readonly column: 'status' };
                 readonly subtotal: { readonly column: 'subtotal' };
                 readonly tax: { readonly column: 'tax' };
@@ -2216,6 +2346,7 @@ type ContractBase = Omit<
             readonly codecId: 'pg/text@1';
             readonly members: readonly [
               { readonly name: 'DRAFT'; readonly value: 'DRAFT' },
+              { readonly name: 'ISSUED'; readonly value: 'ISSUED' },
               { readonly name: 'PENDING'; readonly value: 'PENDING' },
               { readonly name: 'PAID'; readonly value: 'PAID' },
               { readonly name: 'OVERDUE'; readonly value: 'OVERDUE' },

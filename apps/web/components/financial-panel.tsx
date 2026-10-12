@@ -190,7 +190,7 @@ export function FinancialPanel({
                   <td>
                     {money(
                       row.total ?? row.amount ?? row.monthlyAmount,
-                      currency,
+                      row.currency ?? currency,
                     )}
                   </td>
                   <td>
@@ -221,7 +221,9 @@ export function FinancialPanel({
           key={selected}
           id={selected}
           api={api}
-          currency={currency}
+          currency={
+            rows.find((row) => row.id === selected)?.currency ?? currency
+          }
         />
       )}
     </section>

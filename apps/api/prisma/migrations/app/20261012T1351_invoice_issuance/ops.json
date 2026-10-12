@@ -1,0 +1,506 @@
+[
+  {
+    "id": "column.public.invoices.issuedByUserId",
+    "label": "Add column \"issuedByUserId\" to \"invoices\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "issuedByUserId",
+        "table": "invoices"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"issuedByUserId\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "invoices",
+          "issuedByUserId"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"issuedByUserId\"",
+        "sql": "ALTER TABLE \"public\".\"invoices\" ADD COLUMN \"issuedByUserId\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"issuedByUserId\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "invoices",
+          "issuedByUserId"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.invoices.billingName",
+    "label": "Add column \"billingName\" to \"invoices\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "billingName",
+        "table": "invoices"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"billingName\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "invoices",
+          "billingName"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"billingName\"",
+        "sql": "ALTER TABLE \"public\".\"invoices\" ADD COLUMN \"billingName\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"billingName\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "invoices",
+          "billingName"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.invoices.billingEmail",
+    "label": "Add column \"billingEmail\" to \"invoices\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "billingEmail",
+        "table": "invoices"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"billingEmail\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "invoices",
+          "billingEmail"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"billingEmail\"",
+        "sql": "ALTER TABLE \"public\".\"invoices\" ADD COLUMN \"billingEmail\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"billingEmail\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "invoices",
+          "billingEmail"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.invoices.billingCompanyName",
+    "label": "Add column \"billingCompanyName\" to \"invoices\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "billingCompanyName",
+        "table": "invoices"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"billingCompanyName\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "invoices",
+          "billingCompanyName"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"billingCompanyName\"",
+        "sql": "ALTER TABLE \"public\".\"invoices\" ADD COLUMN \"billingCompanyName\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"billingCompanyName\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "invoices",
+          "billingCompanyName"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.invoices.billingTaxId",
+    "label": "Add column \"billingTaxId\" to \"invoices\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "billingTaxId",
+        "table": "invoices"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"billingTaxId\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "invoices",
+          "billingTaxId"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"billingTaxId\"",
+        "sql": "ALTER TABLE \"public\".\"invoices\" ADD COLUMN \"billingTaxId\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"billingTaxId\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "invoices",
+          "billingTaxId"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.invoices.sellerName",
+    "label": "Add column \"sellerName\" to \"invoices\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "sellerName",
+        "table": "invoices"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"sellerName\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "invoices",
+          "sellerName"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"sellerName\"",
+        "sql": "ALTER TABLE \"public\".\"invoices\" ADD COLUMN \"sellerName\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"sellerName\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "invoices",
+          "sellerName"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.invoices.currency",
+    "label": "Add column \"currency\" to \"invoices\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "currency",
+        "table": "invoices"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"currency\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "invoices",
+          "currency"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"currency\"",
+        "sql": "ALTER TABLE \"public\".\"invoices\" ADD COLUMN \"currency\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"currency\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "invoices",
+          "currency"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.invoices.issuedAt",
+    "label": "Add column \"issuedAt\" to \"invoices\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "issuedAt",
+        "table": "invoices"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"issuedAt\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "invoices",
+          "issuedAt"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"issuedAt\"",
+        "sql": "ALTER TABLE \"public\".\"invoices\" ADD COLUMN \"issuedAt\" timestamptz"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"issuedAt\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "invoices",
+          "issuedAt"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "dropCheckConstraint.invoices.invoices_status_check_00f5804a",
+    "label": "Drop check constraint \"invoices_status_check_00f5804a\" on \"invoices\"",
+    "operationClass": "destructive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "checkConstraint",
+        "name": "invoices_status_check_00f5804a",
+        "table": "invoices"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"invoices_status_check_00f5804a\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "invoices_status_check_00f5804a",
+          "public",
+          "\"public\".\"invoices\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "drop check constraint \"invoices_status_check_00f5804a\"",
+        "sql": "ALTER TABLE \"public\".\"invoices\" DROP CONSTRAINT \"invoices_status_check_00f5804a\""
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"invoices_status_check_00f5804a\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "invoices_status_check_00f5804a",
+          "public",
+          "\"public\".\"invoices\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "checkConstraint.invoices.invoices_status_check_1254a91c",
+    "label": "Add check constraint \"invoices_status_check_1254a91c\" on \"invoices\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "checkConstraint",
+        "name": "invoices_status_check_1254a91c",
+        "table": "invoices"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"invoices_status_check_1254a91c\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "invoices_status_check_1254a91c",
+          "public",
+          "\"public\".\"invoices\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add check constraint \"invoices_status_check_1254a91c\"",
+        "sql": "ALTER TABLE \"public\".\"invoices\" ADD CONSTRAINT \"invoices_status_check_1254a91c\" CHECK (\"status\" IN ('DRAFT', 'ISSUED', 'PENDING', 'PAID', 'OVERDUE', 'CANCELLED'))"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"invoices_status_check_1254a91c\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "invoices_status_check_1254a91c",
+          "public",
+          "\"public\".\"invoices\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "dropConstraint.invoices.invoices_organizationId_clientId_fkey",
+    "label": "Drop constraint \"invoices_organizationId_clientId_fkey\" on \"invoices\"",
+    "operationClass": "destructive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "invoices_organizationId_clientId_fkey",
+        "table": "invoices"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"invoices_organizationId_clientId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "invoices_organizationId_clientId_fkey",
+          "public",
+          "\"public\".\"invoices\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "drop constraint \"invoices_organizationId_clientId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"invoices\" DROP CONSTRAINT \"invoices_organizationId_clientId_fkey\""
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"invoices_organizationId_clientId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "invoices_organizationId_clientId_fkey",
+          "public",
+          "\"public\".\"invoices\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.invoices.invoices_organizationId_clientId_fkey",
+    "label": "Add foreign key \"invoices_organizationId_clientId_fkey\" on \"invoices\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "invoices_organizationId_clientId_fkey",
+        "table": "invoices"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"invoices_organizationId_clientId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "invoices_organizationId_clientId_fkey",
+          "public",
+          "\"public\".\"invoices\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"invoices_organizationId_clientId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"invoices\"\nADD CONSTRAINT \"invoices_organizationId_clientId_fkey\"\nFOREIGN KEY (\"organizationId\", \"clientId\")\nREFERENCES \"public\".\"clients\" (\"organizationId\", \"id\")\nON DELETE RESTRICT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"invoices_organizationId_clientId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "invoices_organizationId_clientId_fkey",
+          "public",
+          "\"public\".\"invoices\""
+        ]
+      }
+    ]
+  }
+]

@@ -7,6 +7,7 @@ import { ApiError, errorMessage, type WorkspaceApi } from "../../../lib/api";
 import { getInvoice } from "../api/invoices";
 import { draftActions } from "../schemas/invoice.schema";
 import type { InvoiceDetail } from "../types/invoice.types";
+import { InvoiceIssueAction } from "./invoice-issue-action";
 import { InvoiceActions } from "./invoice-actions";
 import { InvoiceForm } from "./invoice-form";
 
@@ -114,6 +115,14 @@ export function InvoiceDetailPage({
         <Link className="button secondary" href="/invoices">
           ← Back to Invoices
         </Link>
+        <InvoiceIssueAction
+          invoice={invoice}
+          permissions={permissions}
+          api={api}
+          currency={currency}
+          onIssued={setInvoice}
+          onReload={reload}
+        />
         <InvoiceActions
           invoice={invoice}
           permissions={permissions}
@@ -135,13 +144,18 @@ export function InvoiceDetailView({
   currency: string;
 }) {
   // Keep decimal strings intact; organization currency is a display convention.
-  const amount = (value: string) => `${currency} ${value}`;
+  const amount = (value: string) => `${invoice.currency ?? currency} ${value}`;
   return (
     <section className="panel invoice-document">
       <div className="panel-heading">
         <h2 className="invoice-number">{invoice.invoiceNumber}</h2>
         <span className="role-badge">{invoice.status}</span>
       </div>
+      {invoice.issuedAt && (
+        <p className="muted" role="status">
+          Issued by {invoice.sellerName} on {invoice.issuedAt.slice(0, 10)}
+        </p>
+      )}
       <div className="invoice-document-meta">
         <div>
           <h3>Bill to</h3>

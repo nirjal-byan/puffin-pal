@@ -246,3 +246,54 @@ test("edit/delete API contracts include version and invalidate snapshots only af
   assert.equal(recentlyCreatedInvoice("org-a"), null);
   clearRecentInvoice();
 });
+
+test("issuance requires a draft and dedicated permission", async () => {
+  const { canIssueInvoice, draftActions } =
+    await import("../features/invoices/schemas/invoice.schema.ts");
+  assert.equal(canIssueInvoice("DRAFT", ["invoices:issue"]), true);
+  assert.equal(canIssueInvoice("DRAFT", ["invoices:update"]), false);
+  for (const status of ["ISSUED", "PENDING", "PAID", "OVERDUE", "CANCELLED"]) {
+    assert.equal(canIssueInvoice(status, ["invoices:issue"]), false);
+    assert.deepEqual(
+      draftActions(status, ["invoices:update", "invoices:delete"]),
+      { edit: false, delete: false },
+    );
+  }
+});
+
+test("issuance sends only expectedVersion and invalidates remembered drafts on success", async () => {
+  const { issueInvoice, clearRecentInvoice } =
+    await import("../features/invoices/api/invoices.ts");
+  const draft = { id: "inv-a", organizationId: "org-a" };
+  rememberCreatedInvoice(draft);
+  await assert.rejects(
+    issueInvoice(
+      async () => {
+        throw new Error("Conflict");
+      },
+      "inv-a",
+      1,
+    ),
+  );
+  assert.equal(recentlyCreatedInvoice("org-a"), draft);
+  const result = { ...draft, status: "ISSUED", version: 2 };
+  let call;
+  assert.equal(
+    await issueInvoice(
+      async (path, options) => {
+        call = { path, ...options };
+        return result;
+      },
+      "inv-a",
+      1,
+    ),
+    result,
+  );
+  assert.deepEqual(call, {
+    path: "/invoices/inv-a/issue",
+    method: "POST",
+    body: { expectedVersion: 1 },
+  });
+  assert.equal(recentlyCreatedInvoice("org-a"), null);
+  clearRecentInvoice();
+});

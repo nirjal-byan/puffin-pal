@@ -4,6 +4,20 @@ import { fileURLToPath } from "node:url";
 import { config } from "dotenv";
 
 // Own a disposable database. Never migrate, seed or truncate the development DB during tests.
+const requestedTests = process.argv.slice(2);
+if (
+  requestedTests.some((file) => !/^test\/[a-z-]+\.e2e\.test\.mjs$/.test(file))
+) {
+  throw new Error("Expected test/<name>.e2e.test.mjs arguments");
+}
+const tests = requestedTests.length
+  ? requestedTests
+  : [
+      "test/auth.e2e.test.mjs",
+      "test/invoices.e2e.test.mjs",
+      "test/invoice-drafts.e2e.test.mjs",
+      "test/invoice-issuance.e2e.test.mjs",
+    ];
 const api = fileURLToPath(new URL("../", import.meta.url));
 config({ path: `${api}/.env`, quiet: true });
 const url = new URL(process.env.DATABASE_URL ?? "");
@@ -46,11 +60,11 @@ try {
     cwd: api,
     env: environment,
   });
-  const result = spawnSync(
-    process.execPath,
-    ["--test", "test/auth.e2e.test.mjs", "test/invoices.e2e.test.mjs", "test/invoice-drafts.e2e.test.mjs"],
-    { cwd: api, env: environment, stdio: "inherit" },
-  );
+  const result = spawnSync(process.execPath, ["--test", ...tests], {
+    cwd: api,
+    env: environment,
+    stdio: "inherit",
+  });
   if (result.status !== 0) process.exitCode = result.status ?? 1;
 } finally {
   if (process.env.KEEP_TEST_DATABASE === "1")

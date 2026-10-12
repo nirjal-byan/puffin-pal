@@ -129,3 +129,10 @@ export function draftActions(
     delete: status === "DRAFT" && permissions.includes("invoices:delete"),
   };
 }
+
+export function canIssueInvoice(
+  status: string | undefined,
+  permissions: readonly Permission[],
+) {
+  return status === "DRAFT" && permissions.includes("invoices:issue");
+}

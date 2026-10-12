@@ -54,3 +54,19 @@ export async function deleteInvoice(
   clearRecentInvoice();
   return result;
 }
+
+export async function issueInvoice(
+  api: WorkspaceApi,
+  id: string,
+  expectedVersion: number,
+) {
+  const invoice = await api<import("../types/invoice.types").InvoiceDetail>(
+    `/invoices/${id}/issue`,
+    {
+      method: "POST",
+      body: { expectedVersion },
+    },
+  );
+  clearRecentInvoice();
+  return invoice;
+}

@@ -8,6 +8,7 @@ enum Role {
 
 enum InvoiceStatus {
   DRAFT
+  ISSUED
   PENDING
   PAID
   OVERDUE
@@ -109,13 +110,21 @@ model Invoice {
   subtotal       Numeric(12, 2)
   tax            Numeric(12, 2)       @default(0.00)
   total          Numeric(12, 2)
+  issuedAt       DateTime?
+  issuedByUserId String?
+  billingName    String?
+  billingEmail   String?
+  billingCompanyName String?
+  billingTaxId   String?
+  sellerName     String?
+  currency       String?
   pdfUrl         String?
   notes          String?
   createdAt      DateTime             @default(now())
   updatedAt      temporal.updatedAt()
 
   organization   Organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  client         Client               @relation(fields: [organizationId, clientId], references: [organizationId, id], onDelete: Cascade)
+  client         Client               @relation(fields: [organizationId, clientId], references: [organizationId, id], onDelete: Restrict)
   items          InvoiceItem[]
 
   @@unique([organizationId, id])

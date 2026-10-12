@@ -30,7 +30,11 @@ export interface CreatedInvoice extends FinancialRecord {
 }
 
 export interface InvoiceDetail extends Omit<CreatedInvoice, "status"> {
-  status: "DRAFT" | "PENDING" | "PAID" | "OVERDUE" | "CANCELLED";
+  status: "DRAFT" | "ISSUED" | "PENDING" | "PAID" | "OVERDUE" | "CANCELLED";
+  issuedAt: string | null;
+  issuedByUserId: string | null;
+  sellerName: string | null;
+  currency: string | null;
   version: number;
   clientId: string;
   client: import("../../../lib/api").Client;

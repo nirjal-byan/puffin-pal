@@ -40,3 +40,12 @@ test("protected routes fail closed without a policy and require every permission
   Reflect.defineMetadata(REQUIRED_PERMISSIONS, ["clients:read"], handler);
   assert.equal(guard.canActivate(context), true);
 });
+
+test("only owners and admins have the dedicated invoice issuance permission", () => {
+  for (const role of ["OWNER", "ADMIN", "PROJECT_MANAGER", "FINANCE_VIEWER"]) {
+    assert.equal(
+      hasPermission(role, "invoices:issue"),
+      role === "OWNER" || role === "ADMIN",
+    );
+  }
+});

@@ -34,6 +34,7 @@ export interface Member {
   user: User | null;
 }
 export interface FinancialRecord {
+  currency?: string | null;
   id: string;
   invoiceNumber?: string;
   version?: number;

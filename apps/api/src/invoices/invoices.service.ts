@@ -1,5 +1,7 @@
+import { Temporal } from "temporal-polyfill";
 import { randomUUID } from "node:crypto";
 import {
+  BadRequestException,
   ConflictException,
   Inject,
   Injectable,
@@ -51,7 +53,9 @@ export class InvoicesService {
         total: calculated.total,
         ...(input.notes !== undefined ? { notes: input.notes } : {}),
       });
-      const items = [];
+      const items: Awaited<
+        ReturnType<typeof tx.orm.public.InvoiceItem.create>
+      >[] = [];
       for (const [position, item] of calculated.items.entries()) {
         items.push(
           await tx.orm.public.InvoiceItem.create({
@@ -94,6 +98,121 @@ export class InvoicesService {
         .orderBy((row) => row.position.asc())
         .orderBy((row) => row.id.asc())
         .all();
+      const billingClient = invoice.issuedAt
+        ? {
+            ...client,
+            id: invoice.clientId,
+            name: invoice.billingName!,
+            email: invoice.billingEmail!,
+            companyName: invoice.billingCompanyName,
+            taxId: invoice.billingTaxId,
+          }
+        : client;
+      return { ...invoice, client: billingClient, items };
+    });
+  }
+
+  async issueInvoice(id: string, expectedVersion: number) {
+    const organizationId = this.organizationId;
+    return this.db.transaction(async (tx) => {
+      // Lock before reading items: draft edits lock this same parent row before
+      // replacing items. The conditional write also guards every transition.
+      await tx.execute(
+        this.db.raw.sql`
+        SELECT id FROM invoices
+        WHERE id = ${id} AND "organizationId" = ${organizationId}
+        FOR UPDATE
+      `
+          .affectedCount()
+          .build(),
+      );
+      const current = await tx.orm.public.Invoice.where({
+        organizationId,
+        id,
+      }).first();
+      if (!current) throw new NotFoundException("Invoice not found");
+      if (current.status !== "DRAFT" || current.version !== expectedVersion)
+        throw new ConflictException(
+          "Invoice changed or is already finalized. Reload and review the latest invoice.",
+        );
+      // Shared locks ensure billing snapshots cannot change during issuance.
+      await tx.execute(
+        this.db.raw.sql`
+        SELECT id FROM organizations WHERE id = ${organizationId} FOR SHARE
+      `
+          .affectedCount()
+          .build(),
+      );
+      await tx.execute(
+        this.db.raw.sql`
+        SELECT id FROM clients WHERE id = ${current.clientId}
+        AND "organizationId" = ${organizationId} FOR SHARE
+      `
+          .affectedCount()
+          .build(),
+      );
+      const organization = await tx.orm.public.Organization.where({
+        id: organizationId,
+      }).first();
+      const client = await tx.orm.public.Client.where({
+        organizationId,
+        id: current.clientId,
+      }).first();
+      if (!client || !organization)
+        throw new BadRequestException(
+          "Invoice billing details are unavailable",
+        );
+      if (
+        !client.name.trim() ||
+        !client.email.trim() ||
+        !organization.name.trim() ||
+        !organization.currency.trim() ||
+        !current.invoiceNumber.trim()
+      )
+        throw new BadRequestException(
+          "Complete the invoice billing details before issuance",
+        );
+      invoiceDates(current.issueDate.toString(), current.dueDate.toString());
+      const items = await tx.orm.public.InvoiceItem.where({
+        organizationId,
+        invoiceId: id,
+      })
+        .orderBy((row) => row.position.asc())
+        .orderBy((row) => row.id.asc())
+        .all();
+      const calculated = calculateInvoice(items);
+      if (
+        calculated.subtotal !== current.subtotal ||
+        calculated.tax !== current.tax ||
+        calculated.total !== current.total ||
+        items.some(
+          (item, index) => item.amount !== calculated.items[index]!.amount,
+        )
+      )
+        throw new BadRequestException(
+          "Invoice amounts are inconsistent. Review and save the draft before issuance.",
+        );
+      const [invoice] = await tx.orm.public.Invoice.where({
+        organizationId,
+        id,
+        status: "DRAFT",
+        version: expectedVersion,
+      }).updateAll({
+        status: "ISSUED",
+        version: expectedVersion + 1,
+        issuedAt: Temporal.Now.instant(),
+        issuedByUserId: this.request.auth!.userId,
+        billingName: client.name,
+        billingEmail: client.email,
+        billingCompanyName: client.companyName,
+        billingTaxId: client.taxId,
+        sellerName: organization.name,
+        currency: organization.currency,
+      });
+      if (!invoice)
+        throw new ConflictException(
+          "Invoice changed. Reload and review the latest invoice.",
+        );
       return { ...invoice, client, items };
     });
   }
@@ -143,7 +262,9 @@ export class InvoicesService {
         organizationId,
         invoiceId: id,
       }).deleteAll();
-      const items = [];
+      const items: Awaited<
+        ReturnType<typeof tx.orm.public.InvoiceItem.create>
+      >[] = [];
       for (const [position, item] of calculated.items.entries()) {
         items.push(
           await tx.orm.public.InvoiceItem.create({

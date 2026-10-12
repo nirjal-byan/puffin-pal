@@ -74,6 +74,10 @@
                 "value": "DRAFT"
               },
               {
+                "name": "ISSUED",
+                "value": "ISSUED"
+              },
+              {
                 "name": "PENDING",
                 "value": "PENDING"
               },
@@ -359,6 +363,34 @@
           },
           "Invoice": {
             "fields": {
+              "billingCompanyName": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "billingEmail": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "billingName": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "billingTaxId": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
               "clientId": {
                 "nullable": false,
                 "type": {
@@ -370,6 +402,13 @@
                 "nullable": false,
                 "type": {
                   "codecId": "pg/timestamptz-temporal@1",
+                  "kind": "scalar"
+                }
+              },
+              "currency": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
                   "kind": "scalar"
                 }
               },
@@ -401,6 +440,20 @@
                   "kind": "scalar"
                 }
               },
+              "issuedAt": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "kind": "scalar"
+                }
+              },
+              "issuedByUserId": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
               "notes": {
                 "nullable": true,
                 "type": {
@@ -416,6 +469,13 @@
                 }
               },
               "pdfUrl": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "sellerName": {
                 "nullable": true,
                 "type": {
                   "codecId": "pg/text@1",
@@ -538,11 +598,26 @@
             },
             "storage": {
               "fields": {
+                "billingCompanyName": {
+                  "column": "billingCompanyName"
+                },
+                "billingEmail": {
+                  "column": "billingEmail"
+                },
+                "billingName": {
+                  "column": "billingName"
+                },
+                "billingTaxId": {
+                  "column": "billingTaxId"
+                },
                 "clientId": {
                   "column": "clientId"
                 },
                 "createdAt": {
                   "column": "createdAt"
+                },
+                "currency": {
+                  "column": "currency"
                 },
                 "dueDate": {
                   "column": "dueDate"
@@ -556,6 +631,12 @@
                 "issueDate": {
                   "column": "issueDate"
                 },
+                "issuedAt": {
+                  "column": "issuedAt"
+                },
+                "issuedByUserId": {
+                  "column": "issuedByUserId"
+                },
                 "notes": {
                   "column": "notes"
                 },
@@ -564,6 +645,9 @@
                 },
                 "pdfUrl": {
                   "column": "pdfUrl"
+                },
+                "sellerName": {
+                  "column": "sellerName"
                 },
                 "status": {
                   "column": "status"
@@ -1580,12 +1664,32 @@
             "invoices": {
               "checks": [
                 {
-                  "expression": "\"status\" IN ('DRAFT', 'PENDING', 'PAID', 'OVERDUE', 'CANCELLED')",
-                  "name": "invoices_status_check_00f5804a",
+                  "expression": "\"status\" IN ('DRAFT', 'ISSUED', 'PENDING', 'PAID', 'OVERDUE', 'CANCELLED')",
+                  "name": "invoices_status_check_1254a91c",
                   "prefix": "invoices_status_check"
                 }
               ],
               "columns": {
+                "billingCompanyName": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "billingEmail": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "billingName": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "billingTaxId": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
                 "clientId": {
                   "codecId": "pg/text@1",
                   "nativeType": "text",
@@ -1599,6 +1703,11 @@
                   },
                   "nativeType": "timestamptz",
                   "nullable": false
+                },
+                "currency": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
                 },
                 "dueDate": {
                   "codecId": "pg/timestamptz-temporal@1",
@@ -1620,6 +1729,16 @@
                   "nativeType": "timestamptz",
                   "nullable": false
                 },
+                "issuedAt": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "nativeType": "timestamptz",
+                  "nullable": true
+                },
+                "issuedByUserId": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
                 "notes": {
                   "codecId": "pg/text@1",
                   "nativeType": "text",
@@ -1631,6 +1750,11 @@
                   "nullable": false
                 },
                 "pdfUrl": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "sellerName": {
                   "codecId": "pg/text@1",
                   "nativeType": "text",
                   "nullable": true
@@ -1715,7 +1839,7 @@
                   }
                 },
                 {
-                  "onDelete": "cascade",
+                  "onDelete": "restrict",
                   "source": {
                     "columns": [
                       "organizationId",
@@ -2177,6 +2301,7 @@
               "kind": "valueSet",
               "values": [
                 "DRAFT",
+                "ISSUED",
                 "PENDING",
                 "PAID",
                 "OVERDUE",
@@ -2198,7 +2323,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "f2ee70e027cd89598d87bec91f125b6a3c6be501b574355a0744e49d6fb89e67"
+    "storageHash": "b88d448873684081b756852cff15ea4827cafb47d4fa22b8871417ca2c91606b"
   },
   "execution": {
     "executionHash": "c252ac17c1612439aa7cced86d835cc8cd192e72d452da2e9d747b2d85ac39d5",

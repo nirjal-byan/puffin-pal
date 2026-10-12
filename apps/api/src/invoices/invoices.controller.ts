@@ -1,5 +1,6 @@
 import {
   Body,
+  HttpCode,
   Controller,
   Get,
   Patch,
@@ -17,6 +18,7 @@ import {
   UpdateInvoiceDto,
   DeleteInvoiceDto,
 } from "./dto/update-invoice.dto.js";
+import { IssueInvoiceDto } from "./dto/issue-invoice.dto.js";
 import { InvoicesService } from "./invoices.service.js";
 @ApiTags("invoices")
 @ApiBearerAuth()
@@ -37,6 +39,15 @@ export class InvoicesController {
   @RequirePermissions("invoices:read")
   detail(@Param("id", ParseUUIDPipe) id: string) {
     return this.invoices.getInvoice(id);
+  }
+  @Post(":id/issue")
+  @HttpCode(200)
+  @RequirePermissions("invoices:issue")
+  issue(
+    @Param("id", ParseUUIDPipe) id: string,
+    @Body() input: IssueInvoiceDto,
+  ) {
+    return this.invoices.issueInvoice(id, input.expectedVersion);
   }
   @Patch(":id")
   @RequirePermissions("invoices:update")
