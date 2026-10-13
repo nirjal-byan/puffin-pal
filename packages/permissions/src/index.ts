@@ -20,6 +20,7 @@ export const PERMISSIONS = [
   "invoices:update",
   "invoices:delete",
   "invoices:issue",
+  "invoices:record-payment",
   "expenses:read",
   "expenses:create",
   "expenses:update",

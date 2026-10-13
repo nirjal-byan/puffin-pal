@@ -44,7 +44,7 @@ export function InvoicePdfAction({ invoice, api, permissions }: {
       if (!abort.signal.aborted) setBusy(false);
     }
   }
-  if (!canDownloadInvoicePdf(invoice.status, permissions)) return null;
+  if (!invoice.issuedAt || !canDownloadInvoicePdf(invoice.status, permissions)) return null;
   return (
     <div className="invoice-actions">
       <button type="button" className="button secondary" disabled={busy}

@@ -21,6 +21,7 @@ import {
   DeleteInvoiceDto,
 } from "./dto/update-invoice.dto.js";
 import { IssueInvoiceDto } from "./dto/issue-invoice.dto.js";
+import { CreatePaymentDto } from "./dto/create-payment.dto.js";
 import { InvoicesService } from "./invoices.service.js";
 import { InvoicePdfService, invoicePdfFilename } from "./pdf/invoice-pdf.service.js";
 @ApiTags("invoices")
@@ -66,6 +67,14 @@ export class InvoicesController {
     @Body() input: IssueInvoiceDto,
   ) {
     return this.invoices.issueInvoice(id, input.expectedVersion);
+  }
+  @Post(":id/payments")
+  @RequirePermissions("invoices:record-payment")
+  recordPayment(
+    @Param("id", ParseUUIDPipe) id: string,
+    @Body() input: CreatePaymentDto,
+  ) {
+    return this.invoices.recordPayment(id, input);
   }
   @Patch(":id")
   @RequirePermissions("invoices:update")

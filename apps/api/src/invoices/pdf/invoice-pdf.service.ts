@@ -12,7 +12,7 @@ export function invoicePdfFilename(invoiceNumber: string) {
 @Injectable()
 export class InvoicePdfService {
   async render(invoice: Invoice): Promise<Buffer> {
-    if (invoice.status !== "ISSUED")
+    if (!["ISSUED", "PAID", "OVERDUE"].includes(invoice.status))
       throw new ConflictException("Only issued invoices can be downloaded as PDF");
     // Never substitute mutable organization/client data for missing snapshots.
     if (!invoice.issuedAt || !invoice.sellerName || !invoice.currency ||

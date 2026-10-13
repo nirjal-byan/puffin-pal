@@ -9,6 +9,8 @@ import { draftActions } from "../schemas/invoice.schema";
 import type { InvoiceDetail } from "../types/invoice.types";
 import { InvoiceIssueAction } from "./invoice-issue-action";
 import { InvoicePdfAction } from "./invoice-pdf-action";
+import { InvoicePaymentAction } from "./invoice-payment-action";
+import { InvoicePaymentHistory } from "./invoice-payment-history";
 import { InvoiceActions } from "./invoice-actions";
 import { InvoiceForm } from "./invoice-form";
 
@@ -132,8 +134,10 @@ export function InvoiceDetailPage({
           onDeleted={() => router.push("/invoices")}
         />
         <InvoicePdfAction invoice={invoice} permissions={permissions} api={api} />
+        <InvoicePaymentAction invoice={invoice} permissions={permissions} api={api} onRecorded={setInvoice} onReload={reload} />
       </div>
       <InvoiceDetailView invoice={invoice} currency={currency} />
+      <InvoicePaymentHistory invoice={invoice} />
     </>
   );
 }
@@ -151,7 +155,7 @@ export function InvoiceDetailView({
     <section className="panel invoice-document">
       <div className="panel-heading">
         <h2 className="invoice-number">{invoice.invoiceNumber}</h2>
-        <span className="role-badge">{invoice.status}</span>
+        <span className={`role-badge invoice-status-${invoice.displayStatus.toLowerCase()}`}>{invoice.displayStatus}</span>
       </div>
       {invoice.issuedAt && (
         <p className="muted" role="status">
@@ -200,7 +204,7 @@ export function InvoiceDetailView({
           <h3>Notes</h3>
           <p className="invoice-notes">{invoice.notes || "No notes."}</p>
         </div>
-        <dl className="invoice-detail-totals">
+        <dl className="invoice-detail-totals" data-tour="invoice-balances">
           <dt>Subtotal</dt>
           <dd>{amount(invoice.subtotal)}</dd>
           <dt>Tax</dt>
@@ -209,6 +213,8 @@ export function InvoiceDetailView({
           <dd>
             <strong>{amount(invoice.total)}</strong>
           </dd>
+          <dt>Total paid</dt><dd>{amount(invoice.totalPaid)}</dd>
+          <dt>Outstanding</dt><dd><strong>{amount(invoice.outstandingBalance)}</strong></dd>
         </dl>
       </div>
     </section>

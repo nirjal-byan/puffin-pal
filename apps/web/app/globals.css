@@ -3393,3 +3393,15 @@ tr:hover td {
   .tour-progress-track span { transition: none; }
   .workspace-layout .tour-launch { transition: none; }
 }
+
+.invoice-payment-history { margin-top: 24px; }
+.payment-history-note { padding: 20px 24px; }
+.invoice-payment-summary { display: grid; gap: 4px; margin-top: 6px; font-size: 11px; }
+.payment-reference { max-width: 200px; overflow-wrap: anywhere; }
+.payment-notes { min-width: 160px; max-width: 360px; white-space: pre-wrap; overflow-wrap: anywhere; }
+.invoice-payment-dialog { max-height: calc(100dvh - 32px); overflow-y: auto; }
+.invoice-payment-dialog .form-fields { margin: 18px 0; }
+.role-badge.invoice-status-paid { color: #226342; background: #e4f3e9; }
+.role-badge.invoice-status-overdue { color: #9c351e; background: #fff0e8; }
+.workspace-layout[data-theme="dark"] .invoice-status-paid { color: #b3ebcd; background: #203f30; }
+.workspace-layout[data-theme="dark"] .invoice-status-overdue { color: #ffbea8; background: #4b2c24; }

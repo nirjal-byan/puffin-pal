@@ -2,7 +2,8 @@ import { IsIn } from "class-validator";
 
 export const ONBOARDING_STEPS = [
   "welcome", "dashboard", "clients", "invoices", "create-invoice",
-  "issuance", "team", "settings", "finish",
+  "issuance", "payment-basics", "record-payment", "payment-balance", "payment-history", "payment-status",
+  "team", "settings", "finish",
 ] as const;
 
 export class UpdateOnboardingDto {

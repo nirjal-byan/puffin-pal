@@ -1,4 +1,11 @@
 import type { WorkspaceApi } from "../../../lib/api";
+import type { InvoiceDetail, RecordPaymentPayload } from "../types/invoice.types";
+
+export async function recordInvoicePayment(api: WorkspaceApi, id: string, input: RecordPaymentPayload) {
+  const invoice = await api<InvoiceDetail>(`/invoices/${id}/payments`, { method: "POST", body: input });
+  clearRecentInvoice();
+  return invoice;
+}
 import type {
   CreateInvoicePayload,
   CreatedInvoice,

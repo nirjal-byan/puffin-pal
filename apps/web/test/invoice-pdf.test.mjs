@@ -11,8 +11,10 @@ const json = (body, status = 200) => new Response(JSON.stringify(body), { status
 test("PDF action eligibility requires issued status and invoice read permission", () => {
   assert.equal(canDownloadInvoicePdf("ISSUED", ["invoices:read"]), true);
   assert.equal(canDownloadInvoicePdf("ISSUED", []), false);
-  for (const status of [undefined, "DRAFT", "PENDING", "PAID", "OVERDUE", "CANCELLED"])
+  for (const status of [undefined, "DRAFT", "PENDING", "CANCELLED"])
     assert.equal(canDownloadInvoicePdf(status, ["invoices:read"]), false);
+  for (const status of ["PAID", "OVERDUE"])
+    assert.equal(canDownloadInvoicePdf(status, ["invoices:read"]), true);
 });
 test("PDF requests return binary data and pass an abort signal", async (t) => {
   const api = await load();

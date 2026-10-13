@@ -2,7 +2,19 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
   initialTour, tourSteps, tourStorageKey, adjacentStep, tourPosition, visibleTourTarget,
+  invoiceTourRoute, paymentTourLink, paymentTourWaiting,
 } from "../features/onboarding/tour.ts";
+
+test("payment steps wait for invoice data instead of treating loading as missing controls", () => {
+  let loading = true;
+  const root = { querySelector(selector) {
+    assert.equal(selector, '.workspace-main .panel.loading[role="status"]');
+    return loading ? {} : null;
+  } };
+  assert.equal(paymentTourWaiting(root), true);
+  loading = false;
+  assert.equal(paymentTourWaiting(root), false);
+});
 
 test("only newly registered users automatically start onboarding", () => {
   assert.equal(initialTour({ onboardingStatus: "PENDING" }, null).active, true);
@@ -63,4 +75,47 @@ test("popover remains inside desktop, mobile and short viewports", () => {
   }
   const target = { left: 20, top: 80, width: 120, height: 40 };
   assert.ok(tourPosition(target, { width: 1440, height: 900 }, { width: 360, height: 260 }).left > target.left + target.width);
+});
+
+test("payment explanations follow permissions for readers and payment recorders", () => {
+  const reader = tourSteps(["invoices:read"]);
+  for (const id of ["payment-balance", "payment-history", "payment-status"])
+    assert.ok(reader.some((step) => step.id === id));
+  for (const id of ["payment-basics", "record-payment"])
+    assert.ok(!reader.some((step) => step.id === id));
+  const writer = tourSteps(["invoices:read", "invoices:record-payment"]);
+  assert.equal(writer.find((step) => step.id === "record-payment").target, "record-payment");
+  assert.ok(writer.find((step) => step.id === "record-payment").detail);
+  assert.ok(!tourSteps([]).some((step) => step.id.startsWith("payment-") || step.id === "record-payment"));
+});
+test("old progress and completion survive new steps, which also resume during manual replay", () => {
+  const old = { active: true, manual: false, step: "team" };
+  assert.deepEqual(initialTour({ onboardingStatus: "IN_PROGRESS" }, old), old);
+  assert.equal(initialTour({ onboardingStatus: "PENDING" }, null).step, "welcome");
+  for (const status of ["LEGACY", "COMPLETED", "SKIPPED"])
+    assert.equal(initialTour({ onboardingStatus: status }, null).active, false);
+  for (const step of ["payment-basics", "record-payment", "payment-balance", "payment-history", "payment-status"]) {
+    assert.equal(initialTour({ onboardingStatus: "IN_PROGRESS", onboardingStep: step }, null).step, step);
+    const manual = { active: true, manual: true, step };
+    assert.deepEqual(initialTour({ onboardingStatus: "COMPLETED" }, manual), manual);
+  }
+});
+test("payment tour chooses existing invoice links without making payments or inventing routes", () => {
+  const route = "/invoices/12345678-1234-1234-1234-123456789abc";
+  const selectors = [];
+  const root = { querySelector(selector) { selectors.push(selector); return { getAttribute: () => route }; } };
+  assert.equal(paymentTourLink(root, true), route);
+  assert.equal(selectors.pop(), 'a[data-tour-payment-invoice="record"]');
+  assert.equal(paymentTourLink(root, false), route);
+  assert.equal(selectors.pop(), "a[data-tour-payment-invoice]");
+  assert.equal(paymentTourLink({ querySelector: () => null }, true), undefined);
+  for (const bad of [undefined, "/invoices/new", "/invoices", "https://example.com", route + "/edit", "javascript:alert(1)"])
+    assert.equal(invoiceTourRoute(bad), undefined);
+});
+test("missing payment steps can be skipped in either direction without trapping Back", () => {
+  const steps = tourSteps(["invoices:read", "invoices:record-payment"]);
+  assert.equal(adjacentStep(steps, "record-payment", 1), "payment-balance");
+  assert.equal(adjacentStep(steps, "record-payment", -1), "payment-basics");
+  assert.equal(adjacentStep(steps, "payment-history", 1), "payment-status");
+  assert.equal(adjacentStep(tourSteps(["invoices:read"]), "record-payment", 1), "payment-balance");
 });

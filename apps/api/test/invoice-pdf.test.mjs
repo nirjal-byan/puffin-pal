@@ -57,10 +57,12 @@ test("long invoices paginate without losing rows, notes or totals", async (t) =>
   assert.ok(text.includes("USD 9999999999.99"));
   assert.ok(text.split("\f").length > 5);
 });
-test("PDF rendering rejects every non-issued status and incomplete snapshots", async () => {
+test("PDF rendering accepts finalized statuses and rejects incomplete snapshots", async () => {
   const renderer = new InvoicePdfService();
-  for (const status of ["DRAFT", "PENDING", "PAID", "OVERDUE", "CANCELLED"])
+  for (const status of ["DRAFT", "PENDING", "CANCELLED"])
     await assert.rejects(renderer.render({ ...fixture(), status }), ConflictException);
+  for (const status of ["PAID", "OVERDUE"])
+    assert.equal((await renderer.render({ ...fixture(), status })).subarray(0, 5).toString(), "%PDF-");
   for (const key of ["issuedAt", "sellerName", "currency", "billingName", "billingEmail"])
     await assert.rejects(renderer.render({ ...fixture(), [key]: null }), ConflictException);
 });

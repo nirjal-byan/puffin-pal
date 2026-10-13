@@ -8,13 +8,29 @@ export const TOUR_STEPS = [
   { id: "invoices", route: "/invoices", target: "nav-invoices", permission: "invoices:read", title: "Manage your invoices", description: "Find invoice records, open their details, and edit drafts when your role allows it." },
   { id: "create-invoice", route: "/invoices", target: "create-invoice", permission: "invoices:create", title: "Start with a draft", description: "Create Invoice opens the form for your client, dates and line items. Nothing is created during this tour." },
   { id: "issuance", route: "/invoices", target: "page-heading", permission: "invoices:read", title: "Finalize, then download", description: "Owners and admins can issue a draft from its detail page. Issuance locks billing details and amounts; issued invoices can be downloaded as PDFs." },
+  { id: "payment-basics", route: "/invoices", target: "page-heading", permission: "invoices:record-payment", title: "Record money received", description: "Open an issued invoice and choose Record Payment. Enter the amount, date and method. Record the full balance or a partial payment; nothing is submitted during this tour." },
+  { id: "record-payment", detail: true, target: "record-payment", permission: "invoices:record-payment", title: "Full or partial payments", description: "Use this button after receiving money. You can add a reference and notes. Each payment reduces the balance, and payments cannot exceed what is outstanding." },
+  { id: "payment-balance", detail: true, target: "invoice-balances", permission: "invoices:read", title: "See what remains", description: "Total paid adds up recorded payments. Outstanding shows what is still owed. A partial payment leaves a balance; paying in full marks the invoice PAID." },
+  { id: "payment-history", detail: true, target: "payment-history", permission: "invoices:read", title: "Review payment history", description: "Review each payment’s date, amount, method, reference and notes here. Recorded payments cannot be edited or removed." },
+  { id: "payment-status", route: "/invoices", target: "page-heading", permission: "invoices:read", title: "Know what is due", description: "The invoice list shows paid and outstanding amounts. PAID means no balance remains. OVERDUE appears when a balance remains after the due date, using UTC calendar days." },
   { id: "team", route: "/?section=members", target: "nav-members", permission: "members:manage", title: "Invite your team", description: "Add teammates and choose their roles to give them the access they need." },
   { id: "settings", route: "/?section=profile", target: "page-heading", title: "Make yourself at home", description: "Update your profile here. Owners and admins can also manage the company logo in Settings." },
   { id: "finish", title: "You’re ready to go", description: "Start with a client or explore your invoices. Use Tutorial in the top bar whenever you need another look." },
-] satisfies readonly { id: string; title: string; description: string; route?: string; target?: string; permission?: Permission }[];
+] satisfies readonly { id: string; title: string; description: string; route?: string; target?: string; permission?: Permission; detail?: boolean }[];
 
-export interface TourState { active: boolean; manual: boolean; step: string }
+export interface TourState { active: boolean; manual: boolean; step: string; invoiceRoute?: string; direction?: 1 | -1 }
+export function invoiceTourRoute(value: unknown): string | undefined {
+  return typeof value === "string" && /^\/invoices\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value) ? value : undefined;
+}
+export function paymentTourLink(root: Pick<Document, "querySelector">, requireRecordButton: boolean) {
+  const link = root.querySelector<HTMLAnchorElement>(requireRecordButton
+    ? 'a[data-tour-payment-invoice="record"]' : "a[data-tour-payment-invoice]");
+  return invoiceTourRoute(link?.getAttribute("href"));
+}
 export const tourStorageKey = (userId: string) => `puffinpal-tour-v1:${userId}`;
+export function paymentTourWaiting(root: Pick<Document, "querySelector">) {
+  return root.querySelector('.workspace-main .panel.loading[role="status"]') !== null;
+}
 export function tourSteps(permissions: readonly Permission[]) {
   return TOUR_STEPS.filter((step) => !step.permission || permissions.includes(step.permission));
 }

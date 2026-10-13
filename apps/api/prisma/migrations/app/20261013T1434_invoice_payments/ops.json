@@ -1,0 +1,245 @@
+[
+  {
+    "id": "table.payments",
+    "label": "Create table \"payments\"",
+    "summary": "Creates table \"payments\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "payments"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"payments\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payments\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"payments\"",
+        "sql": "CREATE TABLE \"public\".\"payments\" (\n  \"amount\" numeric(12,2) NOT NULL,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"id\" text NOT NULL,\n  \"invoiceId\" text NOT NULL,\n  \"method\" text NOT NULL,\n  \"notes\" text,\n  \"organizationId\" text NOT NULL,\n  \"paymentDate\" timestamptz NOT NULL,\n  \"recordedByUserId\" text NOT NULL,\n  \"reference\" text,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"payments_method_check_4d18df7c\" CHECK (\"method\" IN ('BANK_TRANSFER', 'CASH', 'CARD', 'CHEQUE', 'OTHER'))\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"payments\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payments\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.payments.payments_organizationId_id_key",
+    "label": "Add unique constraint on \"payments\" (organizationId, id)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "payments_organizationId_id_key",
+        "table": "payments"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"payments_organizationId_id_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "payments_organizationId_id_key",
+          "public",
+          "\"public\".\"payments\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"payments_organizationId_id_key\"",
+        "sql": "ALTER TABLE \"public\".\"payments\" ADD CONSTRAINT \"payments_organizationId_id_key\" UNIQUE (\"organizationId\", \"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"payments_organizationId_id_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "payments_organizationId_id_key",
+          "public",
+          "\"public\".\"payments\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.payments.payments_organizationId_idx_2e17ef41",
+    "label": "Create index \"payments_organizationId_idx_2e17ef41\" on \"payments\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "payments_organizationId_idx_2e17ef41",
+        "table": "payments"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"payments_organizationId_idx_2e17ef41\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payments_organizationId_idx_2e17ef41\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"payments_organizationId_idx_2e17ef41\"",
+        "sql": "CREATE INDEX \"payments_organizationId_idx_2e17ef41\" ON \"public\".\"payments\" (\"organizationId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"payments_organizationId_idx_2e17ef41\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payments_organizationId_idx_2e17ef41\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.payments.payments_organizationId_invoiceId_idx_f9b6d255",
+    "label": "Create index \"payments_organizationId_invoiceId_idx_f9b6d255\" on \"payments\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "payments_organizationId_invoiceId_idx_f9b6d255",
+        "table": "payments"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"payments_organizationId_invoiceId_idx_f9b6d255\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payments_organizationId_invoiceId_idx_f9b6d255\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"payments_organizationId_invoiceId_idx_f9b6d255\"",
+        "sql": "CREATE INDEX \"payments_organizationId_invoiceId_idx_f9b6d255\" ON \"public\".\"payments\" (\"organizationId\", \"invoiceId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"payments_organizationId_invoiceId_idx_f9b6d255\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payments_organizationId_invoiceId_idx_f9b6d255\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.payments.payments_organizationId_fkey",
+    "label": "Add foreign key \"payments_organizationId_fkey\" on \"payments\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "payments_organizationId_fkey",
+        "table": "payments"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"payments_organizationId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "payments_organizationId_fkey",
+          "public",
+          "\"public\".\"payments\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"payments_organizationId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"payments\"\nADD CONSTRAINT \"payments_organizationId_fkey\"\nFOREIGN KEY (\"organizationId\")\nREFERENCES \"public\".\"organizations\" (\"id\")\nON DELETE RESTRICT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"payments_organizationId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "payments_organizationId_fkey",
+          "public",
+          "\"public\".\"payments\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.payments.payments_organizationId_invoiceId_fkey",
+    "label": "Add foreign key \"payments_organizationId_invoiceId_fkey\" on \"payments\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "payments_organizationId_invoiceId_fkey",
+        "table": "payments"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"payments_organizationId_invoiceId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "payments_organizationId_invoiceId_fkey",
+          "public",
+          "\"public\".\"payments\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"payments_organizationId_invoiceId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"payments\"\nADD CONSTRAINT \"payments_organizationId_invoiceId_fkey\"\nFOREIGN KEY (\"organizationId\", \"invoiceId\")\nREFERENCES \"public\".\"invoices\" (\"organizationId\", \"id\")\nON DELETE RESTRICT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"payments_organizationId_invoiceId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "payments_organizationId_invoiceId_fkey",
+          "public",
+          "\"public\".\"payments\""
+        ]
+      }
+    ]
+  }
+]

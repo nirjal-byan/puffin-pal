@@ -23,6 +23,14 @@ enum OnboardingStatus {
   SKIPPED
 }
 
+enum PaymentMethod {
+  BANK_TRANSFER
+  CASH
+  CARD
+  CHEQUE
+  OTHER
+}
+
 enum ExpenseCategory {
   SOFTWARE
   HARDWARE
@@ -46,6 +54,7 @@ model Organization {
   memberships Membership[]
   clients     Client[]
   invoices    Invoice[]
+  payments    Payment[]
   expenses    Expense[]
   retainers   Retainer[]
 
@@ -136,6 +145,7 @@ model Invoice {
   organization   Organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   client         Client               @relation(fields: [organizationId, clientId], references: [organizationId, id], onDelete: Restrict)
   items          InvoiceItem[]
+  payments       Payment[]
 
   @@unique([organizationId, id])
   @@unique([organizationId, invoiceNumber])
@@ -156,6 +166,26 @@ model InvoiceItem {
 
   @@index([organizationId, invoiceId])
   @@map("invoice_items")
+}
+
+model Payment {
+  id               String @id @default(uuid())
+  organizationId   String
+  invoiceId        String
+  amount           Numeric(12, 2)
+  paymentDate      DateTime
+  method           PaymentMethod
+  reference        String?
+  notes            String?
+  recordedByUserId String
+  createdAt        DateTime @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  invoice Invoice @relation(fields: [organizationId, invoiceId], references: [organizationId, id], onDelete: Restrict)
+
+  @@unique([organizationId, id])
+  @@index([organizationId, invoiceId])
+  @@map("payments")
 }
 
 model Expense {

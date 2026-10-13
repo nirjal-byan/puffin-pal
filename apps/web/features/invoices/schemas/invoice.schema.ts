@@ -141,5 +141,5 @@ export function canDownloadInvoicePdf(
   status: string | undefined,
   permissions: readonly Permission[],
 ) {
-  return status === "ISSUED" && permissions.includes("invoices:read");
+  return ["ISSUED", "PAID", "OVERDUE"].includes(status ?? "") && permissions.includes("invoices:read");
 }

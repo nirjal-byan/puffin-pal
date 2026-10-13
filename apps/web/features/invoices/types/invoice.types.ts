@@ -30,6 +30,12 @@ export interface CreatedInvoice extends FinancialRecord {
 }
 
 export interface InvoiceDetail extends Omit<CreatedInvoice, "status"> {
+  payments: InvoicePayment[];
+  totalPaid: string;
+  outstandingBalance: string;
+  displayStatus: string;
+  isOverdue: boolean;
+  legacyPaid: boolean;
   status: "DRAFT" | "ISSUED" | "PENDING" | "PAID" | "OVERDUE" | "CANCELLED";
   issuedAt: string | null;
   issuedByUserId: string | null;
@@ -42,4 +48,22 @@ export interface InvoiceDetail extends Omit<CreatedInvoice, "status"> {
   dueDate: string;
   notes: string | null;
   updatedAt: string;
+}
+
+export interface InvoicePayment {
+  id: string;
+  amount: string;
+  paymentDate: string;
+  method: "BANK_TRANSFER" | "CASH" | "CARD" | "CHEQUE" | "OTHER";
+  reference: string | null;
+  notes: string | null;
+  createdAt: string;
+}
+export interface RecordPaymentPayload {
+  amount: string;
+  paymentDate: string;
+  method: InvoicePayment["method"];
+  reference?: string;
+  notes?: string;
+  expectedVersion: number;
 }

@@ -6,6 +6,13 @@ import { validate } from "class-validator";
 import { AuthService } from "../dist/src/auth/auth.service.js";
 import { UpdateOnboardingDto } from "../dist/src/auth/onboarding.dto.js";
 
+test("onboarding accepts payment steps while preserving all existing step identifiers", async () => {
+  for (const step of ["welcome", "dashboard", "clients", "invoices", "create-invoice", "issuance", "team", "settings", "finish",
+    "payment-basics", "record-payment", "payment-balance", "payment-history", "payment-status"]) {
+    assert.equal((await validate(plainToInstance(UpdateOnboardingDto, { status: "IN_PROGRESS", step }))).length, 0);
+  }
+});
+
 test("onboarding input only accepts supported statuses/steps and rejects identity overrides", async () => {
   for (const data of [
     {}, { status: "LEGACY", step: "welcome" }, { status: "PENDING", step: "welcome" },

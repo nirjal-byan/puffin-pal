@@ -42,6 +42,10 @@ export interface Member {
   user: User | null;
 }
 export interface FinancialRecord {
+  totalPaid?: string;
+  outstandingBalance?: string;
+  displayStatus?: string;
+  isOverdue?: boolean;
   currency?: string | null;
   id: string;
   invoiceNumber?: string;

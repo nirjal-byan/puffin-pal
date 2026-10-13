@@ -156,6 +156,11 @@ export function FinancialPanel({
                         <Link
                           className="text-button invoice-number"
                           href={`/invoices/${row.id}`}
+                          data-tour-payment-invoice={
+                            ["ISSUED", "OVERDUE", "PAID"].includes(row.status ?? "")
+                              ? row.status !== "PAID" && row.outstandingBalance && row.outstandingBalance !== "0.00" ? "record" : "read"
+                              : undefined
+                          }
                         >
                           {row.invoiceNumber} ↗
                         </Link>
@@ -188,17 +193,21 @@ export function FinancialPanel({
                     )}
                   </td>
                   <td>
-                    {money(
+                    {tab === "invoices" ? `${row.currency ?? currency} ${row.total}` : money(
                       row.total ?? row.amount ?? row.monthlyAmount,
                       row.currency ?? currency,
                     )}
+                    {tab === "invoices" && <div className="invoice-payment-summary muted">
+                      <span>Paid: {row.currency ?? currency} {row.totalPaid ?? "0.00"}</span>
+                      <span>Due: {row.currency ?? currency} {row.outstandingBalance ?? row.total}</span>
+                    </div>}
                   </td>
                   <td>
                     {tab === "expenses" ? (
                       date(row.date)
                     ) : (
-                      <span className="role-badge">
-                        {row.status?.toLowerCase() ??
+                      <span className={`role-badge ${tab === "invoices" ? `invoice-status-${(row.displayStatus ?? row.status)?.toLowerCase()}` : ""}`}>
+                        {(row.displayStatus ?? row.status)?.toLowerCase() ??
                           (row.active ? "Active" : "Inactive")}
                       </span>
                     )}

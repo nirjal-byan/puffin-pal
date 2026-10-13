@@ -18,6 +18,9 @@ import type { CreateInvoiceDto } from "./dto/create-invoice.dto.js";
 import type { UpdateInvoiceDto } from "./dto/update-invoice.dto.js";
 import { calculateInvoice } from "./utils/invoice-calculations.js";
 import { invoiceDates } from "./utils/invoice-dates.js";
+import type { CreatePaymentDto } from "./dto/create-payment.dto.js";
+import { invoicePaymentSummary, paymentCents, receivedPaymentDate } from "./utils/invoice-payments.js";
+import { decimalFromCents } from "./utils/invoice-calculations.js";
 @Injectable({ scope: Scope.REQUEST })
 export class InvoicesService {
   constructor(
@@ -108,7 +111,10 @@ export class InvoicesService {
             taxId: invoice.billingTaxId,
           }
         : client;
-      return { ...invoice, client: billingClient, items };
+      const payments = await tx.orm.public.Payment.where({ organizationId, invoiceId: id })
+        .orderBy((row) => row.paymentDate.desc()).orderBy((row) => row.createdAt.desc())
+        .orderBy((row) => row.id.asc()).all();
+      return { ...invoice, client: billingClient, items, payments, ...invoicePaymentSummary(invoice, payments) };
     });
   }
 
@@ -213,7 +219,7 @@ export class InvoicesService {
         throw new ConflictException(
           "Invoice changed. Reload and review the latest invoice.",
         );
-      return { ...invoice, client, items };
+      return { ...invoice, client, items, payments: [], ...invoicePaymentSummary(invoice, []) };
     });
   }
 
@@ -304,14 +310,51 @@ export class InvoicesService {
     });
   }
 
-  listInvoices(page: PageDto) {
-    return this.db.orm.public.Invoice.where({
-      organizationId: this.organizationId,
-    })
-      .orderBy((row) => row.id.asc())
-      .limit(page.limit)
-      .offset(page.offset)
-      .all();
+  async recordPayment(id: string, input: CreatePaymentDto) {
+    const organizationId = this.organizationId;
+    const amount = paymentCents(input.amount);
+    if (amount <= 0n) throw new BadRequestException("Payment amount must be greater than zero");
+    const paymentDate = receivedPaymentDate(input.paymentDate);
+    await this.db.transaction(async (tx) => {
+      // Serialize payment writers on the invoice before reading the ledger.
+      await tx.execute(this.db.raw.sql`
+        SELECT id FROM invoices WHERE id = ${id} AND "organizationId" = ${organizationId} FOR UPDATE
+      `.affectedCount().build());
+      const invoice = await tx.orm.public.Invoice.where({ organizationId, id }).first();
+      if (!invoice) throw new NotFoundException("Invoice not found");
+      if (!invoice.issuedAt || !["ISSUED", "OVERDUE"].includes(invoice.status))
+        throw new ConflictException("Payments can only be recorded against issued invoices with a balance");
+      if (invoice.version !== input.expectedVersion)
+        throw new ConflictException("Invoice changed. Reload and review its payment history before retrying.");
+      const payments = await tx.orm.public.Payment.where({ organizationId, invoiceId: id }).select("amount").all();
+      const summary = invoicePaymentSummary(invoice, payments);
+      const balance = paymentCents(summary.outstandingBalance);
+      if (amount > balance) throw new ConflictException("Payment exceeds the outstanding invoice balance");
+      await tx.orm.public.Payment.create({
+        organizationId, invoiceId: id, amount: decimalFromCents(amount), paymentDate,
+        method: input.method, reference: input.reference?.trim() || null,
+        notes: input.notes?.trim() || null, recordedByUserId: this.request.auth!.userId,
+      });
+      const [updated] = await tx.orm.public.Invoice.where({ organizationId, id, version: input.expectedVersion })
+        .updateAll({ status: amount === balance ? "PAID" : "ISSUED", version: input.expectedVersion + 1 });
+      if (!updated) throw new ConflictException("Invoice changed. Reload before retrying.");
+    });
+    return this.getInvoice(id);
+  }
+
+  async listInvoices(page: PageDto) {
+    const organizationId = this.organizationId;
+    return this.db.transaction(async (tx) => {
+      await tx.execute(this.db.raw.sql`SET TRANSACTION ISOLATION LEVEL REPEATABLE READ`.affectedCount().build());
+      const invoices = await tx.orm.public.Invoice.where({ organizationId })
+        .orderBy((row) => row.id.asc()).limit(page.limit).offset(page.offset).all();
+      if (!invoices.length) return [];
+      const payments = await tx.orm.public.Payment.where({ organizationId })
+        .where((row) => row.invoiceId.in(invoices.map((invoice) => invoice.id))).select("invoiceId", "amount").all();
+      return invoices.map((invoice) => ({ ...invoice,
+        ...invoicePaymentSummary(invoice, payments.filter((payment) => payment.invoiceId === invoice.id)),
+      }));
+    });
   }
   async listInvoiceItems(invoiceId: string, page: PageDto) {
     const invoice = await this.db.orm.public.Invoice.where({

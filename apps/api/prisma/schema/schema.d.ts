@@ -34,9 +34,9 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'5a29f160413605151ec013754a85194d4af1fc1e83fca2d21b95727b01f42c24'>;
+  StorageHashBase<'d34489e6ca7416e6e8951e1cd56d3a07d11d6bc6525e50e736d7f6a79e78a12e'>;
 export type ExecutionHash =
-  ExecutionHashBase<'c252ac17c1612439aa7cced86d835cc8cd192e72d452da2e9d747b2d85ac39d5'>;
+  ExecutionHashBase<'d83682d65cbdff63b777158648a0ca35b333bd1ca662aff48351da474139991f'>;
 export type ProfileHash =
   ProfileHashBase<'3916f444a8a17ad749191acf9e08dad97d1a327b88c2f1d45d12f240296aa8b2'>;
 
@@ -323,6 +323,18 @@ export type FieldOutputTypes = {
       readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
       readonly website: CodecTypes['pg/text@1']['output'] | null;
     };
+    readonly Payment: {
+      readonly amount: Numeric<12, 2>;
+      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly id: CodecTypes['pg/text@1']['output'];
+      readonly invoiceId: CodecTypes['pg/text@1']['output'];
+      readonly method: 'BANK_TRANSFER' | 'CASH' | 'CARD' | 'CHEQUE' | 'OTHER';
+      readonly notes: CodecTypes['pg/text@1']['output'] | null;
+      readonly organizationId: CodecTypes['pg/text@1']['output'];
+      readonly paymentDate: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly recordedByUserId: CodecTypes['pg/text@1']['output'];
+      readonly reference: CodecTypes['pg/text@1']['output'] | null;
+    };
     readonly Retainer: {
       readonly active: CodecTypes['pg/bool@1']['output'];
       readonly billingDay: CodecTypes['pg/int4@1']['output'];
@@ -424,6 +436,18 @@ export type FieldInputTypes = {
       readonly slug: CodecTypes['pg/text@1']['input'];
       readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
       readonly website: CodecTypes['pg/text@1']['input'] | null;
+    };
+    readonly Payment: {
+      readonly amount: CodecTypes['pg/numeric@1']['input'];
+      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly id: CodecTypes['pg/text@1']['input'];
+      readonly invoiceId: CodecTypes['pg/text@1']['input'];
+      readonly method: 'BANK_TRANSFER' | 'CASH' | 'CARD' | 'CHEQUE' | 'OTHER';
+      readonly notes: CodecTypes['pg/text@1']['input'] | null;
+      readonly organizationId: CodecTypes['pg/text@1']['input'];
+      readonly paymentDate: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly recordedByUserId: CodecTypes['pg/text@1']['input'];
+      readonly reference: CodecTypes['pg/text@1']['input'] | null;
     };
     readonly Retainer: {
       readonly active: CodecTypes['pg/bool@1']['input'];
@@ -527,6 +551,18 @@ export type StorageColumnTypes = {
       readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
       readonly website: CodecTypes['pg/text@1']['output'] | null;
     };
+    readonly payments: {
+      readonly amount: Numeric<12, 2>;
+      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly id: CodecTypes['pg/text@1']['output'];
+      readonly invoiceId: CodecTypes['pg/text@1']['output'];
+      readonly method: 'BANK_TRANSFER' | 'CASH' | 'CARD' | 'CHEQUE' | 'OTHER';
+      readonly notes: CodecTypes['pg/text@1']['output'] | null;
+      readonly organizationId: CodecTypes['pg/text@1']['output'];
+      readonly paymentDate: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly recordedByUserId: CodecTypes['pg/text@1']['output'];
+      readonly reference: CodecTypes['pg/text@1']['output'] | null;
+    };
     readonly retainers: {
       readonly active: CodecTypes['pg/bool@1']['output'];
       readonly billingDay: CodecTypes['pg/int4@1']['output'];
@@ -629,6 +665,18 @@ export type StorageColumnInputTypes = {
       readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
       readonly website: CodecTypes['pg/text@1']['input'] | null;
     };
+    readonly payments: {
+      readonly amount: CodecTypes['pg/numeric@1']['input'];
+      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly id: CodecTypes['pg/text@1']['input'];
+      readonly invoiceId: CodecTypes['pg/text@1']['input'];
+      readonly method: 'BANK_TRANSFER' | 'CASH' | 'CARD' | 'CHEQUE' | 'OTHER';
+      readonly notes: CodecTypes['pg/text@1']['input'] | null;
+      readonly organizationId: CodecTypes['pg/text@1']['input'];
+      readonly paymentDate: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly recordedByUserId: CodecTypes['pg/text@1']['input'];
+      readonly reference: CodecTypes['pg/text@1']['input'] | null;
+    };
     readonly retainers: {
       readonly active: CodecTypes['pg/bool@1']['input'];
       readonly billingDay: CodecTypes['pg/int4@1']['input'];
@@ -710,7 +758,8 @@ export namespace Models {
     client: public_Client;
     items: public_InvoiceItem[];
     organization: public_Organization;
-    readonly [RelationKeys]?: 'client' | 'items' | 'organization';
+    payments: public_Payment[];
+    readonly [RelationKeys]?: 'client' | 'items' | 'organization' | 'payments';
   };
   export type public_InvoiceItem = {
     amount: Numeric<12, 2>;
@@ -748,10 +797,26 @@ export namespace Models {
     expenses: public_Expense[];
     invoices: public_Invoice[];
     memberships: public_Membership[];
+    payments: public_Payment[];
     retainers: public_Retainer[];
     users: public_User[];
     readonly [RelationKeys]?:
-      'clients' | 'expenses' | 'invoices' | 'memberships' | 'retainers' | 'users';
+      'clients' | 'expenses' | 'invoices' | 'memberships' | 'payments' | 'retainers' | 'users';
+  };
+  export type public_Payment = {
+    amount: Numeric<12, 2>;
+    createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+    id: CodecTypes['pg/text@1']['output'];
+    invoiceId: CodecTypes['pg/text@1']['output'];
+    method: 'BANK_TRANSFER' | 'CASH' | 'CARD' | 'CHEQUE' | 'OTHER';
+    notes: CodecTypes['pg/text@1']['output'] | null;
+    organizationId: CodecTypes['pg/text@1']['output'];
+    paymentDate: CodecTypes['pg/timestamptz-temporal@1']['output'];
+    recordedByUserId: CodecTypes['pg/text@1']['output'];
+    reference: CodecTypes['pg/text@1']['output'] | null;
+    invoice: public_Invoice;
+    organization: public_Organization;
+    readonly [RelationKeys]?: 'invoice' | 'organization';
   };
   export type public_Retainer = {
     active: CodecTypes['pg/bool@1']['output'];
@@ -793,6 +858,7 @@ export declare const models: {
     InvoiceItem: Models.public_InvoiceItem;
     Membership: Models.public_Membership;
     Organization: Models.public_Organization;
+    Payment: Models.public_Payment;
     Retainer: Models.public_Retainer;
     User: Models.public_User;
   };
@@ -1351,6 +1417,104 @@ type ContractBase = Omit<
               indexes: readonly [];
               foreignKeys: readonly [];
             };
+            readonly payments: {
+              columns: {
+                readonly amount: {
+                  readonly nativeType: 'numeric';
+                  readonly codecId: 'pg/numeric@1';
+                  readonly nullable: false;
+                  readonly typeParams: { readonly precision: 12; readonly scale: 2 };
+                };
+                readonly createdAt: {
+                  readonly nativeType: 'timestamptz';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                  readonly nullable: false;
+                  readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
+                };
+                readonly id: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly invoiceId: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly method: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly notes: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                };
+                readonly organizationId: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly paymentDate: {
+                  readonly nativeType: 'timestamptz';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                  readonly nullable: false;
+                };
+                readonly recordedByUserId: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly reference: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [{ readonly columns: readonly ['organizationId', 'id'] }];
+              indexes: readonly [
+                {
+                  readonly name: 'payments_organizationId_idx_2e17ef41';
+                  readonly prefix: 'payments_organizationId_idx';
+                  readonly columns: readonly ['organizationId'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'payments_organizationId_invoiceId_idx_f9b6d255';
+                  readonly prefix: 'payments_organizationId_invoiceId_idx';
+                  readonly columns: readonly ['organizationId', 'invoiceId'];
+                  readonly unique: false;
+                },
+              ];
+              foreignKeys: readonly [
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'payments';
+                    readonly columns: readonly ['organizationId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'organizations';
+                    readonly columns: readonly ['id'];
+                  };
+                },
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'payments';
+                    readonly columns: readonly ['organizationId', 'invoiceId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'invoices';
+                    readonly columns: readonly ['organizationId', 'id'];
+                  };
+                },
+              ];
+            };
             readonly retainers: {
               columns: {
                 readonly active: {
@@ -1561,6 +1725,10 @@ type ContractBase = Omit<
                 'SKIPPED',
               ];
             };
+            readonly PaymentMethod: {
+              readonly kind: 'valueSet';
+              readonly values: readonly ['BANK_TRANSFER', 'CASH', 'CARD', 'CHEQUE', 'OTHER'];
+            };
             readonly Role: {
               readonly kind: 'valueSet';
               readonly values: readonly ['OWNER', 'ADMIN', 'PROJECT_MANAGER', 'FINANCE_VIEWER'];
@@ -1591,6 +1759,7 @@ type ContractBase = Omit<
       readonly namespace: 'public' & NamespaceId;
       readonly model: 'Organization';
     };
+    readonly payments: { readonly namespace: 'public' & NamespaceId; readonly model: 'Payment' };
     readonly retainers: { readonly namespace: 'public' & NamespaceId; readonly model: 'Retainer' };
     readonly users: { readonly namespace: 'public' & NamespaceId; readonly model: 'User' };
   };
@@ -1911,6 +2080,17 @@ type ContractBase = Omit<
                   readonly targetFields: readonly ['id'];
                 };
               };
+              readonly payments: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'Payment';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['organizationId', 'id'];
+                  readonly targetFields: readonly ['organizationId', 'invoiceId'];
+                };
+              };
             };
             readonly storage: {
               readonly table: 'invoices';
@@ -2165,6 +2345,17 @@ type ContractBase = Omit<
                   readonly targetFields: readonly ['organizationId'];
                 };
               };
+              readonly payments: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'Payment';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['organizationId'];
+                };
+              };
               readonly retainers: {
                 readonly to: {
                   readonly namespace: 'public' & NamespaceId;
@@ -2198,6 +2389,102 @@ type ContractBase = Omit<
                 readonly slug: { readonly column: 'slug' };
                 readonly updatedAt: { readonly column: 'updatedAt' };
                 readonly website: { readonly column: 'website' };
+              };
+            };
+          };
+          readonly Payment: {
+            readonly fields: {
+              readonly amount: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/numeric@1';
+                  readonly typeParams: { readonly precision: 12; readonly scale: 2 };
+                };
+              };
+              readonly createdAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                };
+              };
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly invoiceId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly method: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly notes: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly organizationId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly paymentDate: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                };
+              };
+              readonly recordedByUserId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly reference: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+            };
+            readonly relations: {
+              readonly invoice: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'Invoice';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['organizationId', 'invoiceId'];
+                  readonly targetFields: readonly ['organizationId', 'id'];
+                };
+              };
+              readonly organization: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'Organization';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['organizationId'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
+            };
+            readonly storage: {
+              readonly table: 'payments';
+              readonly namespaceId: 'public';
+              readonly fields: {
+                readonly amount: { readonly column: 'amount' };
+                readonly createdAt: { readonly column: 'createdAt' };
+                readonly id: { readonly column: 'id' };
+                readonly invoiceId: { readonly column: 'invoiceId' };
+                readonly method: { readonly column: 'method' };
+                readonly notes: { readonly column: 'notes' };
+                readonly organizationId: { readonly column: 'organizationId' };
+                readonly paymentDate: { readonly column: 'paymentDate' };
+                readonly recordedByUserId: { readonly column: 'recordedByUserId' };
+                readonly reference: { readonly column: 'reference' };
               };
             };
           };
@@ -2411,6 +2698,16 @@ type ContractBase = Omit<
               { readonly name: 'SKIPPED'; readonly value: 'SKIPPED' },
             ];
           };
+          readonly PaymentMethod: {
+            readonly codecId: 'pg/text@1';
+            readonly members: readonly [
+              { readonly name: 'BANK_TRANSFER'; readonly value: 'BANK_TRANSFER' },
+              { readonly name: 'CASH'; readonly value: 'CASH' },
+              { readonly name: 'CARD'; readonly value: 'CARD' },
+              { readonly name: 'CHEQUE'; readonly value: 'CHEQUE' },
+              { readonly name: 'OTHER'; readonly value: 'OTHER' },
+            ];
+          };
           readonly Role: {
             readonly codecId: 'pg/text@1';
             readonly members: readonly [
@@ -2521,6 +2818,14 @@ type ContractBase = Omit<
           readonly ref: {
             readonly entry: 'organizations';
             readonly field: 'updatedAt';
+            readonly namespace: 'public';
+          };
+        },
+        {
+          readonly onCreate: { readonly id: 'uuidv4'; readonly kind: 'generator' };
+          readonly ref: {
+            readonly entry: 'payments';
+            readonly field: 'id';
             readonly namespace: 'public';
           };
         },

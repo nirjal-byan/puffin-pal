@@ -28,6 +28,10 @@
       "model": "Organization",
       "namespace": "public"
     },
+    "payments": {
+      "model": "Payment",
+      "namespace": "public"
+    },
     "retainers": {
       "model": "Retainer",
       "namespace": "public"
@@ -117,6 +121,31 @@
               {
                 "name": "SKIPPED",
                 "value": "SKIPPED"
+              }
+            ]
+          },
+          "PaymentMethod": {
+            "codecId": "pg/text@1",
+            "members": [
+              {
+                "name": "BANK_TRANSFER",
+                "value": "BANK_TRANSFER"
+              },
+              {
+                "name": "CASH",
+                "value": "CASH"
+              },
+              {
+                "name": "CARD",
+                "value": "CARD"
+              },
+              {
+                "name": "CHEQUE",
+                "value": "CHEQUE"
+              },
+              {
+                "name": "OTHER",
+                "value": "OTHER"
               }
             ]
           },
@@ -619,6 +648,23 @@
                   "model": "Organization",
                   "namespace": "public"
                 }
+              },
+              "payments": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "organizationId",
+                    "id"
+                  ],
+                  "targetFields": [
+                    "organizationId",
+                    "invoiceId"
+                  ]
+                },
+                "to": {
+                  "model": "Payment",
+                  "namespace": "public"
+                }
               }
             },
             "storage": {
@@ -1044,6 +1090,21 @@
                   "namespace": "public"
                 }
               },
+              "payments": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "organizationId"
+                  ]
+                },
+                "to": {
+                  "model": "Payment",
+                  "namespace": "public"
+                }
+              },
               "retainers": {
                 "cardinality": "1:N",
                 "on": {
@@ -1107,6 +1168,162 @@
               },
               "namespaceId": "public",
               "table": "organizations"
+            }
+          },
+          "Payment": {
+            "fields": {
+              "amount": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/numeric@1",
+                  "kind": "scalar",
+                  "typeParams": {
+                    "precision": 12,
+                    "scale": 2
+                  }
+                }
+              },
+              "createdAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "invoiceId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "method": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                },
+                "valueSet": {
+                  "entityKind": "enum",
+                  "entityName": "PaymentMethod",
+                  "namespaceId": "public",
+                  "plane": "domain"
+                }
+              },
+              "notes": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "organizationId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "paymentDate": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "kind": "scalar"
+                }
+              },
+              "recordedByUserId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "reference": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "invoice": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "organizationId",
+                    "invoiceId"
+                  ],
+                  "targetFields": [
+                    "organizationId",
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "Invoice",
+                  "namespace": "public"
+                }
+              },
+              "organization": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "organizationId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "Organization",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "amount": {
+                  "column": "amount"
+                },
+                "createdAt": {
+                  "column": "createdAt"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "invoiceId": {
+                  "column": "invoiceId"
+                },
+                "method": {
+                  "column": "method"
+                },
+                "notes": {
+                  "column": "notes"
+                },
+                "organizationId": {
+                  "column": "organizationId"
+                },
+                "paymentDate": {
+                  "column": "paymentDate"
+                },
+                "recordedByUserId": {
+                  "column": "recordedByUserId"
+                },
+                "reference": {
+                  "column": "reference"
+                }
+              },
+              "namespaceId": "public",
+              "table": "payments"
             }
           },
           "Retainer": {
@@ -2130,6 +2347,151 @@
                 }
               ]
             },
+            "payments": {
+              "checks": [
+                {
+                  "expression": "\"method\" IN ('BANK_TRANSFER', 'CASH', 'CARD', 'CHEQUE', 'OTHER')",
+                  "name": "payments_method_check_4d18df7c",
+                  "prefix": "payments_method_check"
+                }
+              ],
+              "columns": {
+                "amount": {
+                  "codecId": "pg/numeric@1",
+                  "nativeType": "numeric",
+                  "nullable": false,
+                  "typeParams": {
+                    "precision": 12,
+                    "scale": 2
+                  }
+                },
+                "createdAt": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "id": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "invoiceId": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "method": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false,
+                  "valueSet": {
+                    "entityKind": "valueSet",
+                    "entityName": "PaymentMethod",
+                    "namespaceId": "public",
+                    "plane": "storage"
+                  }
+                },
+                "notes": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "organizationId": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "paymentDate": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "recordedByUserId": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "reference": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                }
+              },
+              "foreignKeys": [
+                {
+                  "onDelete": "restrict",
+                  "source": {
+                    "columns": [
+                      "organizationId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "payments"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "organizations"
+                  }
+                },
+                {
+                  "onDelete": "restrict",
+                  "source": {
+                    "columns": [
+                      "organizationId",
+                      "invoiceId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "payments"
+                  },
+                  "target": {
+                    "columns": [
+                      "organizationId",
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "invoices"
+                  }
+                }
+              ],
+              "indexes": [
+                {
+                  "columns": [
+                    "organizationId"
+                  ],
+                  "name": "payments_organizationId_idx_2e17ef41",
+                  "prefix": "payments_organizationId_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "organizationId",
+                    "invoiceId"
+                  ],
+                  "name": "payments_organizationId_invoiceId_idx_f9b6d255",
+                  "prefix": "payments_organizationId_invoiceId_idx",
+                  "unique": false
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": [
+                {
+                  "columns": [
+                    "organizationId",
+                    "id"
+                  ]
+                }
+              ]
+            },
             "retainers": {
               "columns": {
                 "active": {
@@ -2400,6 +2762,16 @@
                 "SKIPPED"
               ]
             },
+            "PaymentMethod": {
+              "kind": "valueSet",
+              "values": [
+                "BANK_TRANSFER",
+                "CASH",
+                "CARD",
+                "CHEQUE",
+                "OTHER"
+              ]
+            },
             "Role": {
               "kind": "valueSet",
               "values": [
@@ -2415,10 +2787,10 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "5a29f160413605151ec013754a85194d4af1fc1e83fca2d21b95727b01f42c24"
+    "storageHash": "d34489e6ca7416e6e8951e1cd56d3a07d11d6bc6525e50e736d7f6a79e78a12e"
   },
   "execution": {
-    "executionHash": "c252ac17c1612439aa7cced86d835cc8cd192e72d452da2e9d747b2d85ac39d5",
+    "executionHash": "d83682d65cbdff63b777158648a0ca35b333bd1ca662aff48351da474139991f",
     "mutations": {
       "defaults": [
         {
@@ -2529,6 +2901,17 @@
           "ref": {
             "entry": "organizations",
             "field": "updatedAt",
+            "namespace": "public"
+          }
+        },
+        {
+          "onCreate": {
+            "id": "uuidv4",
+            "kind": "generator"
+          },
+          "ref": {
+            "entry": "payments",
+            "field": "id",
             "namespace": "public"
           }
         },
