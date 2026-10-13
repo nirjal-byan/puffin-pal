@@ -9,12 +9,16 @@ export function CompanyLogoPicker({
   onChange,
   onBusyChange,
   disabled = false,
+  kind = "company",
 }: {
   value: string | null;
   onChange: (value: string | null) => void;
   onBusyChange: (busy: boolean) => void;
   disabled?: boolean;
+  kind?: "company" | "profile";
 }) {
+  const label = kind === "profile" ? "Profile picture" : "Company logo";
+  const noun = kind === "profile" ? "picture" : "logo";
   const request = useRef(0);
   const fileInput = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
@@ -29,14 +33,14 @@ export function CompanyLogoPicker({
   return (
     <div className="company-logo-picker">
       <div className="company-logo-label">
-        Company logo <span className="optional">Optional</span>
+        {label} <span className="optional">Optional</span>
       </div>
       <div className="company-logo-upload">
-        <div className="company-logo-preview">
+        <div className={`company-logo-preview${kind === "profile" ? " profile-picture-preview" : ""}`}>
           {value ? (
             <Image
               src={value}
-              alt="Company logo preview"
+              alt={`${label} preview`}
               width={64}
               height={64}
               unoptimized
@@ -65,7 +69,7 @@ export function CompanyLogoPicker({
               disabled={disabled || busy}
               onClick={() => fileInput.current?.click()}
             >
-              {busy ? "Preparing…" : value ? "Change logo" : "Upload logo"}
+              {busy ? "Preparing…" : value ? `Change ${noun}` : `Upload ${noun}`}
             </button>
             {value && (
               <button
@@ -90,7 +94,7 @@ export function CompanyLogoPicker({
       <input
         ref={fileInput}
         className="company-logo-file-input"
-        aria-label="Choose company logo"
+        aria-label={`Choose ${label.toLowerCase()}`}
         type="file"
         accept="image/png,image/jpeg,image/webp"
         disabled={disabled || busy}
@@ -115,7 +119,7 @@ export function CompanyLogoPicker({
           }
         }}
       />
-      {busy && <p role="status">Preparing logo…</p>}
+      {busy && <p role="status">Preparing {noun}…</p>}
       {error && (
         <p className="alert" role="alert">
           {error}

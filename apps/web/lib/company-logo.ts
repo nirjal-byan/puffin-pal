@@ -10,7 +10,7 @@ export async function prepareCompanyLogo(file: File): Promise<string> {
   try {
     image = await createImageBitmap(file);
   } catch {
-    throw new Error("This image could not be opened. Choose another logo.");
+    throw new Error("This image could not be opened. Choose another image.");
   }
   try {
     const scale = Math.min(1, 256 / Math.max(image.width, image.height));
@@ -24,7 +24,7 @@ export async function prepareCompanyLogo(file: File): Promise<string> {
     const logo = canvas.toDataURL("image/webp", 0.85);
     const encoded = logo.split(",")[1] ?? "";
     if (!encoded || atob(encoded).length > MAX_LOGO_BYTES)
-      throw new Error("This logo is too detailed. Choose a simpler image.");
+      throw new Error("This image is too detailed. Choose a simpler image.");
     return logo;
   } finally {
     image.close();

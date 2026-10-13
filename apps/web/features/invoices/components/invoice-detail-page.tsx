@@ -8,6 +8,7 @@ import { getInvoice } from "../api/invoices";
 import { draftActions } from "../schemas/invoice.schema";
 import type { InvoiceDetail } from "../types/invoice.types";
 import { InvoiceIssueAction } from "./invoice-issue-action";
+import { InvoicePdfAction } from "./invoice-pdf-action";
 import { InvoiceActions } from "./invoice-actions";
 import { InvoiceForm } from "./invoice-form";
 
@@ -130,6 +131,7 @@ export function InvoiceDetailPage({
           onReload={reload}
           onDeleted={() => router.push("/invoices")}
         />
+        <InvoicePdfAction invoice={invoice} permissions={permissions} api={api} />
       </div>
       <InvoiceDetailView invoice={invoice} currency={currency} />
     </>

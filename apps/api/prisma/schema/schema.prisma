@@ -15,6 +15,14 @@ enum InvoiceStatus {
   CANCELLED
 }
 
+enum OnboardingStatus {
+  LEGACY
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  SKIPPED
+}
+
 enum ExpenseCategory {
   SOFTWARE
   HARDWARE
@@ -55,6 +63,8 @@ model User {
   lastName       String?
   phoneNumber    String?
   avatarUrl      String?
+  onboardingStatus OnboardingStatus @default(LEGACY)
+  onboardingStep String @default("welcome")
   createdAt      DateTime             @default(now())
   updatedAt      temporal.updatedAt()
 

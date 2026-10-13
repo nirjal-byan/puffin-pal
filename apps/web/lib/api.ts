@@ -8,6 +8,8 @@ export interface User {
   fullName: string;
   email: string;
   avatarUrl: string | null;
+  onboardingStatus?: "LEGACY" | "PENDING" | "IN_PROGRESS" | "COMPLETED" | "SKIPPED";
+  onboardingStep?: string;
 }
 export interface Profile {
   user: User;
@@ -78,6 +80,7 @@ async function rawRequest<T>(
     method?: string;
     body?: unknown;
     signal?: AbortSignal;
+    responseType?: "blob";
   } = {},
 ): Promise<T> {
   let response: Response;
@@ -103,6 +106,11 @@ async function rawRequest<T>(
       "Cannot reach the API. Check that the backend is running and try again.",
       0,
     );
+  }
+  if (response.ok && options.responseType === "blob") {
+    if (!response.headers.get("content-type")?.includes("application/pdf"))
+      throw new ApiError("The server did not return a PDF. Please try again.", 502);
+    return (await response.blob()) as T;
   }
   const body = await response.json().catch(() => null);
   if (!response.ok) {
@@ -167,6 +175,7 @@ export async function apiRequest<T>(
     method?: string;
     body?: unknown;
     signal?: AbortSignal;
+    responseType?: "blob";
   } = {},
 ): Promise<T> {
   const generation = sessionGeneration;
@@ -214,6 +223,6 @@ export const errorMessage = (error: unknown) =>
 export interface WorkspaceApi {
   <T>(
     path: string,
-    options?: { method?: string; body?: unknown; signal?: AbortSignal },
+    options?: { method?: string; body?: unknown; signal?: AbortSignal; responseType?: "blob" },
   ): Promise<T>;
 }

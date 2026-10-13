@@ -1,5 +1,6 @@
 "use client";
 import { PasswordInput } from "./password-input";
+import { ProfilePictureSettings } from "./profile-picture-settings";
 import { useState, type FormEvent } from "react";
 import type { Profile, User } from "../lib/api";
 import { errorMessage } from "../lib/api";
@@ -66,6 +67,11 @@ export function SettingsPanel({
           {mode === "profile" ? "Personal information" : "Account security"}
         </h3>
       </div>
+      {mode === "profile" && (
+        <ProfilePictureSettings key={user.id}
+          user={user} api={api}
+          onProfileChange={onProfileChange} onSaved={onSaved} />
+      )}
       <form onSubmit={submit} className="settings-form">
         {error && (
           <p className="alert" role="alert">

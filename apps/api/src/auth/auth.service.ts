@@ -27,6 +27,7 @@ import type {
 import type { TenantContext } from "./auth.types.js";
 import { validOrganizationLogo } from "./organization-logo.dto.js";
 import { hashPassword, verifyPassword } from "./password.js";
+import type { UpdateOnboardingDto } from "./onboarding.dto.js";
 
 const DUMMY_HASH = `scrypt:32768:8:1:${"0".repeat(32)}:${"0".repeat(128)}`;
 @Injectable()
@@ -79,6 +80,7 @@ export class AuthService {
           ...(input.lastName ? { lastName: input.lastName.trim() } : {}),
           ...(input.phoneNumber ? { phoneNumber: input.phoneNumber } : {}),
           passwordHash,
+          onboardingStatus: "PENDING",
         });
         await tx.orm.public.Membership.create({
           organizationId: organization.id,
@@ -142,7 +144,7 @@ export class AuthService {
       id: tenant.userId,
       organizationId: tenant.organizationId,
     })
-      .select("id", "email", "fullName", "avatarUrl")
+      .select("id", "email", "fullName", "avatarUrl", "onboardingStatus", "onboardingStep")
       .first();
     const organization = await this.db.orm.public.Organization.where({
       id: tenant.organizationId,
@@ -172,6 +174,21 @@ export class AuthService {
     return this.me(tenant);
   }
 
+  async updateOnboarding(tenant: TenantContext, input: UpdateOnboardingDto) {
+    // Terminal states and legacy accounts never return to automatic onboarding.
+    // Manual replays are local UI state and do not change this record.
+    await this.db.orm.public.User.where({
+      id: tenant.userId,
+      organizationId: tenant.organizationId,
+    }).where((user) => user.onboardingStatus.in(["PENDING", "IN_PROGRESS"]))
+      .updateAll({ onboardingStatus: input.status, onboardingStep: input.step });
+    const user = await this.db.orm.public.User.where({
+      id: tenant.userId, organizationId: tenant.organizationId,
+    }).select("onboardingStatus", "onboardingStep").first();
+    if (!user) throw new UnauthorizedException();
+    return user;
+  }
+
   async updateProfile(tenant: TenantContext, input: UpdateProfileDto) {
     const user = await this.db.orm.public.User.where({
       id: tenant.userId,
@@ -179,6 +196,17 @@ export class AuthService {
     })
       .select("id", "email", "fullName", "avatarUrl")
       .update({ fullName: input.fullName.trim() });
+    if (!user) throw new UnauthorizedException();
+    return this.me(tenant);
+  }
+
+  async updateProfilePicture(tenant: TenantContext, avatarUrl: string | null) {
+    if (!validOrganizationLogo(avatarUrl))
+      throw new BadRequestException("Invalid profile picture");
+    const user = await this.db.orm.public.User.where({
+      id: tenant.userId,
+      organizationId: tenant.organizationId,
+    }).select("id").update({ avatarUrl });
     if (!user) throw new UnauthorizedException();
     return this.me(tenant);
   }
@@ -226,6 +254,7 @@ export class AuthService {
           email: input.email,
           fullName: input.fullName.trim(),
           passwordHash,
+          onboardingStatus: "PENDING",
         });
         await tx.orm.public.Membership.create({
           organizationId: tenant.organizationId,

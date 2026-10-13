@@ -1,4 +1,6 @@
 import { OrganizationLogoDto } from "./organization-logo.dto.js";
+import { ProfilePictureDto } from "./profile-picture.dto.js";
+import { UpdateOnboardingDto } from "./onboarding.dto.js";
 import {
   Body,
   Controller,
@@ -85,6 +87,15 @@ export class AuthController {
   ) {
     return this.auth.updateOrganizationLogo(tenant, input.logoUrl);
   }
+  @Patch("me/onboarding")
+  @ApiBearerAuth()
+  @RequirePermissions("profile:read")
+  updateOnboarding(
+    @CurrentTenant() tenant: TenantContext,
+    @Body() input: UpdateOnboardingDto,
+  ) {
+    return this.auth.updateOnboarding(tenant, input);
+  }
   @Patch("me")
   @ApiBearerAuth()
   @RequirePermissions("profile:read")
@@ -93,6 +104,15 @@ export class AuthController {
     @Body() input: UpdateProfileDto,
   ) {
     return this.auth.updateProfile(tenant, input);
+  }
+  @Patch("me/avatar")
+  @ApiBearerAuth()
+  @RequirePermissions("profile:read")
+  updateProfilePicture(
+    @CurrentTenant() tenant: TenantContext,
+    @Body() input: ProfilePictureDto,
+  ) {
+    return this.auth.updateProfilePicture(tenant, input.avatarUrl);
   }
 
   @Post("change-password")

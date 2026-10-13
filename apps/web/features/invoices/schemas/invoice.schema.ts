@@ -136,3 +136,10 @@ export function canIssueInvoice(
 ) {
   return status === "DRAFT" && permissions.includes("invoices:issue");
 }
+
+export function canDownloadInvoicePdf(
+  status: string | undefined,
+  permissions: readonly Permission[],
+) {
+  return status === "ISSUED" && permissions.includes("invoices:read");
+}

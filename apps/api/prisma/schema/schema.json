@@ -95,6 +95,31 @@
               }
             ]
           },
+          "OnboardingStatus": {
+            "codecId": "pg/text@1",
+            "members": [
+              {
+                "name": "LEGACY",
+                "value": "LEGACY"
+              },
+              {
+                "name": "PENDING",
+                "value": "PENDING"
+              },
+              {
+                "name": "IN_PROGRESS",
+                "value": "IN_PROGRESS"
+              },
+              {
+                "name": "COMPLETED",
+                "value": "COMPLETED"
+              },
+              {
+                "name": "SKIPPED",
+                "value": "SKIPPED"
+              }
+            ]
+          },
           "Role": {
             "codecId": "pg/text@1",
             "members": [
@@ -1244,6 +1269,26 @@
                   "kind": "scalar"
                 }
               },
+              "onboardingStatus": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                },
+                "valueSet": {
+                  "entityKind": "enum",
+                  "entityName": "OnboardingStatus",
+                  "namespaceId": "public",
+                  "plane": "domain"
+                }
+              },
+              "onboardingStep": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
               "organizationId": {
                 "nullable": false,
                 "type": {
@@ -1333,6 +1378,12 @@
                 },
                 "middleName": {
                   "column": "middleName"
+                },
+                "onboardingStatus": {
+                  "column": "onboardingStatus"
+                },
+                "onboardingStep": {
+                  "column": "onboardingStep"
                 },
                 "organizationId": {
                   "column": "organizationId"
@@ -2170,6 +2221,13 @@
               "uniques": []
             },
             "users": {
+              "checks": [
+                {
+                  "expression": "\"onboardingStatus\" IN ('LEGACY', 'PENDING', 'IN_PROGRESS', 'COMPLETED', 'SKIPPED')",
+                  "name": "users_onboardingStatus_check_d31e4e98",
+                  "prefix": "users_onboardingStatus_check"
+                }
+              ],
               "columns": {
                 "avatarUrl": {
                   "codecId": "pg/text@1",
@@ -2214,6 +2272,30 @@
                   "codecId": "pg/text@1",
                   "nativeType": "text",
                   "nullable": true
+                },
+                "onboardingStatus": {
+                  "codecId": "pg/text@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": "LEGACY"
+                  },
+                  "nativeType": "text",
+                  "nullable": false,
+                  "valueSet": {
+                    "entityKind": "valueSet",
+                    "entityName": "OnboardingStatus",
+                    "namespaceId": "public",
+                    "plane": "storage"
+                  }
+                },
+                "onboardingStep": {
+                  "codecId": "pg/text@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": "welcome"
+                  },
+                  "nativeType": "text",
+                  "nullable": false
                 },
                 "organizationId": {
                   "codecId": "pg/text@1",
@@ -2308,6 +2390,16 @@
                 "CANCELLED"
               ]
             },
+            "OnboardingStatus": {
+              "kind": "valueSet",
+              "values": [
+                "LEGACY",
+                "PENDING",
+                "IN_PROGRESS",
+                "COMPLETED",
+                "SKIPPED"
+              ]
+            },
             "Role": {
               "kind": "valueSet",
               "values": [
@@ -2323,7 +2415,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "b88d448873684081b756852cff15ea4827cafb47d4fa22b8871417ca2c91606b"
+    "storageHash": "5a29f160413605151ec013754a85194d4af1fc1e83fca2d21b95727b01f42c24"
   },
   "execution": {
     "executionHash": "c252ac17c1612439aa7cced86d835cc8cd192e72d452da2e9d747b2d85ac39d5",

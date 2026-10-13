@@ -1,0 +1,128 @@
+[
+  {
+    "id": "column.public.users.onboardingStatus",
+    "label": "Add column \"onboardingStatus\" to \"users\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "onboardingStatus",
+        "table": "users"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"onboardingStatus\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "users",
+          "onboardingStatus"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"onboardingStatus\"",
+        "sql": "ALTER TABLE \"public\".\"users\" ADD COLUMN \"onboardingStatus\" text DEFAULT 'LEGACY' NOT NULL"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"onboardingStatus\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "users",
+          "onboardingStatus"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.users.onboardingStep",
+    "label": "Add column \"onboardingStep\" to \"users\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "onboardingStep",
+        "table": "users"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"onboardingStep\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "users",
+          "onboardingStep"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"onboardingStep\"",
+        "sql": "ALTER TABLE \"public\".\"users\" ADD COLUMN \"onboardingStep\" text DEFAULT 'welcome' NOT NULL"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"onboardingStep\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "users",
+          "onboardingStep"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "checkConstraint.users.users_onboardingStatus_check_d31e4e98",
+    "label": "Add check constraint \"users_onboardingStatus_check_d31e4e98\" on \"users\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "checkConstraint",
+        "name": "users_onboardingStatus_check_d31e4e98",
+        "table": "users"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"users_onboardingStatus_check_d31e4e98\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "users_onboardingStatus_check_d31e4e98",
+          "public",
+          "\"public\".\"users\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add check constraint \"users_onboardingStatus_check_d31e4e98\"",
+        "sql": "ALTER TABLE \"public\".\"users\" ADD CONSTRAINT \"users_onboardingStatus_check_d31e4e98\" CHECK (\"onboardingStatus\" IN ('LEGACY', 'PENDING', 'IN_PROGRESS', 'COMPLETED', 'SKIPPED'))"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"users_onboardingStatus_check_d31e4e98\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "users_onboardingStatus_check_d31e4e98",
+          "public",
+          "\"public\".\"users\""
+        ]
+      }
+    ]
+  }
+]

@@ -40,6 +40,10 @@ export function Navbar({
         ))}
       </nav>
       <div className="header-actions">
+        <button type="button" className="button secondary tour-launch" data-tour="tutorial"
+          onClick={() => window.dispatchEvent(new Event("puffinpal:start-tour"))}>
+          Tutorial
+        </button>
         <ThemeSwitch theme={theme} toggleTheme={toggleTheme} />
         <NotificationBell
           notifications={notifications}

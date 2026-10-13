@@ -34,7 +34,7 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'b88d448873684081b756852cff15ea4827cafb47d4fa22b8871417ca2c91606b'>;
+  StorageHashBase<'5a29f160413605151ec013754a85194d4af1fc1e83fca2d21b95727b01f42c24'>;
 export type ExecutionHash =
   ExecutionHashBase<'c252ac17c1612439aa7cced86d835cc8cd192e72d452da2e9d747b2d85ac39d5'>;
 export type ProfileHash =
@@ -341,6 +341,8 @@ export type FieldOutputTypes = {
       readonly id: CodecTypes['pg/text@1']['output'];
       readonly lastName: CodecTypes['pg/text@1']['output'] | null;
       readonly middleName: CodecTypes['pg/text@1']['output'] | null;
+      readonly onboardingStatus: 'LEGACY' | 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'SKIPPED';
+      readonly onboardingStep: CodecTypes['pg/text@1']['output'];
       readonly organizationId: CodecTypes['pg/text@1']['output'];
       readonly passwordHash: CodecTypes['pg/text@1']['output'];
       readonly phoneNumber: CodecTypes['pg/text@1']['output'] | null;
@@ -441,6 +443,8 @@ export type FieldInputTypes = {
       readonly id: CodecTypes['pg/text@1']['input'];
       readonly lastName: CodecTypes['pg/text@1']['input'] | null;
       readonly middleName: CodecTypes['pg/text@1']['input'] | null;
+      readonly onboardingStatus: 'LEGACY' | 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'SKIPPED';
+      readonly onboardingStep: CodecTypes['pg/text@1']['input'];
       readonly organizationId: CodecTypes['pg/text@1']['input'];
       readonly passwordHash: CodecTypes['pg/text@1']['input'];
       readonly phoneNumber: CodecTypes['pg/text@1']['input'] | null;
@@ -541,6 +545,8 @@ export type StorageColumnTypes = {
       readonly id: CodecTypes['pg/text@1']['output'];
       readonly lastName: CodecTypes['pg/text@1']['output'] | null;
       readonly middleName: CodecTypes['pg/text@1']['output'] | null;
+      readonly onboardingStatus: 'LEGACY' | 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'SKIPPED';
+      readonly onboardingStep: CodecTypes['pg/text@1']['output'];
       readonly organizationId: CodecTypes['pg/text@1']['output'];
       readonly passwordHash: CodecTypes['pg/text@1']['output'];
       readonly phoneNumber: CodecTypes['pg/text@1']['output'] | null;
@@ -641,6 +647,8 @@ export type StorageColumnInputTypes = {
       readonly id: CodecTypes['pg/text@1']['input'];
       readonly lastName: CodecTypes['pg/text@1']['input'] | null;
       readonly middleName: CodecTypes['pg/text@1']['input'] | null;
+      readonly onboardingStatus: 'LEGACY' | 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'SKIPPED';
+      readonly onboardingStep: CodecTypes['pg/text@1']['input'];
       readonly organizationId: CodecTypes['pg/text@1']['input'];
       readonly passwordHash: CodecTypes['pg/text@1']['input'];
       readonly phoneNumber: CodecTypes['pg/text@1']['input'] | null;
@@ -765,6 +773,8 @@ export namespace Models {
     id: CodecTypes['pg/text@1']['output'];
     lastName: CodecTypes['pg/text@1']['output'] | null;
     middleName: CodecTypes['pg/text@1']['output'] | null;
+    onboardingStatus: 'LEGACY' | 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'SKIPPED';
+    onboardingStep: CodecTypes['pg/text@1']['output'];
     organizationId: CodecTypes['pg/text@1']['output'];
     passwordHash: CodecTypes['pg/text@1']['output'];
     phoneNumber: CodecTypes['pg/text@1']['output'] | null;
@@ -1457,6 +1467,24 @@ type ContractBase = Omit<
                   readonly codecId: 'pg/text@1';
                   readonly nullable: true;
                 };
+                readonly onboardingStatus: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/text@1', 'LEGACY'>;
+                  };
+                };
+                readonly onboardingStep: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/text@1', 'welcome'>;
+                  };
+                };
                 readonly organizationId: {
                   readonly nativeType: 'text';
                   readonly codecId: 'pg/text@1';
@@ -1521,6 +1549,16 @@ type ContractBase = Omit<
                 'PAID',
                 'OVERDUE',
                 'CANCELLED',
+              ];
+            };
+            readonly OnboardingStatus: {
+              readonly kind: 'valueSet';
+              readonly values: readonly [
+                'LEGACY',
+                'PENDING',
+                'IN_PROGRESS',
+                'COMPLETED',
+                'SKIPPED',
               ];
             };
             readonly Role: {
@@ -2266,6 +2304,14 @@ type ContractBase = Omit<
                 readonly nullable: true;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
+              readonly onboardingStatus: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly onboardingStep: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
               readonly organizationId: {
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
@@ -2323,6 +2369,8 @@ type ContractBase = Omit<
                 readonly id: { readonly column: 'id' };
                 readonly lastName: { readonly column: 'lastName' };
                 readonly middleName: { readonly column: 'middleName' };
+                readonly onboardingStatus: { readonly column: 'onboardingStatus' };
+                readonly onboardingStep: { readonly column: 'onboardingStep' };
                 readonly organizationId: { readonly column: 'organizationId' };
                 readonly passwordHash: { readonly column: 'passwordHash' };
                 readonly phoneNumber: { readonly column: 'phoneNumber' };
@@ -2351,6 +2399,16 @@ type ContractBase = Omit<
               { readonly name: 'PAID'; readonly value: 'PAID' },
               { readonly name: 'OVERDUE'; readonly value: 'OVERDUE' },
               { readonly name: 'CANCELLED'; readonly value: 'CANCELLED' },
+            ];
+          };
+          readonly OnboardingStatus: {
+            readonly codecId: 'pg/text@1';
+            readonly members: readonly [
+              { readonly name: 'LEGACY'; readonly value: 'LEGACY' },
+              { readonly name: 'PENDING'; readonly value: 'PENDING' },
+              { readonly name: 'IN_PROGRESS'; readonly value: 'IN_PROGRESS' },
+              { readonly name: 'COMPLETED'; readonly value: 'COMPLETED' },
+              { readonly name: 'SKIPPED'; readonly value: 'SKIPPED' },
             ];
           };
           readonly Role: {

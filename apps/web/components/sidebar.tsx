@@ -40,6 +40,7 @@ export function Sidebar({
             <span className="nav-label">Pages</span>
             {section.tabs.map((key) => NAV.find((item) => item.key === key)!).map((item) => (
               <Link
+                data-tour={`nav-${item.key}`}
                 href={tabHref(item.key, section.key)}
                 key={item.key}
                 aria-current={tab === item.key ? "page" : undefined}
@@ -75,7 +76,10 @@ export function Sidebar({
       <div className="sidebar-bottom">
         <div className="account">
           <span className="avatar">
-            {session.user.fullName.slice(0, 1).toUpperCase()}
+            {session.user.avatarUrl ? (
+              <Image src={session.user.avatarUrl} alt={`${session.user.fullName} profile picture`}
+                width={36} height={36} unoptimized className="profile-picture-thumbnail" />
+            ) : session.user.fullName.slice(0, 1).toUpperCase()}
           </span>
           <div>
             <strong>{session.user.fullName}</strong>

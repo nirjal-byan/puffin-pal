@@ -5,6 +5,7 @@ import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { InvoiceDetailPage } from "../../invoices/components/invoice-detail-page";
 import { InvoiceForm } from "../../invoices/components/invoice-form";
+import { ProductTour } from "../../onboarding/product-tour";
 import { recentlyCreatedInvoice } from "../../invoices/api/invoices";
 import type { Permission } from "@puffinpal/permissions";
 import {
@@ -103,7 +104,7 @@ export default function WorkspacePage({
   const api: WorkspaceApi = useCallback(
     async <T,>(
       path: string,
-      options?: { method?: string; body?: unknown; signal?: AbortSignal },
+      options?: { method?: string; body?: unknown; signal?: AbortSignal; responseType?: "blob" },
     ) => {
       try {
         return await apiRequest<T>(path, {
@@ -191,6 +192,7 @@ export default function WorkspacePage({
         : InvoicesPage;
   return (
     <WorkspaceLayout theme={theme}>
+      <ProductTour key={session.user.id} session={session} api={api} />
       <Navbar
         session={session}
         tab={tab}
@@ -224,7 +226,7 @@ export default function WorkspacePage({
           key={`${tab}-${creatingInvoice}`}
           className="workspace-content page-transition"
         >
-          <div className="page-heading">
+          <div className="page-heading" data-tour="page-heading">
             <div>
               <span className="eyebrow">{session.organization.name}</span>
               <h1>
@@ -249,7 +251,7 @@ export default function WorkspacePage({
                 !invoiceId &&
                 tab === "invoices" &&
                 can("invoices:create") && (
-                  <Link className="button primary" href="/invoices/new">
+                  <Link className="button primary" href="/invoices/new" data-tour="create-invoice">
                     + Create Invoice
                   </Link>
                 )}
@@ -348,7 +350,7 @@ export default function WorkspacePage({
           ) : tab === "overview" ? (
             <OverviewPage session={session} navigate={navigate} />
           ) : tab === "profile" || tab === "password" ? (
-            <>
+            <div className={tab === "profile" && can("organization:update") ? "profile-settings-columns" : undefined}>
               <CurrentSettingsPage
                 key={tab}
                 user={session.user}
@@ -365,7 +367,7 @@ export default function WorkspacePage({
                     onSaved={recordNotification}
                   />
                 )}
-            </>
+            </div>
           ) : tab === "access" ? (
             <AccessPage
               session={session}

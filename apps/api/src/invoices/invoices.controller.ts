@@ -9,6 +9,8 @@ import {
   ParseUUIDPipe,
   Post,
   Query,
+  Header,
+  StreamableFile,
 } from "@nestjs/common";
 import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 import { RequirePermissions } from "../auth/auth.decorators.js";
@@ -20,11 +22,15 @@ import {
 } from "./dto/update-invoice.dto.js";
 import { IssueInvoiceDto } from "./dto/issue-invoice.dto.js";
 import { InvoicesService } from "./invoices.service.js";
+import { InvoicePdfService, invoicePdfFilename } from "./pdf/invoice-pdf.service.js";
 @ApiTags("invoices")
 @ApiBearerAuth()
 @Controller("invoices")
 export class InvoicesController {
-  constructor(private readonly invoices: InvoicesService) {}
+  constructor(
+    private readonly invoices: InvoicesService,
+    private readonly pdf: InvoicePdfService,
+  ) {}
   @Post()
   @RequirePermissions("invoices:create")
   create(@Body() input: CreateInvoiceDto) {
@@ -39,6 +45,18 @@ export class InvoicesController {
   @RequirePermissions("invoices:read")
   detail(@Param("id", ParseUUIDPipe) id: string) {
     return this.invoices.getInvoice(id);
+  }
+  @Get(":id/pdf")
+  @RequirePermissions("invoices:read")
+  @Header("Cache-Control", "private, no-store")
+  async downloadPdf(@Param("id", ParseUUIDPipe) id: string) {
+    const invoice = await this.invoices.getInvoice(id);
+    const buffer = await this.pdf.render(invoice);
+    return new StreamableFile(buffer, {
+      type: "application/pdf",
+      disposition: `attachment; filename="${invoicePdfFilename(invoice.invoiceNumber)}"`,
+      length: buffer.length,
+    });
   }
   @Post(":id/issue")
   @HttpCode(200)

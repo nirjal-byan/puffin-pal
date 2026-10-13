@@ -49,12 +49,9 @@ button,
 .button {
   -webkit-tap-highlight-color: transparent;
   transition:
-    transform 200ms cubic-bezier(0.2, 0.8, 0.2, 1),
-    box-shadow 200ms ease,
-    background-color 200ms ease,
-    border-color 200ms ease,
-    color 200ms ease,
-    filter 200ms ease;
+    background-color 150ms ease,
+    border-color 150ms ease,
+    color 150ms ease;
 }
 button:focus-visible,
 a:focus-visible {
@@ -1285,39 +1282,20 @@ tr:hover td {
   }
 }
 
-.button.primary::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    105deg,
-    transparent 20%,
-    #ffffff1f 48%,
-    transparent 76%
-  );
-  transform: translateX(-115%);
-  transition: transform 600ms cubic-bezier(0.2, 0.8, 0.2, 1);
-  pointer-events: none;
-  z-index: -1;
-}
 @media (hover: hover) and (pointer: fine) {
-  .button:hover:not(:disabled) {
-    transform: translateY(-2px);
-  }
   .button.primary:hover:not(:disabled) {
-    filter: brightness(1.06);
-    box-shadow:
-      0 6px 16px #0754d626,
-      0 2px 5px #0754d61a;
+    background: #0666dc;
   }
-  .button.primary:hover:not(:disabled)::before {
-    transform: translateX(115%);
+  .workspace-layout .button.primary:hover:not(:disabled) {
+    background: #0647b6;
+  }
+  .workspace-layout[data-theme="dark"] .button.primary:hover:not(:disabled) {
+    background: #226ae2;
   }
   .button.secondary:hover:not(:disabled) {
     background-color: #f6f9ff;
     border-color: #b4cdf0;
     color: #0754d6;
-    box-shadow: 0 4px 12px #10233e0d;
   }
   .auth-tabs button:hover:not(:disabled):not(.active) {
     background-color: #eaf0fa;
@@ -1326,26 +1304,14 @@ tr:hover td {
   .nav-item:hover:not(:disabled) {
     background-color: #edf4ff;
     color: #0754d6;
-    transform: translateX(2px);
   }
   .text-button:hover:not(:disabled),
   .sign-out:hover:not(:disabled),
   .password-toggle:hover:not(:disabled) {
-    color: #0754d6;
-    text-decoration: underline;
-    text-underline-offset: 4px;
-    text-decoration-color: #0754d64d;
+    background-color: #edf3f8;
   }
-}
-.button:active:not(:disabled) {
-  transform: translateY(0) scale(0.985);
-  box-shadow: 0 1px 3px #10233e12;
-  filter: brightness(0.98);
 }
 @media (prefers-reduced-motion: reduce) {
-  .button.primary::before {
-    display: none;
-  }
   .button:hover:not(:disabled),
   .button:active:not(:disabled),
   .nav-item:hover:not(:disabled) {
@@ -1911,6 +1877,11 @@ tr:hover td {
     color: #edf6f0;
     border-color: #43614d;
   }
+  .workspace-layout[data-theme="dark"] .text-button:hover:not(:disabled),
+  .workspace-layout[data-theme="dark"] .sign-out:hover:not(:disabled),
+  .workspace-layout[data-theme="dark"] .password-toggle:hover:not(:disabled) {
+    background-color: #2b4233;
+  }
   .workspace-layout[data-theme="dark"] tr:hover td {
     background: #1e3024;
   }
@@ -2034,11 +2005,10 @@ tr:hover td {
 }
 @media (hover: hover) and (pointer: fine) {
   .theme-switch:hover {
-    border-color: #9eb9a8;
-    box-shadow: 0 0 0 3px #8aaf9814;
+    background-color: #dcebe1;
   }
   .theme-switch[aria-checked="true"]:hover {
-    border-color: #729981;
+    background-color: #345440;
   }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -2695,7 +2665,7 @@ tr:hover td {
     box-shadow 180ms ease;
 }
 .registration-dropdown-trigger:hover {
-  border-color: #b3c9e8;
+  background-color: #f4f7fc;
 }
 .registration-dropdown-trigger[aria-expanded="true"] {
   border-color: #2588ff;
@@ -2799,9 +2769,10 @@ tr:hover td {
 }
 @media (hover: hover) and (pointer: fine) {
   .overview-link:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 5px 16px #10233e0a;
-    border-color: #accab8;
+    background-color: #f0f7f3;
+  }
+  .workspace-layout[data-theme="dark"] .overview-link:hover {
+    background-color: #24392d;
   }
 }
 @media (max-width: 1100px) {
@@ -2834,9 +2805,6 @@ tr:hover td {
 }
 .auth-switch .text-button {
   color: #0754d6;
-}
-.auth-switch .text-button:hover:not(:disabled) {
-  text-decoration: underline;
 }
 
 /* Invoice creation uses the dashboard's existing panel and form styling. */
@@ -3296,6 +3264,10 @@ tr:hover td {
 .invoice-delete-dialog::backdrop { background: rgb(0 0 0 / .5); }
 .invoice-delete-dialog p { margin: 1rem 0; }
 .button.danger { background: #b42318; color: white; }
+@media (hover: hover) and (pointer: fine) {
+  .button.danger:hover:not(:disabled) { background: #971d13; }
+  .workspace-layout[data-theme="dark"] .button.danger:hover:not(:disabled) { background: #c03529; }
+}
 @media (max-width: 640px) {
   .invoice-document-meta, .invoice-document-bottom { grid-template-columns: minmax(0, 1fr); gap: 1.25rem; padding: 1rem; }
   .invoice-form-actions { flex-wrap: wrap; gap: 1rem; }
@@ -3316,8 +3288,108 @@ tr:hover td {
 .company-logo-description { font-size: 12px; line-height: 1.6; }
 .company-logo-form .settings-save { justify-self: start; margin: 0; }
 .company-logo-settings { margin-top: 24px; }
+@media (min-width: 1100px) {
+  .profile-settings-columns {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 620px));
+    align-items: start;
+    gap: 24px;
+  }
+  .profile-settings-columns > * { min-width: 0; }
+  .profile-settings-columns > .company-logo-settings { margin-top: 0; }
+}
+.profile-picture-preview { border-radius: 50%; }
+.profile-picture-preview img { border-radius: 50%; object-fit: cover; }
+.profile-picture-thumbnail { display: block; width: 100%; height: 100%; border-radius: inherit; object-fit: cover; }
 @media (max-width: 480px) {
   .company-logo-upload { padding: 14px; gap: 12px; align-items: flex-start; }
   .company-logo-preview { flex-basis: 56px; width: 56px; height: 56px; }
   .company-logo-preview img { width: 48px; height: 48px; }
+}
+
+/* Guided product tour: keep the real target visible while blocking mutations. */
+.tour-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  isolation: isolate;
+}
+.tour-dim {
+  position: absolute;
+  inset: 0;
+  background: rgb(6 18 13 / 62%);
+}
+.tour-spotlight {
+  position: fixed;
+  border-radius: 9px;
+  border: 2px solid #8dcbb3;
+  box-shadow: 0 0 0 9999px rgb(6 18 13 / 62%);
+  pointer-events: none;
+}
+.tour-panel {
+  position: fixed;
+  padding: 22px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: #fff;
+  color: var(--foreground);
+  box-shadow: 0 16px 56px #0004;
+  max-height: calc(100dvh - 24px);
+  overflow-y: auto;
+  outline: none;
+  animation: workspace-page-enter 180ms ease-out;
+}
+.workspace-layout[data-theme="dark"] .tour-panel { background: #18231d; }
+.tour-panel h2 { margin: 16px 0 10px; font-size: 18px; letter-spacing: -.35px; }
+.tour-panel p { font-size: 13px; line-height: 1.7; color: var(--muted); }
+.tour-progress { font-size: 11px; color: var(--muted); }
+.tour-progress-track { margin-top: 8px; height: 3px; border-radius: 4px; background: var(--border); overflow: hidden; }
+.tour-progress-track span { display: block; height: 100%; background: #429478; transition: width 180ms ease; }
+.tour-controls, .tour-controls > div { display: flex; align-items: center; gap: 8px; }
+.tour-controls { margin-top: 22px; justify-content: space-between; }
+.workspace-layout .tour-launch {
+  white-space: nowrap;
+  min-height: 34px;
+  padding: 6px 13px;
+  border-radius: 8px;
+  border: 1px solid #cadfd3;
+  background: #edf6f0;
+  color: #285d46;
+  font-size: 12px;
+  font-weight: 600;
+  transition: background-color 150ms ease;
+}
+.workspace-layout .tour-launch:hover:not(:disabled),
+.workspace-layout .tour-launch:active:not(:disabled) {
+  transform: none;
+  box-shadow: none;
+  filter: none;
+}
+.workspace-layout .tour-launch:hover:not(:disabled) {
+  background: #deeee3;
+  border-color: #cadfd3;
+  color: #285d46;
+}
+.workspace-layout[data-theme="dark"] .tour-launch {
+  background: #263e32;
+  border-color: #476752;
+  color: #c4edd8;
+}
+.workspace-layout[data-theme="dark"] .tour-launch:hover:not(:disabled) {
+  background: #304d3e;
+  border-color: #476752;
+  color: #c4edd8;
+}
+.workspace-layout .tour-launch:focus-visible {
+  outline: 2px solid #69ac8b;
+  outline-offset: 3px;
+}
+@media (max-width: 420px) {
+  .workspace-header .header-actions { gap: 8px; }
+  .tour-panel { padding: 18px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tour-panel { animation: none; }
+  .tour-progress-track span { transition: none; }
+  .workspace-layout .tour-launch { transition: none; }
 }

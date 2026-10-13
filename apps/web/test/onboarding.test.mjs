@@ -1,0 +1,66 @@
+import assert from "node:assert/strict";
+import { test } from "node:test";
+import {
+  initialTour, tourSteps, tourStorageKey, adjacentStep, tourPosition, visibleTourTarget,
+} from "../features/onboarding/tour.ts";
+
+test("only newly registered users automatically start onboarding", () => {
+  assert.equal(initialTour({ onboardingStatus: "PENDING" }, null).active, true);
+  for (const onboardingStatus of [undefined, "LEGACY", "COMPLETED", "SKIPPED"])
+    assert.equal(initialTour({ onboardingStatus }, null).active, false);
+});
+test("refresh resumes the saved step instead of restarting; terminal server state wins", () => {
+  const saved = { active: true, manual: false, step: "invoices" };
+  assert.deepEqual(initialTour({ onboardingStatus: "PENDING" }, saved), saved);
+  assert.equal(initialTour({ onboardingStatus: "IN_PROGRESS", onboardingStep: "clients" }, null).step, "clients");
+  assert.equal(initialTour({ onboardingStatus: "COMPLETED" }, saved).active, false);
+  assert.equal(initialTour({ onboardingStatus: "SKIPPED" }, saved).active, false);
+  assert.equal(initialTour({ onboardingStatus: "IN_PROGRESS", onboardingStep: "bad" }, null).step, "welcome");
+  assert.equal(initialTour({ onboardingStatus: "PENDING" }, { active: true, step: "bad", manual: false }).step, "welcome");
+});
+test("manual replay works for existing users without changing previous completion", () => {
+  const replay = { active: true, manual: true, step: "welcome" };
+  for (const onboardingStatus of ["LEGACY", "COMPLETED", "SKIPPED"])
+    assert.deepEqual(initialTour({ onboardingStatus }, replay), replay);
+  const skippedReplay = { ...replay, active: false };
+  assert.deepEqual(initialTour({ onboardingStatus: "COMPLETED" }, skippedReplay), skippedReplay);
+  assert.equal(tourStorageKey("user-1"), "puffinpal-tour-v1:user-1");
+  assert.notEqual(tourStorageKey("user-1"), tourStorageKey("user-2"));
+});
+test("steps respect permissions and gracefully advance past removed steps", () => {
+  const viewer = tourSteps(["profile:read", "clients:read", "invoices:read"]);
+  assert.ok(viewer.some((step) => step.id === "invoices"));
+  assert.ok(!viewer.some((step) => step.id === "team" || step.id === "create-invoice"));
+  assert.equal(adjacentStep(viewer, "create-invoice", 1), "issuance");
+  assert.equal(adjacentStep(viewer, "team", 1), "settings");
+  assert.equal(adjacentStep(viewer, "clients", -1), "dashboard");
+  assert.equal(adjacentStep(viewer, "welcome", -1), "welcome");
+  assert.equal(adjacentStep(viewer, "finish", 1), "finish");
+  assert.ok(tourSteps(["members:manage"]).some((step) => step.id === "team"));
+  assert.ok(!viewer.some((step) => /payroll|expenses|payment tracking/i.test(step.title)));
+});
+test("missing, hidden and zero-size targets are unavailable", (t) => {
+  globalThis.getComputedStyle = () => ({ display: "block", visibility: "visible" });
+  t.after(() => { delete globalThis.getComputedStyle; });
+  const target = { closest: () => null, getBoundingClientRect: () => ({ width: 40, height: 30 }) };
+  assert.equal(visibleTourTarget(null), false);
+  assert.equal(visibleTourTarget(target), true);
+  assert.equal(visibleTourTarget({ ...target, closest: () => ({}) }), false);
+  assert.equal(visibleTourTarget({ ...target, getBoundingClientRect: () => ({ width: 0, height: 30 }) }), false);
+  t.mock.method(globalThis, "getComputedStyle", () => ({ display: "none", visibility: "visible" }));
+  assert.equal(visibleTourTarget(target), false);
+});
+test("popover remains inside desktop, mobile and short viewports", () => {
+  for (const viewport of [{ width: 1440, height: 900 }, { width: 360, height: 640 }, { width: 320, height: 300 }]) {
+    for (const target of [null, { left: 20, top: 80, width: 120, height: 40 }, { left: viewport.width - 80, top: viewport.height - 50, width: 60, height: 30 }]) {
+      const panel = { width: 360, height: 260 };
+      const position = tourPosition(target, viewport, panel);
+      assert.ok(position.left >= 12);
+      assert.ok(position.top >= 12);
+      assert.ok(position.left + position.width <= viewport.width - 12);
+      assert.ok(position.top + Math.min(panel.height, viewport.height - 24) <= viewport.height - 12);
+    }
+  }
+  const target = { left: 20, top: 80, width: 120, height: 40 };
+  assert.ok(tourPosition(target, { width: 1440, height: 900 }, { width: 360, height: 260 }).left > target.left + target.width);
+});

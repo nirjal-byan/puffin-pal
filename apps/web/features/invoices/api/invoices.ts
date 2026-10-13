@@ -3,6 +3,9 @@ import type {
   CreateInvoicePayload,
   CreatedInvoice,
 } from "../types/invoice.types";
+export function downloadInvoicePdf(api: WorkspaceApi, id: string, signal?: AbortSignal) {
+  return api<Blob>(`/invoices/${id}/pdf`, { responseType: "blob", signal });
+}
 export function createInvoice(api: WorkspaceApi, input: CreateInvoicePayload) {
   return api<CreatedInvoice>("/invoices", { method: "POST", body: input });
 }
