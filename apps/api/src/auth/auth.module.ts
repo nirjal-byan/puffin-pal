@@ -6,6 +6,8 @@ import { AuthService } from "./auth.service.js";
 import { AuthController } from "./auth.controller.js";
 import { AuthGuard } from "./auth.guard.js";
 import { PermissionsGuard } from "./permissions.guard.js";
+import { RedisModule } from "../redis/redis.module.js";
+import { RedisThrottlerStorage } from "../redis/redis-throttler.storage.js";
 
 @Module({
   imports: [
@@ -30,7 +32,15 @@ import { PermissionsGuard } from "./permissions.guard.js";
         };
       },
     }),
-    ThrottlerModule.forRoot([{ ttl: 60000, limit: 100 }]),
+    RedisModule,
+    ThrottlerModule.forRootAsync({
+      imports: [RedisModule],
+      inject: [RedisThrottlerStorage],
+      useFactory: (storage: RedisThrottlerStorage) => ({
+        storage,
+        throttlers: [{ ttl: 60000, limit: 100 }],
+      }),
+    }),
   ],
   controllers: [AuthController],
   providers: [

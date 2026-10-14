@@ -11,11 +11,22 @@ across those packages; the frontend and root retain TypeScript 7.
 ## Local services
 
 `make services.start` runs `services/docker-compose.yml` as project `puffinpal`.
-PostgreSQL uses port 5433 and the `puffinpal_postgres_data` volume. Redis uses
-6379; SeaweedFS exposes S3 on 8333 and master on 9333. `make services.stop` stops
-containers without deleting volumes. Copy `services/.env.example` to `services/.env`
-if you need local overrides. Existing database credentials must stay consistent with
-`apps/api/.env`; changing Compose variables does not change credentials in an initialized volume.
+PostgreSQL uses port 5433 and the `puffinpal_postgres_data` volume. Redis-backed
+authentication throttling uses port 6379; SeaweedFS exposes S3 on 8333 and master
+on 9333. `make services.stop` stops containers without deleting volumes. Copy
+`services/.env.example` to `services/.env` if you need local overrides. Existing
+database credentials must stay consistent with `apps/api/.env`; changing Compose
+variables does not change credentials in an initialized volume.
+
+Local Redis requires the password in `services/.env` and is bound to `127.0.0.1`.
+The matching API URL is `redis://:<password>@127.0.0.1:<port>`. In production,
+set `REDIS_URL` to a private TLS endpoint (normally `rediss://...`) and do not publish
+the container's Redis port. `REDIS_RATE_LIMIT_PREFIX` isolates PuffinPal keys;
+`REDIS_CONNECT_TIMEOUT_MS` and `REDIS_RECONNECT_MAX_RETRIES` bound connection attempts.
+The API refuses to start without Redis, and an outage after startup makes throttled
+authentication requests return 503. This fail-closed policy prevents an outage from
+silently disabling credential-abuse protection. Redis contains only expiring,
+namespaced request counters; it never contains credentials or JWTs.
 
 For a fresh local `puffinpal_dev` database, run `make prisma.migrate.deploy` to
 apply the committed migration history, then `make db.verify` to verify its marker.

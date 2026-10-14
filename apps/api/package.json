@@ -26,7 +26,8 @@
     "test:e2e": "pnpm --filter @puffinpal/permissions build && pnpm --filter database build && pnpm run build && node scripts/test-auth-e2e.mjs",
     "test:invoice-pdf": "pnpm --filter @puffinpal/permissions build && pnpm --filter database build && pnpm run build && node --test test/invoice-pdf.test.mjs && node scripts/test-auth-e2e.mjs test/invoice-pdf.e2e.test.mjs",
     "test:onboarding": "pnpm run build && node --test test/onboarding.test.mjs && node scripts/test-auth-e2e.mjs test/onboarding.e2e.test.mjs",
-    "test:payments": "pnpm --filter @puffinpal/permissions build && pnpm --filter database build && pnpm run build && node --test test/invoice-payments.test.mjs && node scripts/test-auth-e2e.mjs test/invoice-payments.e2e.test.mjs"
+    "test:payments": "pnpm --filter @puffinpal/permissions build && pnpm --filter database build && pnpm run build && node --test test/invoice-payments.test.mjs && node scripts/test-auth-e2e.mjs test/invoice-payments.e2e.test.mjs",
+    "test:redis": "pnpm run build && node --test test/redis-throttler.test.mjs test/session.test.mjs"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1150.0",
@@ -44,6 +45,7 @@
     "dotenv": "^17.0.0",
     "helmet": "^8.0.0",
     "pdfkit": "0.20.2",
+    "redis": "^5.12.1",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.0",
     "temporal-polyfill": "^1.0.5"

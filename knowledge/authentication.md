@@ -61,8 +61,11 @@ Never use the local development secret in production.
 Passwords are salted and hashed asynchronously with scrypt. New hashes include
 explicit parameters; the original seed hash format is also accepted. Login errors
 use the same message for unknown organizations, unknown users and wrong passwords.
-Login is limited to 10 requests per minute per IP per API process; signup to 5.
-A shared Redis throttle store is needed before running multiple API instances.
+Login is limited to 10 requests per minute per IP; signup and password changes to 5;
+refresh to 30. All API instances share namespaced, TTL-bound counters in Redis.
+Redis stores only hashed throttler keys and counters, never passwords or tokens.
+The API fails startup when Redis is unavailable and returns 503 for throttled auth
+routes if Redis fails later, rather than silently bypassing rate limiting.
 
 ## Current endpoints
 
