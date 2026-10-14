@@ -40,45 +40,45 @@ enum ExpenseCategory {
 }
 
 model Organization {
-  id          String               @id @default(uuid())
-  name        String
-  slug        String               @unique
-  website     String?
+  id            String               @id @default(uuid())
+  name          String
+  slug          String               @unique
+  website       String?
   employeeCount String?
-  logoUrl     String?
-  currency    String               @default("USD")
-  createdAt   DateTime             @default(now())
-  updatedAt   temporal.updatedAt()
+  logoUrl       String?
+  currency      String               @default("USD")
+  createdAt     DateTime             @default(now())
+  updatedAt     temporal.updatedAt()
 
-  users       User[]
-  memberships Membership[]
-  clients     Client[]
-  invoices    Invoice[]
-  payments    Payment[]
-  expenses    Expense[]
-  retainers   Retainer[]
+  users         User[]
+  memberships   Membership[]
+  clients       Client[]
+  invoices      Invoice[]
+  payments      Payment[]
+  expenses      Expense[]
+  retainers     Retainer[]
 
   @@map("organizations")
 }
 
 model User {
-  id             String               @id @default(uuid())
-  organizationId String
-  email          String
-  passwordHash   String
-  fullName       String
-  firstName      String?
-  middleName     String?
-  lastName       String?
-  phoneNumber    String?
-  avatarUrl      String?
-  onboardingStatus OnboardingStatus @default(LEGACY)
-  onboardingStep String @default("welcome")
-  createdAt      DateTime             @default(now())
-  updatedAt      temporal.updatedAt()
+  id               String               @id @default(uuid())
+  organizationId   String
+  email            String
+  passwordHash     String
+  fullName         String
+  firstName        String?
+  middleName       String?
+  lastName         String?
+  phoneNumber      String?
+  avatarUrl        String?
+  onboardingStatus OnboardingStatus     @default(LEGACY)
+  onboardingStep   String               @default("welcome")
+  createdAt        DateTime             @default(now())
+  updatedAt        temporal.updatedAt()
 
-  organization   Organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  memberships    Membership[]
+  organization     Organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  memberships      Membership[]
 
   @@unique([organizationId, id])
   @@unique([organizationId, email])
@@ -118,34 +118,34 @@ model Client {
 }
 
 model Invoice {
-  id             String               @id @default(uuid())
-  organizationId String
-  clientId       String
-  invoiceNumber  String
-  version        Int                  @default(1)
-  status         InvoiceStatus        @default(DRAFT)
-  issueDate      DateTime
-  dueDate        DateTime
-  subtotal       Numeric(12, 2)
-  tax            Numeric(12, 2)       @default(0.00)
-  total          Numeric(12, 2)
-  issuedAt       DateTime?
-  issuedByUserId String?
-  billingName    String?
-  billingEmail   String?
+  id                 String               @id @default(uuid())
+  organizationId     String
+  clientId           String
+  invoiceNumber      String
+  version            Int                  @default(1)
+  status             InvoiceStatus        @default(DRAFT)
+  issueDate          DateTime
+  dueDate            DateTime
+  subtotal           Numeric(12, 2)
+  tax                Numeric(12, 2)       @default(0.00)
+  total              Numeric(12, 2)
+  issuedAt           DateTime?
+  issuedByUserId     String?
+  billingName        String?
+  billingEmail       String?
   billingCompanyName String?
-  billingTaxId   String?
-  sellerName     String?
-  currency       String?
-  pdfUrl         String?
-  notes          String?
-  createdAt      DateTime             @default(now())
-  updatedAt      temporal.updatedAt()
+  billingTaxId       String?
+  sellerName         String?
+  currency           String?
+  pdfUrl             String?
+  notes              String?
+  createdAt          DateTime             @default(now())
+  updatedAt          temporal.updatedAt()
 
-  organization   Organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  client         Client               @relation(fields: [organizationId, clientId], references: [organizationId, id], onDelete: Restrict)
-  items          InvoiceItem[]
-  payments       Payment[]
+  organization       Organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  client             Client               @relation(fields: [organizationId, clientId], references: [organizationId, id], onDelete: Restrict)
+  items              InvoiceItem[]
+  payments           Payment[]
 
   @@unique([organizationId, id])
   @@unique([organizationId, invoiceNumber])
@@ -169,7 +169,7 @@ model InvoiceItem {
 }
 
 model Payment {
-  id               String @id @default(uuid())
+  id               String         @id @default(uuid())
   organizationId   String
   invoiceId        String
   amount           Numeric(12, 2)
@@ -178,10 +178,10 @@ model Payment {
   reference        String?
   notes            String?
   recordedByUserId String
-  createdAt        DateTime @default(now())
+  createdAt        DateTime       @default(now())
 
-  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
-  invoice Invoice @relation(fields: [organizationId, invoiceId], references: [organizationId, id], onDelete: Restrict)
+  organization     Organization   @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  invoice          Invoice        @relation(fields: [organizationId, invoiceId], references: [organizationId, id], onDelete: Restrict)
 
   @@unique([organizationId, id])
   @@index([organizationId, invoiceId])
@@ -192,11 +192,19 @@ model Expense {
   id             String          @id @default(uuid())
   organizationId String
   title          String
+  description    String?
   amount         Numeric(12, 2)
   category       ExpenseCategory @default(OTHER)
+  vendor         String?
+  notes          String?
   receiptUrl     String?
+  receiptKey     String?
+  receiptName    String?
+  receiptMime    String?
+  receiptSize    Int?
   date           DateTime
   createdAt      DateTime        @default(now())
+  updatedAt      temporal.updatedAt()
 
   organization   Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 

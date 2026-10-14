@@ -154,23 +154,28 @@ export function InvoiceDetailView({
   return (
     <section className="panel invoice-document">
       <div className="panel-heading">
-        <h2 className="invoice-number">{invoice.invoiceNumber}</h2>
-        <span className={`role-badge invoice-status-${invoice.displayStatus.toLowerCase()}`}>{invoice.displayStatus}</span>
+        <div className="invoice-heading-copy">
+          <span className="invoice-heading-label">Invoice</span>
+          <h2 className="invoice-number">{invoice.invoiceNumber}</h2>
+        </div>
+        <div className="invoice-heading-status">
+          {invoice.issuedAt && (
+            <p className="muted invoice-issued-meta" role="status">
+              Issued by <strong>{invoice.sellerName}</strong> on {invoice.issuedAt.slice(0, 10)}
+            </p>
+          )}
+          <span className={`role-badge invoice-status-${invoice.displayStatus.toLowerCase()}`}>{invoice.displayStatus}</span>
+        </div>
       </div>
-      {invoice.issuedAt && (
-        <p className="muted invoice-issued-meta" role="status">
-          Issued by {invoice.sellerName} on {invoice.issuedAt.slice(0, 10)}
-        </p>
-      )}
       <div className="invoice-document-meta">
-        <div>
-          <h3>Bill to</h3>
+        <div className="invoice-party">
+          <span className="invoice-section-label">Bill to</span>
           <strong>{invoice.client.name}</strong>
           <p>{invoice.client.companyName}</p>
           <p>{invoice.client.email}</p>
           {invoice.client.taxId && <p>Tax ID: {invoice.client.taxId}</p>}
         </div>
-        <dl>
+        <dl className="invoice-dates">
           <dt>Issue date</dt>
           <dd>{invoice.issueDate.slice(0, 10)}</dd>
           <dt>Due date</dt>

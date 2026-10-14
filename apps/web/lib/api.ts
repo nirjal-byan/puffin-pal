@@ -84,7 +84,7 @@ async function rawRequest<T>(
     method?: string;
     body?: unknown;
     signal?: AbortSignal;
-    responseType?: "blob";
+    responseType?: "blob" | "file";
   } = {},
 ): Promise<T> {
   let response: Response;
@@ -95,13 +95,13 @@ async function rawRequest<T>(
       credentials: "include",
       signal: options.signal,
       headers: {
-        ...(options.body !== undefined
+        ...(options.body !== undefined && !(options.body instanceof FormData)
           ? { "Content-Type": "application/json" }
           : {}),
         ...(options.token ? { Authorization: `Bearer ${options.token}` } : {}),
       },
-      ...(options.body !== undefined
-        ? { body: JSON.stringify(options.body) }
+        ...(options.body !== undefined
+          ? { body: options.body instanceof FormData ? options.body : JSON.stringify(options.body) }
         : {}),
     });
   } catch (error) {
@@ -111,6 +111,7 @@ async function rawRequest<T>(
       0,
     );
   }
+  if (response.ok && options.responseType === "file") return (await response.blob()) as T;
   if (response.ok && options.responseType === "blob") {
     if (!response.headers.get("content-type")?.includes("application/pdf"))
       throw new ApiError("The server did not return a PDF. Please try again.", 502);
@@ -179,7 +180,7 @@ export async function apiRequest<T>(
     method?: string;
     body?: unknown;
     signal?: AbortSignal;
-    responseType?: "blob";
+    responseType?: "blob" | "file";
   } = {},
 ): Promise<T> {
   const generation = sessionGeneration;
@@ -227,6 +228,6 @@ export const errorMessage = (error: unknown) =>
 export interface WorkspaceApi {
   <T>(
     path: string,
-    options?: { method?: string; body?: unknown; signal?: AbortSignal; responseType?: "blob" },
+    options?: { method?: string; body?: unknown; signal?: AbortSignal; responseType?: "blob" | "file" },
   ): Promise<T>;
 }

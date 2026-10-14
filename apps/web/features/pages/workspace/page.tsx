@@ -67,7 +67,7 @@ export default function WorkspacePage({
     try {
       const saved = localStorage.getItem("puffinpal-theme");
       if (saved === "light" || saved === "dark") return saved;
-    } catch {}
+    } catch { /* Local storage may be unavailable. */ }
     return window.matchMedia("(prefers-color-scheme: dark)").matches
       ? "dark"
       : "light";
@@ -78,7 +78,7 @@ export default function WorkspacePage({
     setTheme(next);
     try {
       localStorage.setItem("puffinpal-theme", next);
-    } catch {}
+    } catch { /* Theme still applies for the current page. */ }
   }
   function recordNotification(message: string) {
     setNotice(message);
@@ -104,7 +104,7 @@ export default function WorkspacePage({
   const api: WorkspaceApi = useCallback(
     async <T,>(
       path: string,
-      options?: { method?: string; body?: unknown; signal?: AbortSignal; responseType?: "blob" },
+      options?: { method?: string; body?: unknown; signal?: AbortSignal; responseType?: "blob" | "file" },
     ) => {
       try {
         return await apiRequest<T>(path, {
@@ -124,6 +124,7 @@ export default function WorkspacePage({
       creatingInvoice ||
       invoiceId ||
       ["overview", "access", "profile", "password"].includes(tab) ||
+      tab === "expenses" ||
       !allowed
     )
       return;
@@ -184,12 +185,7 @@ export default function WorkspacePage({
   }
   const CurrentSettingsPage =
     tab === "password" ? ChangePasswordPage : EditProfilePage;
-  const CurrentFinancialPage =
-    tab === "expenses"
-      ? ExpensesPage
-      : tab === "retainers"
-        ? RetainersPage
-        : InvoicesPage;
+  const CurrentFinancialPage = tab === "retainers" ? RetainersPage : InvoicesPage;
   return (
     <WorkspaceLayout theme={theme}>
       <ProductTour key={session.user.id} session={session} api={api} />
@@ -365,6 +361,14 @@ export default function WorkspacePage({
               refreshAccess={refreshAccess}
               refreshing={refreshing}
             />
+          ) : tab === "expenses" ? (
+            <ExpensesPage
+              api={api}
+              currency={session.organization.currency}
+              permissions={session.permissions}
+              onSaved={recordNotification}
+              onError={(failure) => setError(errorMessage(failure))}
+            />
           ) : loading ? (
             <section className="panel loading" role="status">
               <span className="spinner" />
@@ -390,6 +394,7 @@ export default function WorkspacePage({
                   clients={rows as Client[]}
                   canCreate={can("clients:create")}
                   canUpdate={can("clients:update")}
+                  canDelete={can("clients:delete")}
                   api={api}
                   onSaved={saved}
                   onError={(failure) => setError(errorMessage(failure))}
@@ -404,9 +409,7 @@ export default function WorkspacePage({
                   onError={(failure) => setError(errorMessage(failure))}
                 />
               )}
-              {(tab === "invoices" ||
-                tab === "expenses" ||
-                tab === "retainers") && (
+              {(tab === "invoices" || tab === "retainers") && (
                 <CurrentFinancialPage
                   key={`${tab}-${revision}-${offset}`}
                   rows={rows as FinancialRecord[]}

@@ -6,7 +6,7 @@ import { errorMessage, type Session, type WorkspaceApi } from "../../lib/api";
 import { initialTour, tourPosition, tourStorageKey, visibleTourTarget, type TourRect, type TourState } from "./tour";
 
 type InteractiveStep = "welcome" | "dashboard" | "clients" | "invoices" | "create-invoice" |
-  "issuance" | "payment-basics" | "team" | "settings" | "finish";
+  "issuance" | "payment-basics" | "expenses" | "team" | "settings" | "finish";
 type InteractiveState = TourState & { clientId?: string; invoiceRoute?: string; invoiceId?: string; invoiceVersion?: number };
 const STEPS: readonly { id: InteractiveStep; route?: (state: InteractiveState) => string; target?: string; title: string; text: string; event?: string }[] = [
   { id: "welcome", title: "Create a test invoice", text: "Add a client, save a draft, and explore PuffinPal." },
@@ -16,6 +16,7 @@ const STEPS: readonly { id: InteractiveStep; route?: (state: InteractiveState) =
   { id: "create-invoice", route: (state) => `/invoices/new${state.clientId ? `?tutorialClient=${encodeURIComponent(state.clientId)}` : ""}`, target: "invoice-create-form", title: "Create an invoice", text: "Fill the form, then click Save as Draft.", event: "puffinpal:tutorial-invoice-created" },
   { id: "issuance", route: (state) => state.invoiceRoute ?? "/invoices", target: "issue-invoice", title: "Issue invoices", text: "Issuing locks the invoice. Keep this test as a draft for now." },
   { id: "payment-basics", route: (state) => state.invoiceRoute ?? "/invoices", target: "issue-invoice", title: "Payments and PDFs", text: "Issued invoices can be downloaded and marked as paid." },
+  { id: "expenses", route: () => "/?section=expenses&area=workspace", target: "nav-expenses", title: "Track expenses", text: "Add costs and attach private receipts here." },
   { id: "team", route: () => "/?section=members", target: "nav-members", title: "Manage your team", text: "Invite teammates and assign their roles here." },
   { id: "settings", route: () => "/?section=profile", target: "page-heading", title: "Profile and branding", text: "Update your profile and company logo here." },
   { id: "finish", route: (state) => state.invoiceRoute ?? "/invoices", target: "delete-draft", title: "Keep or delete?", text: "Choose what to do with your test draft." },

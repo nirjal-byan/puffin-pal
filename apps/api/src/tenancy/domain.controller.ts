@@ -9,11 +9,6 @@ import { TenantDatabaseService } from "./tenant-database.service.js";
 @Controller()
 export class DomainController {
   constructor(private readonly tenants: TenantDatabaseService) {}
-  @Get("expenses")
-  @RequirePermissions("expenses:read")
-  expenses(@Query() page: PageDto) {
-    return this.tenants.listExpenses(page);
-  }
   @Get("retainers")
   @RequirePermissions("retainers:read")
   retainers(@Query() page: PageDto) {

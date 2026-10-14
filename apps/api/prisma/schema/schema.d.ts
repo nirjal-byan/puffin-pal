@@ -34,9 +34,9 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'d34489e6ca7416e6e8951e1cd56d3a07d11d6bc6525e50e736d7f6a79e78a12e'>;
+  StorageHashBase<'06ad12ed557b56014279752e7307da50c77fbe0a9ec87671ec592afee19730dd'>;
 export type ExecutionHash =
-  ExecutionHashBase<'d83682d65cbdff63b777158648a0ca35b333bd1ca662aff48351da474139991f'>;
+  ExecutionHashBase<'b2c29d085e75428a51a2056eeed31437aaa2c3b672ac2bba3edf70c17c80f7dc'>;
 export type ProfileHash =
   ProfileHashBase<'3916f444a8a17ad749191acf9e08dad97d1a327b88c2f1d45d12f240296aa8b2'>;
 
@@ -265,10 +265,18 @@ export type FieldOutputTypes = {
       readonly category: 'SOFTWARE' | 'HARDWARE' | 'TRAVEL' | 'MARKETING' | 'OTHER';
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
       readonly date: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly description: CodecTypes['pg/text@1']['output'] | null;
       readonly id: CodecTypes['pg/text@1']['output'];
+      readonly notes: CodecTypes['pg/text@1']['output'] | null;
       readonly organizationId: CodecTypes['pg/text@1']['output'];
+      readonly receiptKey: CodecTypes['pg/text@1']['output'] | null;
+      readonly receiptMime: CodecTypes['pg/text@1']['output'] | null;
+      readonly receiptName: CodecTypes['pg/text@1']['output'] | null;
+      readonly receiptSize: CodecTypes['pg/int4@1']['output'] | null;
       readonly receiptUrl: CodecTypes['pg/text@1']['output'] | null;
       readonly title: CodecTypes['pg/text@1']['output'];
+      readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly vendor: CodecTypes['pg/text@1']['output'] | null;
     };
     readonly Invoice: {
       readonly billingCompanyName: CodecTypes['pg/text@1']['output'] | null;
@@ -379,10 +387,18 @@ export type FieldInputTypes = {
       readonly category: 'SOFTWARE' | 'HARDWARE' | 'TRAVEL' | 'MARKETING' | 'OTHER';
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
       readonly date: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly description: CodecTypes['pg/text@1']['input'] | null;
       readonly id: CodecTypes['pg/text@1']['input'];
+      readonly notes: CodecTypes['pg/text@1']['input'] | null;
       readonly organizationId: CodecTypes['pg/text@1']['input'];
+      readonly receiptKey: CodecTypes['pg/text@1']['input'] | null;
+      readonly receiptMime: CodecTypes['pg/text@1']['input'] | null;
+      readonly receiptName: CodecTypes['pg/text@1']['input'] | null;
+      readonly receiptSize: CodecTypes['pg/int4@1']['input'] | null;
       readonly receiptUrl: CodecTypes['pg/text@1']['input'] | null;
       readonly title: CodecTypes['pg/text@1']['input'];
+      readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly vendor: CodecTypes['pg/text@1']['input'] | null;
     };
     readonly Invoice: {
       readonly billingCompanyName: CodecTypes['pg/text@1']['input'] | null;
@@ -493,10 +509,18 @@ export type StorageColumnTypes = {
       readonly category: 'SOFTWARE' | 'HARDWARE' | 'TRAVEL' | 'MARKETING' | 'OTHER';
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
       readonly date: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly description: CodecTypes['pg/text@1']['output'] | null;
       readonly id: CodecTypes['pg/text@1']['output'];
+      readonly notes: CodecTypes['pg/text@1']['output'] | null;
       readonly organizationId: CodecTypes['pg/text@1']['output'];
+      readonly receiptKey: CodecTypes['pg/text@1']['output'] | null;
+      readonly receiptMime: CodecTypes['pg/text@1']['output'] | null;
+      readonly receiptName: CodecTypes['pg/text@1']['output'] | null;
+      readonly receiptSize: CodecTypes['pg/int4@1']['output'] | null;
       readonly receiptUrl: CodecTypes['pg/text@1']['output'] | null;
       readonly title: CodecTypes['pg/text@1']['output'];
+      readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly vendor: CodecTypes['pg/text@1']['output'] | null;
     };
     readonly invoice_items: {
       readonly amount: Numeric<12, 2>;
@@ -607,10 +631,18 @@ export type StorageColumnInputTypes = {
       readonly category: 'SOFTWARE' | 'HARDWARE' | 'TRAVEL' | 'MARKETING' | 'OTHER';
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
       readonly date: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly description: CodecTypes['pg/text@1']['input'] | null;
       readonly id: CodecTypes['pg/text@1']['input'];
+      readonly notes: CodecTypes['pg/text@1']['input'] | null;
       readonly organizationId: CodecTypes['pg/text@1']['input'];
+      readonly receiptKey: CodecTypes['pg/text@1']['input'] | null;
+      readonly receiptMime: CodecTypes['pg/text@1']['input'] | null;
+      readonly receiptName: CodecTypes['pg/text@1']['input'] | null;
+      readonly receiptSize: CodecTypes['pg/int4@1']['input'] | null;
       readonly receiptUrl: CodecTypes['pg/text@1']['input'] | null;
       readonly title: CodecTypes['pg/text@1']['input'];
+      readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly vendor: CodecTypes['pg/text@1']['input'] | null;
     };
     readonly invoice_items: {
       readonly amount: CodecTypes['pg/numeric@1']['input'];
@@ -724,10 +756,18 @@ export namespace Models {
     category: 'SOFTWARE' | 'HARDWARE' | 'TRAVEL' | 'MARKETING' | 'OTHER';
     createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
     date: CodecTypes['pg/timestamptz-temporal@1']['output'];
+    description: CodecTypes['pg/text@1']['output'] | null;
     id: CodecTypes['pg/text@1']['output'];
+    notes: CodecTypes['pg/text@1']['output'] | null;
     organizationId: CodecTypes['pg/text@1']['output'];
+    receiptKey: CodecTypes['pg/text@1']['output'] | null;
+    receiptMime: CodecTypes['pg/text@1']['output'] | null;
+    receiptName: CodecTypes['pg/text@1']['output'] | null;
+    receiptSize: CodecTypes['pg/int4@1']['output'] | null;
     receiptUrl: CodecTypes['pg/text@1']['output'] | null;
     title: CodecTypes['pg/text@1']['output'];
+    updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+    vendor: CodecTypes['pg/text@1']['output'] | null;
     organization: public_Organization;
     readonly [RelationKeys]?: 'organization';
   };
@@ -979,15 +1019,45 @@ type ContractBase = Omit<
                   readonly codecId: 'pg/timestamptz-temporal@1';
                   readonly nullable: false;
                 };
+                readonly description: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                };
                 readonly id: {
                   readonly nativeType: 'text';
                   readonly codecId: 'pg/text@1';
                   readonly nullable: false;
                 };
+                readonly notes: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                };
                 readonly organizationId: {
                   readonly nativeType: 'text';
                   readonly codecId: 'pg/text@1';
                   readonly nullable: false;
+                };
+                readonly receiptKey: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                };
+                readonly receiptMime: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                };
+                readonly receiptName: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                };
+                readonly receiptSize: {
+                  readonly nativeType: 'int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: true;
                 };
                 readonly receiptUrl: {
                   readonly nativeType: 'text';
@@ -998,6 +1068,16 @@ type ContractBase = Omit<
                   readonly nativeType: 'text';
                   readonly codecId: 'pg/text@1';
                   readonly nullable: false;
+                };
+                readonly updatedAt: {
+                  readonly nativeType: 'timestamptz';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                  readonly nullable: false;
+                };
+                readonly vendor: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
                 };
               };
               primaryKey: { readonly columns: readonly ['id'] };
@@ -1876,13 +1956,37 @@ type ContractBase = Omit<
                   readonly codecId: 'pg/timestamptz-temporal@1';
                 };
               };
+              readonly description: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
               readonly id: {
                 readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly notes: {
+                readonly nullable: true;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
               readonly organizationId: {
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly receiptKey: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly receiptMime: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly receiptName: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly receiptSize: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
               };
               readonly receiptUrl: {
                 readonly nullable: true;
@@ -1890,6 +1994,17 @@ type ContractBase = Omit<
               };
               readonly title: {
                 readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly updatedAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                };
+              };
+              readonly vendor: {
+                readonly nullable: true;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
             };
@@ -1915,10 +2030,18 @@ type ContractBase = Omit<
                 readonly category: { readonly column: 'category' };
                 readonly createdAt: { readonly column: 'createdAt' };
                 readonly date: { readonly column: 'date' };
+                readonly description: { readonly column: 'description' };
                 readonly id: { readonly column: 'id' };
+                readonly notes: { readonly column: 'notes' };
                 readonly organizationId: { readonly column: 'organizationId' };
+                readonly receiptKey: { readonly column: 'receiptKey' };
+                readonly receiptMime: { readonly column: 'receiptMime' };
+                readonly receiptName: { readonly column: 'receiptName' };
+                readonly receiptSize: { readonly column: 'receiptSize' };
                 readonly receiptUrl: { readonly column: 'receiptUrl' };
                 readonly title: { readonly column: 'title' };
+                readonly updatedAt: { readonly column: 'updatedAt' };
+                readonly vendor: { readonly column: 'vendor' };
               };
             };
           };
@@ -2768,6 +2891,15 @@ type ContractBase = Omit<
           readonly ref: {
             readonly entry: 'expenses';
             readonly field: 'id';
+            readonly namespace: 'public';
+          };
+        },
+        {
+          readonly onCreate: { readonly id: 'instantNow'; readonly kind: 'generator' };
+          readonly onUpdate: { readonly id: 'instantNow'; readonly kind: 'generator' };
+          readonly ref: {
+            readonly entry: 'expenses';
+            readonly field: 'updatedAt';
             readonly namespace: 'public';
           };
         },

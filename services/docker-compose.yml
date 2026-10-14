@@ -38,7 +38,11 @@ services:
     ports:
       - "8333:8333"
       - "9333:9333"
-    command: "server -s3"
+    command: "server -s3 -s3.config=/etc/seaweedfs/s3.json"
+    volumes:
+      - ./seaweedfs/s3.json:/etc/seaweedfs/s3.json:ro
+      - seaweedfs_data:/data
 
 volumes:
   postgres_data:
+  seaweedfs_data:

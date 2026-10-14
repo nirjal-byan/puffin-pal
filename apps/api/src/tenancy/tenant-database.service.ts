@@ -1,4 +1,5 @@
 import {
+  ConflictException,
   Inject,
   Injectable,
   NotFoundException,
@@ -71,6 +72,24 @@ export class TenantDatabaseService {
     }).update(data);
     if (!client) throw new NotFoundException("Client not found");
     return client;
+  }
+  async deleteClient(id: string) {
+    const organizationId = this.organizationId;
+    const client = await this.db.orm.public.Client.where({
+      organizationId,
+      id,
+    }).first();
+    if (!client) throw new NotFoundException("Client not found");
+    const invoice = await this.db.orm.public.Invoice.where({
+      organizationId,
+      clientId: id,
+    }).select("id").first();
+    if (invoice)
+      throw new ConflictException(
+        "This client cannot be deleted because they have invoices.",
+      );
+    await this.db.orm.public.Client.where({ organizationId, id }).delete();
+    return { message: "Client deleted successfully." };
   }
   listExpenses(page: PageDto) {
     return this.db.orm.public.Expense.where({

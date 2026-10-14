@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   ParseUUIDPipe,
@@ -41,5 +42,10 @@ export class ClientsController {
     @Body() input: UpdateClientDto,
   ) {
     return this.tenants.updateClient(id, input);
+  }
+  @Delete(":id")
+  @RequirePermissions("clients:delete")
+  remove(@Param("id", ParseUUIDPipe) id: string) {
+    return this.tenants.deleteClient(id);
   }
 }

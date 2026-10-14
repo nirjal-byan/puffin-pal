@@ -1,8 +1,9 @@
 import Image from "next/image";
+import Link from "next/link";
 
 export function Brand({ inverted = false }: { inverted?: boolean }) {
   return (
-    <a className="brand" href="/" aria-label="PuffinPal home">
+    <Link className="brand" href="/" aria-label="PuffinPal home">
       <Image
         className="brand-logo"
         src="/puffinpal-logo-transparent.png"
@@ -24,6 +25,6 @@ export function Brand({ inverted = false }: { inverted?: boolean }) {
           priority
         />
       )}
-    </a>
+    </Link>
   );
 }

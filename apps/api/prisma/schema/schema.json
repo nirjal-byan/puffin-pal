@@ -337,8 +337,22 @@
                   "kind": "scalar"
                 }
               },
+              "description": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
               "id": {
                 "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "notes": {
+                "nullable": true,
                 "type": {
                   "codecId": "pg/text@1",
                   "kind": "scalar"
@@ -351,6 +365,34 @@
                   "kind": "scalar"
                 }
               },
+              "receiptKey": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "receiptMime": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "receiptName": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "receiptSize": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
               "receiptUrl": {
                 "nullable": true,
                 "type": {
@@ -360,6 +402,20 @@
               },
               "title": {
                 "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "updatedAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "kind": "scalar"
+                }
+              },
+              "vendor": {
+                "nullable": true,
                 "type": {
                   "codecId": "pg/text@1",
                   "kind": "scalar"
@@ -398,17 +454,41 @@
                 "date": {
                   "column": "date"
                 },
+                "description": {
+                  "column": "description"
+                },
                 "id": {
                   "column": "id"
                 },
+                "notes": {
+                  "column": "notes"
+                },
                 "organizationId": {
                   "column": "organizationId"
+                },
+                "receiptKey": {
+                  "column": "receiptKey"
+                },
+                "receiptMime": {
+                  "column": "receiptMime"
+                },
+                "receiptName": {
+                  "column": "receiptName"
+                },
+                "receiptSize": {
+                  "column": "receiptSize"
                 },
                 "receiptUrl": {
                   "column": "receiptUrl"
                 },
                 "title": {
                   "column": "title"
+                },
+                "updatedAt": {
+                  "column": "updatedAt"
+                },
+                "vendor": {
+                  "column": "vendor"
                 }
               },
               "namespaceId": "public",
@@ -1765,15 +1845,45 @@
                   "nativeType": "timestamptz",
                   "nullable": false
                 },
+                "description": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
                 "id": {
                   "codecId": "pg/text@1",
                   "nativeType": "text",
                   "nullable": false
                 },
+                "notes": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
                 "organizationId": {
                   "codecId": "pg/text@1",
                   "nativeType": "text",
                   "nullable": false
+                },
+                "receiptKey": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "receiptMime": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "receiptName": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "receiptSize": {
+                  "codecId": "pg/int4@1",
+                  "nativeType": "int4",
+                  "nullable": true
                 },
                 "receiptUrl": {
                   "codecId": "pg/text@1",
@@ -1784,6 +1894,16 @@
                   "codecId": "pg/text@1",
                   "nativeType": "text",
                   "nullable": false
+                },
+                "updatedAt": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "vendor": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
                 }
               },
               "foreignKeys": [
@@ -2787,10 +2907,10 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "d34489e6ca7416e6e8951e1cd56d3a07d11d6bc6525e50e736d7f6a79e78a12e"
+    "storageHash": "06ad12ed557b56014279752e7307da50c77fbe0a9ec87671ec592afee19730dd"
   },
   "execution": {
-    "executionHash": "d83682d65cbdff63b777158648a0ca35b333bd1ca662aff48351da474139991f",
+    "executionHash": "b2c29d085e75428a51a2056eeed31437aaa2c3b672ac2bba3edf70c17c80f7dc",
     "mutations": {
       "defaults": [
         {
@@ -2827,6 +2947,21 @@
           "ref": {
             "entry": "expenses",
             "field": "id",
+            "namespace": "public"
+          }
+        },
+        {
+          "onCreate": {
+            "id": "instantNow",
+            "kind": "generator"
+          },
+          "onUpdate": {
+            "id": "instantNow",
+            "kind": "generator"
+          },
+          "ref": {
+            "entry": "expenses",
+            "field": "updatedAt",
             "namespace": "public"
           }
         },

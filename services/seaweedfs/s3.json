@@ -1,0 +1,14 @@
+{
+  "identities": [
+    {
+      "name": "puffinpal-api",
+      "credentials": [
+        {
+          "accessKey": "puffinpal_local",
+          "secretKey": "puffinpal_local_secret"
+        }
+      ],
+      "actions": ["Admin", "Read", "Write", "List", "Tagging"]
+    }
+  ]
+}

@@ -1,6 +1,6 @@
 "use client";
 import PageLayout from "./layout";
-import { useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import type { Client } from "../../../lib/api";
 
 import type { WorkspaceApi } from "../../../lib/api";
@@ -8,6 +8,7 @@ export default function ClientsPage({
   clients,
   canCreate,
   canUpdate,
+  canDelete,
   api,
   onSaved,
   onError,
@@ -15,12 +16,35 @@ export default function ClientsPage({
   clients: Client[];
   canCreate: boolean;
   canUpdate: boolean;
+  canDelete: boolean;
   api: WorkspaceApi;
   onSaved: (message: string) => void;
   onError: (error: unknown) => void;
 }) {
   const [editing, setEditing] = useState<Client | null>(null);
+  const [deleting, setDeleting] = useState<Client | null>(null);
   const [busy, setBusy] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
+  const dialog = useRef<HTMLDialogElement>(null);
+  useEffect(() => {
+    if (deleting) dialog.current?.showModal();
+    else dialog.current?.close();
+  }, [deleting]);
+  async function removeClient() {
+    if (!deleting || busy) return;
+    setBusy(true);
+    setDeleteError("");
+    try {
+      await api(`/clients/${deleting.id}`, { method: "DELETE" });
+      setDeleting(null);
+      if (editing?.id === deleting.id) setEditing(null);
+      onSaved("Client deleted.");
+    } catch (error) {
+      setDeleteError(error instanceof Error ? error.message : "Unable to delete client.");
+    } finally {
+      setBusy(false);
+    }
+  }
   async function save(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = event.currentTarget;
@@ -61,7 +85,7 @@ export default function ClientsPage({
                   <th>Client</th>
                   <th>Company</th>
                   <th>Tax ID</th>
-                  {canUpdate && (
+                  {(canUpdate || canDelete) && (
                     <th>
                       <span className="sr-only">Actions</span>
                     </th>
@@ -77,17 +101,28 @@ export default function ClientsPage({
                     </td>
                     <td>{client.companyName || "—"}</td>
                     <td>{client.taxId || "—"}</td>
-                    {canUpdate && (
+                    {(canUpdate || canDelete) && (
                       <td>
-                        <button
-                          className="text-button"
-                          type="button"
-                          disabled={busy}
-                          onClick={() => setEditing(client)}
-                          aria-label={`Edit ${client.name}`}
-                        >
-                          Edit ↗
-                        </button>
+                        <div className="client-row-actions">
+                          {canUpdate && <button
+                            className="text-button"
+                            type="button"
+                            disabled={busy}
+                            onClick={() => setEditing(client)}
+                            aria-label={`Edit ${client.name}`}
+                          >
+                            Edit ↗
+                          </button>}
+                          {canDelete && <button
+                            className="text-button danger-text"
+                            type="button"
+                            disabled={busy}
+                            onClick={() => { setDeleteError(""); setDeleting(client); }}
+                            aria-label={`Delete ${client.name}`}
+                          >
+                            Delete
+                          </button>}
+                        </div>
                       </td>
                     )}
                   </tr>
@@ -172,6 +207,25 @@ export default function ClientsPage({
           </form>
         </section>
       )}
+      <dialog
+        ref={dialog}
+        className="invoice-delete-dialog"
+        aria-label={deleting ? `Delete ${deleting.name}` : "Delete client"}
+        onCancel={(event) => {
+          event.preventDefault();
+          if (!busy) setDeleting(null);
+        }}
+        onClose={() => setDeleting(null)}
+      >
+        <h2>Delete client?</h2>
+        <p><strong>{deleting?.name}</strong></p>
+        <p>This permanently deletes the client. Clients with invoices cannot be deleted.</p>
+        {deleteError && <p className="alert" role="alert">{deleteError}</p>}
+        <div className="invoice-actions">
+          <button autoFocus type="button" className="button secondary" disabled={busy} onClick={() => setDeleting(null)}>Cancel</button>
+          <button type="button" className="button danger" disabled={busy} onClick={() => void removeClient()}>{busy ? "Deleting…" : "Delete permanently"}</button>
+        </div>
+      </dialog>
     </PageLayout>
   );
 }

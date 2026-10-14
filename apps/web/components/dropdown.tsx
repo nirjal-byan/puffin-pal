@@ -123,7 +123,7 @@ export function Dropdown({
       document
         .getElementById(`${id}-option-${filtered[active]?.value}`)
         ?.scrollIntoView({ block: "nearest" });
-  }, [active, query, position]);
+  }, [active, filtered, id, position]);
   function keyboard(event: KeyboardEvent<HTMLElement>) {
     if (event.key === "Escape") {
       event.preventDefault();

@@ -1,0 +1,417 @@
+[
+  {
+    "id": "column.public.expenses.description",
+    "label": "Add column \"description\" to \"expenses\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "description",
+        "table": "expenses"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"description\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "expenses",
+          "description"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"description\"",
+        "sql": "ALTER TABLE \"public\".\"expenses\" ADD COLUMN \"description\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"description\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "expenses",
+          "description"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.expenses.notes",
+    "label": "Add column \"notes\" to \"expenses\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "notes",
+        "table": "expenses"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"notes\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "expenses",
+          "notes"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"notes\"",
+        "sql": "ALTER TABLE \"public\".\"expenses\" ADD COLUMN \"notes\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"notes\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "expenses",
+          "notes"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.expenses.receiptKey",
+    "label": "Add column \"receiptKey\" to \"expenses\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "receiptKey",
+        "table": "expenses"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"receiptKey\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "expenses",
+          "receiptKey"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"receiptKey\"",
+        "sql": "ALTER TABLE \"public\".\"expenses\" ADD COLUMN \"receiptKey\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"receiptKey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "expenses",
+          "receiptKey"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.expenses.receiptMime",
+    "label": "Add column \"receiptMime\" to \"expenses\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "receiptMime",
+        "table": "expenses"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"receiptMime\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "expenses",
+          "receiptMime"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"receiptMime\"",
+        "sql": "ALTER TABLE \"public\".\"expenses\" ADD COLUMN \"receiptMime\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"receiptMime\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "expenses",
+          "receiptMime"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.expenses.receiptName",
+    "label": "Add column \"receiptName\" to \"expenses\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "receiptName",
+        "table": "expenses"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"receiptName\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "expenses",
+          "receiptName"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"receiptName\"",
+        "sql": "ALTER TABLE \"public\".\"expenses\" ADD COLUMN \"receiptName\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"receiptName\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "expenses",
+          "receiptName"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.expenses.receiptSize",
+    "label": "Add column \"receiptSize\" to \"expenses\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "receiptSize",
+        "table": "expenses"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"receiptSize\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "expenses",
+          "receiptSize"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"receiptSize\"",
+        "sql": "ALTER TABLE \"public\".\"expenses\" ADD COLUMN \"receiptSize\" int4"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"receiptSize\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "expenses",
+          "receiptSize"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.expenses.vendor",
+    "label": "Add column \"vendor\" to \"expenses\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "vendor",
+        "table": "expenses"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"vendor\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "expenses",
+          "vendor"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"vendor\"",
+        "sql": "ALTER TABLE \"public\".\"expenses\" ADD COLUMN \"vendor\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"vendor\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "expenses",
+          "vendor"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.expenses.updatedAt",
+    "label": "Add column \"updatedAt\" to \"expenses\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "updatedAt",
+        "table": "expenses"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"updatedAt\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "expenses",
+          "updatedAt"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"updatedAt\"",
+        "sql": "ALTER TABLE \"public\".\"expenses\" ADD COLUMN \"updatedAt\" timestamptz"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"updatedAt\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "expenses",
+          "updatedAt"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "data_migration.backfill-expenses-updatedAt",
+    "label": "Data transform: backfill-expenses-updatedAt",
+    "operationClass": "data",
+    "target": {
+      "id": "postgres"
+    },
+    "precheck": [
+      {
+        "description": "Check backfill-expenses-updatedAt has work to do",
+        "sql": "SELECT EXISTS (SELECT \"id\" AS \"id\" FROM \"public\".\"expenses\" WHERE \"updatedAt\" IS NULL LIMIT 1) AS ok",
+        "params": []
+      }
+    ],
+    "execute": [
+      {
+        "description": "Run backfill-expenses-updatedAt",
+        "sql": "UPDATE \"public\".\"expenses\" SET \"updatedAt\" = $1 WHERE \"updatedAt\" IS NULL",
+        "params": [
+          "2026-10-14T00:00:00Z"
+        ]
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "Verify backfill-expenses-updatedAt resolved all violations",
+        "sql": "SELECT NOT EXISTS (SELECT \"id\" AS \"id\" FROM \"public\".\"expenses\" WHERE \"updatedAt\" IS NULL LIMIT 1) AS ok",
+        "params": []
+      }
+    ]
+  },
+  {
+    "id": "alterNullability.setNotNull.expenses.updatedAt",
+    "label": "Set NOT NULL on \"expenses\".\"updatedAt\"",
+    "operationClass": "destructive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "updatedAt",
+        "table": "expenses"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"updatedAt\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "expenses",
+          "updatedAt"
+        ]
+      },
+      {
+        "description": "ensure no NULL values in \"updatedAt\"",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"public\".\"expenses\" WHERE \"updatedAt\" IS NULL) AS \"result\"",
+        "params": []
+      }
+    ],
+    "execute": [
+      {
+        "description": "set NOT NULL on \"updatedAt\"",
+        "sql": "ALTER TABLE \"public\".\"expenses\" ALTER COLUMN \"updatedAt\" SET NOT NULL"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"updatedAt\" is NOT NULL",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3 AND \"is_nullable\" = $4)) AS \"result\"",
+        "params": [
+          "public",
+          "expenses",
+          "updatedAt",
+          "NO"
+        ]
+      }
+    ]
+  }
+]
