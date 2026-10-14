@@ -36,7 +36,7 @@ export function CompanyLogoPicker({
         {label} <span className="optional">Optional</span>
       </div>
       <div className="company-logo-upload">
-        <div className={`company-logo-preview${kind === "profile" ? " profile-picture-preview" : ""}`}>
+        <div className={`company-logo-preview${value ? " has-image" : ""}${kind === "profile" ? " profile-picture-preview" : ""}`}>
           {value ? (
             <Image
               src={value}

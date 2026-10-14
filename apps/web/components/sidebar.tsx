@@ -23,7 +23,7 @@ export function Sidebar({
     <aside className="sidebar">
       <h2 className="sidebar-title">{section?.label ?? "My access"}</h2>
       <div className="organization-card">
-        <span className="organization-icon">
+        <span className={`organization-icon${session.organization.logoUrl ? " has-image" : ""}`}>
           {session.organization.logoUrl ? (
             <Image src={session.organization.logoUrl} alt={`${session.organization.name} logo`}
               width={36} height={36} unoptimized className="company-logo-thumbnail" />
