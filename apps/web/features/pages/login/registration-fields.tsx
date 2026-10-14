@@ -8,6 +8,7 @@ import {
 
 import { Dropdown } from "../../../components/dropdown";
 import { PhoneInput } from "../../../components/phone-input";
+import { CURRENCIES } from "../../../lib/currencies";
 
 export function RegistrationFields({
   step,
@@ -186,6 +187,23 @@ export function RegistrationFields({
             />
           </label>
         </div>
+        <label>
+          Workspace currency <span className="required-mark">*</span>
+          <Dropdown
+            name="currency"
+            label="Workspace currency"
+            placeholder="Select currency"
+            value={draft.currency}
+            onChange={(currency) => onDraftChange({ currency })}
+            options={CURRENCIES.map((currency) => ({
+              value: currency.code,
+              label: `${currency.flag} ${currency.code} — ${currency.name}`,
+              leading: currency.flag,
+              detail: currency.code,
+            }))}
+          />
+          <span className="field-hint">Used for invoices, payments, and PDFs.</span>
+        </label>
       </section>
       <section
         className="registration-step"

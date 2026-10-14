@@ -158,7 +158,7 @@ export function InvoiceDetailView({
         <span className={`role-badge invoice-status-${invoice.displayStatus.toLowerCase()}`}>{invoice.displayStatus}</span>
       </div>
       {invoice.issuedAt && (
-        <p className="muted" role="status">
+        <p className="muted invoice-issued-meta" role="status">
           Issued by {invoice.sellerName} on {invoice.issuedAt.slice(0, 10)}
         </p>
       )}

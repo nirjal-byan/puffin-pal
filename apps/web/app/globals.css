@@ -1679,6 +1679,16 @@ tr:hover td {
   align-items: center;
   gap: 8px;
 }
+.currency-menu { position: relative; }
+.currency-menu summary { display: flex; align-items: center; gap: 6px; min-height: 34px; padding: 6px 11px; border: 1px solid var(--border); border-radius: 8px; background: transparent; color: var(--foreground); font-size: 12px; font-weight: 650; cursor: pointer; list-style: none; }
+.currency-menu summary::-webkit-details-marker { display: none; }
+.currency-menu summary::after { content: "⌄"; color: var(--muted); }
+.currency-menu[open] summary, .currency-menu summary:hover { background: #edf6f0; }
+.currency-menu-panel { position: absolute; z-index: 30; top: calc(100% + 8px); right: 0; width: 210px; display: grid; gap: 4px; padding: 14px; border: 1px solid var(--border); border-radius: 10px; background: #fff; box-shadow: 0 14px 36px #0002; }
+.currency-menu-panel span, .currency-menu-panel small { color: var(--muted); }
+.workspace-layout[data-theme="dark"] .currency-menu[open] summary,
+.workspace-layout[data-theme="dark"] .currency-menu summary:hover { background: #263e32; }
+.workspace-layout[data-theme="dark"] .currency-menu-panel { background: #18231d; }
 .icon-button {
   width: 34px;
   height: 34px;
@@ -3255,12 +3265,13 @@ tr:hover td {
 .invoice-list-actions { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; }
 .invoice-document { overflow: hidden; }
 .invoice-document .panel-heading { flex-wrap: wrap; gap: .75rem; }
+.invoice-issued-meta { padding: .15rem 1.5rem 0; }
 .invoice-document-meta, .invoice-document-bottom { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 2rem; padding: 1.5rem; }
 .invoice-document p { overflow-wrap: anywhere; }
 .invoice-document dl { display: grid; grid-template-columns: auto minmax(0, 1fr); align-content: start; gap: .65rem 1rem; margin: 0; }
 .invoice-document dd { margin: 0; text-align: right; overflow-wrap: anywhere; }
 .invoice-notes { white-space: pre-wrap; }
-.invoice-delete-dialog { border: 1px solid var(--border); border-radius: 1rem; padding: 1.5rem; width: min(32rem, calc(100vw - 2rem)); background: var(--background); color: var(--foreground); }
+.invoice-delete-dialog { position: fixed; inset: 0; margin: auto; border: 1px solid var(--border); border-radius: 1rem; padding: 1.5rem; width: min(32rem, calc(100vw - 2rem)); max-height: calc(100dvh - 2rem); background: var(--background); color: var(--foreground); }
 .invoice-delete-dialog::backdrop { background: rgb(0 0 0 / .5); }
 .invoice-delete-dialog p { margin: 1rem 0; }
 .button.danger { background: #b42318; color: white; }
@@ -3339,6 +3350,9 @@ tr:hover td {
   outline: none;
   animation: workspace-page-enter 180ms ease-out;
 }
+.tour-close { position: absolute; top: 12px; right: 12px; display: grid; place-items: center; width: 30px; height: 30px; padding: 0; border: 0; border-radius: 7px; background: transparent; color: var(--muted); font-size: 22px; line-height: 1; transition: background-color 150ms ease, color 150ms ease; }
+.tour-close:hover:not(:disabled) { background: #edf6f0; color: var(--foreground); transform: none; box-shadow: none; }
+.workspace-layout[data-theme="dark"] .tour-close:hover:not(:disabled) { background: #263e32; }
 .workspace-layout[data-theme="dark"] .tour-panel { background: #18231d; }
 .tour-panel h2 { margin: 16px 0 10px; font-size: 18px; letter-spacing: -.35px; }
 .tour-panel p { font-size: 13px; line-height: 1.7; color: var(--muted); }
@@ -3347,6 +3361,7 @@ tr:hover td {
 .tour-progress-track span { display: block; height: 100%; background: #429478; transition: width 180ms ease; }
 .tour-controls, .tour-controls > div { display: flex; align-items: center; gap: 8px; }
 .tour-controls { margin-top: 22px; justify-content: space-between; }
+.tour-controls-end { justify-content: flex-end; }
 .workspace-layout .tour-launch {
   white-space: nowrap;
   min-height: 34px;
@@ -3393,6 +3408,14 @@ tr:hover td {
   .tour-progress-track span { transition: none; }
   .workspace-layout .tour-launch { transition: none; }
 }
+
+.tour-layer-interactive { pointer-events: none; }
+.tour-layer-interactive .tour-panel { pointer-events: auto; }
+.tour-tab-hint { padding: 9px 10px; border-radius: 7px; background: #edf6f0; color: #285d46 !important; }
+.tour-suggested-data { margin-top: 10px; padding-left: 10px; border-left: 2px solid #69ac8b; }
+.tour-tab-hint kbd { padding: 2px 6px; border: 1px solid #bdd7c8; border-bottom-width: 2px; border-radius: 4px; background: #fff; font: inherit; font-weight: 700; }
+.workspace-layout[data-theme="dark"] .tour-tab-hint { background: #263e32; color: #c4edd8 !important; }
+.workspace-layout[data-theme="dark"] .tour-tab-hint kbd { background: #18231d; border-color: #476752; }
 
 .invoice-payment-history { margin-top: 24px; }
 .payment-history-note { padding: 20px 24px; }

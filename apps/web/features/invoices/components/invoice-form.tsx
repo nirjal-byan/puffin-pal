@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import { ApiError, errorMessage, type WorkspaceApi } from "../../../lib/api";
 import { useCreateInvoice } from "../hooks/use-create-invoice";
@@ -31,11 +32,15 @@ export function InvoiceForm({
   onReload?: () => void;
   onCreated: (invoice: CreatedInvoice) => void;
 }) {
+  const tutorialClient = useSearchParams().get("tutorialClient") ?? "";
+  const [suggestedDueDate] = useState(() =>
+    new Date(Date.now() + 14 * 86400000).toISOString().slice(0, 10),
+  );
   const [draft, setDraft] = useState<InvoiceDraft>(() =>
     initialInvoice
       ? invoiceDraft(initialInvoice)
       : {
-          clientId: "",
+          clientId: tutorialClient,
           issueDate: new Date().toISOString().slice(0, 10),
           dueDate: "",
           notes: "",
@@ -71,14 +76,17 @@ export function InvoiceForm({
       const payload = invoicePayload(draft);
       if (initialInvoice) payload.notes = draft.notes.trim();
       const invoice = await save(payload);
-      if (invoice) onCreated(invoice);
+      if (invoice) {
+        window.dispatchEvent(new CustomEvent("puffinpal:tutorial-invoice-created", { detail: { id: invoice.id, version: invoice.version ?? 0 } }));
+        onCreated(invoice);
+      }
     } catch (error) {
       setFailure(errorMessage(error));
       if (error instanceof ApiError && error.status === 409) setConflict(true);
     }
   }
   return (
-    <form id="invoice-create-form" onSubmit={submit} noValidate>
+    <form id="invoice-create-form" data-tour="invoice-create-form" onSubmit={submit} noValidate>
       <div className="invoice-form-actions">
         <span className="role-badge">Draft</span>
         <div>
@@ -152,6 +160,13 @@ export function InvoiceForm({
                         field === "issueDate" ? "Issue date" : "Due date"
                       }
                       type="date"
+                      name={field}
+                      data-tour-suggestion={field === "dueDate" ? suggestedDueDate : undefined}
+                      onKeyDown={(event) => {
+                        if (event.key === "Tab" && !event.shiftKey && !draft[field] && field === "dueDate") {
+                          event.preventDefault(); update({ dueDate: suggestedDueDate });
+                        }
+                      }}
                       value={draft[field]}
                       onChange={(event) =>
                         update({ [field]: event.target.value })

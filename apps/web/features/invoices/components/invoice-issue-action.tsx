@@ -60,6 +60,7 @@ export function InvoiceIssueAction({
       <button
         type="button"
         className="button"
+        data-tour="issue-invoice"
         onClick={() => {
           setReviewed(invoice);
           setFailure("");

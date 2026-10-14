@@ -104,6 +104,11 @@ export default function LoginPage({
         ?.focus();
       return;
     }
+    if (signup && signupStep === 1 && !registrationDraft.currency) {
+      setError("Choose your workspace currency before continuing.");
+      event.currentTarget.querySelector<HTMLButtonElement>('[data-dropdown-name="currency"]')?.focus();
+      return;
+    }
     if (signup && signupStep < 2) {
       setError("");
       previousHeight.current = cardRef.current?.offsetHeight ?? null;
@@ -150,6 +155,7 @@ export default function LoginPage({
                 phoneNumber: String(data.get("phoneNumber")),
                 companyWebsite: String(data.get("companyWebsite")).trim(),
                 employeeCount: String(data.get("employeeCount")),
+                currency: String(data.get("currency")),
                 confirmPassword: String(data.get("confirmPassword")),
               }
             : credentials,

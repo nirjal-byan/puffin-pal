@@ -27,7 +27,7 @@ export default function ClientsPage({
     const fields = new FormData(form);
     setBusy(true);
     try {
-      await api<Client>(editing ? `/clients/${editing.id}` : "/clients", {
+      const saved = await api<Client>(editing ? `/clients/${editing.id}` : "/clients", {
         method: editing ? "PATCH" : "POST",
         body: {
           name: String(fields.get("name")),
@@ -36,6 +36,7 @@ export default function ClientsPage({
           taxId: String(fields.get("taxId")),
         },
       });
+      if (!editing) window.dispatchEvent(new CustomEvent("puffinpal:tutorial-client-created", { detail: { id: saved.id } }));
       setEditing(null);
       form.reset();
       onSaved(editing ? "Client updated." : "Client added.");
@@ -107,7 +108,7 @@ export default function ClientsPage({
         )}
       </section>
       {(canCreate || editing) && (
-        <section className="panel form-panel">
+        <section className="panel form-panel" data-tour="client-form">
           <span className="eyebrow">Client details</span>
           <h3>{editing ? "Edit client" : "Add a client"}</h3>
           <form key={editing?.id ?? "new"} onSubmit={save}>
@@ -116,6 +117,7 @@ export default function ClientsPage({
                 Name
                 <input
                   name="name"
+                  data-tour-suggestion="PuffinPal Demo Client"
                   required
                   maxLength={120}
                   defaultValue={editing?.name}
@@ -126,6 +128,7 @@ export default function ClientsPage({
                 Email
                 <input
                   name="email"
+                  data-tour-suggestion="demo.client@example.com"
                   type="email"
                   required
                   maxLength={254}
@@ -137,6 +140,7 @@ export default function ClientsPage({
                 Company <span className="optional">optional</span>
                 <input
                   name="companyName"
+                  data-tour-suggestion="Northstar Demo Co."
                   maxLength={120}
                   defaultValue={editing?.companyName ?? ""}
                   placeholder="Company name"
@@ -146,6 +150,7 @@ export default function ClientsPage({
                 Tax ID <span className="optional">optional</span>
                 <input
                   name="taxId"
+                  data-tour-suggestion="DEMO-TAX-001"
                   maxLength={120}
                   defaultValue={editing?.taxId ?? ""}
                   placeholder="Tax identifier"

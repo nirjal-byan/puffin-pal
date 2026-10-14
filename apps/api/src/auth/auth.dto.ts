@@ -38,6 +38,11 @@ export class LoginDto {
   password!: string;
 }
 export class SignupDto extends LoginDto {
+  @ApiProperty({ required: false, enum: ["USD", "EUR", "GBP", "NPR", "INR", "AUD", "CAD", "JPY", "CNY", "CHF", "SGD", "AED"] })
+  @IsOptional()
+  @IsIn(["USD", "EUR", "GBP", "NPR", "INR", "AUD", "CAD", "JPY", "CNY", "CHF", "SGD", "AED"])
+  currency?: string;
+
   @ApiProperty({
     required: false,
     description: "Optional company logo image data URL",

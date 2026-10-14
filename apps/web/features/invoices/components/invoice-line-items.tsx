@@ -44,6 +44,14 @@ export function InvoiceLineItems({
                         ? "Quantity"
                         : "Unit price"}
                     <input
+                      name={field}
+                      data-tour-suggestion={field === "description" ? "Website design" : field === "quantity" ? "1" : "500.00"}
+                      onKeyDown={(event) => {
+                        const suggestion = field === "description" ? "Website design" : field === "quantity" ? "1" : "500.00";
+                        if (event.key === "Tab" && !event.shiftKey && (!line[field] || (field === "unitPrice" && line[field] === "0.00"))) {
+                          event.preventDefault(); onChange(line.id, { [field]: suggestion });
+                        }
+                      }}
                       value={line[field]}
                       onChange={(event) =>
                         onChange(line.id, { [field]: event.target.value })

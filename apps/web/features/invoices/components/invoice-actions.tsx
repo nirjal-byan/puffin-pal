@@ -43,6 +43,7 @@ export function InvoiceActions({
     setFailure("");
     try {
       await deleteInvoice(api, reviewed.id, reviewed.version);
+      window.dispatchEvent(new CustomEvent("puffinpal:tutorial-invoice-deleted", { detail: { id: reviewed.id } }));
       setOpen(false);
       onDeleted();
     } catch (error) {
@@ -58,6 +59,7 @@ export function InvoiceActions({
       {actions.edit && (
         <Link
           className="button secondary compact"
+          data-tour="delete-draft"
           href={`/invoices/${invoice.id}/edit`}
         >
           Edit Draft

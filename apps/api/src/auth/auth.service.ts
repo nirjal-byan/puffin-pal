@@ -63,6 +63,7 @@ export class AuthService {
         const organization = await tx.orm.public.Organization.create({
           name: input.organizationName.trim(),
           slug: input.organizationSlug,
+          currency: input.currency ?? "USD",
           ...(input.logoUrl ? { logoUrl: input.logoUrl } : {}),
           ...(input.companyWebsite ? { website: input.companyWebsite } : {}),
           ...(input.employeeCount

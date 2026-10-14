@@ -220,7 +220,6 @@ export default function WorkspacePage({
                 ? "Create Invoice"
                 : currentNav.label}
           </span>
-          <span className="topbar-slug">{session.organization.slug}</span>
         </header>
         <div
           key={`${tab}-${creatingInvoice}`}
@@ -270,14 +269,6 @@ export default function WorkspacePage({
                 )}
             </div>
           </div>
-          <div className="workspace-context">
-            <span>
-              <span className="context-dot" aria-hidden="true" />
-              {session.organization.name}
-            </span>
-            <span>{roleLabel(session.role)} access</span>
-            <span>{session.organization.currency}</span>
-          </div>
           {error && (
             <div className="alert" role="alert">
               {error}
@@ -325,7 +316,7 @@ export default function WorkspacePage({
             can("invoices:create") ? (
               <InvoiceForm
                 api={api}
-                onCreated={() => router.push("/invoices")}
+                onCreated={(invoice) => router.push(searchParams.has("tutorialClient") ? `/invoices/${invoice.id}` : "/invoices")}
               />
             ) : (
               <section className="panel empty-state">

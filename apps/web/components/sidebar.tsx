@@ -31,7 +31,6 @@ export function Sidebar({
         </span>
         <div>
           <strong>{session.organization.name}</strong>
-          <small>{session.organization.slug}</small>
         </div>
       </div>
       <nav aria-label="Workspace navigation">

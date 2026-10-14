@@ -125,7 +125,7 @@ test("settings DTOs reject short passwords and blank profile names", async () =>
   );
 });
 
-test("registration validates phone, website, employee range, and name fields", async () => {
+test("registration validates phone, website, employee range, currency, and name fields", async () => {
   const input = {
     organizationSlug: "test-company",
     organizationName: "Test",
@@ -137,6 +137,7 @@ test("registration validates phone, website, employee range, and name fields", a
     phoneNumber: "+12025550123",
     companyWebsite: "https://example.com",
     employeeCount: "11-50",
+    currency: "NPR",
     confirmPassword: "secure-password-123",
   };
   assert.equal((await validate(plainToInstance(SignupDto, input))).length, 0);
@@ -145,6 +146,7 @@ test("registration validates phone, website, employee range, and name fields", a
     ["phoneNumber", "abc"],
     ["companyWebsite", "javascript:alert(1)"],
     ["employeeCount", "unknown"],
+    ["currency", "BTC"],
   ]) {
     const errors = await validate(
       plainToInstance(SignupDto, { ...input, [field]: value }),

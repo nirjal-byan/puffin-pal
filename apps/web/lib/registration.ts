@@ -10,6 +10,7 @@ export interface RegistrationDraft {
   organizationSlug: string;
   companyWebsite: string;
   employeeCount: string;
+  currency: string;
   password: string;
   confirmPassword: string;
   phoneDisplay: string;
@@ -27,6 +28,7 @@ export function createRegistrationDraft(slug = ""): RegistrationDraft {
     organizationSlug: slug,
     companyWebsite: "",
     employeeCount: "",
+    currency: "",
     password: "",
     confirmPassword: "",
     phoneDisplay: "",

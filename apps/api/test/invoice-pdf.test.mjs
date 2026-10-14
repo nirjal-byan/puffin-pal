@@ -34,12 +34,13 @@ test("PDF contains finalized billing, dates and exact monetary values", async (t
   assert.equal(buffer.subarray(0, 5).toString(), "%PDF-");
   const text = extract(t, buffer);
   if (text === null) return;
-  for (const value of ["PuffinPal", invoice.invoiceNumber, "2026-10-12", "2026-10-10", "2026-11-10",
+  for (const value of [invoice.invoiceNumber, "2026-10-12", "2026-10-10", "2026-11-10",
     invoice.sellerName, invoice.billingName, invoice.billingEmail, invoice.billingCompanyName,
     invoice.billingTaxId, "Consulting services", "Subtotal", "Tax", "Total", "USD 9999999999.99", "USD 0.00", invoice.notes])
     assert.ok(text.includes(value), `Missing ${value}`);
   assert.ok(!text.includes("Changed live client"));
   assert.ok(!text.includes("changed@client.test"));
+  assert.ok(!text.includes("PuffinPal"));
   assert.match(text, /Page 1 of 1/);
 });
 test("long invoices paginate without losing rows, notes or totals", async (t) => {

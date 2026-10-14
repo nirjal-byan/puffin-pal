@@ -5,6 +5,7 @@ import { Brand } from "./brand";
 import type { Session } from "../lib/api";
 import Link from "next/link";
 import { NAV_SECTIONS, sectionForTab, tabHref, type Tab, type NavigationSection } from "../lib/navigation";
+import { currencyDetails } from "../lib/currencies";
 
 export function Navbar({
   session,
@@ -23,6 +24,7 @@ export function Navbar({
   notifications: string[];
   onClearNotifications: () => void;
 }) {
+  const currency = currencyDetails(session.organization.currency);
   return (
     <header className="workspace-header">
       <Brand inverted={theme === "dark"} />
@@ -40,6 +42,16 @@ export function Navbar({
         ))}
       </nav>
       <div className="header-actions">
+        <details className="currency-menu">
+          <summary aria-label={`Workspace currency: ${currency.code}`}>
+            <span aria-hidden="true">{currency.flag}</span> {currency.code}
+          </summary>
+          <div className="currency-menu-panel">
+            <strong><span aria-hidden="true">{currency.flag}</span> {currency.code}</strong>
+            <span>{currency.name}</span>
+            <small>Workspace currency</small>
+          </div>
+        </details>
         <button type="button" className="button secondary tour-launch" data-tour="tutorial"
           onClick={() => window.dispatchEvent(new Event("puffinpal:start-tour"))}>
           Tutorial
