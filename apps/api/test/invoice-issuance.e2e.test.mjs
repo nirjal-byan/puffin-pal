@@ -4,6 +4,9 @@ import { spawnSync } from "node:child_process";
 import { test } from "node:test";
 import { createApplication } from "../dist/src/app.factory.js";
 import { DATABASE } from "../dist/src/database.module.js";
+import { ListObjectsV2Command, S3Client } from "@aws-sdk/client-s3";
+import { InvoicePdfService } from "../dist/src/invoices/pdf/invoice-pdf.service.js";
+import { InvoicePdfStorageService } from "../dist/src/invoices/pdf/invoice-pdf-storage.service.js";
 
 // This suite only runs against the disposable database owned by the runner.
 test("invoice issuance", async (t) => {
@@ -14,6 +17,20 @@ test("invoice issuance", async (t) => {
   const db = app.get(DATABASE);
   const base = `${await app.getUrl()}/api/v1`;
   const password = "Issuance-test-password-123";
+  const objects = new S3Client({
+    endpoint: process.env.S3_ENDPOINT ?? "http://127.0.0.1:8333",
+    region: process.env.S3_REGION ?? "us-east-1",
+    forcePathStyle: true,
+    credentials: {
+      accessKeyId: process.env.S3_ACCESS_KEY_ID ?? "puffinpal_local",
+      secretAccessKey: process.env.S3_SECRET_ACCESS_KEY ?? "puffinpal_local_secret",
+    },
+  });
+  const objectCount = async (organizationId, invoiceId) =>
+    (await objects.send(new ListObjectsV2Command({
+      Bucket: process.env.S3_BUCKET ?? "puffinpal-receipts",
+      Prefix: `organizations/${organizationId}/invoices/${invoiceId}/`,
+    }))).KeyCount ?? 0;
   async function request(path, token, body, method = "POST", status = 200) {
     const response = await fetch(base + path, {
       method,
@@ -102,6 +119,33 @@ test("invoice issuance", async (t) => {
         status,
       );
 
+    await t.test("PDF generation and upload failures leave the invoice as a draft", async () => {
+      const renderer = app.get(InvoicePdfService);
+      const storage = app.get(InvoicePdfStorageService);
+      const originalRender = renderer.render;
+      const originalPut = storage.put;
+      try {
+        const renderFailure = await create();
+        renderer.render = async () => {
+          throw new Error("render failed");
+        };
+        await issue(renderFailure.id, 1, token, 500);
+        assert.equal((await detail(renderFailure.id)).status, "DRAFT");
+        renderer.render = originalRender.bind(renderer);
+
+        const uploadFailure = await create();
+        storage.put = async () => {
+          throw new Error("upload failed");
+        };
+        await issue(uploadFailure.id, 1, token, 500);
+        assert.equal((await detail(uploadFailure.id)).status, "DRAFT");
+        assert.equal(await objectCount(owner.organization.id, uploadFailure.id), 0);
+      } finally {
+        renderer.render = originalRender;
+        storage.put = originalPut;
+      }
+    });
+
     await t.test("permissions, validation and tenant isolation", async () => {
       const draft = await create();
       await issue(draft.id, 1, null, 401);
@@ -156,6 +200,14 @@ test("invoice issuance", async (t) => {
         assert.equal(issued.billingTaxId, client.taxId);
         assert.equal(issued.sellerName, owner.organization.name);
         assert.equal(issued.currency, owner.organization.currency);
+        assert.equal(Object.hasOwn(issued, "pdfKey"), false);
+        assert.equal(Object.hasOwn(issued, "pdfUrl"), false);
+        const stored = await db.orm.public.Invoice.where({
+          organizationId: owner.organization.id,
+          id: draft.id,
+        }).select("pdfKey").first();
+        assert.match(stored.pdfKey, new RegExp(`^organizations/${owner.organization.id}/invoices/${draft.id}/`));
+        assert.equal(await objectCount(owner.organization.id, draft.id), 1);
         for (const key of [
           "invoiceNumber",
           "issueDate",
@@ -243,6 +295,7 @@ test("invoice issuance", async (t) => {
       ]);
       assert.deepEqual(results.map((r) => r.status).sort(), [200, 409]);
       assert.equal((await detail(draft.id)).version, 2);
+      assert.equal(await objectCount(owner.organization.id, draft.id), 1);
     });
     await t.test(
       "issuance racing draft edit or deletion cannot finalize mixed data",
@@ -286,6 +339,7 @@ test("invoice issuance", async (t) => {
         try {
           await issue(draft.id, 1, token, 500);
           assert.deepEqual(await detail(draft.id), before);
+          assert.equal(await objectCount(owner.organization.id, draft.id), 0);
         } finally {
           sql(
             "DROP TRIGGER fail_issue ON invoices; DROP FUNCTION fail_issue();",

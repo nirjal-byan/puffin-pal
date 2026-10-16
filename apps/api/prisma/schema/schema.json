@@ -602,6 +602,13 @@
                   "kind": "scalar"
                 }
               },
+              "pdfKey": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
               "pdfUrl": {
                 "nullable": true,
                 "type": {
@@ -793,6 +800,9 @@
                 },
                 "organizationId": {
                   "column": "organizationId"
+                },
+                "pdfKey": {
+                  "column": "pdfKey"
                 },
                 "pdfUrl": {
                   "column": "pdfUrl"
@@ -2137,6 +2147,11 @@
                   "nativeType": "text",
                   "nullable": false
                 },
+                "pdfKey": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
                 "pdfUrl": {
                   "codecId": "pg/text@1",
                   "nativeType": "text",
@@ -2907,7 +2922,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "06ad12ed557b56014279752e7307da50c77fbe0a9ec87671ec592afee19730dd"
+    "storageHash": "7d8162694350372b4ab52d8bde6c7242904ab5455ae18b1c9e3be004d05de616"
   },
   "execution": {
     "executionHash": "b2c29d085e75428a51a2056eeed31437aaa2c3b672ac2bba3edf70c17c80f7dc",

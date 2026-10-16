@@ -1,9 +1,30 @@
 import { ConflictException, Injectable } from "@nestjs/common";
 import { fileURLToPath } from "node:url";
 import PDFDocument from "pdfkit";
-import type { InvoicesService } from "../invoices.service.js";
 
-type Invoice = Awaited<ReturnType<InvoicesService["getInvoice"]>>;
+export type InvoicePdfInput = {
+  status: string;
+  invoiceNumber: string;
+  issuedAt: { toString(): string } | string | null;
+  issueDate: { toString(): string } | string;
+  dueDate: { toString(): string } | string;
+  sellerName: string | null;
+  currency: string | null;
+  billingName: string | null;
+  billingEmail: string | null;
+  billingCompanyName: string | null;
+  billingTaxId: string | null;
+  notes: string | null;
+  subtotal: string;
+  tax: string;
+  total: string;
+  items: Array<{
+    description: string;
+    quantity: number;
+    unitPrice: string;
+    amount: string;
+  }>;
+};
 
 export function invoicePdfFilename(invoiceNumber: string) {
   return `${invoiceNumber.replace(/[^a-zA-Z0-9._-]/g, "_").slice(0, 100) || "invoice"}.pdf`;
@@ -11,7 +32,7 @@ export function invoicePdfFilename(invoiceNumber: string) {
 
 @Injectable()
 export class InvoicePdfService {
-  async render(invoice: Invoice): Promise<Buffer> {
+  async render(invoice: InvoicePdfInput): Promise<Buffer> {
     if (!["ISSUED", "PAID", "OVERDUE"].includes(invoice.status))
       throw new ConflictException("Only issued invoices can be downloaded as PDF");
     // Never substitute mutable organization/client data for missing snapshots.

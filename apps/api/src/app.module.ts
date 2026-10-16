@@ -5,8 +5,9 @@ import { HealthController } from "./health.controller.js";
 import { AuthModule } from "./auth/auth.module.js";
 import { TenancyModule } from "./tenancy/tenancy.module.js";
 import { ExpensesModule } from "./expenses/expenses.module.js";
+import { StorageModule } from "./storage/storage.module.js";
 @Module({
-  imports: [DatabaseModule, AuthModule, TenancyModule, InvoicesModule, ExpensesModule],
+  imports: [DatabaseModule, StorageModule, AuthModule, TenancyModule, InvoicesModule, ExpensesModule],
   controllers: [HealthController],
 })
 export class AppModule {}

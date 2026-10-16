@@ -44,7 +44,9 @@ test("invoice PDF downloads enforce authentication, eligibility and tenant bound
       await request("/invoices/invalid/pdf", token, undefined, "GET", 400);
       await request(path, token, undefined, "GET", 409);
     });
-    await json(`/invoices/${draft.id}/issue`, token, { expectedVersion: 1 });
+    const issued = await json(`/invoices/${draft.id}/issue`, token, { expectedVersion: 1 });
+    assert.equal(Object.hasOwn(issued, "pdfKey"), false);
+    assert.equal(Object.hasOwn(issued, "pdfUrl"), false);
     await json(`/clients/${client.id}`, token, { name: "Changed Buyer", email: "changed@pdf.test", companyName: "Changed Company", taxId: "CHANGED-TAX" }, "PATCH");
     await t.test("issued download uses snapshots, decimal values and attachment headers", async () => {
       const response = await request(path, token, undefined, "GET");
@@ -63,7 +65,52 @@ test("invoice PDF downloads enforce authentication, eligibility and tenant bound
         assert.ok(!text.includes("Changed Buyer"));
         assert.ok(!text.includes("Changed Company"));
       }
+      await json(`/invoices/${draft.id}/payments`, token, {
+        amount: "0.10",
+        paymentDate: "2026-10-12",
+        method: "BANK_TRANSFER",
+        expectedVersion: 2,
+      }, "POST", 201);
+      const afterPayment = Buffer.from(
+        await (await request(path, token, undefined, "GET")).arrayBuffer(),
+      );
+      assert.deepEqual(afterPayment, buffer);
       await request(path, other.accessToken, undefined, "GET", 404);
+    });
+    await t.test("historical invoices without a stored key retain the fallback", async () => {
+      const historical = await json("/invoices", token, {
+        clientId: client.id,
+        issueDate: "2026-09-01",
+        dueDate: "2026-09-30",
+        items: [{ description: "Historical service", quantity: 1, unitPrice: "5.00" }],
+      }, "POST", 201);
+      await json(`/invoices/${historical.id}/issue`, token, { expectedVersion: 1 });
+      await db.orm.public.Invoice.where({
+        organizationId: owner.organization.id,
+        id: historical.id,
+      }).updateAll({ pdfKey: null });
+      const response = await request(`/invoices/${historical.id}/pdf`, token, undefined, "GET");
+      assert.equal(Buffer.from(await response.arrayBuffer()).subarray(0, 5).toString(), "%PDF-");
+      assert.equal((await db.orm.public.Invoice.where({
+        organizationId: owner.organization.id,
+        id: historical.id,
+      }).select("pdfKey").first()).pdfKey, null);
+    });
+    await t.test("a missing stored object fails explicitly", async () => {
+      const missing = await json("/invoices", token, {
+        clientId: client.id,
+        issueDate: "2026-09-01",
+        dueDate: "2026-09-30",
+        items: [{ description: "Missing document", quantity: 1, unitPrice: "5.00" }],
+      }, "POST", 201);
+      await json(`/invoices/${missing.id}/issue`, token, { expectedVersion: 1 });
+      await db.orm.public.Invoice.where({
+        organizationId: owner.organization.id,
+        id: missing.id,
+      }).updateAll({
+        pdfKey: `organizations/${owner.organization.id}/invoices/${missing.id}/${randomUUID()}.pdf`,
+      });
+      await request(`/invoices/${missing.id}/pdf`, token, undefined, "GET", 503);
     });
     await t.test("all roles with invoices:read can download; revoked membership cannot", async () => {
       for (const role of ["ADMIN", "PROJECT_MANAGER", "FINANCE_VIEWER"]) {

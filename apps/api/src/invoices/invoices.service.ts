@@ -5,6 +5,7 @@ import {
   ConflictException,
   Inject,
   Injectable,
+  Logger,
   NotFoundException,
   Scope,
   UnauthorizedException,
@@ -21,15 +22,28 @@ import { invoiceDates } from "./utils/invoice-dates.js";
 import type { CreatePaymentDto } from "./dto/create-payment.dto.js";
 import { invoicePaymentSummary, paymentCents, receivedPaymentDate } from "./utils/invoice-payments.js";
 import { decimalFromCents } from "./utils/invoice-calculations.js";
+import { InvoicePdfService } from "./pdf/invoice-pdf.service.js";
+import { InvoicePdfStorageService } from "./pdf/invoice-pdf-storage.service.js";
 @Injectable({ scope: Scope.REQUEST })
 export class InvoicesService {
+  private readonly logger = new Logger(InvoicesService.name);
   constructor(
     @Inject(DATABASE) private readonly db: Database,
     @Inject(REQUEST) private readonly request: AuthenticatedRequest,
+    private readonly pdf: InvoicePdfService,
+    private readonly pdfStorage: InvoicePdfStorageService,
   ) {}
   private get organizationId() {
     if (!this.request.auth) throw new UnauthorizedException();
     return this.request.auth.organizationId;
+  }
+  private publicInvoice<
+    T extends { pdfKey?: string | null; pdfUrl?: string | null },
+  >(invoice: T): Omit<T, "pdfKey" | "pdfUrl"> {
+    const safe = { ...invoice };
+    delete safe.pdfKey;
+    delete safe.pdfUrl;
+    return safe;
   }
   async createInvoice(input: CreateInvoiceDto) {
     const organizationId = this.organizationId;
@@ -69,7 +83,7 @@ export class InvoicesService {
           }),
         );
       }
-      return { ...invoice, items };
+      return { ...this.publicInvoice(invoice), items };
     });
   }
 
@@ -114,13 +128,15 @@ export class InvoicesService {
       const payments = await tx.orm.public.Payment.where({ organizationId, invoiceId: id })
         .orderBy((row) => row.paymentDate.desc()).orderBy((row) => row.createdAt.desc())
         .orderBy((row) => row.id.asc()).all();
-      return { ...invoice, client: billingClient, items, payments, ...invoicePaymentSummary(invoice, payments) };
+      return { ...this.publicInvoice(invoice), client: billingClient, items, payments, ...invoicePaymentSummary(invoice, payments) };
     });
   }
 
   async issueInvoice(id: string, expectedVersion: number) {
     const organizationId = this.organizationId;
-    return this.db.transaction(async (tx) => {
+    let stagedPdfKey: string | null = null;
+    try {
+      return await this.db.transaction(async (tx) => {
       // Lock before reading items: draft edits lock this same parent row before
       // replacing items. The conditional write also guards every transition.
       await tx.execute(
@@ -198,6 +214,24 @@ export class InvoicesService {
         throw new BadRequestException(
           "Invoice amounts are inconsistent. Review and save the draft before issuance.",
         );
+      const issuedAt = Temporal.Now.instant();
+      const snapshots = {
+        billingName: client.name,
+        billingEmail: client.email,
+        billingCompanyName: client.companyName,
+        billingTaxId: client.taxId,
+        sellerName: organization.name,
+        currency: organization.currency,
+      };
+      const pdf = await this.pdf.render({
+        ...current,
+        ...snapshots,
+        status: "ISSUED",
+        issuedAt,
+        items,
+      });
+      stagedPdfKey = this.pdfStorage.createKey(organizationId, id);
+      await this.pdfStorage.put(stagedPdfKey, pdf, organizationId, id);
       const [invoice] = await tx.orm.public.Invoice.where({
         organizationId,
         id,
@@ -206,21 +240,53 @@ export class InvoicesService {
       }).updateAll({
         status: "ISSUED",
         version: expectedVersion + 1,
-        issuedAt: Temporal.Now.instant(),
+        issuedAt,
         issuedByUserId: this.request.auth!.userId,
-        billingName: client.name,
-        billingEmail: client.email,
-        billingCompanyName: client.companyName,
-        billingTaxId: client.taxId,
-        sellerName: organization.name,
-        currency: organization.currency,
+        ...snapshots,
+        pdfKey: stagedPdfKey,
       });
       if (!invoice)
         throw new ConflictException(
           "Invoice changed. Reload and review the latest invoice.",
         );
-      return { ...invoice, client, items, payments: [], ...invoicePaymentSummary(invoice, []) };
-    });
+      return { ...this.publicInvoice(invoice), client, items, payments: [], ...invoicePaymentSummary(invoice, []) };
+      });
+    } catch (error) {
+      if (stagedPdfKey) {
+        try {
+          await this.pdfStorage.delete(stagedPdfKey);
+        } catch (cleanupError) {
+          this.logger.error(
+            `Failed to clean up staged invoice PDF ${stagedPdfKey}`,
+            cleanupError instanceof Error ? cleanupError.stack : undefined,
+          );
+        }
+      }
+      throw error;
+    }
+  }
+
+  async getInvoicePdf(id: string) {
+    const organizationId = this.organizationId;
+    const stored = await this.db.orm.public.Invoice.where({
+      organizationId,
+      id,
+    })
+      .select("pdfKey")
+      .first();
+    if (!stored) throw new NotFoundException("Invoice not found");
+    const invoice = await this.getInvoice(id);
+    if (stored.pdfKey)
+      return {
+        invoice,
+        buffer: await this.pdfStorage.get(stored.pdfKey, organizationId, id),
+        stored: true,
+      };
+    return {
+      invoice,
+      buffer: await this.pdf.render(invoice),
+      stored: false,
+    };
   }
 
   async updateInvoice(id: string, input: UpdateInvoiceDto) {
@@ -281,7 +347,7 @@ export class InvoicesService {
           }),
         );
       }
-      return { ...invoice, client, items };
+      return { ...this.publicInvoice(invoice), client, items };
     });
   }
 
@@ -351,7 +417,7 @@ export class InvoicesService {
       if (!invoices.length) return [];
       const payments = await tx.orm.public.Payment.where({ organizationId })
         .where((row) => row.invoiceId.in(invoices.map((invoice) => invoice.id))).select("invoiceId", "amount").all();
-      return invoices.map((invoice) => ({ ...invoice,
+      return invoices.map((invoice) => ({ ...this.publicInvoice(invoice),
         ...invoicePaymentSummary(invoice, payments.filter((payment) => payment.invoiceId === invoice.id)),
       }));
     });

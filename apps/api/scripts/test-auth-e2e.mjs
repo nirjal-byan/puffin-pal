@@ -55,6 +55,7 @@ try {
     ...process.env,
     DATABASE_URL: url.toString(),
     JWT_SECRET: randomBytes(32).toString("hex"),
+    REDIS_RATE_LIMIT_PREFIX: `puffinpal:test:${database}`,
     NODE_ENV: "test",
   };
   execute(`${api}/node_modules/.bin/prisma`, ["db", "migrate"], {

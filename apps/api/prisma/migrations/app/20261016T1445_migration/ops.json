@@ -1,0 +1,44 @@
+[
+  {
+    "id": "column.public.invoices.pdfKey",
+    "label": "Add column \"pdfKey\" to \"invoices\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "pdfKey",
+        "table": "invoices"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"pdfKey\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "invoices",
+          "pdfKey"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"pdfKey\"",
+        "sql": "ALTER TABLE \"public\".\"invoices\" ADD COLUMN \"pdfKey\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"pdfKey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "invoices",
+          "pdfKey"
+        ]
+      }
+    ]
+  }
+]

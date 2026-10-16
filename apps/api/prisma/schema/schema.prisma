@@ -137,6 +137,7 @@ model Invoice {
   billingTaxId       String?
   sellerName         String?
   currency           String?
+  pdfKey             String?
   pdfUrl             String?
   notes              String?
   createdAt          DateTime             @default(now())
@@ -189,12 +190,12 @@ model Payment {
 }
 
 model Expense {
-  id             String          @id @default(uuid())
+  id             String               @id @default(uuid())
   organizationId String
   title          String
   description    String?
   amount         Numeric(12, 2)
-  category       ExpenseCategory @default(OTHER)
+  category       ExpenseCategory      @default(OTHER)
   vendor         String?
   notes          String?
   receiptUrl     String?
@@ -203,10 +204,10 @@ model Expense {
   receiptMime    String?
   receiptSize    Int?
   date           DateTime
-  createdAt      DateTime        @default(now())
+  createdAt      DateTime             @default(now())
   updatedAt      temporal.updatedAt()
 
-  organization   Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organization   Organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
   @@index([organizationId, date])
   @@map("expenses")

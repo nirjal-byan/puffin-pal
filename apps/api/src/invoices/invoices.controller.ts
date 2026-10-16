@@ -23,15 +23,12 @@ import {
 import { IssueInvoiceDto } from "./dto/issue-invoice.dto.js";
 import { CreatePaymentDto } from "./dto/create-payment.dto.js";
 import { InvoicesService } from "./invoices.service.js";
-import { InvoicePdfService, invoicePdfFilename } from "./pdf/invoice-pdf.service.js";
+import { invoicePdfFilename } from "./pdf/invoice-pdf.service.js";
 @ApiTags("invoices")
 @ApiBearerAuth()
 @Controller("invoices")
 export class InvoicesController {
-  constructor(
-    private readonly invoices: InvoicesService,
-    private readonly pdf: InvoicePdfService,
-  ) {}
+  constructor(private readonly invoices: InvoicesService) {}
   @Post()
   @RequirePermissions("invoices:create")
   create(@Body() input: CreateInvoiceDto) {
@@ -51,8 +48,7 @@ export class InvoicesController {
   @RequirePermissions("invoices:read")
   @Header("Cache-Control", "private, no-store")
   async downloadPdf(@Param("id", ParseUUIDPipe) id: string) {
-    const invoice = await this.invoices.getInvoice(id);
-    const buffer = await this.pdf.render(invoice);
+    const { invoice, buffer } = await this.invoices.getInvoicePdf(id);
     return new StreamableFile(buffer, {
       type: "application/pdf",
       disposition: `attachment; filename="${invoicePdfFilename(invoice.invoiceNumber)}"`,

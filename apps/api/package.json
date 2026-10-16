@@ -24,7 +24,7 @@
     "test:expenses": "pnpm run build && node --test test/expenses.test.mjs && node scripts/test-auth-e2e.mjs test/expenses.e2e.test.mjs",
     "test:invoices": "pnpm --filter @puffinpal/permissions build && pnpm --filter database build && pnpm run build && node scripts/test-auth-e2e.mjs test/invoices.e2e.test.mjs test/invoice-drafts.e2e.test.mjs test/invoice-issuance.e2e.test.mjs",
     "test:e2e": "pnpm --filter @puffinpal/permissions build && pnpm --filter database build && pnpm run build && node scripts/test-auth-e2e.mjs",
-    "test:invoice-pdf": "pnpm --filter @puffinpal/permissions build && pnpm --filter database build && pnpm run build && node --test test/invoice-pdf.test.mjs && node scripts/test-auth-e2e.mjs test/invoice-pdf.e2e.test.mjs",
+    "test:invoice-pdf": "pnpm --filter @puffinpal/permissions build && pnpm --filter database build && pnpm run build && node --test test/invoice-pdf.test.mjs test/invoice-pdf-storage.test.mjs && node scripts/test-auth-e2e.mjs test/invoice-pdf.e2e.test.mjs test/invoice-issuance.e2e.test.mjs",
     "test:onboarding": "pnpm run build && node --test test/onboarding.test.mjs && node scripts/test-auth-e2e.mjs test/onboarding.e2e.test.mjs",
     "test:payments": "pnpm --filter @puffinpal/permissions build && pnpm --filter database build && pnpm run build && node --test test/invoice-payments.test.mjs && node scripts/test-auth-e2e.mjs test/invoice-payments.e2e.test.mjs",
     "test:redis": "pnpm run build && node --test test/redis-throttler.test.mjs test/session.test.mjs"

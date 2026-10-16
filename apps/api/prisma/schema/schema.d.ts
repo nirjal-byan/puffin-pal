@@ -34,7 +34,7 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'06ad12ed557b56014279752e7307da50c77fbe0a9ec87671ec592afee19730dd'>;
+  StorageHashBase<'7d8162694350372b4ab52d8bde6c7242904ab5455ae18b1c9e3be004d05de616'>;
 export type ExecutionHash =
   ExecutionHashBase<'b2c29d085e75428a51a2056eeed31437aaa2c3b672ac2bba3edf70c17c80f7dc'>;
 export type ProfileHash =
@@ -294,6 +294,7 @@ export type FieldOutputTypes = {
       readonly issuedByUserId: CodecTypes['pg/text@1']['output'] | null;
       readonly notes: CodecTypes['pg/text@1']['output'] | null;
       readonly organizationId: CodecTypes['pg/text@1']['output'];
+      readonly pdfKey: CodecTypes['pg/text@1']['output'] | null;
       readonly pdfUrl: CodecTypes['pg/text@1']['output'] | null;
       readonly sellerName: CodecTypes['pg/text@1']['output'] | null;
       readonly status: 'DRAFT' | 'ISSUED' | 'PENDING' | 'PAID' | 'OVERDUE' | 'CANCELLED';
@@ -416,6 +417,7 @@ export type FieldInputTypes = {
       readonly issuedByUserId: CodecTypes['pg/text@1']['input'] | null;
       readonly notes: CodecTypes['pg/text@1']['input'] | null;
       readonly organizationId: CodecTypes['pg/text@1']['input'];
+      readonly pdfKey: CodecTypes['pg/text@1']['input'] | null;
       readonly pdfUrl: CodecTypes['pg/text@1']['input'] | null;
       readonly sellerName: CodecTypes['pg/text@1']['input'] | null;
       readonly status: 'DRAFT' | 'ISSUED' | 'PENDING' | 'PAID' | 'OVERDUE' | 'CANCELLED';
@@ -548,6 +550,7 @@ export type StorageColumnTypes = {
       readonly issuedByUserId: CodecTypes['pg/text@1']['output'] | null;
       readonly notes: CodecTypes['pg/text@1']['output'] | null;
       readonly organizationId: CodecTypes['pg/text@1']['output'];
+      readonly pdfKey: CodecTypes['pg/text@1']['output'] | null;
       readonly pdfUrl: CodecTypes['pg/text@1']['output'] | null;
       readonly sellerName: CodecTypes['pg/text@1']['output'] | null;
       readonly status: 'DRAFT' | 'ISSUED' | 'PENDING' | 'PAID' | 'OVERDUE' | 'CANCELLED';
@@ -670,6 +673,7 @@ export type StorageColumnInputTypes = {
       readonly issuedByUserId: CodecTypes['pg/text@1']['input'] | null;
       readonly notes: CodecTypes['pg/text@1']['input'] | null;
       readonly organizationId: CodecTypes['pg/text@1']['input'];
+      readonly pdfKey: CodecTypes['pg/text@1']['input'] | null;
       readonly pdfUrl: CodecTypes['pg/text@1']['input'] | null;
       readonly sellerName: CodecTypes['pg/text@1']['input'] | null;
       readonly status: 'DRAFT' | 'ISSUED' | 'PENDING' | 'PAID' | 'OVERDUE' | 'CANCELLED';
@@ -787,6 +791,7 @@ export namespace Models {
     issuedByUserId: CodecTypes['pg/text@1']['output'] | null;
     notes: CodecTypes['pg/text@1']['output'] | null;
     organizationId: CodecTypes['pg/text@1']['output'];
+    pdfKey: CodecTypes['pg/text@1']['output'] | null;
     pdfUrl: CodecTypes['pg/text@1']['output'] | null;
     sellerName: CodecTypes['pg/text@1']['output'] | null;
     status: 'DRAFT' | 'ISSUED' | 'PENDING' | 'PAID' | 'OVERDUE' | 'CANCELLED';
@@ -1266,6 +1271,11 @@ type ContractBase = Omit<
                   readonly nativeType: 'text';
                   readonly codecId: 'pg/text@1';
                   readonly nullable: false;
+                };
+                readonly pdfKey: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
                 };
                 readonly pdfUrl: {
                   readonly nativeType: 'text';
@@ -2119,6 +2129,10 @@ type ContractBase = Omit<
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
+              readonly pdfKey: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
               readonly pdfUrl: {
                 readonly nullable: true;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
@@ -2234,6 +2248,7 @@ type ContractBase = Omit<
                 readonly issuedByUserId: { readonly column: 'issuedByUserId' };
                 readonly notes: { readonly column: 'notes' };
                 readonly organizationId: { readonly column: 'organizationId' };
+                readonly pdfKey: { readonly column: 'pdfKey' };
                 readonly pdfUrl: { readonly column: 'pdfUrl' };
                 readonly sellerName: { readonly column: 'sellerName' };
                 readonly status: { readonly column: 'status' };
