@@ -3467,3 +3467,19 @@ tr:hover td {
 .role-badge.invoice-status-overdue { color: #9c351e; background: #fff0e8; }
 .workspace-layout[data-theme="dark"] .invoice-status-paid { color: #b3ebcd; background: #203f30; }
 .workspace-layout[data-theme="dark"] .invoice-status-overdue { color: #ffbea8; background: #4b2c24; }
+.invoice-panel-tools,
+.invoice-export-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+.invoice-select-cell {
+  width: 2.5rem;
+  text-align: center;
+}
+.invoice-select-cell input {
+  width: 1rem;
+  height: 1rem;
+  accent-color: var(--brand-blue);
+}

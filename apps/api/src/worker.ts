@@ -1,0 +1,24 @@
+import "reflect-metadata";
+import { config } from "dotenv";
+import { NestFactory } from "@nestjs/core";
+import { InvoiceExportProcessor } from "./background-jobs/invoice-export.processor.js";
+import { WorkerModule } from "./background-jobs/worker.module.js";
+
+async function bootstrap() {
+  config({ quiet: true });
+  if (!process.env.DATABASE_URL) throw new Error("DATABASE_URL is required");
+  const app = await NestFactory.createApplicationContext(WorkerModule);
+  const processor = app.get(InvoiceExportProcessor);
+  await processor.start();
+  const shutdown = async () => {
+    await processor.close();
+    await app.close();
+  };
+  process.once("SIGTERM", () => void shutdown());
+  process.once("SIGINT", () => void shutdown());
+}
+
+bootstrap().catch((error: unknown) => {
+  console.error(error);
+  process.exitCode = 1;
+});

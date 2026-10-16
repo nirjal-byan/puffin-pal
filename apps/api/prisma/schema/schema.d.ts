@@ -34,9 +34,9 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'7d8162694350372b4ab52d8bde6c7242904ab5455ae18b1c9e3be004d05de616'>;
+  StorageHashBase<'770c1f918c5d71729f73858dc0f8ee0c56d407c619f8727beb91da4741361756'>;
 export type ExecutionHash =
-  ExecutionHashBase<'b2c29d085e75428a51a2056eeed31437aaa2c3b672ac2bba3edf70c17c80f7dc'>;
+  ExecutionHashBase<'0e23c2f019a47e83a0e7583ae6089b09d7d3611a25c1238efe932acc8b8384a8'>;
 export type ProfileHash =
   ProfileHashBase<'3916f444a8a17ad749191acf9e08dad97d1a327b88c2f1d45d12f240296aa8b2'>;
 
@@ -304,6 +304,24 @@ export type FieldOutputTypes = {
       readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
       readonly version: CodecTypes['pg/int4@1']['output'];
     };
+    readonly InvoiceExport: {
+      readonly archiveKey: CodecTypes['pg/text@1']['output'] | null;
+      readonly archiveName: CodecTypes['pg/text@1']['output'] | null;
+      readonly archiveSize: CodecTypes['pg/int4@1']['output'] | null;
+      readonly completedAt: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
+      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly expiresAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly failureCode: CodecTypes['pg/text@1']['output'] | null;
+      readonly id: CodecTypes['pg/text@1']['output'];
+      readonly invoiceIds: CodecTypes['pg/text@1']['output'];
+      readonly organizationId: CodecTypes['pg/text@1']['output'];
+      readonly progress: CodecTypes['pg/int4@1']['output'];
+      readonly requestFingerprint: CodecTypes['pg/text@1']['output'];
+      readonly requestId: CodecTypes['pg/text@1']['output'];
+      readonly requestedByUserId: CodecTypes['pg/text@1']['output'];
+      readonly status: 'QUEUED' | 'PROCESSING' | 'COMPLETED' | 'FAILED' | 'EXPIRED';
+      readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+    };
     readonly InvoiceItem: {
       readonly amount: Numeric<12, 2>;
       readonly description: CodecTypes['pg/text@1']['output'];
@@ -427,6 +445,24 @@ export type FieldInputTypes = {
       readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
       readonly version: CodecTypes['pg/int4@1']['input'];
     };
+    readonly InvoiceExport: {
+      readonly archiveKey: CodecTypes['pg/text@1']['input'] | null;
+      readonly archiveName: CodecTypes['pg/text@1']['input'] | null;
+      readonly archiveSize: CodecTypes['pg/int4@1']['input'] | null;
+      readonly completedAt: CodecTypes['pg/timestamptz-temporal@1']['input'] | null;
+      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly expiresAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly failureCode: CodecTypes['pg/text@1']['input'] | null;
+      readonly id: CodecTypes['pg/text@1']['input'];
+      readonly invoiceIds: CodecTypes['pg/text@1']['input'];
+      readonly organizationId: CodecTypes['pg/text@1']['input'];
+      readonly progress: CodecTypes['pg/int4@1']['input'];
+      readonly requestFingerprint: CodecTypes['pg/text@1']['input'];
+      readonly requestId: CodecTypes['pg/text@1']['input'];
+      readonly requestedByUserId: CodecTypes['pg/text@1']['input'];
+      readonly status: 'QUEUED' | 'PROCESSING' | 'COMPLETED' | 'FAILED' | 'EXPIRED';
+      readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
+    };
     readonly InvoiceItem: {
       readonly amount: CodecTypes['pg/numeric@1']['input'];
       readonly description: CodecTypes['pg/text@1']['input'];
@@ -523,6 +559,24 @@ export type StorageColumnTypes = {
       readonly title: CodecTypes['pg/text@1']['output'];
       readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
       readonly vendor: CodecTypes['pg/text@1']['output'] | null;
+    };
+    readonly invoice_exports: {
+      readonly archiveKey: CodecTypes['pg/text@1']['output'] | null;
+      readonly archiveName: CodecTypes['pg/text@1']['output'] | null;
+      readonly archiveSize: CodecTypes['pg/int4@1']['output'] | null;
+      readonly completedAt: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
+      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly expiresAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly failureCode: CodecTypes['pg/text@1']['output'] | null;
+      readonly id: CodecTypes['pg/text@1']['output'];
+      readonly invoiceIds: CodecTypes['pg/text@1']['output'];
+      readonly organizationId: CodecTypes['pg/text@1']['output'];
+      readonly progress: CodecTypes['pg/int4@1']['output'];
+      readonly requestedByUserId: CodecTypes['pg/text@1']['output'];
+      readonly requestFingerprint: CodecTypes['pg/text@1']['output'];
+      readonly requestId: CodecTypes['pg/text@1']['output'];
+      readonly status: 'QUEUED' | 'PROCESSING' | 'COMPLETED' | 'FAILED' | 'EXPIRED';
+      readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
     };
     readonly invoice_items: {
       readonly amount: Numeric<12, 2>;
@@ -646,6 +700,24 @@ export type StorageColumnInputTypes = {
       readonly title: CodecTypes['pg/text@1']['input'];
       readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
       readonly vendor: CodecTypes['pg/text@1']['input'] | null;
+    };
+    readonly invoice_exports: {
+      readonly archiveKey: CodecTypes['pg/text@1']['input'] | null;
+      readonly archiveName: CodecTypes['pg/text@1']['input'] | null;
+      readonly archiveSize: CodecTypes['pg/int4@1']['input'] | null;
+      readonly completedAt: CodecTypes['pg/timestamptz-temporal@1']['input'] | null;
+      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly expiresAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly failureCode: CodecTypes['pg/text@1']['input'] | null;
+      readonly id: CodecTypes['pg/text@1']['input'];
+      readonly invoiceIds: CodecTypes['pg/text@1']['input'];
+      readonly organizationId: CodecTypes['pg/text@1']['input'];
+      readonly progress: CodecTypes['pg/int4@1']['input'];
+      readonly requestedByUserId: CodecTypes['pg/text@1']['input'];
+      readonly requestFingerprint: CodecTypes['pg/text@1']['input'];
+      readonly requestId: CodecTypes['pg/text@1']['input'];
+      readonly status: 'QUEUED' | 'PROCESSING' | 'COMPLETED' | 'FAILED' | 'EXPIRED';
+      readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
     };
     readonly invoice_items: {
       readonly amount: CodecTypes['pg/numeric@1']['input'];
@@ -806,6 +878,26 @@ export namespace Models {
     payments: public_Payment[];
     readonly [RelationKeys]?: 'client' | 'items' | 'organization' | 'payments';
   };
+  export type public_InvoiceExport = {
+    archiveKey: CodecTypes['pg/text@1']['output'] | null;
+    archiveName: CodecTypes['pg/text@1']['output'] | null;
+    archiveSize: CodecTypes['pg/int4@1']['output'] | null;
+    completedAt: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
+    createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+    expiresAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+    failureCode: CodecTypes['pg/text@1']['output'] | null;
+    id: CodecTypes['pg/text@1']['output'];
+    invoiceIds: CodecTypes['pg/text@1']['output'];
+    organizationId: CodecTypes['pg/text@1']['output'];
+    progress: CodecTypes['pg/int4@1']['output'];
+    requestFingerprint: CodecTypes['pg/text@1']['output'];
+    requestId: CodecTypes['pg/text@1']['output'];
+    requestedByUserId: CodecTypes['pg/text@1']['output'];
+    status: 'QUEUED' | 'PROCESSING' | 'COMPLETED' | 'FAILED' | 'EXPIRED';
+    updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+    organization: public_Organization;
+    readonly [RelationKeys]?: 'organization';
+  };
   export type public_InvoiceItem = {
     amount: Numeric<12, 2>;
     description: CodecTypes['pg/text@1']['output'];
@@ -840,13 +932,21 @@ export namespace Models {
     website: CodecTypes['pg/text@1']['output'] | null;
     clients: public_Client[];
     expenses: public_Expense[];
+    invoiceExports: public_InvoiceExport[];
     invoices: public_Invoice[];
     memberships: public_Membership[];
     payments: public_Payment[];
     retainers: public_Retainer[];
     users: public_User[];
     readonly [RelationKeys]?:
-      'clients' | 'expenses' | 'invoices' | 'memberships' | 'payments' | 'retainers' | 'users';
+      | 'clients'
+      | 'expenses'
+      | 'invoiceExports'
+      | 'invoices'
+      | 'memberships'
+      | 'payments'
+      | 'retainers'
+      | 'users';
   };
   export type public_Payment = {
     amount: Numeric<12, 2>;
@@ -900,6 +1000,7 @@ export declare const models: {
     Client: Models.public_Client;
     Expense: Models.public_Expense;
     Invoice: Models.public_Invoice;
+    InvoiceExport: Models.public_InvoiceExport;
     InvoiceItem: Models.public_InvoiceItem;
     Membership: Models.public_Membership;
     Organization: Models.public_Organization;
@@ -1106,6 +1207,135 @@ type ContractBase = Omit<
                   readonly source: {
                     readonly namespaceId: 'public' & NamespaceId;
                     readonly tableName: 'expenses';
+                    readonly columns: readonly ['organizationId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'organizations';
+                    readonly columns: readonly ['id'];
+                  };
+                },
+              ];
+            };
+            readonly invoice_exports: {
+              columns: {
+                readonly archiveKey: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                };
+                readonly archiveName: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                };
+                readonly archiveSize: {
+                  readonly nativeType: 'int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: true;
+                };
+                readonly completedAt: {
+                  readonly nativeType: 'timestamptz';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                  readonly nullable: true;
+                };
+                readonly createdAt: {
+                  readonly nativeType: 'timestamptz';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                  readonly nullable: false;
+                  readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
+                };
+                readonly expiresAt: {
+                  readonly nativeType: 'timestamptz';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                  readonly nullable: false;
+                };
+                readonly failureCode: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                };
+                readonly id: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly invoiceIds: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly organizationId: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly progress: {
+                  readonly nativeType: 'int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/int4@1', 0>;
+                  };
+                };
+                readonly requestFingerprint: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly requestId: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly requestedByUserId: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly status: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/text@1', 'QUEUED'>;
+                  };
+                };
+                readonly updatedAt: {
+                  readonly nativeType: 'timestamptz';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                  readonly nullable: false;
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [{ readonly columns: readonly ['organizationId', 'requestId'] }];
+              indexes: readonly [
+                {
+                  readonly name: 'invoice_exports_organizationId_idx_2e17ef41';
+                  readonly prefix: 'invoice_exports_organizationId_idx';
+                  readonly columns: readonly ['organizationId'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'invoice_exports_organizationId_requestedByUserId_idx_7a262416';
+                  readonly prefix: 'invoice_exports_organizationId_requestedByUserId_idx';
+                  readonly columns: readonly ['organizationId', 'requestedByUserId'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'invoice_exports_status_expiresAt_idx_c206f415';
+                  readonly prefix: 'invoice_exports_status_expiresAt_idx';
+                  readonly columns: readonly ['status', 'expiresAt'];
+                  readonly unique: false;
+                },
+              ];
+              foreignKeys: readonly [
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'invoice_exports';
                     readonly columns: readonly ['organizationId'];
                   };
                   readonly target: {
@@ -1794,6 +2024,10 @@ type ContractBase = Omit<
               readonly kind: 'valueSet';
               readonly values: readonly ['SOFTWARE', 'HARDWARE', 'TRAVEL', 'MARKETING', 'OTHER'];
             };
+            readonly InvoiceExportStatus: {
+              readonly kind: 'valueSet';
+              readonly values: readonly ['QUEUED', 'PROCESSING', 'COMPLETED', 'FAILED', 'EXPIRED'];
+            };
             readonly InvoiceStatus: {
               readonly kind: 'valueSet';
               readonly values: readonly [
@@ -1836,6 +2070,10 @@ type ContractBase = Omit<
   readonly roots: {
     readonly clients: { readonly namespace: 'public' & NamespaceId; readonly model: 'Client' };
     readonly expenses: { readonly namespace: 'public' & NamespaceId; readonly model: 'Expense' };
+    readonly invoice_exports: {
+      readonly namespace: 'public' & NamespaceId;
+      readonly model: 'InvoiceExport';
+    };
     readonly invoice_items: {
       readonly namespace: 'public' & NamespaceId;
       readonly model: 'InvoiceItem';
@@ -2260,6 +2498,122 @@ type ContractBase = Omit<
               };
             };
           };
+          readonly InvoiceExport: {
+            readonly fields: {
+              readonly archiveKey: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly archiveName: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly archiveSize: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly completedAt: {
+                readonly nullable: true;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                };
+              };
+              readonly createdAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                };
+              };
+              readonly expiresAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                };
+              };
+              readonly failureCode: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly invoiceIds: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly organizationId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly progress: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly requestFingerprint: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly requestId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly requestedByUserId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly status: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly updatedAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                };
+              };
+            };
+            readonly relations: {
+              readonly organization: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'Organization';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['organizationId'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
+            };
+            readonly storage: {
+              readonly table: 'invoice_exports';
+              readonly namespaceId: 'public';
+              readonly fields: {
+                readonly archiveKey: { readonly column: 'archiveKey' };
+                readonly archiveName: { readonly column: 'archiveName' };
+                readonly archiveSize: { readonly column: 'archiveSize' };
+                readonly completedAt: { readonly column: 'completedAt' };
+                readonly createdAt: { readonly column: 'createdAt' };
+                readonly expiresAt: { readonly column: 'expiresAt' };
+                readonly failureCode: { readonly column: 'failureCode' };
+                readonly id: { readonly column: 'id' };
+                readonly invoiceIds: { readonly column: 'invoiceIds' };
+                readonly organizationId: { readonly column: 'organizationId' };
+                readonly progress: { readonly column: 'progress' };
+                readonly requestFingerprint: { readonly column: 'requestFingerprint' };
+                readonly requestId: { readonly column: 'requestId' };
+                readonly requestedByUserId: { readonly column: 'requestedByUserId' };
+                readonly status: { readonly column: 'status' };
+                readonly updatedAt: { readonly column: 'updatedAt' };
+              };
+            };
+          };
           readonly InvoiceItem: {
             readonly fields: {
               readonly amount: {
@@ -2454,6 +2808,17 @@ type ContractBase = Omit<
                 readonly to: {
                   readonly namespace: 'public' & NamespaceId;
                   readonly model: 'Expense';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['organizationId'];
+                };
+              };
+              readonly invoiceExports: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'InvoiceExport';
                 };
                 readonly cardinality: '1:N';
                 readonly on: {
@@ -2815,6 +3180,16 @@ type ContractBase = Omit<
               { readonly name: 'OTHER'; readonly value: 'OTHER' },
             ];
           };
+          readonly InvoiceExportStatus: {
+            readonly codecId: 'pg/text@1';
+            readonly members: readonly [
+              { readonly name: 'QUEUED'; readonly value: 'QUEUED' },
+              { readonly name: 'PROCESSING'; readonly value: 'PROCESSING' },
+              { readonly name: 'COMPLETED'; readonly value: 'COMPLETED' },
+              { readonly name: 'FAILED'; readonly value: 'FAILED' },
+              { readonly name: 'EXPIRED'; readonly value: 'EXPIRED' },
+            ];
+          };
           readonly InvoiceStatus: {
             readonly codecId: 'pg/text@1';
             readonly members: readonly [
@@ -2914,6 +3289,23 @@ type ContractBase = Omit<
           readonly onUpdate: { readonly id: 'instantNow'; readonly kind: 'generator' };
           readonly ref: {
             readonly entry: 'expenses';
+            readonly field: 'updatedAt';
+            readonly namespace: 'public';
+          };
+        },
+        {
+          readonly onCreate: { readonly id: 'uuidv4'; readonly kind: 'generator' };
+          readonly ref: {
+            readonly entry: 'invoice_exports';
+            readonly field: 'id';
+            readonly namespace: 'public';
+          };
+        },
+        {
+          readonly onCreate: { readonly id: 'instantNow'; readonly kind: 'generator' };
+          readonly onUpdate: { readonly id: 'instantNow'; readonly kind: 'generator' };
+          readonly ref: {
+            readonly entry: 'invoice_exports';
             readonly field: 'updatedAt';
             readonly namespace: 'public';
           };

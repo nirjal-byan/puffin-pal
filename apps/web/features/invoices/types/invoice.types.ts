@@ -67,3 +67,15 @@ export interface RecordPaymentPayload {
   notes?: string;
   expectedVersion: number;
 }
+
+export interface InvoiceExportStatus {
+  jobId: string;
+  status: "QUEUED" | "PROCESSING" | "COMPLETED" | "FAILED" | "EXPIRED";
+  progress: number;
+  filename: string | null;
+  size: number | null;
+  error: string | null;
+  expiresAt: string;
+  createdAt: string;
+  completedAt: string | null;
+}

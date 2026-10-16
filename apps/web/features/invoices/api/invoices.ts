@@ -1,5 +1,19 @@
 import type { WorkspaceApi } from "../../../lib/api";
 import type { InvoiceDetail, RecordPaymentPayload } from "../types/invoice.types";
+import type { InvoiceExportStatus } from "../types/invoice.types";
+
+export function createInvoiceExport(api: WorkspaceApi, invoiceIds: string[]) {
+  return api<InvoiceExportStatus>("/invoices/exports", {
+    method: "POST",
+    body: { requestId: crypto.randomUUID(), invoiceIds },
+  });
+}
+export function getInvoiceExport(api: WorkspaceApi, jobId: string, signal?: AbortSignal) {
+  return api<InvoiceExportStatus>(`/invoices/exports/${jobId}`, { signal });
+}
+export function downloadInvoiceExport(api: WorkspaceApi, jobId: string) {
+  return api<Blob>(`/invoices/exports/${jobId}/download`, { responseType: "file" });
+}
 
 export async function recordInvoicePayment(api: WorkspaceApi, id: string, input: RecordPaymentPayload) {
   const invoice = await api<InvoiceDetail>(`/invoices/${id}/payments`, { method: "POST", body: input });

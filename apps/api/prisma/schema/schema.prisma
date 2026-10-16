@@ -15,6 +15,14 @@ enum InvoiceStatus {
   CANCELLED
 }
 
+enum InvoiceExportStatus {
+  QUEUED
+  PROCESSING
+  COMPLETED
+  FAILED
+  EXPIRED
+}
+
 enum OnboardingStatus {
   LEGACY
   PENDING
@@ -40,25 +48,52 @@ enum ExpenseCategory {
 }
 
 model Organization {
-  id            String               @id @default(uuid())
-  name          String
-  slug          String               @unique
-  website       String?
-  employeeCount String?
-  logoUrl       String?
-  currency      String               @default("USD")
-  createdAt     DateTime             @default(now())
-  updatedAt     temporal.updatedAt()
+  id             String               @id @default(uuid())
+  name           String
+  slug           String               @unique
+  website        String?
+  employeeCount  String?
+  logoUrl        String?
+  currency       String               @default("USD")
+  createdAt      DateTime             @default(now())
+  updatedAt      temporal.updatedAt()
 
-  users         User[]
-  memberships   Membership[]
-  clients       Client[]
-  invoices      Invoice[]
-  payments      Payment[]
-  expenses      Expense[]
-  retainers     Retainer[]
+  users          User[]
+  memberships    Membership[]
+  clients        Client[]
+  invoices       Invoice[]
+  invoiceExports InvoiceExport[]
+  payments       Payment[]
+  expenses       Expense[]
+  retainers      Retainer[]
 
   @@map("organizations")
+}
+
+model InvoiceExport {
+  id                 String               @id @default(uuid())
+  organizationId     String
+  requestedByUserId  String
+  requestId          String
+  requestFingerprint String
+  invoiceIds         String
+  status             InvoiceExportStatus  @default(QUEUED)
+  progress           Int                  @default(0)
+  archiveKey         String?
+  archiveName        String?
+  archiveSize        Int?
+  failureCode        String?
+  expiresAt          DateTime
+  completedAt        DateTime?
+  createdAt          DateTime             @default(now())
+  updatedAt          temporal.updatedAt()
+
+  organization       Organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, requestId])
+  @@index([organizationId, requestedByUserId])
+  @@index([status, expiresAt])
+  @@map("invoice_exports")
 }
 
 model User {

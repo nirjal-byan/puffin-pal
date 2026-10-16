@@ -12,6 +12,10 @@
       "model": "Expense",
       "namespace": "public"
     },
+    "invoice_exports": {
+      "model": "InvoiceExport",
+      "namespace": "public"
+    },
     "invoice_items": {
       "model": "InvoiceItem",
       "namespace": "public"
@@ -67,6 +71,31 @@
               {
                 "name": "OTHER",
                 "value": "OTHER"
+              }
+            ]
+          },
+          "InvoiceExportStatus": {
+            "codecId": "pg/text@1",
+            "members": [
+              {
+                "name": "QUEUED",
+                "value": "QUEUED"
+              },
+              {
+                "name": "PROCESSING",
+                "value": "PROCESSING"
+              },
+              {
+                "name": "COMPLETED",
+                "value": "COMPLETED"
+              },
+              {
+                "name": "FAILED",
+                "value": "FAILED"
+              },
+              {
+                "name": "EXPIRED",
+                "value": "EXPIRED"
               }
             ]
           },
@@ -833,6 +862,200 @@
               "table": "invoices"
             }
           },
+          "InvoiceExport": {
+            "fields": {
+              "archiveKey": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "archiveName": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "archiveSize": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "completedAt": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "kind": "scalar"
+                }
+              },
+              "createdAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "kind": "scalar"
+                }
+              },
+              "expiresAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "kind": "scalar"
+                }
+              },
+              "failureCode": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "invoiceIds": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "organizationId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "progress": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "requestFingerprint": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "requestId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "requestedByUserId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "status": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                },
+                "valueSet": {
+                  "entityKind": "enum",
+                  "entityName": "InvoiceExportStatus",
+                  "namespaceId": "public",
+                  "plane": "domain"
+                }
+              },
+              "updatedAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "organization": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "organizationId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "Organization",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "archiveKey": {
+                  "column": "archiveKey"
+                },
+                "archiveName": {
+                  "column": "archiveName"
+                },
+                "archiveSize": {
+                  "column": "archiveSize"
+                },
+                "completedAt": {
+                  "column": "completedAt"
+                },
+                "createdAt": {
+                  "column": "createdAt"
+                },
+                "expiresAt": {
+                  "column": "expiresAt"
+                },
+                "failureCode": {
+                  "column": "failureCode"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "invoiceIds": {
+                  "column": "invoiceIds"
+                },
+                "organizationId": {
+                  "column": "organizationId"
+                },
+                "progress": {
+                  "column": "progress"
+                },
+                "requestFingerprint": {
+                  "column": "requestFingerprint"
+                },
+                "requestId": {
+                  "column": "requestId"
+                },
+                "requestedByUserId": {
+                  "column": "requestedByUserId"
+                },
+                "status": {
+                  "column": "status"
+                },
+                "updatedAt": {
+                  "column": "updatedAt"
+                }
+              },
+              "namespaceId": "public",
+              "table": "invoice_exports"
+            }
+          },
           "InvoiceItem": {
             "fields": {
               "amount": {
@@ -1147,6 +1370,21 @@
                 },
                 "to": {
                   "model": "Expense",
+                  "namespace": "public"
+                }
+              },
+              "invoiceExports": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "organizationId"
+                  ]
+                },
+                "to": {
+                  "model": "InvoiceExport",
                   "namespace": "public"
                 }
               },
@@ -1960,6 +2198,175 @@
                 ]
               },
               "uniques": []
+            },
+            "invoice_exports": {
+              "checks": [
+                {
+                  "expression": "\"status\" IN ('QUEUED', 'PROCESSING', 'COMPLETED', 'FAILED', 'EXPIRED')",
+                  "name": "invoice_exports_status_check_81add6e9",
+                  "prefix": "invoice_exports_status_check"
+                }
+              ],
+              "columns": {
+                "archiveKey": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "archiveName": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "archiveSize": {
+                  "codecId": "pg/int4@1",
+                  "nativeType": "int4",
+                  "nullable": true
+                },
+                "completedAt": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "nativeType": "timestamptz",
+                  "nullable": true
+                },
+                "createdAt": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "expiresAt": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "failureCode": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "id": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "invoiceIds": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "organizationId": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "progress": {
+                  "codecId": "pg/int4@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": 0
+                  },
+                  "nativeType": "int4",
+                  "nullable": false
+                },
+                "requestFingerprint": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "requestId": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "requestedByUserId": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "status": {
+                  "codecId": "pg/text@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": "QUEUED"
+                  },
+                  "nativeType": "text",
+                  "nullable": false,
+                  "valueSet": {
+                    "entityKind": "valueSet",
+                    "entityName": "InvoiceExportStatus",
+                    "namespaceId": "public",
+                    "plane": "storage"
+                  }
+                },
+                "updatedAt": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [
+                {
+                  "onDelete": "cascade",
+                  "source": {
+                    "columns": [
+                      "organizationId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "invoice_exports"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "organizations"
+                  }
+                }
+              ],
+              "indexes": [
+                {
+                  "columns": [
+                    "organizationId"
+                  ],
+                  "name": "invoice_exports_organizationId_idx_2e17ef41",
+                  "prefix": "invoice_exports_organizationId_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "organizationId",
+                    "requestedByUserId"
+                  ],
+                  "name": "invoice_exports_organizationId_requestedByUserId_idx_7a262416",
+                  "prefix": "invoice_exports_organizationId_requestedByUserId_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "status",
+                    "expiresAt"
+                  ],
+                  "name": "invoice_exports_status_expiresAt_idx_c206f415",
+                  "prefix": "invoice_exports_status_expiresAt_idx",
+                  "unique": false
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": [
+                {
+                  "columns": [
+                    "organizationId",
+                    "requestId"
+                  ]
+                }
+              ]
             },
             "invoice_items": {
               "columns": {
@@ -2876,6 +3283,16 @@
                 "OTHER"
               ]
             },
+            "InvoiceExportStatus": {
+              "kind": "valueSet",
+              "values": [
+                "QUEUED",
+                "PROCESSING",
+                "COMPLETED",
+                "FAILED",
+                "EXPIRED"
+              ]
+            },
             "InvoiceStatus": {
               "kind": "valueSet",
               "values": [
@@ -2922,10 +3339,10 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "7d8162694350372b4ab52d8bde6c7242904ab5455ae18b1c9e3be004d05de616"
+    "storageHash": "770c1f918c5d71729f73858dc0f8ee0c56d407c619f8727beb91da4741361756"
   },
   "execution": {
-    "executionHash": "b2c29d085e75428a51a2056eeed31437aaa2c3b672ac2bba3edf70c17c80f7dc",
+    "executionHash": "0e23c2f019a47e83a0e7583ae6089b09d7d3611a25c1238efe932acc8b8384a8",
     "mutations": {
       "defaults": [
         {
@@ -2976,6 +3393,32 @@
           },
           "ref": {
             "entry": "expenses",
+            "field": "updatedAt",
+            "namespace": "public"
+          }
+        },
+        {
+          "onCreate": {
+            "id": "uuidv4",
+            "kind": "generator"
+          },
+          "ref": {
+            "entry": "invoice_exports",
+            "field": "id",
+            "namespace": "public"
+          }
+        },
+        {
+          "onCreate": {
+            "id": "instantNow",
+            "kind": "generator"
+          },
+          "onUpdate": {
+            "id": "instantNow",
+            "kind": "generator"
+          },
+          "ref": {
+            "entry": "invoice_exports",
             "field": "updatedAt",
             "namespace": "public"
           }

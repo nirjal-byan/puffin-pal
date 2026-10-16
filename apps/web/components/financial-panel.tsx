@@ -9,6 +9,7 @@ import {
   type InvoiceItem,
 } from "../lib/api";
 import type { WorkspaceApi } from "../lib/api";
+import { InvoiceBulkExport } from "../features/invoices/components/invoice-bulk-export";
 
 type FinancialTab = "invoices" | "expenses" | "retainers";
 function money(value: string | undefined, currency: string) {
@@ -106,6 +107,13 @@ export function FinancialPanel({
   api: WorkspaceApi;
 }) {
   const [selected, setSelected] = useState<string | null>(null);
+  const [selectedInvoices, setSelectedInvoices] = useState<string[]>([]);
+  const eligibleInvoices = tab === "invoices"
+    ? rows.filter((row) => ["ISSUED", "PAID", "OVERDUE"].includes(row.status ?? ""))
+    : [];
+  const eligibleIds = new Set(eligibleInvoices.map((row) => row.id));
+  const activeSelectedInvoices = selectedInvoices.filter((id) => eligibleIds.has(id));
+  const allSelected = eligibleInvoices.length > 0 && eligibleInvoices.every((row) => activeSelectedInvoices.includes(row.id));
   return (
     <section className="panel">
       <div className="panel-heading">
@@ -116,7 +124,12 @@ export function FinancialPanel({
               ? "Your expenses"
               : "Your retainers"}
         </h3>
-        <span className="muted">{rows.length} on this page</span>
+        <div className="invoice-panel-tools">
+          {tab === "invoices" && permissions.includes("invoices:read") && (
+            <InvoiceBulkExport api={api} invoiceIds={activeSelectedInvoices} onComplete={() => setSelectedInvoices([])} />
+          )}
+          <span className="muted">{rows.length} on this page</span>
+        </div>
       </div>
       {rows.length === 0 ? (
         <div className="empty-state">
@@ -129,6 +142,15 @@ export function FinancialPanel({
           <table>
             <thead>
               <tr>
+                {tab === "invoices" && <th className="invoice-select-cell">
+                  <input
+                    type="checkbox"
+                    aria-label="Select all eligible invoices on this page"
+                    checked={allSelected}
+                    disabled={eligibleInvoices.length === 0}
+                    onChange={() => setSelectedInvoices(allSelected ? [] : eligibleInvoices.map((row) => row.id))}
+                  />
+                </th>}
                 <th>
                   {tab === "invoices"
                     ? "Invoice"
@@ -150,6 +172,15 @@ export function FinancialPanel({
             <tbody>
               {rows.map((row) => (
                 <tr key={row.id}>
+                  {tab === "invoices" && <td className="invoice-select-cell">
+                    <input
+                      type="checkbox"
+                      aria-label={`Select ${row.invoiceNumber ?? "invoice"}`}
+                      disabled={!eligibleInvoices.some((invoice) => invoice.id === row.id)}
+                      checked={activeSelectedInvoices.includes(row.id)}
+                      onChange={() => setSelectedInvoices((current) => current.includes(row.id) ? current.filter((id) => id !== row.id) : [...current, row.id])}
+                    />
+                  </td>}
                   <td>
                     {tab === "invoices" ? (
                       <div className="invoice-list-actions">

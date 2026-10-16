@@ -1,0 +1,242 @@
+[
+  {
+    "id": "table.invoice_exports",
+    "label": "Create table \"invoice_exports\"",
+    "summary": "Creates table \"invoice_exports\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "invoice_exports"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"invoice_exports\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"invoice_exports\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"invoice_exports\"",
+        "sql": "CREATE TABLE \"public\".\"invoice_exports\" (\n  \"archiveKey\" text,\n  \"archiveName\" text,\n  \"archiveSize\" int4,\n  \"completedAt\" timestamptz,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"expiresAt\" timestamptz NOT NULL,\n  \"failureCode\" text,\n  \"id\" text NOT NULL,\n  \"invoiceIds\" text NOT NULL,\n  \"organizationId\" text NOT NULL,\n  \"progress\" int4 DEFAULT 0 NOT NULL,\n  \"requestFingerprint\" text NOT NULL,\n  \"requestId\" text NOT NULL,\n  \"requestedByUserId\" text NOT NULL,\n  \"status\" text DEFAULT 'QUEUED' NOT NULL,\n  \"updatedAt\" timestamptz NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"invoice_exports_status_check_81add6e9\" CHECK (\"status\" IN ('QUEUED', 'PROCESSING', 'COMPLETED', 'FAILED', 'EXPIRED'))\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"invoice_exports\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"invoice_exports\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.invoice_exports.invoice_exports_organizationId_requestId_key",
+    "label": "Add unique constraint on \"invoice_exports\" (organizationId, requestId)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "invoice_exports_organizationId_requestId_key",
+        "table": "invoice_exports"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"invoice_exports_organizationId_requestId_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "invoice_exports_organizationId_requestId_key",
+          "public",
+          "\"public\".\"invoice_exports\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"invoice_exports_organizationId_requestId_key\"",
+        "sql": "ALTER TABLE \"public\".\"invoice_exports\" ADD CONSTRAINT \"invoice_exports_organizationId_requestId_key\" UNIQUE (\"organizationId\", \"requestId\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"invoice_exports_organizationId_requestId_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "invoice_exports_organizationId_requestId_key",
+          "public",
+          "\"public\".\"invoice_exports\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.invoice_exports.invoice_exports_organizationId_idx_2e17ef41",
+    "label": "Create index \"invoice_exports_organizationId_idx_2e17ef41\" on \"invoice_exports\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "invoice_exports_organizationId_idx_2e17ef41",
+        "table": "invoice_exports"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"invoice_exports_organizationId_idx_2e17ef41\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"invoice_exports_organizationId_idx_2e17ef41\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"invoice_exports_organizationId_idx_2e17ef41\"",
+        "sql": "CREATE INDEX \"invoice_exports_organizationId_idx_2e17ef41\" ON \"public\".\"invoice_exports\" (\"organizationId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"invoice_exports_organizationId_idx_2e17ef41\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"invoice_exports_organizationId_idx_2e17ef41\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.invoice_exports.invoice_exports_organizationId_requestedByUserId_idx_7a262416",
+    "label": "Create index \"invoice_exports_organizationId_requestedByUserId_idx_7a262416\" on \"invoice_exports\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "invoice_exports_organizationId_requestedByUserId_idx_7a262416",
+        "table": "invoice_exports"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"invoice_exports_organizationId_requestedByUserId_idx_7a262416\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"invoice_exports_organizationId_requestedByUserId_idx_7a262416\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"invoice_exports_organizationId_requestedByUserId_idx_7a262416\"",
+        "sql": "CREATE INDEX \"invoice_exports_organizationId_requestedByUserId_idx_7a262416\" ON \"public\".\"invoice_exports\" (\"organizationId\", \"requestedByUserId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"invoice_exports_organizationId_requestedByUserId_idx_7a262416\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"invoice_exports_organizationId_requestedByUserId_idx_7a262416\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.invoice_exports.invoice_exports_status_expiresAt_idx_c206f415",
+    "label": "Create index \"invoice_exports_status_expiresAt_idx_c206f415\" on \"invoice_exports\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "invoice_exports_status_expiresAt_idx_c206f415",
+        "table": "invoice_exports"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"invoice_exports_status_expiresAt_idx_c206f415\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"invoice_exports_status_expiresAt_idx_c206f415\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"invoice_exports_status_expiresAt_idx_c206f415\"",
+        "sql": "CREATE INDEX \"invoice_exports_status_expiresAt_idx_c206f415\" ON \"public\".\"invoice_exports\" (\"status\", \"expiresAt\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"invoice_exports_status_expiresAt_idx_c206f415\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"invoice_exports_status_expiresAt_idx_c206f415\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.invoice_exports.invoice_exports_organizationId_fkey",
+    "label": "Add foreign key \"invoice_exports_organizationId_fkey\" on \"invoice_exports\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "invoice_exports_organizationId_fkey",
+        "table": "invoice_exports"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"invoice_exports_organizationId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "invoice_exports_organizationId_fkey",
+          "public",
+          "\"public\".\"invoice_exports\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"invoice_exports_organizationId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"invoice_exports\"\nADD CONSTRAINT \"invoice_exports_organizationId_fkey\"\nFOREIGN KEY (\"organizationId\")\nREFERENCES \"public\".\"organizations\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"invoice_exports_organizationId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "invoice_exports_organizationId_fkey",
+          "public",
+          "\"public\".\"invoice_exports\""
+        ]
+      }
+    ]
+  }
+]

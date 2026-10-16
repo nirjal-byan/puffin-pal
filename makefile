@@ -1,4 +1,4 @@
-.PHONY: build.packages database.seed install lint lint.fix prisma.format prisma.generate prisma.migrate.dev prisma.migrate.deploy prisma.reset run run.api run.web services.start services.stop typecheck dev services.up services.down db.generate db.sync db.plan db.migrate db.verify api.dev
+.PHONY: build.packages database.seed install lint lint.fix prisma.format prisma.generate prisma.migrate.dev prisma.migrate.deploy prisma.reset run run.api run.web run.worker services.start services.stop typecheck dev services.up services.down db.generate db.sync db.plan db.migrate db.verify api.dev
 
 build.packages:
 	@printf "\033[0;32m>>> Building packages\033[0m\n"
@@ -51,6 +51,10 @@ run.api:
 run.web:
 	@printf "\033[0;32m>>> Starting Web app\033[0m\n"
 	pnpm run dev --filter @puffinpal/web
+
+run.worker:
+	@printf "\033[0;32m>>> Starting invoice export worker\033[0m\n"
+	cd apps/api && pnpm run dev:worker
 
 services.start:
 	@printf "\033[0;32m>>> Starting local services\033[0m\n"

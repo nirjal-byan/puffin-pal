@@ -3,10 +3,13 @@ import {
   DeleteObjectCommand,
   GetObjectCommand,
   HeadBucketCommand,
+  HeadObjectCommand,
   PutObjectCommand,
   S3Client,
 } from "@aws-sdk/client-s3";
+import { Upload } from "@aws-sdk/lib-storage";
 import { Injectable, ServiceUnavailableException } from "@nestjs/common";
+import type { Readable } from "node:stream";
 
 export type StoredObject = {
   buffer: Buffer;
@@ -89,6 +92,57 @@ export class ObjectStorageService {
       contentType: result.ContentType,
       metadata: result.Metadata ?? {},
     };
+  }
+
+  async getStream(key: string) {
+    await this.ensureBucket();
+    const result = await this.client.send(
+      new GetObjectCommand({ Bucket: this.bucket, Key: key }),
+    );
+    if (!result.Body || !("pipe" in result.Body))
+      throw new Error("Stored object stream is missing");
+    return {
+      stream: result.Body as Readable,
+      contentType: result.ContentType,
+      contentLength: result.ContentLength,
+      metadata: result.Metadata ?? {},
+    };
+  }
+
+  async head(key: string) {
+    await this.ensureBucket();
+    const result = await this.client.send(
+      new HeadObjectCommand({ Bucket: this.bucket, Key: key }),
+    );
+    return {
+      contentType: result.ContentType,
+      contentLength: result.ContentLength,
+      metadata: result.Metadata ?? {},
+    };
+  }
+
+  async putStream(
+    key: string,
+    body: Readable,
+    contentType: string,
+    metadata: Record<string, string>,
+    immutable = false,
+  ) {
+    await this.ensureBucket();
+    await new Upload({
+      client: this.client,
+      leavePartsOnError: false,
+      queueSize: 2,
+      partSize: 5 * 1024 * 1024,
+      params: {
+        Bucket: this.bucket,
+        Key: key,
+        Body: body,
+        ContentType: contentType,
+        Metadata: metadata,
+        ...(immutable ? { IfNoneMatch: "*" } : {}),
+      },
+    }).done();
   }
 
   async delete(key: string) {
