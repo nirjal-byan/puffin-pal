@@ -335,7 +335,7 @@ export default function WorkspacePage({
               </p>
             </section>
           ) : tab === "overview" ? (
-            <OverviewPage session={session} navigate={navigate} />
+            <OverviewPage session={session} navigate={navigate} api={api} />
           ) : tab === "profile" || tab === "password" ? (
             <div className={tab === "profile" && can("organization:update") ? "profile-settings-columns" : undefined}>
               <CurrentSettingsPage

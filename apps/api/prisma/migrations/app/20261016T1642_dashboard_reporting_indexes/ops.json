@@ -1,0 +1,158 @@
+[
+  {
+    "id": "index.invoices.invoices_organizationId_dueDate_idx_e6fc0959",
+    "label": "Create index \"invoices_organizationId_dueDate_idx_e6fc0959\" on \"invoices\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "invoices_organizationId_dueDate_idx_e6fc0959",
+        "table": "invoices"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"invoices_organizationId_dueDate_idx_e6fc0959\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"invoices_organizationId_dueDate_idx_e6fc0959\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"invoices_organizationId_dueDate_idx_e6fc0959\"",
+        "sql": "CREATE INDEX \"invoices_organizationId_dueDate_idx_e6fc0959\" ON \"public\".\"invoices\" (\"organizationId\", \"dueDate\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"invoices_organizationId_dueDate_idx_e6fc0959\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"invoices_organizationId_dueDate_idx_e6fc0959\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.invoices.invoices_organizationId_issueDate_idx_523591b6",
+    "label": "Create index \"invoices_organizationId_issueDate_idx_523591b6\" on \"invoices\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "invoices_organizationId_issueDate_idx_523591b6",
+        "table": "invoices"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"invoices_organizationId_issueDate_idx_523591b6\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"invoices_organizationId_issueDate_idx_523591b6\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"invoices_organizationId_issueDate_idx_523591b6\"",
+        "sql": "CREATE INDEX \"invoices_organizationId_issueDate_idx_523591b6\" ON \"public\".\"invoices\" (\"organizationId\", \"issueDate\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"invoices_organizationId_issueDate_idx_523591b6\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"invoices_organizationId_issueDate_idx_523591b6\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.invoices.invoices_organizationId_status_issuedAt_idx_373463f5",
+    "label": "Create index \"invoices_organizationId_status_issuedAt_idx_373463f5\" on \"invoices\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "invoices_organizationId_status_issuedAt_idx_373463f5",
+        "table": "invoices"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"invoices_organizationId_status_issuedAt_idx_373463f5\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"invoices_organizationId_status_issuedAt_idx_373463f5\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"invoices_organizationId_status_issuedAt_idx_373463f5\"",
+        "sql": "CREATE INDEX \"invoices_organizationId_status_issuedAt_idx_373463f5\" ON \"public\".\"invoices\" (\"organizationId\", \"status\", \"issuedAt\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"invoices_organizationId_status_issuedAt_idx_373463f5\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"invoices_organizationId_status_issuedAt_idx_373463f5\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.payments.payments_organizationId_paymentDate_idx_bba58353",
+    "label": "Create index \"payments_organizationId_paymentDate_idx_bba58353\" on \"payments\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "payments_organizationId_paymentDate_idx_bba58353",
+        "table": "payments"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"payments_organizationId_paymentDate_idx_bba58353\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payments_organizationId_paymentDate_idx_bba58353\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"payments_organizationId_paymentDate_idx_bba58353\"",
+        "sql": "CREATE INDEX \"payments_organizationId_paymentDate_idx_bba58353\" ON \"public\".\"payments\" (\"organizationId\", \"paymentDate\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"payments_organizationId_paymentDate_idx_bba58353\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payments_organizationId_paymentDate_idx_bba58353\""
+        ]
+      }
+    ]
+  }
+]

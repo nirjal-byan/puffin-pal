@@ -34,7 +34,7 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'770c1f918c5d71729f73858dc0f8ee0c56d407c619f8727beb91da4741361756'>;
+  StorageHashBase<'d51251a8c67afd97dd92aa72b9b47c14d04de3614162b0e2d52e077ab93998aa'>;
 export type ExecutionHash =
   ExecutionHashBase<'0e23c2f019a47e83a0e7583ae6089b09d7d3611a25c1238efe932acc8b8384a8'>;
 export type ProfileHash =
@@ -1576,9 +1576,27 @@ type ContractBase = Omit<
                   readonly unique: false;
                 },
                 {
+                  readonly name: 'invoices_organizationId_dueDate_idx_e6fc0959';
+                  readonly prefix: 'invoices_organizationId_dueDate_idx';
+                  readonly columns: readonly ['organizationId', 'dueDate'];
+                  readonly unique: false;
+                },
+                {
                   readonly name: 'invoices_organizationId_idx_2e17ef41';
                   readonly prefix: 'invoices_organizationId_idx';
                   readonly columns: readonly ['organizationId'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'invoices_organizationId_issueDate_idx_523591b6';
+                  readonly prefix: 'invoices_organizationId_issueDate_idx';
+                  readonly columns: readonly ['organizationId', 'issueDate'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'invoices_organizationId_status_issuedAt_idx_373463f5';
+                  readonly prefix: 'invoices_organizationId_status_issuedAt_idx';
+                  readonly columns: readonly ['organizationId', 'status', 'issuedAt'];
                   readonly unique: false;
                 },
               ];
@@ -1805,6 +1823,12 @@ type ContractBase = Omit<
                   readonly name: 'payments_organizationId_invoiceId_idx_f9b6d255';
                   readonly prefix: 'payments_organizationId_invoiceId_idx';
                   readonly columns: readonly ['organizationId', 'invoiceId'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'payments_organizationId_paymentDate_idx_bba58353';
+                  readonly prefix: 'payments_organizationId_paymentDate_idx';
+                  readonly columns: readonly ['organizationId', 'paymentDate'];
                   readonly unique: false;
                 },
               ];

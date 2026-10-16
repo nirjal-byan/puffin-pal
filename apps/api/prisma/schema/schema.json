@@ -2680,10 +2680,38 @@
                 },
                 {
                   "columns": [
+                    "organizationId",
+                    "dueDate"
+                  ],
+                  "name": "invoices_organizationId_dueDate_idx_e6fc0959",
+                  "prefix": "invoices_organizationId_dueDate_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
                     "organizationId"
                   ],
                   "name": "invoices_organizationId_idx_2e17ef41",
                   "prefix": "invoices_organizationId_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "organizationId",
+                    "issueDate"
+                  ],
+                  "name": "invoices_organizationId_issueDate_idx_523591b6",
+                  "prefix": "invoices_organizationId_issueDate_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "organizationId",
+                    "status",
+                    "issuedAt"
+                  ],
+                  "name": "invoices_organizationId_status_issuedAt_idx_373463f5",
+                  "prefix": "invoices_organizationId_status_issuedAt_idx",
                   "unique": false
                 }
               ],
@@ -3018,6 +3046,15 @@
                   "name": "payments_organizationId_invoiceId_idx_f9b6d255",
                   "prefix": "payments_organizationId_invoiceId_idx",
                   "unique": false
+                },
+                {
+                  "columns": [
+                    "organizationId",
+                    "paymentDate"
+                  ],
+                  "name": "payments_organizationId_paymentDate_idx_bba58353",
+                  "prefix": "payments_organizationId_paymentDate_idx",
+                  "unique": false
                 }
               ],
               "primaryKey": {
@@ -3339,7 +3376,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "770c1f918c5d71729f73858dc0f8ee0c56d407c619f8727beb91da4741361756"
+    "storageHash": "d51251a8c67afd97dd92aa72b9b47c14d04de3614162b0e2d52e077ab93998aa"
   },
   "execution": {
     "executionHash": "0e23c2f019a47e83a0e7583ae6089b09d7d3611a25c1238efe932acc8b8384a8",

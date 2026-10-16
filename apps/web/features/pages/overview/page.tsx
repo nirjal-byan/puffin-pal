@@ -1,4 +1,4 @@
-import { roleLabel, type Session } from "../../../lib/api";
+import type { Session, WorkspaceApi } from "../../../lib/api";
 import {
   NAV,
   ICON_PATHS,
@@ -6,13 +6,16 @@ import {
   type Tab,
 } from "../../../lib/navigation";
 import OverviewLayout from "./layout";
+import { FinancialDashboard } from "../../dashboard/financial-dashboard";
 
 export default function OverviewPage({
   session,
   navigate,
+  api,
 }: {
   session: Session;
   navigate: (tab: Tab) => void;
+  api: WorkspaceApi;
 }) {
   const sections = NAV.filter(
     (item) =>
@@ -22,28 +25,7 @@ export default function OverviewPage({
   );
   return (
     <OverviewLayout>
-      <section className="panel overview-welcome">
-        <span className="eyebrow">Your workspace</span>
-        <h2>Welcome, {session.user.fullName}.</h2>
-        <p className="muted">
-          Everything you need to manage {session.organization.name}, in one
-          place.
-        </p>
-        <dl className="overview-details">
-          <div>
-            <dt>Organization</dt>
-            <dd>{session.organization.name}</dd>
-          </div>
-          <div>
-            <dt>Your role</dt>
-            <dd>{roleLabel(session.role)}</dd>
-          </div>
-          <div>
-            <dt>Currency</dt>
-            <dd>{session.organization.currency}</dd>
-          </div>
-        </dl>
-      </section>
+      <FinancialDashboard api={api} />
       <section aria-labelledby="overview-sections">
         <h3 id="overview-sections" className="overview-section-heading">
           Explore your workspace

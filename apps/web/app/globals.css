@@ -2701,6 +2701,134 @@ tr:hover td {
   flex-direction: column;
   gap: 28px;
 }
+.financial-dashboard {
+  display: grid;
+  gap: 20px;
+}
+.dashboard-heading-row {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+}
+.dashboard-heading-row h2 {
+  font-size: 24px;
+  margin-bottom: 7px;
+}
+.dashboard-filters {
+  display: grid;
+  justify-items: end;
+  gap: 10px;
+}
+.dashboard-presets,
+.dashboard-custom-range {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+}
+.dashboard-custom-range label {
+  display: grid;
+  gap: 4px;
+  color: var(--muted);
+  font-size: 11px;
+}
+.dashboard-custom-range input {
+  min-height: 34px;
+  padding: 6px 9px;
+}
+.dashboard-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+.dashboard-kpi {
+  display: grid;
+  gap: 7px;
+  min-height: 122px;
+  padding: 18px;
+}
+.dashboard-kpi > span,
+.dashboard-kpi small,
+.dashboard-chart header span {
+  color: var(--muted);
+  font-size: 11px;
+}
+.dashboard-kpi strong {
+  font-size: clamp(20px, 2.1vw, 28px);
+  font-weight: 600;
+  letter-spacing: -0.7px;
+}
+.dashboard-chart-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+.dashboard-chart {
+  min-width: 0;
+  padding: 18px 12px 14px;
+}
+.dashboard-chart-wide {
+  grid-column: 1 / -1;
+}
+.dashboard-chart header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0 7px 12px;
+}
+.dashboard-chart h3 {
+  font-size: 14px;
+}
+.dashboard-legend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px 14px;
+  color: var(--muted);
+  font-size: 11px;
+}
+.dashboard-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.dashboard-legend i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+.dashboard-state {
+  display: grid;
+  justify-items: start;
+  gap: 12px;
+  padding: 30px;
+}
+.dashboard-kpi.skeleton {
+  border: 0;
+  background: linear-gradient(90deg, color-mix(in srgb, var(--border) 45%, transparent), color-mix(in srgb, var(--border) 85%, transparent), color-mix(in srgb, var(--border) 45%, transparent));
+  background-size: 200% 100%;
+  animation: dashboard-shimmer 1.3s infinite linear;
+}
+@keyframes dashboard-shimmer { to { background-position: -200% 0; } }
+.financial-dashboard .recharts-cartesian-axis-tick-value { fill: var(--muted); font-size: 10px; }
+.financial-dashboard .recharts-cartesian-grid line { stroke: var(--border); }
+.financial-dashboard .recharts-default-tooltip { background: var(--background) !important; border-color: var(--border) !important; border-radius: 8px; font-size: 11px; }
+@media (max-width: 980px) {
+  .dashboard-heading-row { align-items: flex-start; flex-direction: column; }
+  .dashboard-filters { justify-items: start; width: 100%; }
+  .dashboard-kpi-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 700px) {
+  .dashboard-presets { width: 100%; overflow-x: auto; padding-bottom: 3px; }
+  .dashboard-presets .button { white-space: nowrap; }
+  .dashboard-custom-range { align-items: stretch; flex-direction: column; width: 100%; }
+  .dashboard-kpi-grid, .dashboard-chart-grid { grid-template-columns: 1fr; }
+  .dashboard-chart-wide { grid-column: auto; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dashboard-kpi.skeleton { animation: none; }
+}
 .overview-welcome {
   padding: 28px;
 }

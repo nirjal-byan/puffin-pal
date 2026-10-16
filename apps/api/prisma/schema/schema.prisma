@@ -185,6 +185,9 @@ model Invoice {
 
   @@unique([organizationId, id])
   @@unique([organizationId, invoiceNumber])
+  @@index([organizationId, status, issuedAt])
+  @@index([organizationId, issueDate])
+  @@index([organizationId, dueDate])
   @@map("invoices")
 }
 
@@ -221,6 +224,7 @@ model Payment {
 
   @@unique([organizationId, id])
   @@index([organizationId, invoiceId])
+  @@index([organizationId, paymentDate])
   @@map("payments")
 }
 

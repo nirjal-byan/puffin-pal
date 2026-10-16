@@ -9,7 +9,7 @@
     "start": "next start",
     "lint": "eslint --max-warnings 0",
     "check-types": "next typegen && tsc --noEmit",
-    "test": "node --experimental-transform-types --test test/session.test.mjs test/phone.test.mjs test/invoice.test.mjs test/navigation.test.mjs test/company-logo.test.mjs test/invoice-pdf.test.mjs test/onboarding.test.mjs test/invoice-payments.test.mjs test/expenses.test.mjs",
+    "test": "node --experimental-transform-types --test test/session.test.mjs test/phone.test.mjs test/invoice.test.mjs test/navigation.test.mjs test/company-logo.test.mjs test/invoice-pdf.test.mjs test/onboarding.test.mjs test/invoice-payments.test.mjs test/expenses.test.mjs test/financial-dashboard.test.mjs",
     "lint:fix": "eslint --fix --max-warnings 0"
   },
   "dependencies": {
@@ -18,7 +18,8 @@
     "libphonenumber-js": "1.13.14",
     "next": "16.3.4",
     "react": "19.2.8",
-    "react-dom": "19.2.8"
+    "react-dom": "19.2.8",
+    "recharts": "^3.10.1"
   },
   "devDependencies": {
     "@repo/eslint-config": "workspace:*",

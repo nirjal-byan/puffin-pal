@@ -30,7 +30,8 @@
     "test:onboarding": "pnpm run build && node --test test/onboarding.test.mjs && node scripts/test-auth-e2e.mjs test/onboarding.e2e.test.mjs",
     "test:payments": "pnpm --filter @puffinpal/permissions build && pnpm --filter database build && pnpm run build && node --test test/invoice-payments.test.mjs && node scripts/test-auth-e2e.mjs test/invoice-payments.e2e.test.mjs",
     "test:redis": "pnpm run build && node --test test/redis-throttler.test.mjs test/session.test.mjs",
-    "test:invoice-exports": "pnpm run build && node --test test/invoice-export.test.mjs && node scripts/test-auth-e2e.mjs test/invoice-exports.e2e.test.mjs"
+    "test:invoice-exports": "pnpm run build && node --test test/invoice-export.test.mjs && node scripts/test-auth-e2e.mjs test/invoice-exports.e2e.test.mjs",
+    "test:dashboard": "pnpm run build && node --test test/financial-dashboard.test.mjs"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1150.0",
