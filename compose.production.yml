@@ -1,0 +1,224 @@
+name: ${COMPOSE_PROJECT_NAME:-puffinpal-production}
+
+x-app-logging: &app-logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "5"
+
+x-api-environment: &api-environment
+  NODE_ENV: production
+  PORT: "3001"
+  HOST: 0.0.0.0
+  DATABASE_URL: ${DATABASE_URL:?Set DATABASE_URL in .env.production}
+  WEB_ORIGIN: ${WEB_ORIGIN:?Set WEB_ORIGIN in .env.production}
+  COOKIE_SECURE: ${COOKIE_SECURE:-true}
+  TRUST_PROXY_HOPS: ${TRUST_PROXY_HOPS:-1}
+  JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in .env.production}
+  REDIS_URL: ${REDIS_URL:?Set REDIS_URL in .env.production}
+  REDIS_RATE_LIMIT_PREFIX: ${REDIS_RATE_LIMIT_PREFIX:-puffinpal:auth-rate-limit}
+  REDIS_CONNECT_TIMEOUT_MS: ${REDIS_CONNECT_TIMEOUT_MS:-2000}
+  REDIS_RECONNECT_MAX_RETRIES: ${REDIS_RECONNECT_MAX_RETRIES:-3}
+  BULLMQ_REDIS_URL: ${BULLMQ_REDIS_URL:?Set BULLMQ_REDIS_URL in .env.production}
+  BULLMQ_PREFIX: ${BULLMQ_PREFIX:-puffinpal:jobs}
+  BULLMQ_CONNECT_TIMEOUT_MS: ${BULLMQ_CONNECT_TIMEOUT_MS:-5000}
+  BULLMQ_RECONNECT_MAX_RETRIES: ${BULLMQ_RECONNECT_MAX_RETRIES:-5}
+  INVOICE_EXPORT_WORKER_CONCURRENCY: ${INVOICE_EXPORT_WORKER_CONCURRENCY:-2}
+  INVOICE_EXPORT_RETENTION_HOURS: ${INVOICE_EXPORT_RETENTION_HOURS:-24}
+  S3_ENDPOINT: ${S3_ENDPOINT:-http://seaweedfs:8333}
+  S3_REGION: ${S3_REGION:-us-east-1}
+  S3_BUCKET: ${S3_BUCKET:-puffinpal-private}
+  S3_ACCESS_KEY_ID: ${S3_ACCESS_KEY_ID:?Set S3_ACCESS_KEY_ID in .env.production}
+  S3_SECRET_ACCESS_KEY: ${S3_SECRET_ACCESS_KEY:?Set S3_SECRET_ACCESS_KEY in .env.production}
+  LOG_LEVEL: ${LOG_LEVEL:-info}
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:?Set POSTGRES_USER in .env.production}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env.production}
+      POSTGRES_DB: ${POSTGRES_DB:?Set POSTGRES_DB in .env.production}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks: [backend]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$$POSTGRES_USER\" -d \"$$POSTGRES_DB\""]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
+    logging: *app-logging
+    deploy:
+      resources:
+        limits:
+          memory: 1g
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD:?Set REDIS_PASSWORD in .env.production}
+    command: ["sh", "-c", "exec redis-server --appendonly yes --appendfsync everysec --requirepass \"$$REDIS_PASSWORD\""]
+    volumes:
+      - redis_data:/data
+    networks: [backend]
+    healthcheck:
+      test: ["CMD-SHELL", "REDISCLI_AUTH=\"$$REDIS_PASSWORD\" redis-cli ping | grep PONG"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+    logging: *app-logging
+    deploy:
+      resources:
+        limits:
+          memory: 512m
+
+  seaweedfs:
+    image: chrislusf/seaweedfs:3.97
+    restart: unless-stopped
+    environment:
+      S3_ACCESS_KEY_ID: ${S3_ACCESS_KEY_ID:?Set S3_ACCESS_KEY_ID in .env.production}
+      S3_SECRET_ACCESS_KEY: ${S3_SECRET_ACCESS_KEY:?Set S3_SECRET_ACCESS_KEY in .env.production}
+    entrypoint: ["/bin/sh", "-ec"]
+    command:
+      - |
+        cat > /tmp/s3.json <<EOF
+        {"identities":[{"name":"puffinpal-api","credentials":[{"accessKey":"$${S3_ACCESS_KEY_ID}","secretKey":"$${S3_SECRET_ACCESS_KEY}"}],"actions":["Admin","Read","Write","List","Tagging"]}]}
+        EOF
+        exec weed server -dir=/data -s3 -s3.config=/tmp/s3.json
+    volumes:
+      - seaweedfs_data:/data
+    networks: [backend]
+    healthcheck:
+      test: ["CMD-SHELL", "nc -z 127.0.0.1 8333"]
+      interval: 10s
+      timeout: 5s
+      retries: 18
+      start_period: 15s
+    logging: *app-logging
+    deploy:
+      resources:
+        limits:
+          memory: 1g
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+      target: runtime
+    restart: unless-stopped
+    environment: *api-environment
+    depends_on:
+      postgres: { condition: service_healthy }
+      redis: { condition: service_healthy }
+      seaweedfs: { condition: service_healthy }
+    networks: [backend]
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3001/api/v1/health/ready').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 15s
+    logging: *app-logging
+    deploy:
+      resources:
+        limits:
+          memory: 768m
+
+  worker:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+      target: runtime
+    command: ["node", "dist/src/worker.js"]
+    restart: unless-stopped
+    environment: *api-environment
+    depends_on:
+      postgres: { condition: service_healthy }
+      redis: { condition: service_healthy }
+      seaweedfs: { condition: service_healthy }
+    networks: [backend]
+    stop_grace_period: 30s
+    logging: *app-logging
+    deploy:
+      resources:
+        limits:
+          memory: 768m
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: /api/v1
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: "3000"
+      HOSTNAME: 0.0.0.0
+    networks: [frontend]
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 15s
+    logging: *app-logging
+    deploy:
+      resources:
+        limits:
+          memory: 512m
+
+  caddy:
+    image: caddy:2.10-alpine
+    restart: unless-stopped
+    environment:
+      CADDY_SITE_ADDRESS: ${CADDY_SITE_ADDRESS:-http://localhost}
+      CADDY_HSTS: ${CADDY_HSTS:-max-age=0}
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      api: { condition: service_healthy }
+      web: { condition: service_healthy }
+    networks: [edge, frontend, backend]
+    logging: *app-logging
+    deploy:
+      resources:
+        limits:
+          memory: 256m
+
+  migrate:
+    profiles: [tools]
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+      target: migration
+    environment: *api-environment
+    depends_on:
+      postgres: { condition: service_healthy }
+    networks: [backend]
+    restart: "no"
+    logging: *app-logging
+
+networks:
+  edge:
+  frontend:
+    internal: true
+  backend:
+    internal: true
+
+volumes:
+  postgres_data:
+  redis_data:
+  seaweedfs_data:
+  caddy_data:
+  caddy_config:
+

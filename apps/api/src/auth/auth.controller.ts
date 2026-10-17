@@ -168,9 +168,14 @@ export class AuthController {
   }
 
   private cookieOptions() {
+    const configuredSecure = process.env.COOKIE_SECURE;
+    if (configuredSecure && !["true", "false"].includes(configuredSecure))
+      throw new Error("COOKIE_SECURE must be true or false");
     return {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
+      secure: configuredSecure
+        ? configuredSecure === "true"
+        : process.env.NODE_ENV === "production",
       sameSite: "lax" as const,
       path: "/api/v1/auth",
     };

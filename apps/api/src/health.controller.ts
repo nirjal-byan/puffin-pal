@@ -8,12 +8,18 @@ import {
 import { ApiOperation, ApiTags } from "@nestjs/swagger";
 import type { Database } from "./database/client.js";
 import { DATABASE } from "./database.module.js";
+import { RedisClientService } from "./redis/redis-client.service.js";
+import { ObjectStorageService } from "./storage/object-storage.service.js";
 
 @ApiTags("health")
 @Controller("health")
 @Public()
 export class HealthController {
-  constructor(@Inject(DATABASE) private readonly db: Database) {}
+  constructor(
+    @Inject(DATABASE) private readonly db: Database,
+    private readonly redis: RedisClientService,
+    private readonly storage: ObjectStorageService,
+  ) {}
 
   @Get()
   @ApiOperation({ summary: "Process liveness" })
@@ -25,10 +31,14 @@ export class HealthController {
   @ApiOperation({ summary: "Database readiness" })
   async ready() {
     try {
-      await this.db.orm.public.Organization.select("id").limit(1).all();
-      return { status: "ok", database: "up" };
+      await Promise.all([
+        this.db.orm.public.Organization.select("id").limit(1).all(),
+        this.redis.ping(),
+        this.storage.readyCheck(),
+      ]);
+      return { status: "ok" };
     } catch {
-      throw new ServiceUnavailableException("Database unavailable");
+      throw new ServiceUnavailableException("Service unavailable");
     }
   }
 }

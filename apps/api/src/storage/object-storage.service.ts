@@ -37,7 +37,8 @@ export class ObjectStorageService {
   private ready?: Promise<void>;
 
   private ensureBucket() {
-    return (this.ready ??= (async () => {
+    if (!this.ready)
+      this.ready = (async () => {
       if (
         this.production &&
         (!process.env.S3_ACCESS_KEY_ID ||
@@ -58,7 +59,15 @@ export class ObjectStorageService {
           });
         }
       }
-    })());
+      })().catch((error: unknown) => {
+        this.ready = undefined;
+        throw error;
+      });
+    return this.ready;
+  }
+
+  readyCheck() {
+    return this.ensureBucket();
   }
 
   async put(

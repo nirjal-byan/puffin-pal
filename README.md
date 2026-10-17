@@ -1,5 +1,8 @@
 # PuffinPal
 
+For production-like container builds, explicit migrations, backups, and future
+EC2 preparation, see [knowledge/docker-deployment.md](knowledge/docker-deployment.md).
+
 Multi-tenant invoice, expense, and retainer management in a pnpm/Turborepo monorepo.
 The current implementation includes authentication, tenant permissions, a NestJS API,
 and a basic browser UI for testing the platform.

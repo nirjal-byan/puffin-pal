@@ -52,6 +52,10 @@ export class RedisClientService
     return this.client.eval(script, { keys, arguments: args });
   }
 
+  ping() {
+    return this.client.ping();
+  }
+
   async onApplicationShutdown() {
     if (this.client.isReady) await this.client.quit();
     else if (this.client.isOpen) this.client.destroy();

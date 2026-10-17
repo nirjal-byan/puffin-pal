@@ -18,7 +18,12 @@ import { InvoiceExportQueue } from "./invoice-export.queue.js";
 import { InvoiceExportStorageService } from "./invoice-export-storage.service.js";
 import type { CreateInvoiceExportDto } from "./invoice-export.dto.js";
 
-export const EXPORT_RETENTION_HOURS = 24;
+export const EXPORT_RETENTION_HOURS = (() => {
+  const value = Number(process.env.INVOICE_EXPORT_RETENTION_HOURS ?? 24);
+  if (!Number.isInteger(value) || value < 1 || value > 168)
+    throw new Error("INVOICE_EXPORT_RETENTION_HOURS must be from 1 to 168");
+  return value;
+})();
 
 @Injectable({ scope: Scope.REQUEST })
 export class InvoiceExportsService {

@@ -1,4 +1,7 @@
-.PHONY: build.packages database.seed install lint lint.fix prisma.format prisma.generate prisma.migrate.dev prisma.migrate.deploy prisma.reset run run.api run.web run.worker services.start services.stop typecheck dev services.up services.down db.generate db.sync db.plan db.migrate db.verify api.dev
+.PHONY: build.packages database.seed install lint lint.fix prisma.format prisma.generate prisma.migrate.dev prisma.migrate.deploy prisma.reset run run.api run.web run.worker services.start services.stop typecheck dev services.up services.down db.generate db.sync db.plan db.migrate db.verify api.dev production.validate production.build production.start production.stop production.logs production.migrate production.migrations.verify production.health production.worker.restart production.rebuild
+
+PRODUCTION_ENV ?= .env.production
+PRODUCTION_COMPOSE = docker compose --env-file $(PRODUCTION_ENV) -f compose.production.yml
 
 build.packages:
 	@printf "\033[0;32m>>> Building packages\033[0m\n"
@@ -82,3 +85,34 @@ db.migrate:
 db.verify:
 	cd apps/api && pnpm run prisma:verify
 api.dev: run.api
+
+production.validate:
+	$(PRODUCTION_COMPOSE) config --quiet
+
+production.build:
+	$(PRODUCTION_COMPOSE) build api worker web migrate
+
+production.start:
+	$(PRODUCTION_COMPOSE) up -d
+
+production.stop:
+	$(PRODUCTION_COMPOSE) down
+
+production.logs:
+	$(PRODUCTION_COMPOSE) logs -f --tail=150
+
+production.migrate:
+	$(PRODUCTION_COMPOSE) --profile tools run --rm migrate
+
+production.migrations.verify:
+	$(PRODUCTION_COMPOSE) --profile tools run --rm migrate pnpm run prisma:verify
+
+production.health:
+	$(PRODUCTION_COMPOSE) ps
+
+production.worker.restart:
+	$(PRODUCTION_COMPOSE) restart worker
+
+production.rebuild:
+	@test -n "$(SERVICE)" || (echo "Usage: make production.rebuild SERVICE=api" && exit 1)
+	$(PRODUCTION_COMPOSE) up -d --build --no-deps $(SERVICE)
