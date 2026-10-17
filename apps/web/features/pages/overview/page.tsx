@@ -25,42 +25,45 @@ export default function OverviewPage({
   );
   return (
     <OverviewLayout>
-      <FinancialDashboard api={api} />
-      <section aria-labelledby="overview-sections">
-        <h3 id="overview-sections" className="overview-section-heading">
-          Explore your workspace
-        </h3>
-        <div className="overview-links">
-          {sections.map((item) => (
-            <button
-              type="button"
-              key={item.key}
-              className="panel overview-link"
-              onClick={() => navigate(item.key)}
-            >
-              <span className="overview-icon" aria-hidden="true">
-                <svg
-                  width="20"
-                  height="20"
-                  viewBox="0 0 20 20"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.25"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d={ICON_PATHS[item.key]} />
-                </svg>
-              </span>
-              <strong>{item.label}</strong>
-              <span className="muted">{DESCRIPTION[item.key]}</span>
-              <span className="overview-arrow" aria-hidden="true">
-                ↗
-              </span>
-            </button>
-          ))}
-        </div>
-      </section>
+      <div className="overview-dashboard-grid">
+        <FinancialDashboard api={api} />
+        <aside className="panel overview-explore-panel" aria-labelledby="overview-sections">
+          <header>
+            <span className="eyebrow">Quick access</span>
+            <h3 id="overview-sections">Explore your workspace</h3>
+          </header>
+          <div className="overview-links">
+            {sections.map((item) => (
+              <button
+                type="button"
+                key={item.key}
+                className="overview-link"
+                onClick={() => navigate(item.key)}
+              >
+                <span className="overview-icon" aria-hidden="true">
+                  <svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 20 20"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.25"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d={ICON_PATHS[item.key]} />
+                  </svg>
+                </span>
+                <span className="overview-link-copy">
+                  <strong>{item.label}</strong>
+                  <small>{DESCRIPTION[item.key]}</small>
+                </span>
+                <span className="overview-arrow" aria-hidden="true">→</span>
+              </button>
+            ))}
+          </div>
+        </aside>
+      </div>
     </OverviewLayout>
   );
 }

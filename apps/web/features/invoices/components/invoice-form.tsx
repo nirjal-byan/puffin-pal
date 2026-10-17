@@ -21,16 +21,19 @@ import type {
 import { InvoiceClientSelect } from "./invoice-client-select";
 import { InvoiceLineItems } from "./invoice-line-items";
 import { InvoiceSummary } from "./invoice-summary";
+import { DatePicker } from "../../../components/date-picker";
 export function InvoiceForm({
   api,
   onCreated,
   initialInvoice,
   onReload,
+  modalActions = false,
 }: {
   api: WorkspaceApi;
   initialInvoice?: InvoiceDetail;
   onReload?: () => void;
   onCreated: (invoice: CreatedInvoice) => void;
+  modalActions?: boolean;
 }) {
   const tutorialClient = useSearchParams().get("tutorialClient") ?? "";
   const [suggestedDueDate] = useState(() =>
@@ -85,35 +88,34 @@ export function InvoiceForm({
       if (error instanceof ApiError && error.status === 409) setConflict(true);
     }
   }
+  const actions = <>
+    <Link
+      href={cancelHref}
+      className={`button secondary ${saving ? "invoice-disabled-link" : ""}`}
+      aria-disabled={saving}
+      tabIndex={saving ? -1 : 0}
+      onClick={(event) => {
+        if (saving) event.preventDefault();
+      }}
+    >
+      Cancel
+    </Link>
+    <button
+      type="submit"
+      form="invoice-create-form"
+      className="button primary"
+      disabled={saving || conflict}
+    >
+      {saving
+        ? "Saving draft…"
+        : initialInvoice
+          ? "Save Changes"
+          : "Save as Draft"}
+    </button>
+  </>;
   return (
     <form id="invoice-create-form" data-tour="invoice-create-form" onSubmit={submit} noValidate>
-      <div className="invoice-form-actions">
-        <span className="role-badge">Draft</span>
-        <div>
-          <Link
-            href={cancelHref}
-            className={`button secondary ${saving ? "invoice-disabled-link" : ""}`}
-            aria-disabled={saving}
-            tabIndex={saving ? -1 : 0}
-            onClick={(event) => {
-              if (saving) event.preventDefault();
-            }}
-          >
-            Cancel
-          </Link>
-          <button
-            type="submit"
-            className="button primary"
-            disabled={saving || conflict}
-          >
-            {saving
-              ? "Saving draft…"
-              : initialInvoice
-                ? "Save Changes"
-                : "Save as Draft"}
-          </button>
-        </div>
-      </div>
+      {!modalActions && <div className="invoice-form-actions"><span className="role-badge">Draft</span><div>{actions}</div></div>}
       {failure && (
         <p className="alert" role="alert">
           {failure}
@@ -155,27 +157,18 @@ export function InvoiceForm({
                 {(["issueDate", "dueDate"] as const).map((field) => (
                   <label className="invoice-field" key={field}>
                     {field === "issueDate" ? "Issue date" : "Due date"}
-                    <input
-                      aria-label={
+                    <DatePicker
+                      ariaLabel={
                         field === "issueDate" ? "Issue date" : "Due date"
                       }
-                      type="date"
                       name={field}
-                      data-tour-suggestion={field === "dueDate" ? suggestedDueDate : undefined}
-                      onKeyDown={(event) => {
-                        if (event.key === "Tab" && !event.shiftKey && !draft[field] && field === "dueDate") {
-                          event.preventDefault(); update({ dueDate: suggestedDueDate });
-                        }
-                      }}
                       value={draft[field]}
-                      onChange={(event) =>
-                        update({ [field]: event.target.value })
-                      }
+                      onChange={(value) => update({ [field]: value })}
                       min={field === "dueDate" ? draft.issueDate : undefined}
-                      aria-invalid={Boolean(errors[field])}
-                      aria-describedby={
-                        errors[field] ? `${field}-error` : undefined
-                      }
+                      invalid={Boolean(errors[field])}
+                      describedBy={errors[field] ? `${field}-error` : undefined}
+                      tabSuggestion={field === "dueDate" ? suggestedDueDate : undefined}
+                      disabled={saving}
                     />
                     {errors[field] && (
                       <span
@@ -223,7 +216,16 @@ export function InvoiceForm({
             disabled={saving}
           />
         </div>
-        <InvoiceSummary items={draft.items} />
+        {modalActions ? (
+          <aside className="invoice-summary-rail">
+            <div className="invoice-form-actions modal-invoice-actions">
+              <div>{actions}</div>
+            </div>
+            <InvoiceSummary items={draft.items} />
+          </aside>
+        ) : (
+          <InvoiceSummary items={draft.items} />
+        )}
       </div>
     </form>
   );

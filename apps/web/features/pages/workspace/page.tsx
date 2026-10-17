@@ -32,6 +32,7 @@ import { CompanyLogoSettings } from "../../../components/company-logo-settings";
 import { Navbar } from "../../../components/navbar";
 import { Sidebar } from "../../../components/sidebar";
 import { Footer } from "../../../components/footer";
+import { AppModal } from "../../../components/app-modal";
 import WorkspaceLayout from "./layout";
 import OverviewPage from "../overview/page";
 import ClientsPage from "../clients/page";
@@ -121,7 +122,6 @@ export default function WorkspacePage({
   );
   useEffect(() => {
     if (
-      creatingInvoice ||
       invoiceId ||
       ["overview", "access", "profile", "password"].includes(tab) ||
       tab === "expenses" ||
@@ -209,36 +209,26 @@ export default function WorkspacePage({
           <span>
             {activeSection.label} <span className="breadcrumb">/</span>{" "}
             {invoiceId
-              ? editingInvoice
-                ? "Edit Draft"
-                : "Invoice Details"
-              : creatingInvoice
-                ? "Create Invoice"
-                : currentNav.label}
+              ? "Invoice Details"
+              : currentNav.label}
           </span>
         </header>
         <div
           key={`${tab}-${creatingInvoice}`}
           className="workspace-content page-transition"
         >
-          <div className="page-heading" data-tour="page-heading">
+          {tab !== "overview" && <div className="page-heading" data-tour="page-heading">
             <div>
               <span className="eyebrow">{session.organization.name}</span>
               <h1>
                 {invoiceId
-                  ? editingInvoice
-                    ? "Edit Draft"
-                    : "Invoice Details"
-                  : creatingInvoice
-                    ? "Create Invoice"
-                    : currentNav.label === "My access"
+                  ? "Invoice Details"
+                  : currentNav.label === "My access"
                       ? "Your workspace access"
                       : currentNav.label}
               </h1>
               <p className="muted">
-                {creatingInvoice
-                  ? "Build an invoice and save it as a draft."
-                  : DESCRIPTION[tab]}
+                {DESCRIPTION[tab]}
               </p>
             </div>
             <div className="page-heading-actions">
@@ -264,7 +254,7 @@ export default function WorkspacePage({
                   </button>
                 )}
             </div>
-          </div>
+          </div>}
           {error && (
             <div className="alert" role="alert">
               {error}
@@ -303,28 +293,11 @@ export default function WorkspacePage({
             <InvoiceDetailPage
               key={`${invoiceId}-${editingInvoice}`}
               id={invoiceId}
-              editing={editingInvoice}
+              editing={false}
               api={api}
               permissions={session.permissions}
               currency={session.organization.currency}
             />
-          ) : creatingInvoice ? (
-            can("invoices:create") ? (
-              <InvoiceForm
-                api={api}
-                onCreated={(invoice) => router.push(searchParams.has("tutorialClient") ? `/invoices/${invoice.id}` : "/invoices")}
-              />
-            ) : (
-              <section className="panel empty-state">
-                <h3>Invoice creation is restricted</h3>
-                <p>
-                  Your role allows you to view invoices, but not create them.
-                </p>
-                <Link className="button secondary" href="/invoices">
-                  Back to invoices
-                </Link>
-              </section>
-            )
           ) : !allowed ? (
             <section className="panel empty-state">
               <span className="empty-symbol">◎</span>
@@ -456,6 +429,27 @@ export default function WorkspacePage({
                 </div>
               </div>
             </>
+          )}
+          {creatingInvoice && can("invoices:create") && (
+            <AppModal title="Create invoice" badge="Draft" wide onClose={() => router.push("/invoices")}>
+              <InvoiceForm
+                api={api}
+                modalActions
+                onCreated={(invoice) => router.push(searchParams.has("tutorialClient") ? `/invoices/${invoice.id}` : "/invoices")}
+              />
+            </AppModal>
+          )}
+          {editingInvoice && invoiceId && (
+            <AppModal title="Edit draft invoice" badge="Draft" wide onClose={() => router.push(`/invoices/${invoiceId}`)}>
+              <InvoiceDetailPage
+                id={invoiceId}
+                editing
+                modal
+                api={api}
+                permissions={session.permissions}
+                currency={session.organization.currency}
+              />
+            </AppModal>
           )}
           <Footer />
         </div>

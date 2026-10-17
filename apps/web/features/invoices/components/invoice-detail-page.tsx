@@ -20,12 +20,14 @@ export function InvoiceDetailPage({
   api,
   permissions,
   currency,
+  modal = false,
 }: {
   id: string;
   editing: boolean;
   api: WorkspaceApi;
   permissions: readonly Permission[];
   currency: string;
+  modal?: boolean;
 }) {
   const router = useRouter();
   const loaded = useRef(false);
@@ -89,16 +91,17 @@ export function InvoiceDetailPage({
   if (editing)
     return (
       <>
-        <Link className="text-button" href={`/invoices/${id}`}>
+        {!modal && <Link className="text-button" href={`/invoices/${id}`}>
           ← Back to invoice
-        </Link>
-        <h2 className="invoice-number">{invoice.invoiceNumber}</h2>
+        </Link>}
+        {!modal && <h2 className="invoice-number">{invoice.invoiceNumber}</h2>}
         {draftActions(invoice.status, permissions).edit ? (
           <InvoiceForm
             key={`${id}-${revision}`}
             api={api}
             initialInvoice={invoice}
             onReload={reload}
+            modalActions={modal}
             onCreated={() => router.push(`/invoices/${id}`)}
           />
         ) : (
