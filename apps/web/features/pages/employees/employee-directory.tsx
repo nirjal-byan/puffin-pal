@@ -82,7 +82,7 @@ export function EmployeeDirectory({
         </div>
       </section>
 
-      <section className="panel">
+      <section className="panel" data-tour="employee-list">
         <div className="panel-heading">
           <h3>Employee directory</h3>
           <span className="muted">{employees.length} employees</span>

@@ -1,7 +1,17 @@
 import type { Permission } from "@puffinpal/permissions";
 import type { User } from "../../lib/api";
 
-export const TOUR_STEPS = [
+export interface TutorialStep {
+  id: string;
+  title: string;
+  description: string;
+  route?: string;
+  target?: string;
+  requiredPermissions?: readonly Permission[];
+  detail?: boolean;
+}
+
+export const TOUR_STEPS: readonly TutorialStep[] = [
   {
     id: "welcome",
     title: "Welcome to PuffinPal",
@@ -11,15 +21,23 @@ export const TOUR_STEPS = [
   {
     id: "dashboard",
     route: "/",
-    target: "page-heading",
-    title: "Your workspace at a glance",
-    description: "Start here for an overview of your organization and quick access to your work.",
+    target: "dashboard-summary",
+    title: "Financial overview",
+    description: "Review revenue, payments, outstanding balances, expenses, and cash flow.",
+  },
+  {
+    id: "dashboard-charts",
+    route: "/",
+    target: "dashboard-charts",
+    title: "Spot financial trends",
+    description: "Use charts and date filters to understand billing and spending over time.",
+    requiredPermissions: ["invoices:read", "expenses:read"],
   },
   {
     id: "clients",
     route: "/?section=clients&area=workspace",
     target: "nav-clients",
-    permission: "clients:read",
+    requiredPermissions: ["clients:read"],
     title: "Keep your clients together",
     description: "Manage client names and billing details here, ready for your invoices.",
   },
@@ -27,7 +45,7 @@ export const TOUR_STEPS = [
     id: "invoices",
     route: "/invoices",
     target: "nav-invoices",
-    permission: "invoices:read",
+    requiredPermissions: ["invoices:read"],
     title: "Manage your invoices",
     description:
       "Find invoice records, open their details, and edit drafts when your role allows it.",
@@ -36,7 +54,7 @@ export const TOUR_STEPS = [
     id: "create-invoice",
     route: "/invoices",
     target: "create-invoice",
-    permission: "invoices:create",
+    requiredPermissions: ["invoices:create"],
     title: "Start with a draft",
     description:
       "Create Invoice opens the form for your client, dates and line items. Nothing is created during this tour.",
@@ -45,7 +63,7 @@ export const TOUR_STEPS = [
     id: "issuance",
     route: "/invoices",
     target: "page-heading",
-    permission: "invoices:read",
+    requiredPermissions: ["invoices:read"],
     title: "Finalize, then download",
     description:
       "Owners and admins can issue a draft from its detail page. Issuance locks billing details and amounts; issued invoices can be downloaded as PDFs.",
@@ -54,7 +72,7 @@ export const TOUR_STEPS = [
     id: "payment-basics",
     route: "/invoices",
     target: "page-heading",
-    permission: "invoices:record-payment",
+    requiredPermissions: ["invoices:record-payment"],
     title: "Record money received",
     description:
       "Open an issued invoice and choose Record Payment. Enter the amount, date and method. Record the full balance or a partial payment; nothing is submitted during this tour.",
@@ -63,7 +81,7 @@ export const TOUR_STEPS = [
     id: "record-payment",
     detail: true,
     target: "record-payment",
-    permission: "invoices:record-payment",
+    requiredPermissions: ["invoices:record-payment"],
     title: "Full or partial payments",
     description:
       "Use this button after receiving money. You can add a reference and notes. Each payment reduces the balance, and payments cannot exceed what is outstanding.",
@@ -72,7 +90,7 @@ export const TOUR_STEPS = [
     id: "payment-balance",
     detail: true,
     target: "invoice-balances",
-    permission: "invoices:read",
+    requiredPermissions: ["invoices:read"],
     title: "See what remains",
     description:
       "Total paid adds up recorded payments. Outstanding shows what is still owed. A partial payment leaves a balance; paying in full marks the invoice PAID.",
@@ -81,7 +99,7 @@ export const TOUR_STEPS = [
     id: "payment-history",
     detail: true,
     target: "payment-history",
-    permission: "invoices:read",
+    requiredPermissions: ["invoices:read"],
     title: "Review payment history",
     description:
       "Review each payment’s date, amount, method, reference and notes here. Recorded payments cannot be edited or removed.",
@@ -90,16 +108,64 @@ export const TOUR_STEPS = [
     id: "payment-status",
     route: "/invoices",
     target: "page-heading",
-    permission: "invoices:read",
+    requiredPermissions: ["invoices:read"],
     title: "Know what is due",
     description:
       "The invoice list shows paid and outstanding amounts. PAID means no balance remains. OVERDUE appears when a balance remains after the due date, using UTC calendar days.",
   },
   {
+    id: "bulk-exports",
+    route: "/invoices",
+    target: "invoice-list",
+    requiredPermissions: ["invoices:read"],
+    title: "Export invoice PDFs",
+    description: "Select eligible invoices to prepare a private ZIP export in the background.",
+  },
+  {
+    id: "expenses",
+    route: "/?section=expenses&area=workspace",
+    target: "nav-expenses",
+    requiredPermissions: ["expenses:read"],
+    title: "Track business expenses",
+    description: "Record costs, choose categories, attach private receipts, and filter the list.",
+  },
+  {
+    id: "expense-approvals",
+    route: "/?section=expenses&area=workspace",
+    target: "expense-list",
+    requiredPermissions: ["expenses:approve"],
+    title: "Review submitted expenses",
+    description: "Approve or reject pending expenses and review their approval history.",
+  },
+  {
+    id: "retainers",
+    route: "/?section=retainers&area=workspace",
+    target: "nav-retainers",
+    requiredPermissions: ["retainers:read"],
+    title: "Automate repeat billing",
+    description: "Manage recurring schedules, generated invoices, and paused or active retainers.",
+  },
+  {
+    id: "employees",
+    route: "/?section=employees",
+    target: "nav-employees",
+    requiredPermissions: ["employees:read"],
+    title: "Manage employees",
+    description: "Keep employee profiles, departments, reporting managers, and status together.",
+  },
+  {
+    id: "salaries",
+    route: "/?section=employees",
+    target: "employee-list",
+    requiredPermissions: ["salaries:read"],
+    title: "Review compensation history",
+    description: "Authorized users can view effective-dated salaries and compensation components.",
+  },
+  {
     id: "team",
     route: "/?section=members",
     target: "nav-members",
-    permission: "members:manage",
+    requiredPermissions: ["members:manage"],
     title: "Invite your team",
     description: "Add teammates and choose their roles to give them the access they need.",
   },
@@ -117,15 +183,7 @@ export const TOUR_STEPS = [
     description:
       "Start with a client or explore your invoices. Use Tutorial in the top bar whenever you need another look.",
   },
-] satisfies readonly {
-  id: string;
-  title: string;
-  description: string;
-  route?: string;
-  target?: string;
-  permission?: Permission;
-  detail?: boolean;
-}[];
+];
 
 export interface TourState {
   active: boolean;
@@ -154,7 +212,10 @@ export function paymentTourWaiting(root: Pick<Document, "querySelector">) {
   return root.querySelector('.workspace-main .panel.loading[role="status"]') !== null;
 }
 export function tourSteps(permissions: readonly Permission[]) {
-  return TOUR_STEPS.filter((step) => !step.permission || permissions.includes(step.permission));
+  return TOUR_STEPS.filter(
+    (step) =>
+      step.requiredPermissions?.every((permission) => permissions.includes(permission)) ?? true,
+  );
 }
 export function initialTour(user: User, saved: unknown): TourState {
   if (

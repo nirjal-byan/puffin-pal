@@ -13,6 +13,13 @@ across those packages; the frontend and root retain TypeScript 7.
 Run `pnpm format` to format TypeScript, React, and Markdown files. Run
 `pnpm format:check` in CI or before review to verify formatting without changing files.
 
+Frontend feature modules should keep page components focused on orchestration. Extract domain types,
+pure transformations, API helpers, and cohesive UI sections when a page starts mixing unrelated
+workflows. Hooks should own reusable lifecycle behavior rather than wrap single event handlers.
+Keep authorization and financial rules on the API; frontend permission checks control presentation
+only. The guided tutorial architecture is documented in
+[onboarding-tutorial.md](onboarding-tutorial.md).
+
 ## Local services
 
 `make services.start` runs `services/docker-compose.yml` as project `puffinpal`.

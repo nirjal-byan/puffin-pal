@@ -217,7 +217,11 @@ export function FinancialDashboard({ api }: { api: WorkspaceApi }) {
         </div>
       ) : summary ? (
         <>
-          <div className="dashboard-kpi-grid" aria-label="Financial summary">
+          <div
+            className="dashboard-kpi-grid"
+            aria-label="Financial summary"
+            data-tour="dashboard-summary"
+          >
             {(
               [
                 ["Invoiced revenue", summary.metrics.invoicedRevenue, "Finalized in this period"],
@@ -243,7 +247,7 @@ export function FinancialDashboard({ api }: { api: WorkspaceApi }) {
               </p>
             </div>
           ) : (
-            <div className="dashboard-chart-grid" aria-busy={loading}>
+            <div className="dashboard-chart-grid" aria-busy={loading} data-tour="dashboard-charts">
               <article
                 className="panel dashboard-chart dashboard-chart-wide"
                 role="img"

@@ -3,47 +3,13 @@ import { useCallback, useEffect, useState } from "react";
 import type { Permission } from "@puffinpal/permissions";
 import { AppModal } from "../../../components/app-modal";
 import { errorMessage, type Client, type WorkspaceApi } from "../../../lib/api";
-
-type Item = { description: string; quantity: number; unitPrice: string };
-type Schedule = {
-  id: string;
-  name: string;
-  description?: string | null;
-  clientId: string;
-  clientName?: string;
-  amount?: string;
-  currency?: string;
-  frequency: string;
-  interval: number;
-  startDate: string;
-  endDate?: string | null;
-  nextRunAt: string;
-  lastRunAt?: string | null;
-  status: string;
-  dueDateOffsetDays: number;
-  autoIssue: boolean;
-  version: number;
-  items?: Item[];
-};
-type Occurrence = {
-  id: string;
-  scheduledFor: string;
-  status: string;
-  invoiceId?: string | null;
-  failureCode?: string | null;
-};
-const blank = {
-  name: "",
-  description: "",
-  clientId: "",
-  frequency: "MONTHLY",
-  interval: 1,
-  startDate: new Date().toISOString().slice(0, 10),
-  endDate: "",
-  dueDateOffsetDays: 14,
-  autoIssue: false,
-  items: [{ description: "", quantity: 1, unitPrice: "0.00" }],
-};
+import { loadRecurringSchedule, loadRecurringWorkspace } from "../../recurring-invoices/api";
+import {
+  emptyRecurringForm,
+  scheduleToForm,
+  type RecurringOccurrence,
+  type RecurringSchedule,
+} from "../../recurring-invoices/types";
 
 export default function RetainersPage({
   api,
@@ -56,35 +22,29 @@ export default function RetainersPage({
   permissions: readonly Permission[];
   onSaved: (message: string) => void;
 }) {
-  const [rows, setRows] = useState<Schedule[]>([]);
+  const [rows, setRows] = useState<RecurringSchedule[]>([]);
   const [clients, setClients] = useState<Client[]>([]);
-  const [editing, setEditing] = useState<Schedule | null | "new">(null);
-  const [occurrences, setOccurrences] = useState<Occurrence[]>([]);
-  const [form, setForm] = useState(blank);
+  const [editing, setEditing] = useState<RecurringSchedule | null | "new">(null);
+  const [occurrences, setOccurrences] = useState<RecurringOccurrence[]>([]);
+  const [form, setForm] = useState(emptyRecurringForm);
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
   const load = useCallback(async () => {
     try {
-      const [schedules, clientRows] = await Promise.all([
-        api<Schedule[]>("/recurring-invoices?limit=100&offset=0"),
-        api<Client[]>("/clients?limit=100&offset=0"),
-      ]);
-      setRows(schedules);
-      setClients(clientRows);
+      const workspace = await loadRecurringWorkspace(api);
+      setRows(workspace.schedules);
+      setClients(workspace.clients);
     } catch (failure) {
       setError(errorMessage(failure));
     }
   }, [api]);
   useEffect(() => {
     let active = true;
-    Promise.all([
-      api<Schedule[]>("/recurring-invoices?limit=100&offset=0"),
-      api<Client[]>("/clients?limit=100&offset=0"),
-    ])
-      .then(([schedules, clientRows]) => {
+    loadRecurringWorkspace(api)
+      .then((workspace) => {
         if (active) {
-          setRows(schedules);
-          setClients(clientRows);
+          setRows(workspace.schedules);
+          setClients(workspace.clients);
         }
       })
       .catch((failure: unknown) => {
@@ -94,33 +54,19 @@ export default function RetainersPage({
       active = false;
     };
   }, [api]);
-  async function open(row?: Schedule) {
+  async function open(row?: RecurringSchedule) {
     setError("");
     setOccurrences([]);
     if (!row) {
-      setForm(blank);
+      setForm(emptyRecurringForm());
       setEditing("new");
       return;
     }
     try {
-      const [full, history] = await Promise.all([
-        api<Schedule>(`/recurring-invoices/${row.id}`),
-        api<Occurrence[]>(`/recurring-invoices/${row.id}/occurrences`),
-      ]);
-      setForm({
-        name: full.name,
-        description: full.description ?? "",
-        clientId: full.clientId,
-        frequency: full.frequency,
-        interval: full.interval,
-        startDate: full.startDate.slice(0, 10),
-        endDate: full.endDate?.slice(0, 10) ?? "",
-        dueDateOffsetDays: full.dueDateOffsetDays,
-        autoIssue: full.autoIssue,
-        items: full.items ?? blank.items,
-      });
-      setOccurrences(history);
-      setEditing(full);
+      const details = await loadRecurringSchedule(api, row.id);
+      setForm(scheduleToForm(details.schedule));
+      setOccurrences(details.occurrences);
+      setEditing(details.schedule);
     } catch (failure) {
       setError(errorMessage(failure));
     }
@@ -148,7 +94,7 @@ export default function RetainersPage({
       setSaving(false);
     }
   }
-  async function transition(row: Schedule, action: "pause" | "resume" | "cancel") {
+  async function transition(row: RecurringSchedule, action: "pause" | "resume" | "cancel") {
     try {
       await api(`/recurring-invoices/${row.id}/${action}`, {
         method: "POST",
@@ -177,7 +123,7 @@ export default function RetainersPage({
           {error}
         </p>
       )}
-      <section className="panel">
+      <section className="panel" data-tour="retainer-list">
         <div className="panel-heading">
           <h3>Schedules</h3>
           <span className="muted">{rows.length} total</span>

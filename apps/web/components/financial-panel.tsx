@@ -110,7 +110,7 @@ export function FinancialPanel({
     eligibleInvoices.length > 0 &&
     eligibleInvoices.every((row) => activeSelectedInvoices.includes(row.id));
   return (
-    <section className="panel">
+    <section className="panel" data-tour={tab === "invoices" ? "invoice-list" : undefined}>
       <div className="panel-heading">
         <h3>
           {tab === "invoices"

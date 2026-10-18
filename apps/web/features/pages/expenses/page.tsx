@@ -6,76 +6,8 @@ import { validateExpense, validateReceiptFile } from "../../expenses/schemas/exp
 import { AppModal } from "../../../components/app-modal";
 import { DatePicker } from "../../../components/date-picker";
 import { Dropdown } from "../../../components/dropdown";
-
-const CATEGORIES = ["SOFTWARE", "HARDWARE", "TRAVEL", "MARKETING", "OTHER"] as const;
-type ApprovalStatus = "DRAFT" | "PENDING_APPROVAL" | "APPROVED" | "REJECTED";
-type Person = { id: string; fullName: string } | null;
-type ApprovalEvent = {
-  id: string;
-  action: string;
-  previousStatus: ApprovalStatus;
-  newStatus: ApprovalStatus;
-  rejectionReason: string | null;
-  createdAt: string;
-  actor: Person;
-};
-type Expense = {
-  id: string;
-  title: string;
-  description: string | null;
-  amount: string;
-  category: (typeof CATEGORIES)[number];
-  vendor: string | null;
-  notes: string | null;
-  receiptName: string | null;
-  receiptMime: string | null;
-  receiptSize: number | null;
-  date: string;
-  createdAt: string;
-  updatedAt: string;
-  approvalStatus: ApprovalStatus;
-  version: number;
-  submittedAt: string | null;
-  reviewedAt: string | null;
-  rejectionReason: string | null;
-  createdBy: Person;
-  submittedBy: Person;
-  reviewedBy: Person;
-  approvalHistory?: ApprovalEvent[];
-};
-type ExpensePage = {
-  items: Expense[];
-  total: number;
-  pendingCount: number;
-  limit: number;
-  offset: number;
-};
-const today = () => new Date().toISOString().slice(0, 10);
-const dateValue = (date: Date) =>
-  `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
-function periodRange(period: string) {
-  const now = new Date();
-  if (period === "last7") {
-    const from = new Date(now);
-    from.setDate(from.getDate() - 6);
-    return { from: dateValue(from), to: dateValue(now) };
-  }
-  if (period === "last30") {
-    const from = new Date(now);
-    from.setDate(from.getDate() - 29);
-    return { from: dateValue(from), to: dateValue(now) };
-  }
-  if (period === "thisMonth")
-    return { from: dateValue(new Date(now.getFullYear(), now.getMonth(), 1)), to: dateValue(now) };
-  if (period === "lastMonth")
-    return {
-      from: dateValue(new Date(now.getFullYear(), now.getMonth() - 1, 1)),
-      to: dateValue(new Date(now.getFullYear(), now.getMonth(), 0)),
-    };
-  if (period === "thisYear")
-    return { from: dateValue(new Date(now.getFullYear(), 0, 1)), to: dateValue(now) };
-  return null;
-}
+import { EXPENSE_CATEGORIES, type Expense, type ExpensePage } from "../../expenses/types";
+import { currentDate, expensePeriodRange, formatExpenseMoney } from "../../expenses/utils";
 
 export default function ExpensesPage({
   api,
@@ -136,7 +68,7 @@ export default function ExpensesPage({
     });
     for (const [key, value] of Object.entries(applied))
       if (value && !["sort", "order", "period"].includes(key)) query.set(key, value);
-    const range = periodRange(applied.period);
+    const range = expensePeriodRange(applied.period);
     if (range) {
       query.set("from", range.from);
       query.set("to", range.to);
@@ -291,13 +223,7 @@ export default function ExpensesPage({
       setBusy(false);
     }
   }
-  const money = (value: string) => {
-    try {
-      return new Intl.NumberFormat("en", { style: "currency", currency }).format(Number(value));
-    } catch {
-      return `${currency} ${value}`;
-    }
-  };
+  const money = (value: string) => formatExpenseMoney(value, currency);
   return (
     <div className="expense-manager">
       <section className="panel expense-filters">
@@ -323,7 +249,7 @@ export default function ExpensesPage({
               onChange={(e) => setFilters({ ...filters, category: e.target.value })}
             >
               <option value="">All categories</option>
-              {CATEGORIES.map((value) => (
+              {EXPENSE_CATEGORIES.map((value) => (
                 <option key={value}>{value}</option>
               ))}
             </select>
@@ -417,7 +343,7 @@ export default function ExpensesPage({
           {failure}
         </p>
       )}
-      <section className="panel">
+      <section className="panel" data-tour="expense-list">
         <div className="panel-heading">
           <h3>
             {applied.approvalStatus === "PENDING_APPROVAL" ? "Pending approvals" : "Your expenses"}
@@ -782,7 +708,7 @@ function ExpenseForm({
   onRemoveReceipt?: () => void;
 }) {
   const [category, setCategory] = useState<string>(expense?.category ?? "OTHER");
-  const [date, setDate] = useState(expense?.date.slice(0, 10) ?? today());
+  const [date, setDate] = useState(expense?.date.slice(0, 10) ?? currentDate());
   const [receiptName, setReceiptName] = useState("");
   return (
     <section className="form-panel expense-form">
@@ -817,7 +743,7 @@ function ExpenseForm({
               value={category}
               onChange={setCategory}
               searchable={false}
-              options={CATEGORIES.map((value) => ({
+              options={EXPENSE_CATEGORIES.map((value) => ({
                 value,
                 label: value.charAt(0) + value.slice(1).toLowerCase(),
               }))}
