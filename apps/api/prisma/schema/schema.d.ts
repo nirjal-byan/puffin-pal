@@ -34,9 +34,9 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'c4f998fa379b245c06e0e5056f7173488525226494dba5333e06f56adfdb6f0c'>;
+  StorageHashBase<'619b2608801b7641e8d89cc99d143186ae40b5cdc28fb0ad1aec232d2d0b70e5'>;
 export type ExecutionHash =
-  ExecutionHashBase<'c48ed6268c8e59ef9426305c4757a61c7a647b386fb55694b8c0bb66e9919edc'>;
+  ExecutionHashBase<'979ec9a7826a26dd97b30c5c84443bac082670fdbded45e697ae80a079423102'>;
 export type ProfileHash =
   ProfileHashBase<'3916f444a8a17ad749191acf9e08dad97d1a327b88c2f1d45d12f240296aa8b2'>;
 
@@ -381,6 +381,67 @@ export type FieldOutputTypes = {
       readonly recordedByUserId: CodecTypes['pg/text@1']['output'];
       readonly reference: CodecTypes['pg/text@1']['output'] | null;
     };
+    readonly RecurringInvoiceItem: {
+      readonly amount: Numeric<12, 2>;
+      readonly description: CodecTypes['pg/text@1']['output'];
+      readonly id: CodecTypes['pg/text@1']['output'];
+      readonly organizationId: CodecTypes['pg/text@1']['output'];
+      readonly position: CodecTypes['pg/int4@1']['output'];
+      readonly quantity: CodecTypes['pg/int4@1']['output'];
+      readonly scheduleId: CodecTypes['pg/text@1']['output'];
+      readonly unitPrice: Numeric<12, 2>;
+    };
+    readonly RecurringInvoiceOccurrence: {
+      readonly attempts: CodecTypes['pg/int4@1']['output'];
+      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly failureCode: CodecTypes['pg/text@1']['output'] | null;
+      readonly id: CodecTypes['pg/text@1']['output'];
+      readonly invoiceId: CodecTypes['pg/text@1']['output'] | null;
+      readonly organizationId: CodecTypes['pg/text@1']['output'];
+      readonly scheduleId: CodecTypes['pg/text@1']['output'];
+      readonly scheduledFor: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly status: 'PENDING' | 'PROCESSING' | 'GENERATED' | 'FAILED';
+      readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+    };
+    readonly RecurringInvoiceSchedule: {
+      readonly autoIssue: CodecTypes['pg/bool@1']['output'];
+      readonly clientId: CodecTypes['pg/text@1']['output'];
+      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly createdById: CodecTypes['pg/text@1']['output'];
+      readonly currency: CodecTypes['pg/text@1']['output'];
+      readonly description: CodecTypes['pg/text@1']['output'] | null;
+      readonly dueDateOffsetDays: CodecTypes['pg/int4@1']['output'];
+      readonly endDate: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
+      readonly frequency: 'WEEKLY' | 'MONTHLY' | 'QUARTERLY' | 'YEARLY';
+      readonly id: CodecTypes['pg/text@1']['output'];
+      readonly interval: CodecTypes['pg/int4@1']['output'];
+      readonly lastRunAt: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
+      readonly name: CodecTypes['pg/text@1']['output'];
+      readonly nextRunAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly organizationId: CodecTypes['pg/text@1']['output'];
+      readonly startDate: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly status: 'ACTIVE' | 'PAUSED' | 'COMPLETED' | 'CANCELLED';
+      readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly version: CodecTypes['pg/int4@1']['output'];
+    };
+    readonly RecurringScheduleEvent: {
+      readonly action:
+        | 'CREATED'
+        | 'UPDATED'
+        | 'PAUSED'
+        | 'RESUMED'
+        | 'CANCELLED'
+        | 'OCCURRENCE_GENERATED'
+        | 'AUTO_ISSUED'
+        | 'GENERATION_FAILED'
+        | 'RETRIED';
+      readonly actorId: CodecTypes['pg/text@1']['output'] | null;
+      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly details: CodecTypes['pg/text@1']['output'] | null;
+      readonly id: CodecTypes['pg/text@1']['output'];
+      readonly organizationId: CodecTypes['pg/text@1']['output'];
+      readonly scheduleId: CodecTypes['pg/text@1']['output'];
+    };
     readonly Retainer: {
       readonly active: CodecTypes['pg/bool@1']['output'];
       readonly billingDay: CodecTypes['pg/int4@1']['output'];
@@ -540,6 +601,67 @@ export type FieldInputTypes = {
       readonly paymentDate: CodecTypes['pg/timestamptz-temporal@1']['input'];
       readonly recordedByUserId: CodecTypes['pg/text@1']['input'];
       readonly reference: CodecTypes['pg/text@1']['input'] | null;
+    };
+    readonly RecurringInvoiceItem: {
+      readonly amount: CodecTypes['pg/numeric@1']['input'];
+      readonly description: CodecTypes['pg/text@1']['input'];
+      readonly id: CodecTypes['pg/text@1']['input'];
+      readonly organizationId: CodecTypes['pg/text@1']['input'];
+      readonly position: CodecTypes['pg/int4@1']['input'];
+      readonly quantity: CodecTypes['pg/int4@1']['input'];
+      readonly scheduleId: CodecTypes['pg/text@1']['input'];
+      readonly unitPrice: CodecTypes['pg/numeric@1']['input'];
+    };
+    readonly RecurringInvoiceOccurrence: {
+      readonly attempts: CodecTypes['pg/int4@1']['input'];
+      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly failureCode: CodecTypes['pg/text@1']['input'] | null;
+      readonly id: CodecTypes['pg/text@1']['input'];
+      readonly invoiceId: CodecTypes['pg/text@1']['input'] | null;
+      readonly organizationId: CodecTypes['pg/text@1']['input'];
+      readonly scheduleId: CodecTypes['pg/text@1']['input'];
+      readonly scheduledFor: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly status: 'PENDING' | 'PROCESSING' | 'GENERATED' | 'FAILED';
+      readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
+    };
+    readonly RecurringInvoiceSchedule: {
+      readonly autoIssue: CodecTypes['pg/bool@1']['input'];
+      readonly clientId: CodecTypes['pg/text@1']['input'];
+      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly createdById: CodecTypes['pg/text@1']['input'];
+      readonly currency: CodecTypes['pg/text@1']['input'];
+      readonly description: CodecTypes['pg/text@1']['input'] | null;
+      readonly dueDateOffsetDays: CodecTypes['pg/int4@1']['input'];
+      readonly endDate: CodecTypes['pg/timestamptz-temporal@1']['input'] | null;
+      readonly frequency: 'WEEKLY' | 'MONTHLY' | 'QUARTERLY' | 'YEARLY';
+      readonly id: CodecTypes['pg/text@1']['input'];
+      readonly interval: CodecTypes['pg/int4@1']['input'];
+      readonly lastRunAt: CodecTypes['pg/timestamptz-temporal@1']['input'] | null;
+      readonly name: CodecTypes['pg/text@1']['input'];
+      readonly nextRunAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly organizationId: CodecTypes['pg/text@1']['input'];
+      readonly startDate: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly status: 'ACTIVE' | 'PAUSED' | 'COMPLETED' | 'CANCELLED';
+      readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly version: CodecTypes['pg/int4@1']['input'];
+    };
+    readonly RecurringScheduleEvent: {
+      readonly action:
+        | 'CREATED'
+        | 'UPDATED'
+        | 'PAUSED'
+        | 'RESUMED'
+        | 'CANCELLED'
+        | 'OCCURRENCE_GENERATED'
+        | 'AUTO_ISSUED'
+        | 'GENERATION_FAILED'
+        | 'RETRIED';
+      readonly actorId: CodecTypes['pg/text@1']['input'] | null;
+      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly details: CodecTypes['pg/text@1']['input'] | null;
+      readonly id: CodecTypes['pg/text@1']['input'];
+      readonly organizationId: CodecTypes['pg/text@1']['input'];
+      readonly scheduleId: CodecTypes['pg/text@1']['input'];
     };
     readonly Retainer: {
       readonly active: CodecTypes['pg/bool@1']['input'];
@@ -701,6 +823,67 @@ export type StorageColumnTypes = {
       readonly recordedByUserId: CodecTypes['pg/text@1']['output'];
       readonly reference: CodecTypes['pg/text@1']['output'] | null;
     };
+    readonly recurring_invoice_items: {
+      readonly amount: Numeric<12, 2>;
+      readonly description: CodecTypes['pg/text@1']['output'];
+      readonly id: CodecTypes['pg/text@1']['output'];
+      readonly organizationId: CodecTypes['pg/text@1']['output'];
+      readonly position: CodecTypes['pg/int4@1']['output'];
+      readonly quantity: CodecTypes['pg/int4@1']['output'];
+      readonly scheduleId: CodecTypes['pg/text@1']['output'];
+      readonly unitPrice: Numeric<12, 2>;
+    };
+    readonly recurring_invoice_occurrences: {
+      readonly attempts: CodecTypes['pg/int4@1']['output'];
+      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly failureCode: CodecTypes['pg/text@1']['output'] | null;
+      readonly id: CodecTypes['pg/text@1']['output'];
+      readonly invoiceId: CodecTypes['pg/text@1']['output'] | null;
+      readonly organizationId: CodecTypes['pg/text@1']['output'];
+      readonly scheduledFor: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly scheduleId: CodecTypes['pg/text@1']['output'];
+      readonly status: 'PENDING' | 'PROCESSING' | 'GENERATED' | 'FAILED';
+      readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+    };
+    readonly recurring_invoice_schedules: {
+      readonly autoIssue: CodecTypes['pg/bool@1']['output'];
+      readonly clientId: CodecTypes['pg/text@1']['output'];
+      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly createdById: CodecTypes['pg/text@1']['output'];
+      readonly currency: CodecTypes['pg/text@1']['output'];
+      readonly description: CodecTypes['pg/text@1']['output'] | null;
+      readonly dueDateOffsetDays: CodecTypes['pg/int4@1']['output'];
+      readonly endDate: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
+      readonly frequency: 'WEEKLY' | 'MONTHLY' | 'QUARTERLY' | 'YEARLY';
+      readonly id: CodecTypes['pg/text@1']['output'];
+      readonly interval: CodecTypes['pg/int4@1']['output'];
+      readonly lastRunAt: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
+      readonly name: CodecTypes['pg/text@1']['output'];
+      readonly nextRunAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly organizationId: CodecTypes['pg/text@1']['output'];
+      readonly startDate: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly status: 'ACTIVE' | 'PAUSED' | 'COMPLETED' | 'CANCELLED';
+      readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly version: CodecTypes['pg/int4@1']['output'];
+    };
+    readonly recurring_schedule_events: {
+      readonly action:
+        | 'CREATED'
+        | 'UPDATED'
+        | 'PAUSED'
+        | 'RESUMED'
+        | 'CANCELLED'
+        | 'OCCURRENCE_GENERATED'
+        | 'AUTO_ISSUED'
+        | 'GENERATION_FAILED'
+        | 'RETRIED';
+      readonly actorId: CodecTypes['pg/text@1']['output'] | null;
+      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly details: CodecTypes['pg/text@1']['output'] | null;
+      readonly id: CodecTypes['pg/text@1']['output'];
+      readonly organizationId: CodecTypes['pg/text@1']['output'];
+      readonly scheduleId: CodecTypes['pg/text@1']['output'];
+    };
     readonly retainers: {
       readonly active: CodecTypes['pg/bool@1']['output'];
       readonly billingDay: CodecTypes['pg/int4@1']['output'];
@@ -861,6 +1044,67 @@ export type StorageColumnInputTypes = {
       readonly recordedByUserId: CodecTypes['pg/text@1']['input'];
       readonly reference: CodecTypes['pg/text@1']['input'] | null;
     };
+    readonly recurring_invoice_items: {
+      readonly amount: CodecTypes['pg/numeric@1']['input'];
+      readonly description: CodecTypes['pg/text@1']['input'];
+      readonly id: CodecTypes['pg/text@1']['input'];
+      readonly organizationId: CodecTypes['pg/text@1']['input'];
+      readonly position: CodecTypes['pg/int4@1']['input'];
+      readonly quantity: CodecTypes['pg/int4@1']['input'];
+      readonly scheduleId: CodecTypes['pg/text@1']['input'];
+      readonly unitPrice: CodecTypes['pg/numeric@1']['input'];
+    };
+    readonly recurring_invoice_occurrences: {
+      readonly attempts: CodecTypes['pg/int4@1']['input'];
+      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly failureCode: CodecTypes['pg/text@1']['input'] | null;
+      readonly id: CodecTypes['pg/text@1']['input'];
+      readonly invoiceId: CodecTypes['pg/text@1']['input'] | null;
+      readonly organizationId: CodecTypes['pg/text@1']['input'];
+      readonly scheduledFor: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly scheduleId: CodecTypes['pg/text@1']['input'];
+      readonly status: 'PENDING' | 'PROCESSING' | 'GENERATED' | 'FAILED';
+      readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
+    };
+    readonly recurring_invoice_schedules: {
+      readonly autoIssue: CodecTypes['pg/bool@1']['input'];
+      readonly clientId: CodecTypes['pg/text@1']['input'];
+      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly createdById: CodecTypes['pg/text@1']['input'];
+      readonly currency: CodecTypes['pg/text@1']['input'];
+      readonly description: CodecTypes['pg/text@1']['input'] | null;
+      readonly dueDateOffsetDays: CodecTypes['pg/int4@1']['input'];
+      readonly endDate: CodecTypes['pg/timestamptz-temporal@1']['input'] | null;
+      readonly frequency: 'WEEKLY' | 'MONTHLY' | 'QUARTERLY' | 'YEARLY';
+      readonly id: CodecTypes['pg/text@1']['input'];
+      readonly interval: CodecTypes['pg/int4@1']['input'];
+      readonly lastRunAt: CodecTypes['pg/timestamptz-temporal@1']['input'] | null;
+      readonly name: CodecTypes['pg/text@1']['input'];
+      readonly nextRunAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly organizationId: CodecTypes['pg/text@1']['input'];
+      readonly startDate: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly status: 'ACTIVE' | 'PAUSED' | 'COMPLETED' | 'CANCELLED';
+      readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly version: CodecTypes['pg/int4@1']['input'];
+    };
+    readonly recurring_schedule_events: {
+      readonly action:
+        | 'CREATED'
+        | 'UPDATED'
+        | 'PAUSED'
+        | 'RESUMED'
+        | 'CANCELLED'
+        | 'OCCURRENCE_GENERATED'
+        | 'AUTO_ISSUED'
+        | 'GENERATION_FAILED'
+        | 'RETRIED';
+      readonly actorId: CodecTypes['pg/text@1']['input'] | null;
+      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly details: CodecTypes['pg/text@1']['input'] | null;
+      readonly id: CodecTypes['pg/text@1']['input'];
+      readonly organizationId: CodecTypes['pg/text@1']['input'];
+      readonly scheduleId: CodecTypes['pg/text@1']['input'];
+    };
     readonly retainers: {
       readonly active: CodecTypes['pg/bool@1']['input'];
       readonly billingDay: CodecTypes['pg/int4@1']['input'];
@@ -901,7 +1145,8 @@ export namespace Models {
     updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
     invoices: public_Invoice[];
     organization: public_Organization;
-    readonly [RelationKeys]?: 'invoices' | 'organization';
+    recurringSchedules: public_RecurringInvoiceSchedule[];
+    readonly [RelationKeys]?: 'invoices' | 'organization' | 'recurringSchedules';
   };
   export type public_Expense = {
     amount: Numeric<12, 2>;
@@ -980,7 +1225,9 @@ export namespace Models {
     items: public_InvoiceItem[];
     organization: public_Organization;
     payments: public_Payment[];
-    readonly [RelationKeys]?: 'client' | 'items' | 'organization' | 'payments';
+    recurringOccurrence: public_RecurringInvoiceOccurrence | null;
+    readonly [RelationKeys]?:
+      'client' | 'items' | 'organization' | 'payments' | 'recurringOccurrence';
   };
   export type public_InvoiceExport = {
     archiveKey: CodecTypes['pg/text@1']['output'] | null;
@@ -1041,6 +1288,9 @@ export namespace Models {
     invoices: public_Invoice[];
     memberships: public_Membership[];
     payments: public_Payment[];
+    recurringOccurrences: public_RecurringInvoiceOccurrence[];
+    recurringScheduleEvents: public_RecurringScheduleEvent[];
+    recurringSchedules: public_RecurringInvoiceSchedule[];
     retainers: public_Retainer[];
     users: public_User[];
     readonly [RelationKeys]?:
@@ -1051,6 +1301,9 @@ export namespace Models {
       | 'invoices'
       | 'memberships'
       | 'payments'
+      | 'recurringOccurrences'
+      | 'recurringScheduleEvents'
+      | 'recurringSchedules'
       | 'retainers'
       | 'users';
   };
@@ -1068,6 +1321,85 @@ export namespace Models {
     invoice: public_Invoice;
     organization: public_Organization;
     readonly [RelationKeys]?: 'invoice' | 'organization';
+  };
+  export type public_RecurringInvoiceItem = {
+    amount: Numeric<12, 2>;
+    description: CodecTypes['pg/text@1']['output'];
+    id: CodecTypes['pg/text@1']['output'];
+    organizationId: CodecTypes['pg/text@1']['output'];
+    position: CodecTypes['pg/int4@1']['output'];
+    quantity: CodecTypes['pg/int4@1']['output'];
+    scheduleId: CodecTypes['pg/text@1']['output'];
+    unitPrice: Numeric<12, 2>;
+    schedule: public_RecurringInvoiceSchedule;
+    readonly [RelationKeys]?: 'schedule';
+  };
+  export type public_RecurringInvoiceOccurrence = {
+    attempts: CodecTypes['pg/int4@1']['output'];
+    createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+    failureCode: CodecTypes['pg/text@1']['output'] | null;
+    id: CodecTypes['pg/text@1']['output'];
+    invoiceId: CodecTypes['pg/text@1']['output'] | null;
+    organizationId: CodecTypes['pg/text@1']['output'];
+    scheduleId: CodecTypes['pg/text@1']['output'];
+    scheduledFor: CodecTypes['pg/timestamptz-temporal@1']['output'];
+    status: 'PENDING' | 'PROCESSING' | 'GENERATED' | 'FAILED';
+    updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+    invoice: public_Invoice | null;
+    organization: public_Organization;
+    schedule: public_RecurringInvoiceSchedule;
+    readonly [RelationKeys]?: 'invoice' | 'organization' | 'schedule';
+  };
+  export type public_RecurringInvoiceSchedule = {
+    autoIssue: CodecTypes['pg/bool@1']['output'];
+    clientId: CodecTypes['pg/text@1']['output'];
+    createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+    createdById: CodecTypes['pg/text@1']['output'];
+    currency: CodecTypes['pg/text@1']['output'];
+    description: CodecTypes['pg/text@1']['output'] | null;
+    dueDateOffsetDays: CodecTypes['pg/int4@1']['output'];
+    endDate: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
+    frequency: 'WEEKLY' | 'MONTHLY' | 'QUARTERLY' | 'YEARLY';
+    id: CodecTypes['pg/text@1']['output'];
+    interval: CodecTypes['pg/int4@1']['output'];
+    lastRunAt: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
+    name: CodecTypes['pg/text@1']['output'];
+    nextRunAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+    organizationId: CodecTypes['pg/text@1']['output'];
+    startDate: CodecTypes['pg/timestamptz-temporal@1']['output'];
+    status: 'ACTIVE' | 'PAUSED' | 'COMPLETED' | 'CANCELLED';
+    updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+    version: CodecTypes['pg/int4@1']['output'];
+    client: public_Client;
+    createdBy: public_User;
+    events: public_RecurringScheduleEvent[];
+    items: public_RecurringInvoiceItem[];
+    occurrences: public_RecurringInvoiceOccurrence[];
+    organization: public_Organization;
+    readonly [RelationKeys]?:
+      'client' | 'createdBy' | 'events' | 'items' | 'occurrences' | 'organization';
+  };
+  export type public_RecurringScheduleEvent = {
+    action:
+      | 'CREATED'
+      | 'UPDATED'
+      | 'PAUSED'
+      | 'RESUMED'
+      | 'CANCELLED'
+      | 'OCCURRENCE_GENERATED'
+      | 'AUTO_ISSUED'
+      | 'GENERATION_FAILED'
+      | 'RETRIED';
+    actorId: CodecTypes['pg/text@1']['output'] | null;
+    createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+    details: CodecTypes['pg/text@1']['output'] | null;
+    id: CodecTypes['pg/text@1']['output'];
+    organizationId: CodecTypes['pg/text@1']['output'];
+    scheduleId: CodecTypes['pg/text@1']['output'];
+    actor: public_User | null;
+    organization: public_Organization;
+    schedule: public_RecurringInvoiceSchedule;
+    readonly [RelationKeys]?: 'actor' | 'organization' | 'schedule';
   };
   export type public_Retainer = {
     active: CodecTypes['pg/bool@1']['output'];
@@ -1099,6 +1431,8 @@ export namespace Models {
     expenseApprovalEvents: public_ExpenseApprovalHistory[];
     memberships: public_Membership[];
     organization: public_Organization;
+    recurringScheduleEvents: public_RecurringScheduleEvent[];
+    recurringSchedules: public_RecurringInvoiceSchedule[];
     reviewedExpenses: public_Expense[];
     submittedExpenses: public_Expense[];
     readonly [RelationKeys]?:
@@ -1106,6 +1440,8 @@ export namespace Models {
       | 'expenseApprovalEvents'
       | 'memberships'
       | 'organization'
+      | 'recurringScheduleEvents'
+      | 'recurringSchedules'
       | 'reviewedExpenses'
       | 'submittedExpenses';
   };
@@ -1122,6 +1458,10 @@ export declare const models: {
     Membership: Models.public_Membership;
     Organization: Models.public_Organization;
     Payment: Models.public_Payment;
+    RecurringInvoiceItem: Models.public_RecurringInvoiceItem;
+    RecurringInvoiceOccurrence: Models.public_RecurringInvoiceOccurrence;
+    RecurringInvoiceSchedule: Models.public_RecurringInvoiceSchedule;
+    RecurringScheduleEvent: Models.public_RecurringScheduleEvent;
     Retainer: Models.public_Retainer;
     User: Models.public_User;
   };
@@ -2199,6 +2539,501 @@ type ContractBase = Omit<
                 },
               ];
             };
+            readonly recurring_invoice_items: {
+              columns: {
+                readonly amount: {
+                  readonly nativeType: 'numeric';
+                  readonly codecId: 'pg/numeric@1';
+                  readonly nullable: false;
+                  readonly typeParams: { readonly precision: 12; readonly scale: 2 };
+                };
+                readonly description: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly id: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly organizationId: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly position: {
+                  readonly nativeType: 'int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/int4@1', 0>;
+                  };
+                };
+                readonly quantity: {
+                  readonly nativeType: 'int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/int4@1', 1>;
+                  };
+                };
+                readonly scheduleId: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly unitPrice: {
+                  readonly nativeType: 'numeric';
+                  readonly codecId: 'pg/numeric@1';
+                  readonly nullable: false;
+                  readonly typeParams: { readonly precision: 12; readonly scale: 2 };
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [];
+              indexes: readonly [
+                {
+                  readonly name: 'recurring_item_schedule_idx';
+                  readonly columns: readonly ['organizationId', 'scheduleId'];
+                  readonly unique: false;
+                },
+              ];
+              foreignKeys: readonly [
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'recurring_invoice_items';
+                    readonly columns: readonly ['organizationId', 'scheduleId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'recurring_invoice_schedules';
+                    readonly columns: readonly ['organizationId', 'id'];
+                  };
+                },
+              ];
+            };
+            readonly recurring_invoice_occurrences: {
+              columns: {
+                readonly attempts: {
+                  readonly nativeType: 'int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/int4@1', 0>;
+                  };
+                };
+                readonly createdAt: {
+                  readonly nativeType: 'timestamptz';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                  readonly nullable: false;
+                  readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
+                };
+                readonly failureCode: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                };
+                readonly id: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly invoiceId: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                };
+                readonly organizationId: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly scheduleId: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly scheduledFor: {
+                  readonly nativeType: 'timestamptz';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                  readonly nullable: false;
+                };
+                readonly status: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/text@1', 'PENDING'>;
+                  };
+                };
+                readonly updatedAt: {
+                  readonly nativeType: 'timestamptz';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                  readonly nullable: false;
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [
+                { readonly columns: readonly ['invoiceId'] },
+                {
+                  readonly columns: readonly ['organizationId', 'scheduleId', 'scheduledFor'];
+                  readonly name: 'recurring_occurrence_slot_key';
+                },
+              ];
+              indexes: readonly [
+                {
+                  readonly name: 'recurring_invoice_occurrences_organizationId_idx_2e17ef41';
+                  readonly prefix: 'recurring_invoice_occurrences_organizationId_idx';
+                  readonly columns: readonly ['organizationId'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'recurring_invoice_occurrences_organizationId_scheduleI_a4ebe8f0';
+                  readonly prefix: 'recurring_invoice_occurrences_organizationId_scheduleI';
+                  readonly columns: readonly ['organizationId', 'scheduleId'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'recurring_occurrence_status_idx';
+                  readonly columns: readonly ['organizationId', 'status'];
+                  readonly unique: false;
+                },
+              ];
+              foreignKeys: readonly [
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'recurring_invoice_occurrences';
+                    readonly columns: readonly ['organizationId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'organizations';
+                    readonly columns: readonly ['id'];
+                  };
+                },
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'recurring_invoice_occurrences';
+                    readonly columns: readonly ['organizationId', 'scheduleId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'recurring_invoice_schedules';
+                    readonly columns: readonly ['organizationId', 'id'];
+                  };
+                },
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'recurring_invoice_occurrences';
+                    readonly columns: readonly ['invoiceId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'invoices';
+                    readonly columns: readonly ['id'];
+                  };
+                },
+              ];
+            };
+            readonly recurring_invoice_schedules: {
+              columns: {
+                readonly autoIssue: {
+                  readonly nativeType: 'bool';
+                  readonly codecId: 'pg/bool@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/bool@1', false>;
+                  };
+                };
+                readonly clientId: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly createdAt: {
+                  readonly nativeType: 'timestamptz';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                  readonly nullable: false;
+                  readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
+                };
+                readonly createdById: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly currency: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly description: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                };
+                readonly dueDateOffsetDays: {
+                  readonly nativeType: 'int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/int4@1', 14>;
+                  };
+                };
+                readonly endDate: {
+                  readonly nativeType: 'timestamptz';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                  readonly nullable: true;
+                };
+                readonly frequency: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly id: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly interval: {
+                  readonly nativeType: 'int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/int4@1', 1>;
+                  };
+                };
+                readonly lastRunAt: {
+                  readonly nativeType: 'timestamptz';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                  readonly nullable: true;
+                };
+                readonly name: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly nextRunAt: {
+                  readonly nativeType: 'timestamptz';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                  readonly nullable: false;
+                };
+                readonly organizationId: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly startDate: {
+                  readonly nativeType: 'timestamptz';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                  readonly nullable: false;
+                };
+                readonly status: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/text@1', 'ACTIVE'>;
+                  };
+                };
+                readonly updatedAt: {
+                  readonly nativeType: 'timestamptz';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                  readonly nullable: false;
+                };
+                readonly version: {
+                  readonly nativeType: 'int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/int4@1', 1>;
+                  };
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [{ readonly columns: readonly ['organizationId', 'id'] }];
+              indexes: readonly [
+                {
+                  readonly name: 'recurring_invoice_schedules_organizationId_createdById_4fb80a04';
+                  readonly prefix: 'recurring_invoice_schedules_organizationId_createdById';
+                  readonly columns: readonly ['organizationId', 'createdById'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'recurring_invoice_schedules_organizationId_idx_2e17ef41';
+                  readonly prefix: 'recurring_invoice_schedules_organizationId_idx';
+                  readonly columns: readonly ['organizationId'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'recurring_invoice_schedules_status_nextRunAt_idx_c8293fec';
+                  readonly prefix: 'recurring_invoice_schedules_status_nextRunAt_idx';
+                  readonly columns: readonly ['status', 'nextRunAt'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'recurring_schedule_client_idx';
+                  readonly columns: readonly ['organizationId', 'clientId'];
+                  readonly unique: false;
+                },
+              ];
+              foreignKeys: readonly [
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'recurring_invoice_schedules';
+                    readonly columns: readonly ['organizationId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'organizations';
+                    readonly columns: readonly ['id'];
+                  };
+                },
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'recurring_invoice_schedules';
+                    readonly columns: readonly ['organizationId', 'clientId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'clients';
+                    readonly columns: readonly ['organizationId', 'id'];
+                  };
+                },
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'recurring_invoice_schedules';
+                    readonly columns: readonly ['organizationId', 'createdById'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'users';
+                    readonly columns: readonly ['organizationId', 'id'];
+                  };
+                },
+              ];
+            };
+            readonly recurring_schedule_events: {
+              columns: {
+                readonly action: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly actorId: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                };
+                readonly createdAt: {
+                  readonly nativeType: 'timestamptz';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                  readonly nullable: false;
+                  readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
+                };
+                readonly details: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                };
+                readonly id: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly organizationId: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly scheduleId: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [];
+              indexes: readonly [
+                {
+                  readonly name: 'recurring_event_schedule_idx';
+                  readonly columns: readonly ['organizationId', 'scheduleId', 'createdAt'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'recurring_schedule_events_organizationId_actorId_idx_327c2974';
+                  readonly prefix: 'recurring_schedule_events_organizationId_actorId_idx';
+                  readonly columns: readonly ['organizationId', 'actorId'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'recurring_schedule_events_organizationId_idx_2e17ef41';
+                  readonly prefix: 'recurring_schedule_events_organizationId_idx';
+                  readonly columns: readonly ['organizationId'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'recurring_schedule_events_organizationId_scheduleId_id_a4ebe8f0';
+                  readonly prefix: 'recurring_schedule_events_organizationId_scheduleId_id';
+                  readonly columns: readonly ['organizationId', 'scheduleId'];
+                  readonly unique: false;
+                },
+              ];
+              foreignKeys: readonly [
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'recurring_schedule_events';
+                    readonly columns: readonly ['organizationId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'organizations';
+                    readonly columns: readonly ['id'];
+                  };
+                },
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'recurring_schedule_events';
+                    readonly columns: readonly ['organizationId', 'scheduleId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'recurring_invoice_schedules';
+                    readonly columns: readonly ['organizationId', 'id'];
+                  };
+                },
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'recurring_schedule_events';
+                    readonly columns: readonly ['organizationId', 'actorId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'users';
+                    readonly columns: readonly ['organizationId', 'id'];
+                  };
+                },
+              ];
+            };
             readonly retainers: {
               columns: {
                 readonly active: {
@@ -2431,6 +3266,32 @@ type ContractBase = Omit<
               readonly kind: 'valueSet';
               readonly values: readonly ['BANK_TRANSFER', 'CASH', 'CARD', 'CHEQUE', 'OTHER'];
             };
+            readonly RecurringFrequency: {
+              readonly kind: 'valueSet';
+              readonly values: readonly ['WEEKLY', 'MONTHLY', 'QUARTERLY', 'YEARLY'];
+            };
+            readonly RecurringOccurrenceStatus: {
+              readonly kind: 'valueSet';
+              readonly values: readonly ['PENDING', 'PROCESSING', 'GENERATED', 'FAILED'];
+            };
+            readonly RecurringScheduleAction: {
+              readonly kind: 'valueSet';
+              readonly values: readonly [
+                'CREATED',
+                'UPDATED',
+                'PAUSED',
+                'RESUMED',
+                'CANCELLED',
+                'OCCURRENCE_GENERATED',
+                'AUTO_ISSUED',
+                'GENERATION_FAILED',
+                'RETRIED',
+              ];
+            };
+            readonly RecurringScheduleStatus: {
+              readonly kind: 'valueSet';
+              readonly values: readonly ['ACTIVE', 'PAUSED', 'COMPLETED', 'CANCELLED'];
+            };
             readonly Role: {
               readonly kind: 'valueSet';
               readonly values: readonly ['OWNER', 'ADMIN', 'PROJECT_MANAGER', 'FINANCE_VIEWER'];
@@ -2470,6 +3331,22 @@ type ContractBase = Omit<
       readonly model: 'Organization';
     };
     readonly payments: { readonly namespace: 'public' & NamespaceId; readonly model: 'Payment' };
+    readonly recurring_invoice_items: {
+      readonly namespace: 'public' & NamespaceId;
+      readonly model: 'RecurringInvoiceItem';
+    };
+    readonly recurring_invoice_occurrences: {
+      readonly namespace: 'public' & NamespaceId;
+      readonly model: 'RecurringInvoiceOccurrence';
+    };
+    readonly recurring_invoice_schedules: {
+      readonly namespace: 'public' & NamespaceId;
+      readonly model: 'RecurringInvoiceSchedule';
+    };
+    readonly recurring_schedule_events: {
+      readonly namespace: 'public' & NamespaceId;
+      readonly model: 'RecurringScheduleEvent';
+    };
     readonly retainers: { readonly namespace: 'public' & NamespaceId; readonly model: 'Retainer' };
     readonly users: { readonly namespace: 'public' & NamespaceId; readonly model: 'User' };
   };
@@ -2540,6 +3417,17 @@ type ContractBase = Omit<
                 readonly on: {
                   readonly localFields: readonly ['organizationId'];
                   readonly targetFields: readonly ['id'];
+                };
+              };
+              readonly recurringSchedules: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'RecurringInvoiceSchedule';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['organizationId', 'id'];
+                  readonly targetFields: readonly ['organizationId', 'clientId'];
                 };
               };
             };
@@ -3025,6 +3913,18 @@ type ContractBase = Omit<
                   readonly targetFields: readonly ['organizationId', 'invoiceId'];
                 };
               };
+              readonly recurringOccurrence: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'RecurringInvoiceOccurrence';
+                };
+                readonly cardinality: '1:1';
+                readonly nullable: true;
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['invoiceId'];
+                };
+              };
             };
             readonly storage: {
               readonly table: 'invoices';
@@ -3429,6 +4329,39 @@ type ContractBase = Omit<
                   readonly targetFields: readonly ['organizationId'];
                 };
               };
+              readonly recurringOccurrences: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'RecurringInvoiceOccurrence';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['organizationId'];
+                };
+              };
+              readonly recurringScheduleEvents: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'RecurringScheduleEvent';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['organizationId'];
+                };
+              };
+              readonly recurringSchedules: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'RecurringInvoiceSchedule';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['organizationId'];
+                };
+              };
               readonly retainers: {
                 readonly to: {
                   readonly namespace: 'public' & NamespaceId;
@@ -3558,6 +4491,459 @@ type ContractBase = Omit<
                 readonly paymentDate: { readonly column: 'paymentDate' };
                 readonly recordedByUserId: { readonly column: 'recordedByUserId' };
                 readonly reference: { readonly column: 'reference' };
+              };
+            };
+          };
+          readonly RecurringInvoiceItem: {
+            readonly fields: {
+              readonly amount: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/numeric@1';
+                  readonly typeParams: { readonly precision: 12; readonly scale: 2 };
+                };
+              };
+              readonly description: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly organizationId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly position: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly quantity: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly scheduleId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly unitPrice: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/numeric@1';
+                  readonly typeParams: { readonly precision: 12; readonly scale: 2 };
+                };
+              };
+            };
+            readonly relations: {
+              readonly schedule: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'RecurringInvoiceSchedule';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['organizationId', 'scheduleId'];
+                  readonly targetFields: readonly ['organizationId', 'id'];
+                };
+              };
+            };
+            readonly storage: {
+              readonly table: 'recurring_invoice_items';
+              readonly namespaceId: 'public';
+              readonly fields: {
+                readonly amount: { readonly column: 'amount' };
+                readonly description: { readonly column: 'description' };
+                readonly id: { readonly column: 'id' };
+                readonly organizationId: { readonly column: 'organizationId' };
+                readonly position: { readonly column: 'position' };
+                readonly quantity: { readonly column: 'quantity' };
+                readonly scheduleId: { readonly column: 'scheduleId' };
+                readonly unitPrice: { readonly column: 'unitPrice' };
+              };
+            };
+          };
+          readonly RecurringInvoiceOccurrence: {
+            readonly fields: {
+              readonly attempts: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly createdAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                };
+              };
+              readonly failureCode: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly invoiceId: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly organizationId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly scheduleId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly scheduledFor: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                };
+              };
+              readonly status: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly updatedAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                };
+              };
+            };
+            readonly relations: {
+              readonly invoice: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'Invoice';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: true;
+                readonly on: {
+                  readonly localFields: readonly ['invoiceId'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
+              readonly organization: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'Organization';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['organizationId'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
+              readonly schedule: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'RecurringInvoiceSchedule';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['organizationId', 'scheduleId'];
+                  readonly targetFields: readonly ['organizationId', 'id'];
+                };
+              };
+            };
+            readonly storage: {
+              readonly table: 'recurring_invoice_occurrences';
+              readonly namespaceId: 'public';
+              readonly fields: {
+                readonly attempts: { readonly column: 'attempts' };
+                readonly createdAt: { readonly column: 'createdAt' };
+                readonly failureCode: { readonly column: 'failureCode' };
+                readonly id: { readonly column: 'id' };
+                readonly invoiceId: { readonly column: 'invoiceId' };
+                readonly organizationId: { readonly column: 'organizationId' };
+                readonly scheduleId: { readonly column: 'scheduleId' };
+                readonly scheduledFor: { readonly column: 'scheduledFor' };
+                readonly status: { readonly column: 'status' };
+                readonly updatedAt: { readonly column: 'updatedAt' };
+              };
+            };
+          };
+          readonly RecurringInvoiceSchedule: {
+            readonly fields: {
+              readonly autoIssue: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/bool@1' };
+              };
+              readonly clientId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly createdAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                };
+              };
+              readonly createdById: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly currency: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly description: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly dueDateOffsetDays: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly endDate: {
+                readonly nullable: true;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                };
+              };
+              readonly frequency: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly interval: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly lastRunAt: {
+                readonly nullable: true;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                };
+              };
+              readonly name: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly nextRunAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                };
+              };
+              readonly organizationId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly startDate: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                };
+              };
+              readonly status: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly updatedAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                };
+              };
+              readonly version: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+            };
+            readonly relations: {
+              readonly client: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'Client';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['organizationId', 'clientId'];
+                  readonly targetFields: readonly ['organizationId', 'id'];
+                };
+              };
+              readonly createdBy: {
+                readonly to: { readonly namespace: 'public' & NamespaceId; readonly model: 'User' };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['organizationId', 'createdById'];
+                  readonly targetFields: readonly ['organizationId', 'id'];
+                };
+              };
+              readonly events: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'RecurringScheduleEvent';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['organizationId', 'id'];
+                  readonly targetFields: readonly ['organizationId', 'scheduleId'];
+                };
+              };
+              readonly items: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'RecurringInvoiceItem';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['organizationId', 'id'];
+                  readonly targetFields: readonly ['organizationId', 'scheduleId'];
+                };
+              };
+              readonly occurrences: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'RecurringInvoiceOccurrence';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['organizationId', 'id'];
+                  readonly targetFields: readonly ['organizationId', 'scheduleId'];
+                };
+              };
+              readonly organization: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'Organization';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['organizationId'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
+            };
+            readonly storage: {
+              readonly table: 'recurring_invoice_schedules';
+              readonly namespaceId: 'public';
+              readonly fields: {
+                readonly autoIssue: { readonly column: 'autoIssue' };
+                readonly clientId: { readonly column: 'clientId' };
+                readonly createdAt: { readonly column: 'createdAt' };
+                readonly createdById: { readonly column: 'createdById' };
+                readonly currency: { readonly column: 'currency' };
+                readonly description: { readonly column: 'description' };
+                readonly dueDateOffsetDays: { readonly column: 'dueDateOffsetDays' };
+                readonly endDate: { readonly column: 'endDate' };
+                readonly frequency: { readonly column: 'frequency' };
+                readonly id: { readonly column: 'id' };
+                readonly interval: { readonly column: 'interval' };
+                readonly lastRunAt: { readonly column: 'lastRunAt' };
+                readonly name: { readonly column: 'name' };
+                readonly nextRunAt: { readonly column: 'nextRunAt' };
+                readonly organizationId: { readonly column: 'organizationId' };
+                readonly startDate: { readonly column: 'startDate' };
+                readonly status: { readonly column: 'status' };
+                readonly updatedAt: { readonly column: 'updatedAt' };
+                readonly version: { readonly column: 'version' };
+              };
+            };
+          };
+          readonly RecurringScheduleEvent: {
+            readonly fields: {
+              readonly action: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly actorId: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly createdAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                };
+              };
+              readonly details: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly organizationId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly scheduleId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+            };
+            readonly relations: {
+              readonly actor: {
+                readonly to: { readonly namespace: 'public' & NamespaceId; readonly model: 'User' };
+                readonly cardinality: 'N:1';
+                readonly nullable: true;
+                readonly on: {
+                  readonly localFields: readonly ['organizationId', 'actorId'];
+                  readonly targetFields: readonly ['organizationId', 'id'];
+                };
+              };
+              readonly organization: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'Organization';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['organizationId'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
+              readonly schedule: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'RecurringInvoiceSchedule';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['organizationId', 'scheduleId'];
+                  readonly targetFields: readonly ['organizationId', 'id'];
+                };
+              };
+            };
+            readonly storage: {
+              readonly table: 'recurring_schedule_events';
+              readonly namespaceId: 'public';
+              readonly fields: {
+                readonly action: { readonly column: 'action' };
+                readonly actorId: { readonly column: 'actorId' };
+                readonly createdAt: { readonly column: 'createdAt' };
+                readonly details: { readonly column: 'details' };
+                readonly id: { readonly column: 'id' };
+                readonly organizationId: { readonly column: 'organizationId' };
+                readonly scheduleId: { readonly column: 'scheduleId' };
               };
             };
           };
@@ -3738,6 +5124,28 @@ type ContractBase = Omit<
                   readonly targetFields: readonly ['id'];
                 };
               };
+              readonly recurringScheduleEvents: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'RecurringScheduleEvent';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['organizationId', 'id'];
+                  readonly targetFields: readonly ['organizationId', 'actorId'];
+                };
+              };
+              readonly recurringSchedules: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'RecurringInvoiceSchedule';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['organizationId', 'id'];
+                  readonly targetFields: readonly ['organizationId', 'createdById'];
+                };
+              };
               readonly reviewedExpenses: {
                 readonly to: {
                   readonly namespace: 'public' & NamespaceId;
@@ -3852,6 +5260,47 @@ type ContractBase = Omit<
               { readonly name: 'CARD'; readonly value: 'CARD' },
               { readonly name: 'CHEQUE'; readonly value: 'CHEQUE' },
               { readonly name: 'OTHER'; readonly value: 'OTHER' },
+            ];
+          };
+          readonly RecurringFrequency: {
+            readonly codecId: 'pg/text@1';
+            readonly members: readonly [
+              { readonly name: 'WEEKLY'; readonly value: 'WEEKLY' },
+              { readonly name: 'MONTHLY'; readonly value: 'MONTHLY' },
+              { readonly name: 'QUARTERLY'; readonly value: 'QUARTERLY' },
+              { readonly name: 'YEARLY'; readonly value: 'YEARLY' },
+            ];
+          };
+          readonly RecurringOccurrenceStatus: {
+            readonly codecId: 'pg/text@1';
+            readonly members: readonly [
+              { readonly name: 'PENDING'; readonly value: 'PENDING' },
+              { readonly name: 'PROCESSING'; readonly value: 'PROCESSING' },
+              { readonly name: 'GENERATED'; readonly value: 'GENERATED' },
+              { readonly name: 'FAILED'; readonly value: 'FAILED' },
+            ];
+          };
+          readonly RecurringScheduleAction: {
+            readonly codecId: 'pg/text@1';
+            readonly members: readonly [
+              { readonly name: 'CREATED'; readonly value: 'CREATED' },
+              { readonly name: 'UPDATED'; readonly value: 'UPDATED' },
+              { readonly name: 'PAUSED'; readonly value: 'PAUSED' },
+              { readonly name: 'RESUMED'; readonly value: 'RESUMED' },
+              { readonly name: 'CANCELLED'; readonly value: 'CANCELLED' },
+              { readonly name: 'OCCURRENCE_GENERATED'; readonly value: 'OCCURRENCE_GENERATED' },
+              { readonly name: 'AUTO_ISSUED'; readonly value: 'AUTO_ISSUED' },
+              { readonly name: 'GENERATION_FAILED'; readonly value: 'GENERATION_FAILED' },
+              { readonly name: 'RETRIED'; readonly value: 'RETRIED' },
+            ];
+          };
+          readonly RecurringScheduleStatus: {
+            readonly codecId: 'pg/text@1';
+            readonly members: readonly [
+              { readonly name: 'ACTIVE'; readonly value: 'ACTIVE' },
+              { readonly name: 'PAUSED'; readonly value: 'PAUSED' },
+              { readonly name: 'COMPLETED'; readonly value: 'COMPLETED' },
+              { readonly name: 'CANCELLED'; readonly value: 'CANCELLED' },
             ];
           };
           readonly Role: {
@@ -4005,6 +5454,56 @@ type ContractBase = Omit<
           readonly onCreate: { readonly id: 'uuidv4'; readonly kind: 'generator' };
           readonly ref: {
             readonly entry: 'payments';
+            readonly field: 'id';
+            readonly namespace: 'public';
+          };
+        },
+        {
+          readonly onCreate: { readonly id: 'uuidv4'; readonly kind: 'generator' };
+          readonly ref: {
+            readonly entry: 'recurring_invoice_items';
+            readonly field: 'id';
+            readonly namespace: 'public';
+          };
+        },
+        {
+          readonly onCreate: { readonly id: 'uuidv4'; readonly kind: 'generator' };
+          readonly ref: {
+            readonly entry: 'recurring_invoice_occurrences';
+            readonly field: 'id';
+            readonly namespace: 'public';
+          };
+        },
+        {
+          readonly onCreate: { readonly id: 'instantNow'; readonly kind: 'generator' };
+          readonly onUpdate: { readonly id: 'instantNow'; readonly kind: 'generator' };
+          readonly ref: {
+            readonly entry: 'recurring_invoice_occurrences';
+            readonly field: 'updatedAt';
+            readonly namespace: 'public';
+          };
+        },
+        {
+          readonly onCreate: { readonly id: 'uuidv4'; readonly kind: 'generator' };
+          readonly ref: {
+            readonly entry: 'recurring_invoice_schedules';
+            readonly field: 'id';
+            readonly namespace: 'public';
+          };
+        },
+        {
+          readonly onCreate: { readonly id: 'instantNow'; readonly kind: 'generator' };
+          readonly onUpdate: { readonly id: 'instantNow'; readonly kind: 'generator' };
+          readonly ref: {
+            readonly entry: 'recurring_invoice_schedules';
+            readonly field: 'updatedAt';
+            readonly namespace: 'public';
+          };
+        },
+        {
+          readonly onCreate: { readonly id: 'uuidv4'; readonly kind: 'generator' };
+          readonly ref: {
+            readonly entry: 'recurring_schedule_events';
             readonly field: 'id';
             readonly namespace: 'public';
           };

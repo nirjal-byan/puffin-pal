@@ -124,7 +124,7 @@ export default function WorkspacePage({
     if (
       invoiceId ||
       ["overview", "access", "profile", "password"].includes(tab) ||
-      tab === "expenses" ||
+      tab === "expenses" || tab === "retainers" ||
       !allowed
     )
       return;
@@ -185,7 +185,6 @@ export default function WorkspacePage({
   }
   const CurrentSettingsPage =
     tab === "password" ? ChangePasswordPage : EditProfilePage;
-  const CurrentFinancialPage = tab === "retainers" ? RetainersPage : InvoicesPage;
   return (
     <WorkspaceLayout theme={theme}>
       <ProductTour key={session.user.id} session={session} api={api} />
@@ -342,6 +341,8 @@ export default function WorkspacePage({
               onSaved={recordNotification}
               onError={(failure) => setError(errorMessage(failure))}
             />
+          ) : tab === "retainers" ? (
+            <RetainersPage api={api} currency={session.organization.currency} permissions={session.permissions} onSaved={recordNotification} />
           ) : loading ? (
             <section className="panel loading" role="status">
               <span className="spinner" />
@@ -382,8 +383,8 @@ export default function WorkspacePage({
                   onError={(failure) => setError(errorMessage(failure))}
                 />
               )}
-              {(tab === "invoices" || tab === "retainers") && (
-                <CurrentFinancialPage
+              {tab === "invoices" && (
+                <InvoicesPage
                   key={`${tab}-${revision}-${offset}`}
                   rows={rows as FinancialRecord[]}
                   currency={session.organization.currency}

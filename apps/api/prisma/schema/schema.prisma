@@ -62,26 +62,62 @@ enum ExpenseApprovalAction {
   RESUBMITTED
 }
 
-model Organization {
-  id             String               @id @default(uuid())
-  name           String
-  slug           String               @unique
-  website        String?
-  employeeCount  String?
-  logoUrl        String?
-  currency       String               @default("USD")
-  createdAt      DateTime             @default(now())
-  updatedAt      temporal.updatedAt()
+enum RecurringFrequency {
+  WEEKLY
+  MONTHLY
+  QUARTERLY
+  YEARLY
+}
 
-  users          User[]
-  memberships    Membership[]
-  clients        Client[]
-  invoices       Invoice[]
-  invoiceExports InvoiceExport[]
-  payments       Payment[]
-  expenses       Expense[]
-  expenseApprovalHistory ExpenseApprovalHistory[]
-  retainers      Retainer[]
+enum RecurringScheduleStatus {
+  ACTIVE
+  PAUSED
+  COMPLETED
+  CANCELLED
+}
+
+enum RecurringOccurrenceStatus {
+  PENDING
+  PROCESSING
+  GENERATED
+  FAILED
+}
+
+enum RecurringScheduleAction {
+  CREATED
+  UPDATED
+  PAUSED
+  RESUMED
+  CANCELLED
+  OCCURRENCE_GENERATED
+  AUTO_ISSUED
+  GENERATION_FAILED
+  RETRIED
+}
+
+model Organization {
+  id                      String                       @id @default(uuid())
+  name                    String
+  slug                    String                       @unique
+  website                 String?
+  employeeCount           String?
+  logoUrl                 String?
+  currency                String                       @default("USD")
+  createdAt               DateTime                     @default(now())
+  updatedAt               temporal.updatedAt()
+
+  users                   User[]
+  memberships             Membership[]
+  clients                 Client[]
+  invoices                Invoice[]
+  invoiceExports          InvoiceExport[]
+  payments                Payment[]
+  expenses                Expense[]
+  expenseApprovalHistory  ExpenseApprovalHistory[]
+  retainers               Retainer[]
+  recurringSchedules      RecurringInvoiceSchedule[]
+  recurringOccurrences    RecurringInvoiceOccurrence[]
+  recurringScheduleEvents RecurringScheduleEvent[]
 
   @@map("organizations")
 }
@@ -113,27 +149,29 @@ model InvoiceExport {
 }
 
 model User {
-  id               String               @id @default(uuid())
-  organizationId   String
-  email            String
-  passwordHash     String
-  fullName         String
-  firstName        String?
-  middleName       String?
-  lastName         String?
-  phoneNumber      String?
-  avatarUrl        String?
-  onboardingStatus OnboardingStatus     @default(LEGACY)
-  onboardingStep   String               @default("welcome")
-  createdAt        DateTime             @default(now())
-  updatedAt        temporal.updatedAt()
+  id                      String                     @id @default(uuid())
+  organizationId          String
+  email                   String
+  passwordHash            String
+  fullName                String
+  firstName               String?
+  middleName              String?
+  lastName                String?
+  phoneNumber             String?
+  avatarUrl               String?
+  onboardingStatus        OnboardingStatus           @default(LEGACY)
+  onboardingStep          String                     @default("welcome")
+  createdAt               DateTime                   @default(now())
+  updatedAt               temporal.updatedAt()
 
-  organization     Organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  memberships      Membership[]
-  createdExpenses  Expense[]                @relation("ExpenseCreator")
-  submittedExpenses Expense[]               @relation("ExpenseSubmitter")
-  reviewedExpenses Expense[]                @relation("ExpenseReviewer")
-  expenseApprovalEvents ExpenseApprovalHistory[] @relation("ExpenseApprovalActor")
+  organization            Organization               @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  memberships             Membership[]
+  createdExpenses         Expense[]                  @relation("ExpenseCreator")
+  submittedExpenses       Expense[]                  @relation("ExpenseSubmitter")
+  reviewedExpenses        Expense[]                  @relation("ExpenseReviewer")
+  expenseApprovalEvents   ExpenseApprovalHistory[]   @relation("ExpenseApprovalActor")
+  recurringSchedules      RecurringInvoiceSchedule[] @relation("RecurringScheduleCreator")
+  recurringScheduleEvents RecurringScheduleEvent[]   @relation("RecurringScheduleActor")
 
   @@unique([organizationId, id])
   @@unique([organizationId, email])
@@ -156,52 +194,54 @@ model Membership {
 }
 
 model Client {
-  id             String               @id @default(uuid())
-  organizationId String
-  name           String
-  email          String
-  companyName    String?
-  taxId          String?
-  createdAt      DateTime             @default(now())
-  updatedAt      temporal.updatedAt()
+  id                 String                     @id @default(uuid())
+  organizationId     String
+  name               String
+  email              String
+  companyName        String?
+  taxId              String?
+  createdAt          DateTime                   @default(now())
+  updatedAt          temporal.updatedAt()
 
-  organization   Organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  invoices       Invoice[]
+  organization       Organization               @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  invoices           Invoice[]
+  recurringSchedules RecurringInvoiceSchedule[]
 
   @@unique([organizationId, id])
   @@map("clients")
 }
 
 model Invoice {
-  id                 String               @id @default(uuid())
-  organizationId     String
-  clientId           String
-  invoiceNumber      String
-  version            Int                  @default(1)
-  status             InvoiceStatus        @default(DRAFT)
-  issueDate          DateTime
-  dueDate            DateTime
-  subtotal           Numeric(12, 2)
-  tax                Numeric(12, 2)       @default(0.00)
-  total              Numeric(12, 2)
-  issuedAt           DateTime?
-  issuedByUserId     String?
-  billingName        String?
-  billingEmail       String?
-  billingCompanyName String?
-  billingTaxId       String?
-  sellerName         String?
-  currency           String?
-  pdfKey             String?
-  pdfUrl             String?
-  notes              String?
-  createdAt          DateTime             @default(now())
-  updatedAt          temporal.updatedAt()
+  id                  String                      @id @default(uuid())
+  organizationId      String
+  clientId            String
+  invoiceNumber       String
+  version             Int                         @default(1)
+  status              InvoiceStatus               @default(DRAFT)
+  issueDate           DateTime
+  dueDate             DateTime
+  subtotal            Numeric(12, 2)
+  tax                 Numeric(12, 2)              @default(0.00)
+  total               Numeric(12, 2)
+  issuedAt            DateTime?
+  issuedByUserId      String?
+  billingName         String?
+  billingEmail        String?
+  billingCompanyName  String?
+  billingTaxId        String?
+  sellerName          String?
+  currency            String?
+  pdfKey              String?
+  pdfUrl              String?
+  notes               String?
+  createdAt           DateTime                    @default(now())
+  updatedAt           temporal.updatedAt()
 
-  organization       Organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  client             Client               @relation(fields: [organizationId, clientId], references: [organizationId, id], onDelete: Restrict)
-  items              InvoiceItem[]
-  payments           Payment[]
+  organization        Organization                @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  client              Client                      @relation(fields: [organizationId, clientId], references: [organizationId, id], onDelete: Restrict)
+  items               InvoiceItem[]
+  payments            Payment[]
+  recurringOccurrence RecurringInvoiceOccurrence?
 
   @@unique([organizationId, id])
   @@unique([organizationId, invoiceNumber])
@@ -209,6 +249,94 @@ model Invoice {
   @@index([organizationId, issueDate])
   @@index([organizationId, dueDate])
   @@map("invoices")
+}
+
+model RecurringInvoiceSchedule {
+  id                String                       @id @default(uuid())
+  organizationId    String
+  clientId          String
+  createdById       String
+  name              String
+  description       String?
+  frequency         RecurringFrequency
+  interval          Int                          @default(1)
+  startDate         DateTime
+  endDate           DateTime?
+  nextRunAt         DateTime
+  lastRunAt         DateTime?
+  status            RecurringScheduleStatus      @default(ACTIVE)
+  currency          String
+  dueDateOffsetDays Int                          @default(14)
+  autoIssue         Boolean                      @default(false)
+  version           Int                          @default(1)
+  createdAt         DateTime                     @default(now())
+  updatedAt         temporal.updatedAt()
+
+  organization      Organization                 @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  client            Client                       @relation(fields: [organizationId, clientId], references: [organizationId, id], onDelete: Restrict)
+  createdBy         User                         @relation("RecurringScheduleCreator", fields: [organizationId, createdById], references: [organizationId, id], onDelete: Restrict)
+  items             RecurringInvoiceItem[]
+  occurrences       RecurringInvoiceOccurrence[]
+  events            RecurringScheduleEvent[]
+
+  @@unique([organizationId, id])
+  @@index([status, nextRunAt])
+  @@index([organizationId, clientId], map: "recurring_schedule_client_idx")
+  @@map("recurring_invoice_schedules")
+}
+
+model RecurringScheduleEvent {
+  id             String                   @id @default(uuid())
+  organizationId String
+  scheduleId     String
+  actorId        String?
+  action         RecurringScheduleAction
+  details        String?
+  createdAt      DateTime                 @default(now())
+
+  organization   Organization             @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  schedule       RecurringInvoiceSchedule @relation(fields: [organizationId, scheduleId], references: [organizationId, id], onDelete: Cascade)
+  actor          User?                    @relation("RecurringScheduleActor", fields: [organizationId, actorId], references: [organizationId, id], onDelete: Restrict)
+
+  @@index([organizationId, scheduleId, createdAt], map: "recurring_event_schedule_idx")
+  @@map("recurring_schedule_events")
+}
+
+model RecurringInvoiceItem {
+  id             String                   @id @default(uuid())
+  organizationId String
+  scheduleId     String
+  description    String
+  quantity       Int                      @default(1)
+  unitPrice      Numeric(12, 2)
+  amount         Numeric(12, 2)
+  position       Int                      @default(0)
+
+  schedule       RecurringInvoiceSchedule @relation(fields: [organizationId, scheduleId], references: [organizationId, id], onDelete: Cascade)
+
+  @@index([organizationId, scheduleId], map: "recurring_item_schedule_idx")
+  @@map("recurring_invoice_items")
+}
+
+model RecurringInvoiceOccurrence {
+  id             String                    @id @default(uuid())
+  organizationId String
+  scheduleId     String
+  scheduledFor   DateTime
+  status         RecurringOccurrenceStatus @default(PENDING)
+  invoiceId      String?                   @unique
+  failureCode    String?
+  attempts       Int                       @default(0)
+  createdAt      DateTime                  @default(now())
+  updatedAt      temporal.updatedAt()
+
+  organization   Organization              @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  schedule       RecurringInvoiceSchedule  @relation(fields: [organizationId, scheduleId], references: [organizationId, id], onDelete: Cascade)
+  invoice        Invoice?                  @relation(fields: [invoiceId], references: [id], onDelete: SetNull)
+
+  @@unique([organizationId, scheduleId, scheduledFor], map: "recurring_occurrence_slot_key")
+  @@index([organizationId, status], map: "recurring_occurrence_status_idx")
+  @@map("recurring_invoice_occurrences")
 }
 
 model InvoiceItem {
@@ -249,35 +377,35 @@ model Payment {
 }
 
 model Expense {
-  id             String               @id @default(uuid())
-  organizationId String
-  title          String
-  description    String?
-  amount         Numeric(12, 2)
-  category       ExpenseCategory      @default(OTHER)
-  vendor         String?
-  notes          String?
-  receiptUrl     String?
-  receiptKey     String?
-  receiptName    String?
-  receiptMime    String?
-  receiptSize    Int?
-  date           DateTime
+  id              String                   @id @default(uuid())
+  organizationId  String
+  title           String
+  description     String?
+  amount          Numeric(12, 2)
+  category        ExpenseCategory          @default(OTHER)
+  vendor          String?
+  notes           String?
+  receiptUrl      String?
+  receiptKey      String?
+  receiptName     String?
+  receiptMime     String?
+  receiptSize     Int?
+  date            DateTime
   createdByUserId String?
-  approvalStatus ExpenseApprovalStatus @default(APPROVED)
-  submittedById String?
-  submittedAt   DateTime?
-  reviewedById  String?
-  reviewedAt    DateTime?
+  approvalStatus  ExpenseApprovalStatus    @default(APPROVED)
+  submittedById   String?
+  submittedAt     DateTime?
+  reviewedById    String?
+  reviewedAt      DateTime?
   rejectionReason String?
-  version        Int                  @default(1)
-  createdAt      DateTime             @default(now())
-  updatedAt      temporal.updatedAt()
+  version         Int                      @default(1)
+  createdAt       DateTime                 @default(now())
+  updatedAt       temporal.updatedAt()
 
-  organization   Organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  createdBy      User?                @relation("ExpenseCreator", fields: [organizationId, createdByUserId], references: [organizationId, id], onDelete: Restrict)
-  submittedBy    User?                @relation("ExpenseSubmitter", fields: [organizationId, submittedById], references: [organizationId, id], onDelete: Restrict)
-  reviewedBy     User?                @relation("ExpenseReviewer", fields: [organizationId, reviewedById], references: [organizationId, id], onDelete: Restrict)
+  organization    Organization             @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  createdBy       User?                    @relation("ExpenseCreator", fields: [organizationId, createdByUserId], references: [organizationId, id], onDelete: Restrict)
+  submittedBy     User?                    @relation("ExpenseSubmitter", fields: [organizationId, submittedById], references: [organizationId, id], onDelete: Restrict)
+  reviewedBy      User?                    @relation("ExpenseReviewer", fields: [organizationId, reviewedById], references: [organizationId, id], onDelete: Restrict)
   approvalHistory ExpenseApprovalHistory[]
 
   @@unique([organizationId, id])
@@ -288,19 +416,19 @@ model Expense {
 }
 
 model ExpenseApprovalHistory {
-  id             String                @id @default(uuid())
-  organizationId String
-  expenseId      String
-  actorId        String
-  action         ExpenseApprovalAction
-  previousStatus ExpenseApprovalStatus
-  newStatus      ExpenseApprovalStatus
+  id              String                @id @default(uuid())
+  organizationId  String
+  expenseId       String
+  actorId         String
+  action          ExpenseApprovalAction
+  previousStatus  ExpenseApprovalStatus
+  newStatus       ExpenseApprovalStatus
   rejectionReason String?
-  createdAt      DateTime              @default(now())
+  createdAt       DateTime              @default(now())
 
-  organization   Organization          @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  expense        Expense               @relation(fields: [organizationId, expenseId], references: [organizationId, id], onDelete: Cascade)
-  actor          User                  @relation("ExpenseApprovalActor", fields: [organizationId, actorId], references: [organizationId, id], onDelete: Restrict)
+  organization    Organization          @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  expense         Expense               @relation(fields: [organizationId, expenseId], references: [organizationId, id], onDelete: Cascade)
+  actor           User                  @relation("ExpenseApprovalActor", fields: [organizationId, actorId], references: [organizationId, id], onDelete: Restrict)
 
   @@index([organizationId, expenseId, createdAt], map: "expense_history_expense_created_idx")
   @@map("expense_approval_history")

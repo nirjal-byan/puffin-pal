@@ -3,15 +3,18 @@ import { config } from "dotenv";
 import { NestFactory } from "@nestjs/core";
 import { InvoiceExportProcessor } from "./background-jobs/invoice-export.processor.js";
 import { WorkerModule } from "./background-jobs/worker.module.js";
+import { RecurringInvoiceProcessor } from "./recurring-invoices/recurring-invoice.processor.js";
 
 async function bootstrap() {
   config({ quiet: true });
   if (!process.env.DATABASE_URL) throw new Error("DATABASE_URL is required");
   const app = await NestFactory.createApplicationContext(WorkerModule);
   const processor = app.get(InvoiceExportProcessor);
-  await processor.start();
+  const recurring = app.get(RecurringInvoiceProcessor);
+  await Promise.all([processor.start(), recurring.start()]);
   const shutdown = async () => {
     await processor.close();
+    await recurring.close();
     await app.close();
   };
   process.once("SIGTERM", () => void shutdown());

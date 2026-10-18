@@ -6,6 +6,7 @@ import { InvoicePdfStorageService } from "../invoices/pdf/invoice-pdf-storage.se
 import { StorageModule } from "../storage/storage.module.js";
 import { InvoiceExportProcessor } from "./invoice-export.processor.js";
 import { InvoiceExportStorageService } from "./invoice-export-storage.service.js";
+import { RecurringInvoiceProcessor } from "../recurring-invoices/recurring-invoice.processor.js";
 
 @Module({
   imports: [DatabaseModule, StorageModule],
@@ -15,6 +16,7 @@ import { InvoiceExportStorageService } from "./invoice-export-storage.service.js
     InvoicePdfResolverService,
     InvoiceExportStorageService,
     InvoiceExportProcessor,
+    RecurringInvoiceProcessor,
   ],
 })
 export class WorkerModule {}
