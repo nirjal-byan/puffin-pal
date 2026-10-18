@@ -66,9 +66,7 @@ clearing the textarea is explicit.
   "issueDate": "2026-10-10",
   "dueDate": "2026-11-10",
   "notes": "",
-  "items": [
-    { "description": "Design services", "quantity": 7, "unitPrice": "0.10" }
-  ]
+  "items": [{ "description": "Design services", "quantity": 7, "unitPrice": "0.10" }]
 }
 ```
 

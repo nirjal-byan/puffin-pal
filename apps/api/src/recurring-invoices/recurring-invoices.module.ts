@@ -6,5 +6,15 @@ import { RecurringInvoicesController } from "./recurring-invoices.controller.js"
 import { RecurringInvoicesService } from "./recurring-invoices.service.js";
 import { RecurringInvoiceQueue } from "./recurring-invoice.queue.js";
 
-@Module({ imports: [StorageModule], controllers: [RecurringInvoicesController], providers: [RecurringInvoicesService, RecurringInvoiceQueue, InvoicePdfService, InvoicePdfStorageService], exports: [RecurringInvoiceQueue] })
+@Module({
+  imports: [StorageModule],
+  controllers: [RecurringInvoicesController],
+  providers: [
+    RecurringInvoicesService,
+    RecurringInvoiceQueue,
+    InvoicePdfService,
+    InvoicePdfStorageService,
+  ],
+  exports: [RecurringInvoiceQueue],
+})
 export class RecurringInvoicesModule {}

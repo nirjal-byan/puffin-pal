@@ -6,11 +6,7 @@ type PasswordInputProps = Omit<ComponentProps<"input">, "type"> & {
   visibilityLabel?: string;
 };
 
-export function PasswordInput({
-  visibilityLabel = "password",
-  id,
-  ...props
-}: PasswordInputProps) {
+export function PasswordInput({ visibilityLabel = "password", id, ...props }: PasswordInputProps) {
   const generatedId = useId();
   const inputId = id ?? generatedId;
   const [visible, setVisible] = useState(false);
@@ -25,7 +21,17 @@ export function PasswordInput({
         aria-controls={inputId}
         onClick={() => setVisible((current) => !current)}
       >
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <svg
+          width="18"
+          height="18"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden="true"
+        >
           {visible ? (
             <>
               <path d="m3 3 18 18M10.6 10.6a2 2 0 0 0 2.8 2.8M9.5 5.3A11 11 0 0 1 12 5c7 0 10 7 10 7a17 17 0 0 1-3.2 4.2M6.3 6.3A18 18 0 0 0 2 12s3 7 10 7a11 11 0 0 0 5.7-1.7" />

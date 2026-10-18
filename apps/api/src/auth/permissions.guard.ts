@@ -14,15 +14,12 @@ export class PermissionsGuard implements CanActivate {
   constructor(private readonly reflector: Reflector) {}
   canActivate(context: ExecutionContext) {
     const targets = [context.getHandler(), context.getClass()];
-    if (this.reflector.getAllAndOverride<boolean>(PUBLIC_ROUTE, targets))
-      return true;
+    if (this.reflector.getAllAndOverride<boolean>(PUBLIC_ROUTE, targets)) return true;
     const permissions = this.reflector.getAllAndOverride<Permission[]>(
       REQUIRED_PERMISSIONS,
       targets,
     );
-    const tenant = context
-      .switchToHttp()
-      .getRequest<AuthenticatedRequest>().auth;
+    const tenant = context.switchToHttp().getRequest<AuthenticatedRequest>().auth;
     // New protected routes must explicitly declare their permission policy.
     if (
       !tenant ||

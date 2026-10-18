@@ -43,9 +43,7 @@ export class InvoiceExportProcessor {
       },
     );
     this.worker.on("completed", (job) =>
-      this.logger.log(
-        JSON.stringify({ event: "invoice_export_completed", jobId: job.id }),
-      ),
+      this.logger.log(JSON.stringify({ event: "invoice_export_completed", jobId: job.id })),
     );
     this.worker.on("failed", (job, error) =>
       this.logger.error(
@@ -82,11 +80,7 @@ export class InvoiceExportProcessor {
     const invoiceIds = this.invoiceIds(record.invoiceIds);
     const archiveKey = this.storage.key(organizationId, exportId);
 
-    const existing = await this.storage.exists(
-      archiveKey,
-      organizationId,
-      exportId,
-    );
+    const existing = await this.storage.exists(archiveKey, organizationId, exportId);
     if (existing) {
       await this.complete(record.id, organizationId, archiveKey, existing.size);
       return;
@@ -101,8 +95,7 @@ export class InvoiceExportProcessor {
     const limiter = new Transform({
       transform(chunk: Buffer, _encoding, callback) {
         bytes += chunk.length;
-        if (bytes > MAX_EXPORT_BYTES)
-          callback(new Error("EXPORT_TOO_LARGE"));
+        if (bytes > MAX_EXPORT_BYTES) callback(new Error("EXPORT_TOO_LARGE"));
         else callback(null, chunk);
       },
     });
@@ -110,12 +103,7 @@ export class InvoiceExportProcessor {
     zip.on("warning", (error) => limiter.destroy(error));
     zip.on("error", (error) => limiter.destroy(error));
     zip.pipe(limiter);
-    const upload = this.storage.put(
-      archiveKey,
-      limiter,
-      organizationId,
-      exportId,
-    );
+    const upload = this.storage.put(archiveKey, limiter, organizationId, exportId);
 
     try {
       for (const [index, invoiceId] of invoiceIds.entries()) {
@@ -192,10 +180,7 @@ export class InvoiceExportProcessor {
     ).all();
     for (const record of records) {
       const expired =
-        Temporal.Instant.compare(
-          Temporal.Instant.from(record.expiresAt.toString()),
-          now,
-        ) <= 0;
+        Temporal.Instant.compare(Temporal.Instant.from(record.expiresAt.toString()), now) <= 0;
       if (expired && record.archiveKey) {
         await this.storage.delete(record.archiveKey);
         await this.db.orm.public.InvoiceExport.where({ id: record.id }).updateAll({
@@ -209,11 +194,7 @@ export class InvoiceExportProcessor {
           Temporal.Instant.from(record.updatedAt.toString()),
           deleteBefore,
         ) <= 0;
-      if (
-        oldMetadata &&
-        ["FAILED", "EXPIRED"].includes(record.status) &&
-        !record.archiveKey
-      )
+      if (oldMetadata && ["FAILED", "EXPIRED"].includes(record.status) && !record.archiveKey)
         await this.db.orm.public.InvoiceExport.where({ id: record.id }).deleteAll();
     }
   }

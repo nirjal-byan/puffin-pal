@@ -46,9 +46,7 @@ export function InvoiceClientSelect({
     setLoadingMore(true);
     setFailure("");
     try {
-      const rows = await api<Client[]>(
-        `/clients?limit=100&offset=${clients.length}`,
-      );
+      const rows = await api<Client[]>(`/clients?limit=100&offset=${clients.length}`);
       setClients((current) => [...current, ...rows]);
       setHasMore(rows.length === 100);
     } catch (reason) {
@@ -109,25 +107,20 @@ export function InvoiceClientSelect({
                 {filtered.map((client) => (
                   <option key={client.id} value={client.id}>
                     {client.name}
-                    {client.companyName
-                      ? ` · ${client.companyName}`
-                      : ""} · {client.email}
+                    {client.companyName ? ` · ${client.companyName}` : ""} · {client.email}
                   </option>
                 ))}
-                {selected &&
-                  !filtered.some((client) => client.id === selected.id) && (
-                    <option value={selected.id}>
-                      {selected.name} · {selected.email}
-                    </option>
-                  )}
+                {selected && !filtered.some((client) => client.id === selected.id) && (
+                  <option value={selected.id}>
+                    {selected.name} · {selected.email}
+                  </option>
+                )}
               </select>
             </label>
             {filtered.length === 0 && search && (
               <p className="muted">
                 No matches in the loaded clients.
-                {hasMore
-                  ? " Load more to keep searching."
-                  : " Try a different search."}
+                {hasMore ? " Load more to keep searching." : " Try a different search."}
               </p>
             )}
             {selected && (

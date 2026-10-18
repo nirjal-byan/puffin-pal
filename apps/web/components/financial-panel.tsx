@@ -3,11 +3,7 @@ import Link from "next/link";
 import type { Permission } from "@puffinpal/permissions";
 import { InvoiceActions } from "../features/invoices/components/invoice-actions";
 import { useEffect, useState } from "react";
-import {
-  errorMessage,
-  type FinancialRecord,
-  type InvoiceItem,
-} from "../lib/api";
+import { errorMessage, type FinancialRecord, type InvoiceItem } from "../lib/api";
 import type { WorkspaceApi } from "../lib/api";
 import { InvoiceBulkExport } from "../features/invoices/components/invoice-bulk-export";
 
@@ -16,9 +12,7 @@ function money(value: string | undefined, currency: string) {
   if (!value) return "—";
   const parsed = Number(value);
   try {
-    return new Intl.NumberFormat("en", { style: "currency", currency }).format(
-      parsed,
-    );
+    return new Intl.NumberFormat("en", { style: "currency", currency }).format(parsed);
   } catch {
     return `${currency} ${value}`;
   }
@@ -61,9 +55,7 @@ function InvoiceDetails({
           Loading items…
         </p>
       )}
-      {items?.length === 0 && (
-        <p className="muted">No items on this invoice.</p>
-      )}
+      {items?.length === 0 && <p className="muted">No items on this invoice.</p>}
       {items && items.length > 0 && (
         <div className="table-scroll">
           <table>
@@ -108,12 +100,15 @@ export function FinancialPanel({
 }) {
   const [selected, setSelected] = useState<string | null>(null);
   const [selectedInvoices, setSelectedInvoices] = useState<string[]>([]);
-  const eligibleInvoices = tab === "invoices"
-    ? rows.filter((row) => ["ISSUED", "PAID", "OVERDUE"].includes(row.status ?? ""))
-    : [];
+  const eligibleInvoices =
+    tab === "invoices"
+      ? rows.filter((row) => ["ISSUED", "PAID", "OVERDUE"].includes(row.status ?? ""))
+      : [];
   const eligibleIds = new Set(eligibleInvoices.map((row) => row.id));
   const activeSelectedInvoices = selectedInvoices.filter((id) => eligibleIds.has(id));
-  const allSelected = eligibleInvoices.length > 0 && eligibleInvoices.every((row) => activeSelectedInvoices.includes(row.id));
+  const allSelected =
+    eligibleInvoices.length > 0 &&
+    eligibleInvoices.every((row) => activeSelectedInvoices.includes(row.id));
   return (
     <section className="panel">
       <div className="panel-heading">
@@ -126,7 +121,11 @@ export function FinancialPanel({
         </h3>
         <div className="invoice-panel-tools">
           {tab === "invoices" && permissions.includes("invoices:read") && (
-            <InvoiceBulkExport api={api} invoiceIds={activeSelectedInvoices} onComplete={() => setSelectedInvoices([])} />
+            <InvoiceBulkExport
+              api={api}
+              invoiceIds={activeSelectedInvoices}
+              onComplete={() => setSelectedInvoices([])}
+            />
           )}
           <span className="muted">{rows.length} on this page</span>
         </div>
@@ -142,45 +141,51 @@ export function FinancialPanel({
           <table>
             <thead>
               <tr>
-                {tab === "invoices" && <th className="invoice-select-cell">
-                  <input
-                    type="checkbox"
-                    aria-label="Select all eligible invoices on this page"
-                    checked={allSelected}
-                    disabled={eligibleInvoices.length === 0}
-                    onChange={() => setSelectedInvoices(allSelected ? [] : eligibleInvoices.map((row) => row.id))}
-                  />
-                </th>}
+                {tab === "invoices" && (
+                  <th className="invoice-select-cell">
+                    <input
+                      type="checkbox"
+                      aria-label="Select all eligible invoices on this page"
+                      checked={allSelected}
+                      disabled={eligibleInvoices.length === 0}
+                      onChange={() =>
+                        setSelectedInvoices(
+                          allSelected ? [] : eligibleInvoices.map((row) => row.id),
+                        )
+                      }
+                    />
+                  </th>
+                )}
                 <th>
-                  {tab === "invoices"
-                    ? "Invoice"
-                    : tab === "expenses"
-                      ? "Expense"
-                      : "Client"}
+                  {tab === "invoices" ? "Invoice" : tab === "expenses" ? "Expense" : "Client"}
                 </th>
                 <th>Amount</th>
                 <th>{tab === "expenses" ? "Date" : "Status"}</th>
                 <th>
-                  {tab === "invoices"
-                    ? "Due date"
-                    : tab === "retainers"
-                      ? "Billing day"
-                      : ""}
+                  {tab === "invoices" ? "Due date" : tab === "retainers" ? "Billing day" : ""}
                 </th>
               </tr>
             </thead>
             <tbody>
               {rows.map((row) => (
                 <tr key={row.id}>
-                  {tab === "invoices" && <td className="invoice-select-cell">
-                    <input
-                      type="checkbox"
-                      aria-label={`Select ${row.invoiceNumber ?? "invoice"}`}
-                      disabled={!eligibleInvoices.some((invoice) => invoice.id === row.id)}
-                      checked={activeSelectedInvoices.includes(row.id)}
-                      onChange={() => setSelectedInvoices((current) => current.includes(row.id) ? current.filter((id) => id !== row.id) : [...current, row.id])}
-                    />
-                  </td>}
+                  {tab === "invoices" && (
+                    <td className="invoice-select-cell">
+                      <input
+                        type="checkbox"
+                        aria-label={`Select ${row.invoiceNumber ?? "invoice"}`}
+                        disabled={!eligibleInvoices.some((invoice) => invoice.id === row.id)}
+                        checked={activeSelectedInvoices.includes(row.id)}
+                        onChange={() =>
+                          setSelectedInvoices((current) =>
+                            current.includes(row.id)
+                              ? current.filter((id) => id !== row.id)
+                              : [...current, row.id],
+                          )
+                        }
+                      />
+                    </td>
+                  )}
                   <td>
                     {tab === "invoices" ? (
                       <div className="invoice-list-actions">
@@ -189,7 +194,11 @@ export function FinancialPanel({
                           href={`/invoices/${row.id}`}
                           data-tour-payment-invoice={
                             ["ISSUED", "OVERDUE", "PAID"].includes(row.status ?? "")
-                              ? row.status !== "PAID" && row.outstandingBalance && row.outstandingBalance !== "0.00" ? "record" : "read"
+                              ? row.status !== "PAID" &&
+                                row.outstandingBalance &&
+                                row.outstandingBalance !== "0.00"
+                                ? "record"
+                                : "read"
                               : undefined
                           }
                         >
@@ -198,9 +207,7 @@ export function FinancialPanel({
                         <button
                           className="text-button"
                           type="button"
-                          onClick={() =>
-                            setSelected(selected === row.id ? null : row.id)
-                          }
+                          onClick={() => setSelected(selected === row.id ? null : row.id)}
                         >
                           Show items
                         </button>
@@ -224,20 +231,30 @@ export function FinancialPanel({
                     )}
                   </td>
                   <td>
-                    {tab === "invoices" ? `${row.currency ?? currency} ${row.total}` : money(
-                      row.total ?? row.amount ?? row.monthlyAmount,
-                      row.currency ?? currency,
+                    {tab === "invoices"
+                      ? `${row.currency ?? currency} ${row.total}`
+                      : money(
+                          row.total ?? row.amount ?? row.monthlyAmount,
+                          row.currency ?? currency,
+                        )}
+                    {tab === "invoices" && (
+                      <div className="invoice-payment-summary muted">
+                        <span>
+                          Paid: {row.currency ?? currency} {row.totalPaid ?? "0.00"}
+                        </span>
+                        <span>
+                          Due: {row.currency ?? currency} {row.outstandingBalance ?? row.total}
+                        </span>
+                      </div>
                     )}
-                    {tab === "invoices" && <div className="invoice-payment-summary muted">
-                      <span>Paid: {row.currency ?? currency} {row.totalPaid ?? "0.00"}</span>
-                      <span>Due: {row.currency ?? currency} {row.outstandingBalance ?? row.total}</span>
-                    </div>}
                   </td>
                   <td>
                     {tab === "expenses" ? (
                       date(row.date)
                     ) : (
-                      <span className={`role-badge ${tab === "invoices" ? `invoice-status-${(row.displayStatus ?? row.status)?.toLowerCase()}` : ""}`}>
+                      <span
+                        className={`role-badge ${tab === "invoices" ? `invoice-status-${(row.displayStatus ?? row.status)?.toLowerCase()}` : ""}`}
+                      >
                         {(row.displayStatus ?? row.status)?.toLowerCase() ??
                           (row.active ? "Active" : "Inactive")}
                       </span>
@@ -261,9 +278,7 @@ export function FinancialPanel({
           key={selected}
           id={selected}
           api={api}
-          currency={
-            rows.find((row) => row.id === selected)?.currency ?? currency
-          }
+          currency={rows.find((row) => row.id === selected)?.currency ?? currency}
         />
       )}
     </section>

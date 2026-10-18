@@ -14,9 +14,7 @@ export const RequirePermissions = (...permissions: Permission[]) =>
   SetMetadata(REQUIRED_PERMISSIONS, permissions);
 export const CurrentTenant = createParamDecorator(
   (_data: unknown, context: ExecutionContext): TenantContext => {
-    const tenant = context
-      .switchToHttp()
-      .getRequest<AuthenticatedRequest>().auth;
+    const tenant = context.switchToHttp().getRequest<AuthenticatedRequest>().auth;
     if (!tenant) throw new UnauthorizedException();
     return tenant;
   },

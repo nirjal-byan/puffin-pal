@@ -10,15 +10,22 @@ export class ReceiptStorageService {
       await this.objects.put(key, file.buffer, file.mimetype, {
         originalname: encodeURIComponent(file.originalname),
       });
-    } catch (error) { throw new ServiceUnavailableException("Receipt upload failed", { cause: error }); }
+    } catch (error) {
+      throw new ServiceUnavailableException("Receipt upload failed", { cause: error });
+    }
   }
   async get(key: string) {
     try {
       return (await this.objects.get(key)).buffer;
-    } catch (error) { throw new ServiceUnavailableException("Receipt download failed", { cause: error }); }
+    } catch (error) {
+      throw new ServiceUnavailableException("Receipt download failed", { cause: error });
+    }
   }
   async delete(key: string) {
-    try { await this.objects.delete(key); }
-    catch (error) { throw new ServiceUnavailableException("Receipt cleanup failed", { cause: error }); }
+    try {
+      await this.objects.delete(key);
+    } catch (error) {
+      throw new ServiceUnavailableException("Receipt cleanup failed", { cause: error });
+    }
   }
 }

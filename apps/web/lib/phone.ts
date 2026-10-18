@@ -12,9 +12,7 @@ export const PHONE_COUNTRIES = getCountries()
     country,
     name: regionNames.of(country) ?? country,
     callingCode: getCountryCallingCode(country),
-    flag: String.fromCodePoint(
-      ...[...country].map((letter) => 127397 + letter.charCodeAt(0)),
-    ),
+    flag: String.fromCodePoint(...[...country].map((letter) => 127397 + letter.charCodeAt(0))),
   }))
   .sort((a, b) => a.name.localeCompare(b.name));
 
@@ -27,8 +25,7 @@ export function readPhoneInput(value: string, selectedCountry: CountryCode) {
   const callingCode = international ? formatter.getCallingCode() : undefined;
   const fallback =
     callingCode && getCountryCallingCode(selectedCountry) !== callingCode
-      ? PHONE_COUNTRIES.find((item) => item.callingCode === callingCode)
-          ?.country
+      ? PHONE_COUNTRIES.find((item) => item.callingCode === callingCode)?.country
       : selectedCountry;
   const country = detected ?? fallback ?? selectedCountry;
   const phone = parsePhoneNumberFromString(input, {

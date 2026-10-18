@@ -18,17 +18,8 @@ import type { Request, Response } from "express";
 import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 import { Throttle, ThrottlerGuard } from "@nestjs/throttler";
 import { AuthService } from "./auth.service.js";
-import {
-  ChangePasswordDto,
-  UpdateProfileDto,
-  LoginDto,
-  SignupDto,
-} from "./auth.dto.js";
-import {
-  CurrentTenant,
-  Public,
-  RequirePermissions,
-} from "./auth.decorators.js";
+import { ChangePasswordDto, UpdateProfileDto, LoginDto, SignupDto } from "./auth.dto.js";
+import { CurrentTenant, Public, RequirePermissions } from "./auth.decorators.js";
 import type { TenantContext } from "./auth.types.js";
 
 @ApiTags("auth")
@@ -46,11 +37,7 @@ export class AuthController {
   ) {
     this.checkOrigin(request);
     const session = await this.auth.signup(input);
-    await this.setRefreshCookie(
-      response,
-      session.user.id,
-      session.organization.id,
-    );
+    await this.setRefreshCookie(response, session.user.id, session.organization.id);
     return session;
   }
   @Public()
@@ -65,11 +52,7 @@ export class AuthController {
   ) {
     this.checkOrigin(request);
     const session = await this.auth.login(input);
-    await this.setRefreshCookie(
-      response,
-      session.user.id,
-      session.organization.id,
-    );
+    await this.setRefreshCookie(response, session.user.id, session.organization.id);
     return session;
   }
   @Get("me")
@@ -90,28 +73,19 @@ export class AuthController {
   @Patch("me/onboarding")
   @ApiBearerAuth()
   @RequirePermissions("profile:read")
-  updateOnboarding(
-    @CurrentTenant() tenant: TenantContext,
-    @Body() input: UpdateOnboardingDto,
-  ) {
+  updateOnboarding(@CurrentTenant() tenant: TenantContext, @Body() input: UpdateOnboardingDto) {
     return this.auth.updateOnboarding(tenant, input);
   }
   @Patch("me")
   @ApiBearerAuth()
   @RequirePermissions("profile:read")
-  updateProfile(
-    @CurrentTenant() tenant: TenantContext,
-    @Body() input: UpdateProfileDto,
-  ) {
+  updateProfile(@CurrentTenant() tenant: TenantContext, @Body() input: UpdateProfileDto) {
     return this.auth.updateProfile(tenant, input);
   }
   @Patch("me/avatar")
   @ApiBearerAuth()
   @RequirePermissions("profile:read")
-  updateProfilePicture(
-    @CurrentTenant() tenant: TenantContext,
-    @Body() input: ProfilePictureDto,
-  ) {
+  updateProfilePicture(@CurrentTenant() tenant: TenantContext, @Body() input: ProfilePictureDto) {
     return this.auth.updateProfilePicture(tenant, input.avatarUrl);
   }
 
@@ -135,10 +109,7 @@ export class AuthController {
   @HttpCode(200)
   @UseGuards(ThrottlerGuard)
   @Throttle({ default: { limit: 30, ttl: 60000 } })
-  async refresh(
-    @Req() request: Request,
-    @Res({ passthrough: true }) response: Response,
-  ) {
+  async refresh(@Req() request: Request, @Res({ passthrough: true }) response: Response) {
     this.checkOrigin(request);
     response.setHeader("Cache-Control", "no-store");
     const cookie = request.headers.cookie
@@ -158,10 +129,7 @@ export class AuthController {
   @Public()
   @Post("logout")
   @HttpCode(200)
-  logout(
-    @Req() request: Request,
-    @Res({ passthrough: true }) response: Response,
-  ) {
+  logout(@Req() request: Request, @Res({ passthrough: true }) response: Response) {
     this.checkOrigin(request);
     response.clearCookie("puffinpal_refresh", this.cookieOptions());
     return { message: "Signed out successfully." };
@@ -180,11 +148,7 @@ export class AuthController {
       path: "/api/v1/auth",
     };
   }
-  private async setRefreshCookie(
-    response: Response,
-    userId: string,
-    organizationId: string,
-  ) {
+  private async setRefreshCookie(response: Response, userId: string, organizationId: string) {
     response.setHeader("Cache-Control", "no-store");
     response.cookie(
       "puffinpal_refresh",
@@ -195,10 +159,7 @@ export class AuthController {
   private checkOrigin(request: Request) {
     const origin = request.headers.origin;
     const expected = process.env.WEB_ORIGIN ?? "http://localhost:3000";
-    if (
-      (origin && origin !== expected) ||
-      request.headers["sec-fetch-site"] === "cross-site"
-    )
+    if ((origin && origin !== expected) || request.headers["sec-fetch-site"] === "cross-site")
       throw new ForbiddenException("Request origin is not allowed");
   }
 }

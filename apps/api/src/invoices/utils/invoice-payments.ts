@@ -27,13 +27,19 @@ export function invoicePaymentSummary(
   const total = paymentCents(invoice.total);
   // Preserve historical PAID records without inventing ledger entries.
   const legacyPaid = invoice.status === "PAID" && payments.length === 0 && total > 0n;
-  const paid = legacyPaid ? total : payments.reduce((sum, payment) => sum + paymentCents(payment.amount), 0n);
+  const paid = legacyPaid
+    ? total
+    : payments.reduce((sum, payment) => sum + paymentCents(payment.amount), 0n);
   const balance = total - paid;
   const finalized = ["ISSUED", "PAID", "OVERDUE"].includes(invoice.status);
   // Due dates are inclusive calendar dates in UTC, not midnight deadlines.
   const isOverdue = finalized && balance > 0n && invoice.dueDate.toString().slice(0, 10) < today;
   const displayStatus = finalized
-    ? balance === 0n ? "PAID" : isOverdue ? "OVERDUE" : "ISSUED"
+    ? balance === 0n
+      ? "PAID"
+      : isOverdue
+        ? "OVERDUE"
+        : "ISSUED"
     : invoice.status;
   return {
     totalPaid: decimalFromCents(paid),

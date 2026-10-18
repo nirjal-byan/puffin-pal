@@ -54,18 +54,14 @@ export function InvoiceForm({
   const [failure, setFailure] = useState("");
   const [conflict, setConflict] = useState(false);
   const { save, saving } = useCreateInvoice(api, initialInvoice);
-  const cancelHref = initialInvoice
-    ? `/invoices/${initialInvoice.id}`
-    : "/invoices";
+  const cancelHref = initialInvoice ? `/invoices/${initialInvoice.id}` : "/invoices";
   function update(patch: Partial<InvoiceDraft>) {
     setDraft((current) => ({ ...current, ...patch }));
   }
   function updateLine(id: string, patch: Partial<InvoiceLine>) {
     setDraft((current) => ({
       ...current,
-      items: current.items.map((line) =>
-        line.id === id ? { ...line, ...patch } : line,
-      ),
+      items: current.items.map((line) => (line.id === id ? { ...line, ...patch } : line)),
     }));
   }
   async function submit(event: FormEvent<HTMLFormElement>) {
@@ -80,7 +76,11 @@ export function InvoiceForm({
       if (initialInvoice) payload.notes = draft.notes.trim();
       const invoice = await save(payload);
       if (invoice) {
-        window.dispatchEvent(new CustomEvent("puffinpal:tutorial-invoice-created", { detail: { id: invoice.id, version: invoice.version ?? 0 } }));
+        window.dispatchEvent(
+          new CustomEvent("puffinpal:tutorial-invoice-created", {
+            detail: { id: invoice.id, version: invoice.version ?? 0 },
+          }),
+        );
         onCreated(invoice);
       }
     } catch (error) {
@@ -88,34 +88,37 @@ export function InvoiceForm({
       if (error instanceof ApiError && error.status === 409) setConflict(true);
     }
   }
-  const actions = <>
-    <Link
-      href={cancelHref}
-      className={`button secondary ${saving ? "invoice-disabled-link" : ""}`}
-      aria-disabled={saving}
-      tabIndex={saving ? -1 : 0}
-      onClick={(event) => {
-        if (saving) event.preventDefault();
-      }}
-    >
-      Cancel
-    </Link>
-    <button
-      type="submit"
-      form="invoice-create-form"
-      className="button primary"
-      disabled={saving || conflict}
-    >
-      {saving
-        ? "Saving draft…"
-        : initialInvoice
-          ? "Save Changes"
-          : "Save as Draft"}
-    </button>
-  </>;
+  const actions = (
+    <>
+      <Link
+        href={cancelHref}
+        className={`button secondary ${saving ? "invoice-disabled-link" : ""}`}
+        aria-disabled={saving}
+        tabIndex={saving ? -1 : 0}
+        onClick={(event) => {
+          if (saving) event.preventDefault();
+        }}
+      >
+        Cancel
+      </Link>
+      <button
+        type="submit"
+        form="invoice-create-form"
+        className="button primary"
+        disabled={saving || conflict}
+      >
+        {saving ? "Saving draft…" : initialInvoice ? "Save Changes" : "Save as Draft"}
+      </button>
+    </>
+  );
   return (
     <form id="invoice-create-form" data-tour="invoice-create-form" onSubmit={submit} noValidate>
-      {!modalActions && <div className="invoice-form-actions"><span className="role-badge">Draft</span><div>{actions}</div></div>}
+      {!modalActions && (
+        <div className="invoice-form-actions">
+          <span className="role-badge">Draft</span>
+          <div>{actions}</div>
+        </div>
+      )}
       {failure && (
         <p className="alert" role="alert">
           {failure}
@@ -123,8 +126,7 @@ export function InvoiceForm({
       )}
       {conflict && (
         <div className="notice" role="alert">
-          Your changes have not been saved. Review the latest invoice before
-          editing again.
+          Your changes have not been saved. Review the latest invoice before editing again.
           <Link className="text-button" href={cancelHref}>
             Review latest invoice
           </Link>
@@ -158,9 +160,7 @@ export function InvoiceForm({
                   <label className="invoice-field" key={field}>
                     {field === "issueDate" ? "Issue date" : "Due date"}
                     <DatePicker
-                      ariaLabel={
-                        field === "issueDate" ? "Issue date" : "Due date"
-                      }
+                      ariaLabel={field === "issueDate" ? "Issue date" : "Due date"}
                       name={field}
                       value={draft[field]}
                       onChange={(value) => update({ [field]: value })}
@@ -171,10 +171,7 @@ export function InvoiceForm({
                       disabled={saving}
                     />
                     {errors[field] && (
-                      <span
-                        id={`${field}-error`}
-                        className="invoice-field-error"
-                      >
+                      <span id={`${field}-error`} className="invoice-field-error">
                         {errors[field]}
                       </span>
                     )}
@@ -191,9 +188,7 @@ export function InvoiceForm({
                   placeholder="Add any context for this invoice."
                   aria-invalid={Boolean(errors.notes)}
                 />
-                {errors.notes && (
-                  <span className="invoice-field-error">{errors.notes}</span>
-                )}
+                {errors.notes && <span className="invoice-field-error">{errors.notes}</span>}
               </label>
             </fieldset>
           </section>

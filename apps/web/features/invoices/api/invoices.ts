@@ -15,15 +15,19 @@ export function downloadInvoiceExport(api: WorkspaceApi, jobId: string) {
   return api<Blob>(`/invoices/exports/${jobId}/download`, { responseType: "file" });
 }
 
-export async function recordInvoicePayment(api: WorkspaceApi, id: string, input: RecordPaymentPayload) {
-  const invoice = await api<InvoiceDetail>(`/invoices/${id}/payments`, { method: "POST", body: input });
+export async function recordInvoicePayment(
+  api: WorkspaceApi,
+  id: string,
+  input: RecordPaymentPayload,
+) {
+  const invoice = await api<InvoiceDetail>(`/invoices/${id}/payments`, {
+    method: "POST",
+    body: input,
+  });
   clearRecentInvoice();
   return invoice;
 }
-import type {
-  CreateInvoicePayload,
-  CreatedInvoice,
-} from "../types/invoice.types";
+import type { CreateInvoicePayload, CreatedInvoice } from "../types/invoice.types";
 export function downloadInvoicePdf(api: WorkspaceApi, id: string, signal?: AbortSignal) {
   return api<Blob>(`/invoices/${id}/pdf`, { responseType: "blob", signal });
 }
@@ -43,15 +47,8 @@ export function recentlyCreatedInvoice(organizationId: string) {
 export function clearRecentInvoice() {
   recent = null;
 }
-export function getInvoice(
-  api: WorkspaceApi,
-  id: string,
-  signal?: AbortSignal,
-) {
-  return api<import("../types/invoice.types").InvoiceDetail>(
-    `/invoices/${id}`,
-    { signal },
-  );
+export function getInvoice(api: WorkspaceApi, id: string, signal?: AbortSignal) {
+  return api<import("../types/invoice.types").InvoiceDetail>(`/invoices/${id}`, { signal });
 }
 export async function updateInvoice(
   api: WorkspaceApi,
@@ -66,11 +63,7 @@ export async function updateInvoice(
   clearRecentInvoice();
   return invoice;
 }
-export async function deleteInvoice(
-  api: WorkspaceApi,
-  id: string,
-  expectedVersion: number,
-) {
+export async function deleteInvoice(api: WorkspaceApi, id: string, expectedVersion: number) {
   const result = await api<{ message: string }>(`/invoices/${id}`, {
     method: "DELETE",
     body: { expectedVersion },
@@ -79,11 +72,7 @@ export async function deleteInvoice(
   return result;
 }
 
-export async function issueInvoice(
-  api: WorkspaceApi,
-  id: string,
-  expectedVersion: number,
-) {
+export async function issueInvoice(api: WorkspaceApi, id: string, expectedVersion: number) {
   const invoice = await api<import("../types/invoice.types").InvoiceDetail>(
     `/invoices/${id}/issue`,
     {

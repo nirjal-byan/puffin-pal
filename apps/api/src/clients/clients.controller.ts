@@ -37,10 +37,7 @@ export class ClientsController {
   }
   @Patch(":id")
   @RequirePermissions("clients:update")
-  update(
-    @Param("id", ParseUUIDPipe) id: string,
-    @Body() input: UpdateClientDto,
-  ) {
+  update(@Param("id", ParseUUIDPipe) id: string, @Body() input: UpdateClientDto) {
     return this.tenants.updateClient(id, input);
   }
   @Delete(":id")

@@ -12,8 +12,7 @@ export function NotificationBell({
   useEffect(() => {
     if (!notificationsOpen) return;
     function close(event: PointerEvent) {
-      if (!notificationRef.current?.contains(event.target as Node))
-        setNotificationsOpen(false);
+      if (!notificationRef.current?.contains(event.target as Node)) setNotificationsOpen(false);
     }
     function escape(event: KeyboardEvent) {
       if (event.key === "Escape") {
@@ -63,11 +62,7 @@ export function NotificationBell({
           <div className="notifications-heading">
             <strong>Notifications</strong>
             {notifications.length > 0 && (
-              <button
-                className="text-button"
-                type="button"
-                onClick={() => onClearNotifications()}
-              >
+              <button className="text-button" type="button" onClick={() => onClearNotifications()}>
                 Clear
               </button>
             )}
@@ -81,9 +76,7 @@ export function NotificationBell({
           ) : (
             <p>
               You’re all caught up.
-              <small>
-                Workspace updates from this session will appear here.
-              </small>
+              <small>Workspace updates from this session will appear here.</small>
             </p>
           )}
         </section>

@@ -1,10 +1,5 @@
 import { Public } from "./auth/auth.decorators.js";
-import {
-  Controller,
-  Get,
-  Inject,
-  ServiceUnavailableException,
-} from "@nestjs/common";
+import { Controller, Get, Inject, ServiceUnavailableException } from "@nestjs/common";
 import { ApiOperation, ApiTags } from "@nestjs/swagger";
 import type { Database } from "./database/client.js";
 import { DATABASE } from "./database.module.js";

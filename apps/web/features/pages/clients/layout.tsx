@@ -6,9 +6,5 @@ export default function PageLayout({
   children: ReactNode;
   withForm?: boolean;
 }) {
-  return (
-    <div className={`content-grid ${withForm ? "with-form" : ""}`}>
-      {children}
-    </div>
-  );
+  return <div className={`content-grid ${withForm ? "with-form" : ""}`}>{children}</div>;
 }

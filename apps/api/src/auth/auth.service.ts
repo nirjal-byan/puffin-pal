@@ -9,12 +9,7 @@ import {
   UnauthorizedException,
 } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
-import {
-  canAssignRole,
-  isRole,
-  permissionsFor,
-  type Role,
-} from "@puffinpal/permissions";
+import { canAssignRole, isRole, permissionsFor, type Role } from "@puffinpal/permissions";
 import { DATABASE } from "../database.module.js";
 import type { Database } from "../database/client.js";
 import type {
@@ -38,10 +33,7 @@ export class AuthService {
   ) {}
 
   async signup(input: SignupDto) {
-    if (
-      input.confirmPassword !== undefined &&
-      input.confirmPassword !== input.password
-    )
+    if (input.confirmPassword !== undefined && input.confirmPassword !== input.password)
       throw new BadRequestException("Passwords do not match");
     if (Boolean(input.firstName) !== Boolean(input.lastName))
       throw new BadRequestException("First and last name are both required");
@@ -66,18 +58,14 @@ export class AuthService {
           currency: input.currency ?? "USD",
           ...(input.logoUrl ? { logoUrl: input.logoUrl } : {}),
           ...(input.companyWebsite ? { website: input.companyWebsite } : {}),
-          ...(input.employeeCount
-            ? { employeeCount: input.employeeCount }
-            : {}),
+          ...(input.employeeCount ? { employeeCount: input.employeeCount } : {}),
         });
         const user = await tx.orm.public.User.create({
           organizationId: organization.id,
           email: input.email,
           fullName,
           ...(input.firstName ? { firstName: input.firstName.trim() } : {}),
-          ...(input.middleName?.trim()
-            ? { middleName: input.middleName.trim() }
-            : {}),
+          ...(input.middleName?.trim() ? { middleName: input.middleName.trim() } : {}),
           ...(input.lastName ? { lastName: input.lastName.trim() } : {}),
           ...(input.phoneNumber ? { phoneNumber: input.phoneNumber } : {}),
           passwordHash,
@@ -121,12 +109,8 @@ export class AuthService {
           email: input.email,
         }).first()
       : null;
-    const valid = await verifyPassword(
-      input.password,
-      user?.passwordHash ?? DUMMY_HASH,
-    );
-    if (!valid || !organization || !user)
-      throw new UnauthorizedException("Invalid credentials");
+    const valid = await verifyPassword(input.password, user?.passwordHash ?? DUMMY_HASH);
+    if (!valid || !organization || !user) throw new UnauthorizedException("Invalid credentials");
     const membership = await this.db.orm.public.Membership.where({
       organizationId: organization.id,
       userId: user.id,
@@ -163,11 +147,8 @@ export class AuthService {
 
   async updateOrganizationLogo(tenant: TenantContext, logoUrl: string | null) {
     if (tenant.role !== "OWNER" && tenant.role !== "ADMIN")
-      throw new ForbiddenException(
-        "Only owners and admins can change the company logo",
-      );
-    if (!validOrganizationLogo(logoUrl))
-      throw new BadRequestException("Invalid organization logo");
+      throw new ForbiddenException("Only owners and admins can change the company logo");
+    if (!validOrganizationLogo(logoUrl)) throw new BadRequestException("Invalid organization logo");
     const [organization] = await this.db.orm.public.Organization.where({
       id: tenant.organizationId,
     }).updateAll({ logoUrl });
@@ -181,11 +162,15 @@ export class AuthService {
     await this.db.orm.public.User.where({
       id: tenant.userId,
       organizationId: tenant.organizationId,
-    }).where((user) => user.onboardingStatus.in(["PENDING", "IN_PROGRESS"]))
+    })
+      .where((user) => user.onboardingStatus.in(["PENDING", "IN_PROGRESS"]))
       .updateAll({ onboardingStatus: input.status, onboardingStep: input.step });
     const user = await this.db.orm.public.User.where({
-      id: tenant.userId, organizationId: tenant.organizationId,
-    }).select("onboardingStatus", "onboardingStep").first();
+      id: tenant.userId,
+      organizationId: tenant.organizationId,
+    })
+      .select("onboardingStatus", "onboardingStep")
+      .first();
     if (!user) throw new UnauthorizedException();
     return user;
   }
@@ -202,12 +187,13 @@ export class AuthService {
   }
 
   async updateProfilePicture(tenant: TenantContext, avatarUrl: string | null) {
-    if (!validOrganizationLogo(avatarUrl))
-      throw new BadRequestException("Invalid profile picture");
+    if (!validOrganizationLogo(avatarUrl)) throw new BadRequestException("Invalid profile picture");
     const user = await this.db.orm.public.User.where({
       id: tenant.userId,
       organizationId: tenant.organizationId,
-    }).select("id").update({ avatarUrl });
+    })
+      .select("id")
+      .update({ avatarUrl });
     if (!user) throw new UnauthorizedException();
     return this.me(tenant);
   }
@@ -219,10 +205,7 @@ export class AuthService {
     })
       .select("id", "passwordHash")
       .first();
-    if (
-      !user ||
-      !(await verifyPassword(input.currentPassword, user.passwordHash))
-    ) {
+    if (!user || !(await verifyPassword(input.currentPassword, user.passwordHash))) {
       throw new UnauthorizedException("Current password is incorrect");
     }
     const passwordHash = await hashPassword(input.newPassword);
@@ -233,10 +216,7 @@ export class AuthService {
     })
       .select("id")
       .update({ passwordHash });
-    if (!updated)
-      throw new ConflictException(
-        "Password changed during this request. Try again.",
-      );
+    if (!updated) throw new ConflictException("Password changed during this request. Try again.");
     return { message: "Password updated successfully." };
   }
 
@@ -246,11 +226,7 @@ export class AuthService {
     const passwordHash = await hashPassword(input.password);
     try {
       return await this.db.transaction(async (tx) => {
-        const user = await tx.orm.public.User.select(
-          "id",
-          "email",
-          "fullName",
-        ).create({
+        const user = await tx.orm.public.User.select("id", "email", "fullName").create({
           organizationId: tenant.organizationId,
           email: input.email,
           fullName: input.fullName.trim(),
@@ -273,9 +249,7 @@ export class AuthService {
           .select("id")
           .first()
       ) {
-        throw new ConflictException(
-          "Email is already registered in this organization",
-        );
+        throw new ConflictException("Email is already registered in this organization");
       }
       throw error;
     }
@@ -305,8 +279,7 @@ export class AuthService {
       .where((member) => member.role.in([...allowed]))
       .select("id", "userId", "role")
       .update({ role });
-    if (!updated)
-      throw new ForbiddenException("Member role changed; try again");
+    if (!updated) throw new ForbiddenException("Member role changed; try again");
     return updated;
   }
 
@@ -377,9 +350,7 @@ export class AuthService {
   }
 
   private passwordVersion(hash: string) {
-    return createHmac("sha256", process.env.JWT_SECRET!)
-      .update(hash)
-      .digest("hex");
+    return createHmac("sha256", process.env.JWT_SECRET!).update(hash).digest("hex");
   }
 
   private async session(tenant: TenantContext) {

@@ -1,11 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import {
-  ArrayMaxSize,
-  ArrayMinSize,
-  ArrayUnique,
-  IsArray,
-  IsUUID,
-} from "class-validator";
+import { ArrayMaxSize, ArrayMinSize, ArrayUnique, IsArray, IsUUID } from "class-validator";
 
 export const MAX_EXPORT_INVOICES = 50;
 

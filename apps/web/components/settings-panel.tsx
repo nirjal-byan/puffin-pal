@@ -26,10 +26,7 @@ export function SettingsPanel({
     const form = event.currentTarget;
     const data = new FormData(form);
     setError("");
-    if (
-      mode === "password" &&
-      data.get("newPassword") !== data.get("confirmPassword")
-    ) {
+    if (mode === "password" && data.get("newPassword") !== data.get("confirmPassword")) {
       setError("New passwords do not match.");
       return;
     }
@@ -63,14 +60,16 @@ export function SettingsPanel({
   return (
     <section className="panel settings-panel">
       <div className="panel-heading">
-        <h3>
-          {mode === "profile" ? "Personal information" : "Account security"}
-        </h3>
+        <h3>{mode === "profile" ? "Personal information" : "Account security"}</h3>
       </div>
       {mode === "profile" && (
-        <ProfilePictureSettings key={user.id}
-          user={user} api={api}
-          onProfileChange={onProfileChange} onSaved={onSaved} />
+        <ProfilePictureSettings
+          key={user.id}
+          user={user}
+          api={api}
+          onProfileChange={onProfileChange}
+          onSaved={onSaved}
+        />
       )}
       <form onSubmit={submit} className="settings-form">
         {error && (
@@ -138,11 +137,7 @@ export function SettingsPanel({
             </>
           )}
           <button className="button primary settings-save" type="submit">
-            {busy
-              ? "Saving…"
-              : mode === "profile"
-                ? "Save profile"
-                : "Update password"}
+            {busy ? "Saving…" : mode === "profile" ? "Save profile" : "Update password"}
           </button>
         </fieldset>
       </form>

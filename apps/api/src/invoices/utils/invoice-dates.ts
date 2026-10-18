@@ -6,8 +6,7 @@ export function invoiceDates(issueDate: string, dueDate: string) {
       Temporal.Instant.from(value.length === 10 ? `${value}T00:00:00Z` : value);
     const issue = instant(issueDate);
     const due = instant(dueDate);
-    if (Temporal.Instant.compare(due, issue) < 0)
-      throw new Error("Due date precedes issue date");
+    if (Temporal.Instant.compare(due, issue) < 0) throw new Error("Due date precedes issue date");
     return { issueDate: issue, dueDate: due };
   } catch {
     throw new BadRequestException(

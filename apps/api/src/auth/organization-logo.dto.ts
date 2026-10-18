@@ -1,24 +1,19 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { ValidateBy } from "class-validator";
 
-
 export const MAX_LOGO_BYTES = 64 * 1024;
 export function validOrganizationLogo(value: unknown): boolean {
   if (value === null) return true;
   if (typeof value !== "string" || value.length > 87500) return false;
-  const match =
-    /^data:image\/(png|jpeg|webp);base64,([A-Za-z0-9+/]+={0,2})$/.exec(value);
+  const match = /^data:image\/(png|jpeg|webp);base64,([A-Za-z0-9+/]+={0,2})$/.exec(value);
   if (!match) return false;
   const bytes = Buffer.from(match[2]!, "base64");
-  if (bytes.length > MAX_LOGO_BYTES || bytes.toString("base64") !== match[2])
-    return false;
+  if (bytes.length > MAX_LOGO_BYTES || bytes.toString("base64") !== match[2]) return false;
   switch (match[1]) {
     case "png":
       return (
         bytes.length >= 24 &&
-        bytes
-          .subarray(0, 8)
-          .equals(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10])) &&
+        bytes.subarray(0, 8).equals(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10])) &&
         bytes.toString("ascii", 12, 16) === "IHDR"
       );
     case "jpeg":
@@ -46,8 +41,7 @@ export function IsOrganizationLogo() {
     name: "isOrganizationLogo",
     validator: {
       validate: validOrganizationLogo,
-      defaultMessage: () =>
-        "Provide a PNG, JPEG or WebP logo up to 64 KB, or null to remove it",
+      defaultMessage: () => "Provide a PNG, JPEG or WebP logo up to 64 KB, or null to remove it",
     },
   });
 }

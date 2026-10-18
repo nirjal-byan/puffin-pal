@@ -1,10 +1,7 @@
 "use client";
 import { CompanyLogoPicker } from "../../../components/company-logo-picker";
 import { PasswordInput } from "../../../components/password-input";
-import {
-  suggestedSlug,
-  type RegistrationDraft,
-} from "../../../lib/registration";
+import { suggestedSlug, type RegistrationDraft } from "../../../lib/registration";
 
 import { Dropdown } from "../../../components/dropdown";
 import { PhoneInput } from "../../../components/phone-input";
@@ -23,20 +20,14 @@ export function RegistrationFields({
 }) {
   return (
     <>
-      <section
-        className="registration-step"
-        hidden={step !== 0}
-        aria-label="Your details"
-      >
+      <section className="registration-step" hidden={step !== 0} aria-label="Your details">
         <div className="registration-names">
           <label>
             First name <span className="required-mark">*</span>
             <input
               name="firstName"
               value={draft.firstName}
-              onChange={(event) =>
-                onDraftChange({ firstName: event.target.value })
-              }
+              onChange={(event) => onDraftChange({ firstName: event.target.value })}
               required
               maxLength={60}
               pattern=".*\S.*"
@@ -49,9 +40,7 @@ export function RegistrationFields({
             <input
               name="middleName"
               value={draft.middleName}
-              onChange={(event) =>
-                onDraftChange({ middleName: event.target.value })
-              }
+              onChange={(event) => onDraftChange({ middleName: event.target.value })}
               maxLength={60}
               autoComplete="additional-name"
               placeholder="Middle name"
@@ -62,9 +51,7 @@ export function RegistrationFields({
             <input
               name="lastName"
               value={draft.lastName}
-              onChange={(event) =>
-                onDraftChange({ lastName: event.target.value })
-              }
+              onChange={(event) => onDraftChange({ lastName: event.target.value })}
               required
               maxLength={60}
               pattern=".*\S.*"
@@ -90,17 +77,11 @@ export function RegistrationFields({
           <PhoneInput
             value={draft.phoneDisplay}
             country={draft.phoneCountry}
-            onChange={(phoneDisplay, phoneCountry) =>
-              onDraftChange({ phoneDisplay, phoneCountry })
-            }
+            onChange={(phoneDisplay, phoneCountry) => onDraftChange({ phoneDisplay, phoneCountry })}
           />
         </div>
       </section>
-      <section
-        className="registration-step"
-        hidden={step !== 1}
-        aria-label="Company details"
-      >
+      <section className="registration-step" hidden={step !== 1} aria-label="Company details">
         <CompanyLogoPicker
           value={draft.logoUrl}
           onChange={(logoUrl) => onDraftChange({ logoUrl })}
@@ -146,9 +127,7 @@ export function RegistrationFields({
               autoComplete="off"
               placeholder="your-company"
             />
-            <span className="field-hint">
-              Suggested from your company name. You can edit it.
-            </span>
+            <span className="field-hint">Suggested from your company name. You can edit it.</span>
           </label>
         </div>
         <div className="registration-pair">
@@ -157,9 +136,7 @@ export function RegistrationFields({
             <input
               name="companyWebsite"
               value={draft.companyWebsite}
-              onChange={(event) =>
-                onDraftChange({ companyWebsite: event.target.value })
-              }
+              onChange={(event) => onDraftChange({ companyWebsite: event.target.value })}
               type="url"
               required
               maxLength={2048}
@@ -176,14 +153,10 @@ export function RegistrationFields({
               searchable={false}
               value={draft.employeeCount}
               onChange={(employeeCount) => onDraftChange({ employeeCount })}
-              options={[
-                "1-10",
-                "11-50",
-                "51-200",
-                "201-500",
-                "501-1000",
-                "1001+",
-              ].map((range) => ({ value: range, label: `${range} employees` }))}
+              options={["1-10", "11-50", "51-200", "201-500", "501-1000", "1001+"].map((range) => ({
+                value: range,
+                label: `${range} employees`,
+              }))}
             />
           </label>
         </div>
@@ -205,43 +178,35 @@ export function RegistrationFields({
           <span className="field-hint">Used for invoices, payments, and PDFs.</span>
         </label>
       </section>
-      <section
-        className="registration-step"
-        hidden={step !== 2}
-        aria-label="Security"
-      >
+      <section className="registration-step" hidden={step !== 2} aria-label="Security">
         <div className="registration-pair">
           <label>
             Password <span className="required-mark">*</span>
-              <PasswordInput
-                name="password"
-                value={draft.password}
-                onChange={(event) =>
-                  onDraftChange({ password: event.target.value })
-                }
-                required
-                minLength={12}
-                maxLength={128}
-                autoComplete="new-password"
-                placeholder="Create a password"
-              />
+            <PasswordInput
+              name="password"
+              value={draft.password}
+              onChange={(event) => onDraftChange({ password: event.target.value })}
+              required
+              minLength={12}
+              maxLength={128}
+              autoComplete="new-password"
+              placeholder="Create a password"
+            />
             <span className="field-hint">Use at least 12 characters.</span>
           </label>
           <label>
             Confirm password <span className="required-mark">*</span>
-              <PasswordInput
-                name="confirmPassword"
-                visibilityLabel="confirmation password"
-                value={draft.confirmPassword}
-                onChange={(event) =>
-                  onDraftChange({ confirmPassword: event.target.value })
-                }
-                required
-                minLength={12}
-                maxLength={128}
-                autoComplete="new-password"
-                placeholder="Repeat your password"
-              />
+            <PasswordInput
+              name="confirmPassword"
+              visibilityLabel="confirmation password"
+              value={draft.confirmPassword}
+              onChange={(event) => onDraftChange({ confirmPassword: event.target.value })}
+              required
+              minLength={12}
+              maxLength={128}
+              autoComplete="new-password"
+              placeholder="Repeat your password"
+            />
           </label>
         </div>
       </section>

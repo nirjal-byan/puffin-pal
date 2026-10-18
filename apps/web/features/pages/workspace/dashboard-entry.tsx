@@ -1,11 +1,5 @@
 "use client";
-import {
-  Suspense,
-  useCallback,
-  useEffect,
-  useState,
-  useSyncExternalStore,
-} from "react";
+import { Suspense, useCallback, useEffect, useState, useSyncExternalStore } from "react";
 import {
   apiRequest,
   ApiError,
@@ -32,11 +26,7 @@ function SessionEntry({
   invoiceId?: string;
   editingInvoice?: boolean;
 }) {
-  const session = useSyncExternalStore(
-    subscribeSession,
-    getActiveSession,
-    getServerSession,
-  );
+  const session = useSyncExternalStore(subscribeSession, getActiveSession, getServerSession);
   const [restoring, setRestoring] = useState(true);
   const [restoreError, setRestoreError] = useState("");
   const [slug, setSlug] = useState("");
@@ -57,8 +47,7 @@ function SessionEntry({
   }, []);
   const onProfileChange = useCallback((profile: Profile) => {
     const current = getActiveSession();
-    if (current?.user.id === profile.user.id)
-      setActiveSession({ ...current, ...profile });
+    if (current?.user.id === profile.user.id) setActiveSession({ ...current, ...profile });
   }, []);
   const onSignOut = useCallback(async (expired = false) => {
     try {
@@ -66,9 +55,7 @@ function SessionEntry({
       const current = getActiveSession();
       if (current) setSlug(current.organization.slug);
       setActiveSession(null);
-      setNotice(
-        expired ? "Your session expired. Sign in again to continue." : "",
-      );
+      setNotice(expired ? "Your session expired. Sign in again to continue." : "");
     } catch (error) {
       setNotice(`Could not sign out. ${errorMessage(error)}`);
     }
@@ -93,9 +80,7 @@ function SessionEntry({
                 .then(() => setRestoreError(""))
                 .catch((error: unknown) => {
                   setRestoreError(
-                    error instanceof ApiError && error.status === 401
-                      ? ""
-                      : errorMessage(error),
+                    error instanceof ApiError && error.status === 401 ? "" : errorMessage(error),
                   );
                 })
                 .finally(() => setRestoring(false));

@@ -20,7 +20,11 @@ import type { UpdateInvoiceDto } from "./dto/update-invoice.dto.js";
 import { calculateInvoice } from "./utils/invoice-calculations.js";
 import { invoiceDates } from "./utils/invoice-dates.js";
 import type { CreatePaymentDto } from "./dto/create-payment.dto.js";
-import { invoicePaymentSummary, paymentCents, receivedPaymentDate } from "./utils/invoice-payments.js";
+import {
+  invoicePaymentSummary,
+  paymentCents,
+  receivedPaymentDate,
+} from "./utils/invoice-payments.js";
 import { decimalFromCents } from "./utils/invoice-calculations.js";
 import { InvoicePdfService } from "./pdf/invoice-pdf.service.js";
 import { InvoicePdfStorageService } from "./pdf/invoice-pdf-storage.service.js";
@@ -37,9 +41,9 @@ export class InvoicesService {
     if (!this.request.auth) throw new UnauthorizedException();
     return this.request.auth.organizationId;
   }
-  private publicInvoice<
-    T extends { pdfKey?: string | null; pdfUrl?: string | null },
-  >(invoice: T): Omit<T, "pdfKey" | "pdfUrl"> {
+  private publicInvoice<T extends { pdfKey?: string | null; pdfUrl?: string | null }>(
+    invoice: T,
+  ): Omit<T, "pdfKey" | "pdfUrl"> {
     const safe = { ...invoice };
     delete safe.pdfKey;
     delete safe.pdfUrl;
@@ -70,9 +74,7 @@ export class InvoicesService {
         total: calculated.total,
         ...(input.notes !== undefined ? { notes: input.notes } : {}),
       });
-      const items: Awaited<
-        ReturnType<typeof tx.orm.public.InvoiceItem.create>
-      >[] = [];
+      const items: Awaited<ReturnType<typeof tx.orm.public.InvoiceItem.create>>[] = [];
       for (const [position, item] of calculated.items.entries()) {
         items.push(
           await tx.orm.public.InvoiceItem.create({
@@ -93,9 +95,7 @@ export class InvoicesService {
       // A single MVCC snapshot keeps header, client and items consistent with
       // each other even when another user replaces the items concurrently.
       await tx.execute(
-        this.db.raw.sql`SET TRANSACTION ISOLATION LEVEL REPEATABLE READ`
-          .affectedCount()
-          .build(),
+        this.db.raw.sql`SET TRANSACTION ISOLATION LEVEL REPEATABLE READ`.affectedCount().build(),
       );
       const invoice = await tx.orm.public.Invoice.where({
         organizationId,
@@ -126,9 +126,17 @@ export class InvoicesService {
           }
         : client;
       const payments = await tx.orm.public.Payment.where({ organizationId, invoiceId: id })
-        .orderBy((row) => row.paymentDate.desc()).orderBy((row) => row.createdAt.desc())
-        .orderBy((row) => row.id.asc()).all();
-      return { ...this.publicInvoice(invoice), client: billingClient, items, payments, ...invoicePaymentSummary(invoice, payments) };
+        .orderBy((row) => row.paymentDate.desc())
+        .orderBy((row) => row.createdAt.desc())
+        .orderBy((row) => row.id.asc())
+        .all();
+      return {
+        ...this.publicInvoice(invoice),
+        client: billingClient,
+        items,
+        payments,
+        ...invoicePaymentSummary(invoice, payments),
+      };
     });
   }
 
@@ -137,119 +145,117 @@ export class InvoicesService {
     let stagedPdfKey: string | null = null;
     try {
       return await this.db.transaction(async (tx) => {
-      // Lock before reading items: draft edits lock this same parent row before
-      // replacing items. The conditional write also guards every transition.
-      await tx.execute(
-        this.db.raw.sql`
+        // Lock before reading items: draft edits lock this same parent row before
+        // replacing items. The conditional write also guards every transition.
+        await tx.execute(
+          this.db.raw.sql`
         SELECT id FROM invoices
         WHERE id = ${id} AND "organizationId" = ${organizationId}
         FOR UPDATE
       `
-          .affectedCount()
-          .build(),
-      );
-      const current = await tx.orm.public.Invoice.where({
-        organizationId,
-        id,
-      }).first();
-      if (!current) throw new NotFoundException("Invoice not found");
-      if (current.status !== "DRAFT" || current.version !== expectedVersion)
-        throw new ConflictException(
-          "Invoice changed or is already finalized. Reload and review the latest invoice.",
+            .affectedCount()
+            .build(),
         );
-      // Shared locks ensure billing snapshots cannot change during issuance.
-      await tx.execute(
-        this.db.raw.sql`
+        const current = await tx.orm.public.Invoice.where({
+          organizationId,
+          id,
+        }).first();
+        if (!current) throw new NotFoundException("Invoice not found");
+        if (current.status !== "DRAFT" || current.version !== expectedVersion)
+          throw new ConflictException(
+            "Invoice changed or is already finalized. Reload and review the latest invoice.",
+          );
+        // Shared locks ensure billing snapshots cannot change during issuance.
+        await tx.execute(
+          this.db.raw.sql`
         SELECT id FROM organizations WHERE id = ${organizationId} FOR SHARE
       `
-          .affectedCount()
-          .build(),
-      );
-      await tx.execute(
-        this.db.raw.sql`
+            .affectedCount()
+            .build(),
+        );
+        await tx.execute(
+          this.db.raw.sql`
         SELECT id FROM clients WHERE id = ${current.clientId}
         AND "organizationId" = ${organizationId} FOR SHARE
       `
-          .affectedCount()
-          .build(),
-      );
-      const organization = await tx.orm.public.Organization.where({
-        id: organizationId,
-      }).first();
-      const client = await tx.orm.public.Client.where({
-        organizationId,
-        id: current.clientId,
-      }).first();
-      if (!client || !organization)
-        throw new BadRequestException(
-          "Invoice billing details are unavailable",
+            .affectedCount()
+            .build(),
         );
-      if (
-        !client.name.trim() ||
-        !client.email.trim() ||
-        !organization.name.trim() ||
-        !organization.currency.trim() ||
-        !current.invoiceNumber.trim()
-      )
-        throw new BadRequestException(
-          "Complete the invoice billing details before issuance",
-        );
-      invoiceDates(current.issueDate.toString(), current.dueDate.toString());
-      const items = await tx.orm.public.InvoiceItem.where({
-        organizationId,
-        invoiceId: id,
-      })
-        .orderBy((row) => row.position.asc())
-        .orderBy((row) => row.id.asc())
-        .all();
-      const calculated = calculateInvoice(items);
-      if (
-        calculated.subtotal !== current.subtotal ||
-        calculated.tax !== current.tax ||
-        calculated.total !== current.total ||
-        items.some(
-          (item, index) => item.amount !== calculated.items[index]!.amount,
+        const organization = await tx.orm.public.Organization.where({
+          id: organizationId,
+        }).first();
+        const client = await tx.orm.public.Client.where({
+          organizationId,
+          id: current.clientId,
+        }).first();
+        if (!client || !organization)
+          throw new BadRequestException("Invoice billing details are unavailable");
+        if (
+          !client.name.trim() ||
+          !client.email.trim() ||
+          !organization.name.trim() ||
+          !organization.currency.trim() ||
+          !current.invoiceNumber.trim()
         )
-      )
-        throw new BadRequestException(
-          "Invoice amounts are inconsistent. Review and save the draft before issuance.",
-        );
-      const issuedAt = Temporal.Now.instant();
-      const snapshots = {
-        billingName: client.name,
-        billingEmail: client.email,
-        billingCompanyName: client.companyName,
-        billingTaxId: client.taxId,
-        sellerName: organization.name,
-        currency: organization.currency,
-      };
-      const pdf = await this.pdf.render({
-        ...current,
-        ...snapshots,
-        status: "ISSUED",
-        issuedAt,
-        items,
-      });
-      stagedPdfKey = this.pdfStorage.createKey(organizationId, id);
-      await this.pdfStorage.put(stagedPdfKey, pdf, organizationId, id);
-      const [invoice] = await tx.orm.public.Invoice.where({
-        organizationId,
-        id,
-        status: "DRAFT",
-        version: expectedVersion,
-      }).updateAll({
-        status: "ISSUED",
-        version: expectedVersion + 1,
-        issuedAt,
-        issuedByUserId: this.request.auth!.userId,
-        ...snapshots,
-        pdfKey: stagedPdfKey,
-      });
-      if (!invoice)
-        throw new ConflictException(
-          "Invoice changed. Reload and review the latest invoice.",
-        );
-      return { ...this.publicInvoice(invoice), client, items, payments: [], ...invoicePaymentSummary(invoice, []) };
+          throw new BadRequestException("Complete the invoice billing details before issuance");
+        invoiceDates(current.issueDate.toString(), current.dueDate.toString());
+        const items = await tx.orm.public.InvoiceItem.where({
+          organizationId,
+          invoiceId: id,
+        })
+          .orderBy((row) => row.position.asc())
+          .orderBy((row) => row.id.asc())
+          .all();
+        const calculated = calculateInvoice(items);
+        if (
+          calculated.subtotal !== current.subtotal ||
+          calculated.tax !== current.tax ||
+          calculated.total !== current.total ||
+          items.some((item, index) => item.amount !== calculated.items[index]!.amount)
+        )
+          throw new BadRequestException(
+            "Invoice amounts are inconsistent. Review and save the draft before issuance.",
+          );
+        const issuedAt = Temporal.Now.instant();
+        const snapshots = {
+          billingName: client.name,
+          billingEmail: client.email,
+          billingCompanyName: client.companyName,
+          billingTaxId: client.taxId,
+          sellerName: organization.name,
+          currency: organization.currency,
+        };
+        const pdf = await this.pdf.render({
+          ...current,
+          ...snapshots,
+          status: "ISSUED",
+          issuedAt,
+          items,
+        });
+        stagedPdfKey = this.pdfStorage.createKey(organizationId, id);
+        await this.pdfStorage.put(stagedPdfKey, pdf, organizationId, id);
+        const [invoice] = await tx.orm.public.Invoice.where({
+          organizationId,
+          id,
+          status: "DRAFT",
+          version: expectedVersion,
+        }).updateAll({
+          status: "ISSUED",
+          version: expectedVersion + 1,
+          issuedAt,
+          issuedByUserId: this.request.auth!.userId,
+          ...snapshots,
+          pdfKey: stagedPdfKey,
+        });
+        if (!invoice)
+          throw new ConflictException("Invoice changed. Reload and review the latest invoice.");
+        return {
+          ...this.publicInvoice(invoice),
+          client,
+          items,
+          payments: [],
+          ...invoicePaymentSummary(invoice, []),
+        };
       });
     } catch (error) {
       if (stagedPdfKey) {
@@ -322,9 +328,7 @@ export class InvoicesService {
         tax: calculated.tax,
         total: calculated.total,
         version: input.expectedVersion + 1,
-        ...(input.notes !== undefined
-          ? { notes: input.notes.trim() || null }
-          : {}),
+        ...(input.notes !== undefined ? { notes: input.notes.trim() || null } : {}),
       });
       if (!invoice)
         throw new ConflictException(
@@ -334,9 +338,7 @@ export class InvoicesService {
         organizationId,
         invoiceId: id,
       }).deleteAll();
-      const items: Awaited<
-        ReturnType<typeof tx.orm.public.InvoiceItem.create>
-      >[] = [];
+      const items: Awaited<ReturnType<typeof tx.orm.public.InvoiceItem.create>>[] = [];
       for (const [position, item] of calculated.items.entries()) {
         items.push(
           await tx.orm.public.InvoiceItem.create({
@@ -383,26 +385,48 @@ export class InvoicesService {
     const paymentDate = receivedPaymentDate(input.paymentDate);
     await this.db.transaction(async (tx) => {
       // Serialize payment writers on the invoice before reading the ledger.
-      await tx.execute(this.db.raw.sql`
+      await tx.execute(
+        this.db.raw.sql`
         SELECT id FROM invoices WHERE id = ${id} AND "organizationId" = ${organizationId} FOR UPDATE
-      `.affectedCount().build());
+      `
+          .affectedCount()
+          .build(),
+      );
       const invoice = await tx.orm.public.Invoice.where({ organizationId, id }).first();
       if (!invoice) throw new NotFoundException("Invoice not found");
       if (!invoice.issuedAt || !["ISSUED", "OVERDUE"].includes(invoice.status))
-        throw new ConflictException("Payments can only be recorded against issued invoices with a balance");
+        throw new ConflictException(
+          "Payments can only be recorded against issued invoices with a balance",
+        );
       if (invoice.version !== input.expectedVersion)
-        throw new ConflictException("Invoice changed. Reload and review its payment history before retrying.");
-      const payments = await tx.orm.public.Payment.where({ organizationId, invoiceId: id }).select("amount").all();
+        throw new ConflictException(
+          "Invoice changed. Reload and review its payment history before retrying.",
+        );
+      const payments = await tx.orm.public.Payment.where({ organizationId, invoiceId: id })
+        .select("amount")
+        .all();
       const summary = invoicePaymentSummary(invoice, payments);
       const balance = paymentCents(summary.outstandingBalance);
-      if (amount > balance) throw new ConflictException("Payment exceeds the outstanding invoice balance");
+      if (amount > balance)
+        throw new ConflictException("Payment exceeds the outstanding invoice balance");
       await tx.orm.public.Payment.create({
-        organizationId, invoiceId: id, amount: decimalFromCents(amount), paymentDate,
-        method: input.method, reference: input.reference?.trim() || null,
-        notes: input.notes?.trim() || null, recordedByUserId: this.request.auth!.userId,
+        organizationId,
+        invoiceId: id,
+        amount: decimalFromCents(amount),
+        paymentDate,
+        method: input.method,
+        reference: input.reference?.trim() || null,
+        notes: input.notes?.trim() || null,
+        recordedByUserId: this.request.auth!.userId,
       });
-      const [updated] = await tx.orm.public.Invoice.where({ organizationId, id, version: input.expectedVersion })
-        .updateAll({ status: amount === balance ? "PAID" : "ISSUED", version: input.expectedVersion + 1 });
+      const [updated] = await tx.orm.public.Invoice.where({
+        organizationId,
+        id,
+        version: input.expectedVersion,
+      }).updateAll({
+        status: amount === balance ? "PAID" : "ISSUED",
+        version: input.expectedVersion + 1,
+      });
       if (!updated) throw new ConflictException("Invoice changed. Reload before retrying.");
     });
     return this.getInvoice(id);
@@ -411,14 +435,25 @@ export class InvoicesService {
   async listInvoices(page: PageDto) {
     const organizationId = this.organizationId;
     return this.db.transaction(async (tx) => {
-      await tx.execute(this.db.raw.sql`SET TRANSACTION ISOLATION LEVEL REPEATABLE READ`.affectedCount().build());
+      await tx.execute(
+        this.db.raw.sql`SET TRANSACTION ISOLATION LEVEL REPEATABLE READ`.affectedCount().build(),
+      );
       const invoices = await tx.orm.public.Invoice.where({ organizationId })
-        .orderBy((row) => row.id.asc()).limit(page.limit).offset(page.offset).all();
+        .orderBy((row) => row.id.asc())
+        .limit(page.limit)
+        .offset(page.offset)
+        .all();
       if (!invoices.length) return [];
       const payments = await tx.orm.public.Payment.where({ organizationId })
-        .where((row) => row.invoiceId.in(invoices.map((invoice) => invoice.id))).select("invoiceId", "amount").all();
-      return invoices.map((invoice) => ({ ...this.publicInvoice(invoice),
-        ...invoicePaymentSummary(invoice, payments.filter((payment) => payment.invoiceId === invoice.id)),
+        .where((row) => row.invoiceId.in(invoices.map((invoice) => invoice.id)))
+        .select("invoiceId", "amount")
+        .all();
+      return invoices.map((invoice) => ({
+        ...this.publicInvoice(invoice),
+        ...invoicePaymentSummary(
+          invoice,
+          payments.filter((payment) => payment.invoiceId === invoice.id),
+        ),
       }));
     });
   }

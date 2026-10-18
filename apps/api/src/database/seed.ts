@@ -6,9 +6,7 @@ config({ quiet: true });
 if (!process.env.DATABASE_URL) throw new Error("DATABASE_URL is required");
 const password = process.env.SEED_OWNER_PASSWORD;
 if (!password || password.length < 12) {
-  throw new Error(
-    "Set SEED_OWNER_PASSWORD to at least 12 characters before seeding",
-  );
+  throw new Error("Set SEED_OWNER_PASSWORD to at least 12 characters before seeding");
 }
 const passwordHash = await hashPassword(password);
 const db = createDatabase(process.env.DATABASE_URL);
@@ -44,9 +42,7 @@ try {
         role: "OWNER",
       });
   });
-  console.log(
-    "Demo organization and owner seeded; existing records were preserved.",
-  );
+  console.log("Demo organization and owner seeded; existing records were preserved.");
 } finally {
   await db.close();
 }

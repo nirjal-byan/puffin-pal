@@ -67,9 +67,7 @@ export function InvoiceDetailPage({
       <section className="panel empty-state">
         <h2>{notFound ? "Invoice not found" : "Could not load invoice"}</h2>
         <p role="alert">
-          {notFound
-            ? "This invoice is unavailable in your organization."
-            : failure}
+          {notFound ? "This invoice is unavailable in your organization." : failure}
         </p>
         <Link className="button secondary" href="/invoices">
           Back to Invoices
@@ -91,9 +89,11 @@ export function InvoiceDetailPage({
   if (editing)
     return (
       <>
-        {!modal && <Link className="text-button" href={`/invoices/${id}`}>
-          ← Back to invoice
-        </Link>}
+        {!modal && (
+          <Link className="text-button" href={`/invoices/${id}`}>
+            ← Back to invoice
+          </Link>
+        )}
         {!modal && <h2 className="invoice-number">{invoice.invoiceNumber}</h2>}
         {draftActions(invoice.status, permissions).edit ? (
           <InvoiceForm
@@ -107,10 +107,7 @@ export function InvoiceDetailPage({
         ) : (
           <section className="panel empty-state">
             <h2>Draft editing unavailable</h2>
-            <p>
-              Only drafts can be edited by members with invoice update
-              permission.
-            </p>
+            <p>Only drafts can be edited by members with invoice update permission.</p>
           </section>
         )}
       </>
@@ -137,7 +134,13 @@ export function InvoiceDetailPage({
           onDeleted={() => router.push("/invoices")}
         />
         <InvoicePdfAction invoice={invoice} permissions={permissions} api={api} />
-        <InvoicePaymentAction invoice={invoice} permissions={permissions} api={api} onRecorded={setInvoice} onReload={reload} />
+        <InvoicePaymentAction
+          invoice={invoice}
+          permissions={permissions}
+          api={api}
+          onRecorded={setInvoice}
+          onReload={reload}
+        />
       </div>
       <InvoiceDetailView invoice={invoice} currency={currency} />
       <InvoicePaymentHistory invoice={invoice} />
@@ -167,7 +170,9 @@ export function InvoiceDetailView({
               Issued by <strong>{invoice.sellerName}</strong> on {invoice.issuedAt.slice(0, 10)}
             </p>
           )}
-          <span className={`role-badge invoice-status-${invoice.displayStatus.toLowerCase()}`}>{invoice.displayStatus}</span>
+          <span className={`role-badge invoice-status-${invoice.displayStatus.toLowerCase()}`}>
+            {invoice.displayStatus}
+          </span>
         </div>
       </div>
       <div className="invoice-document-meta">
@@ -221,8 +226,12 @@ export function InvoiceDetailView({
           <dd>
             <strong>{amount(invoice.total)}</strong>
           </dd>
-          <dt>Total paid</dt><dd>{amount(invoice.totalPaid)}</dd>
-          <dt>Outstanding</dt><dd><strong>{amount(invoice.outstandingBalance)}</strong></dd>
+          <dt>Total paid</dt>
+          <dd>{amount(invoice.totalPaid)}</dd>
+          <dt>Outstanding</dt>
+          <dd>
+            <strong>{amount(invoice.outstandingBalance)}</strong>
+          </dd>
         </dl>
       </div>
     </section>

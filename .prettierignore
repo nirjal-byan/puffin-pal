@@ -1,0 +1,13 @@
+**/dist
+**/.next
+**/node_modules
+**/.agents
+**/.claude
+**/.cursor
+**/.devin
+**/.codex
+knowledge/starter-docs
+**/prisma/migrations
+**/prisma/schema/schema.d.ts
+**/prisma/schema/schema.json
+pnpm-lock.yaml

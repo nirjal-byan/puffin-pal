@@ -1,10 +1,5 @@
 import type { Session, WorkspaceApi } from "../../../lib/api";
-import {
-  NAV,
-  ICON_PATHS,
-  DESCRIPTION,
-  type Tab,
-} from "../../../lib/navigation";
+import { NAV, ICON_PATHS, DESCRIPTION, type Tab } from "../../../lib/navigation";
 import OverviewLayout from "./layout";
 import { FinancialDashboard } from "../../dashboard/financial-dashboard";
 
@@ -19,9 +14,8 @@ export default function OverviewPage({
 }) {
   const sections = NAV.filter(
     (item) =>
-      ["clients", "invoices", "expenses", "retainers", "members"].includes(
-        item.key,
-      ) && session.permissions.includes(item.permission),
+      ["clients", "invoices", "expenses", "retainers", "members"].includes(item.key) &&
+      session.permissions.includes(item.permission),
   );
   return (
     <OverviewLayout>
@@ -58,7 +52,9 @@ export default function OverviewPage({
                   <strong>{item.label}</strong>
                   <small>{DESCRIPTION[item.key]}</small>
                 </span>
-                <span className="overview-arrow" aria-hidden="true">→</span>
+                <span className="overview-arrow" aria-hidden="true">
+                  →
+                </span>
               </button>
             ))}
           </div>

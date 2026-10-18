@@ -1,10 +1,7 @@
 import { Inject, Injectable, NotFoundException } from "@nestjs/common";
 import { DATABASE } from "../../database.module.js";
 import type { Database } from "../../database/client.js";
-import {
-  InvoicePdfService,
-  invoicePdfFilename,
-} from "./invoice-pdf.service.js";
+import { InvoicePdfService, invoicePdfFilename } from "./invoice-pdf.service.js";
 import { InvoicePdfStorageService } from "./invoice-pdf-storage.service.js";
 
 @Injectable()
@@ -20,11 +17,7 @@ export class InvoicePdfResolverService {
       organizationId,
       id: invoiceId,
     }).first();
-    if (
-      !invoice ||
-      !invoice.issuedAt ||
-      !["ISSUED", "PAID", "OVERDUE"].includes(invoice.status)
-    )
+    if (!invoice || !invoice.issuedAt || !["ISSUED", "PAID", "OVERDUE"].includes(invoice.status))
       throw new NotFoundException("Eligible invoice not found");
     const items = await this.db.orm.public.InvoiceItem.where({
       organizationId,

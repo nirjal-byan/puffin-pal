@@ -37,9 +37,7 @@ export default function TeamPage({
         },
       });
       form.reset();
-      onSaved(
-        "Team member added. They can now sign in with this organization’s slug.",
-      );
+      onSaved("Team member added. They can now sign in with this organization’s slug.");
     } catch (error) {
       onError(error);
     } finally {
@@ -76,17 +74,12 @@ export default function TeamPage({
                 {(member.user?.fullName ?? "?").slice(0, 1).toUpperCase()}
               </span>
               <div className="member-info">
-                <strong>
-                  {member.user?.fullName ?? "Unavailable account"}
-                </strong>
+                <strong>{member.user?.fullName ?? "Unavailable account"}</strong>
                 <small>{member.user?.email ?? ""}</small>
                 <span className="role-badge">{roleLabel(member.role)}</span>
               </div>
               {canAssignRole(role, member.role) ? (
-                <form
-                  className="role-form"
-                  onSubmit={(event) => changeRole(event, member)}
-                >
+                <form className="role-form" onSubmit={(event) => changeRole(event, member)}>
                   <label className="sr-only" htmlFor={`role-${member.id}`}>
                     Role for {member.user?.fullName}
                   </label>
@@ -103,11 +96,7 @@ export default function TeamPage({
                       </option>
                     ))}
                   </select>
-                  <button
-                    type="submit"
-                    className="button secondary compact"
-                    disabled={busy}
-                  >
+                  <button type="submit" className="button secondary compact" disabled={busy}>
                     Save role
                   </button>
                 </form>
@@ -121,19 +110,12 @@ export default function TeamPage({
       <section className="panel form-panel">
         <span className="eyebrow">Grow your team</span>
         <h3>Add a team member</h3>
-        <p className="muted form-description">
-          Create an account for this organization.
-        </p>
+        <p className="muted form-description">Create an account for this organization.</p>
         <form onSubmit={create}>
           <fieldset disabled={busy} className="form-fields">
             <label>
               Full name
-              <input
-                name="fullName"
-                required
-                maxLength={120}
-                placeholder="Team member’s name"
-              />
+              <input name="fullName" required maxLength={120} placeholder="Team member’s name" />
             </label>
             <label>
               Email
@@ -172,9 +154,7 @@ export default function TeamPage({
             </button>
           </fieldset>
         </form>
-        <p className="field-hint">
-          Share the credentials privately with your colleague.
-        </p>
+        <p className="field-hint">Share the credentials privately with your colleague.</p>
       </section>
     </PageLayout>
   );

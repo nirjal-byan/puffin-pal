@@ -1,10 +1,4 @@
-import {
-  Global,
-  Inject,
-  Module,
-  Injectable,
-  type OnApplicationShutdown,
-} from "@nestjs/common";
+import { Global, Inject, Module, Injectable, type OnApplicationShutdown } from "@nestjs/common";
 import { createDatabase, type Database } from "./database/client.js";
 
 export const DATABASE = Symbol("DATABASE");

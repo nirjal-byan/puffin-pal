@@ -10,8 +10,7 @@ export default function AccessPage({
   refreshAccess: () => void;
   refreshing: boolean;
 }) {
-  const can = (permission: Permission) =>
-    session.permissions.includes(permission);
+  const can = (permission: Permission) => session.permissions.includes(permission);
   return (
     <AccessLayout>
       <div className="panel-heading">
@@ -29,8 +28,8 @@ export default function AccessPage({
         </button>
       </div>
       <p className="access-description">
-        Your access is tied to <strong>{session.organization.name}</strong>.
-        Your team’s other organizations have separate accounts and records.
+        Your access is tied to <strong>{session.organization.name}</strong>. Your team’s other
+        organizations have separate accounts and records.
       </p>
       <div className="table-scroll">
         <table>
@@ -50,14 +49,10 @@ export default function AccessPage({
                   <td key={action}>
                     <span
                       className={
-                        can(`${area}:${action}` as Permission)
-                          ? "permission-yes"
-                          : "permission-no"
+                        can(`${area}:${action}` as Permission) ? "permission-yes" : "permission-no"
                       }
                     >
-                      {can(`${area}:${action}` as Permission)
-                        ? "✓ Allowed"
-                        : "— Not allowed"}
+                      {can(`${area}:${action}` as Permission) ? "✓ Allowed" : "— Not allowed"}
                     </span>
                   </td>
                 ))}
@@ -67,8 +62,8 @@ export default function AccessPage({
         </table>
       </div>
       <p className="field-hint">
-        Team management: {can("members:manage") ? "Allowed" : "Not allowed"}.
-        Refresh access after your role is changed.
+        Team management: {can("members:manage") ? "Allowed" : "Not allowed"}. Refresh access after
+        your role is changed.
       </p>
     </AccessLayout>
   );

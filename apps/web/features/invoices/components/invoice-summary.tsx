@@ -21,8 +21,7 @@ export function InvoiceSummary({ items }: { items: InvoiceLine[] }) {
         </div>
       </dl>
       <p className="field-hint">
-        Final totals are calculated when your draft is saved. No taxes or
-        discounts are applied.
+        Final totals are calculated when your draft is saved. No taxes or discounts are applied.
       </p>
     </section>
   );

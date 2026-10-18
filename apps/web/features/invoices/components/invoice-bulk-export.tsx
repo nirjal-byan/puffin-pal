@@ -2,11 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { WorkspaceApi } from "../../../lib/api";
 import { errorMessage } from "../../../lib/api";
-import {
-  createInvoiceExport,
-  downloadInvoiceExport,
-  getInvoiceExport,
-} from "../api/invoices";
+import { createInvoiceExport, downloadInvoiceExport, getInvoiceExport } from "../api/invoices";
 import type { InvoiceExportStatus } from "../types/invoice.types";
 
 export function InvoiceBulkExport({
@@ -22,7 +18,12 @@ export function InvoiceBulkExport({
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const mounted = useRef(true);
-  useEffect(() => () => { mounted.current = false; }, []);
+  useEffect(
+    () => () => {
+      mounted.current = false;
+    },
+    [],
+  );
 
   async function poll(jobId: string) {
     while (mounted.current) {
@@ -76,14 +77,34 @@ export function InvoiceBulkExport({
         disabled={busy || invoiceIds.length === 0}
         onClick={job?.status === "COMPLETED" ? download : start}
       >
-        {busy && job ? `Exporting ${job.progress}%…` : busy ? "Starting export…" : job?.status === "COMPLETED" ? "Download ZIP" : `Export selected (${invoiceIds.length})`}
+        {busy && job
+          ? `Exporting ${job.progress}%…`
+          : busy
+            ? "Starting export…"
+            : job?.status === "COMPLETED"
+              ? "Download ZIP"
+              : `Export selected (${invoiceIds.length})`}
       </button>
       {job && ["QUEUED", "PROCESSING"].includes(job.status) && (
-        <span className="muted" role="status">{job.status === "QUEUED" ? "Queued…" : `${job.progress}% complete`}</span>
+        <span className="muted" role="status">
+          {job.status === "QUEUED" ? "Queued…" : `${job.progress}% complete`}
+        </span>
       )}
-      {job?.status === "FAILED" && <span className="invoice-field-error" role="alert">Export failed. Try again.</span>}
-      {job?.status === "EXPIRED" && <span className="invoice-field-error" role="alert">This export has expired.</span>}
-      {error && <span className="invoice-field-error" role="alert">{error}</span>}
+      {job?.status === "FAILED" && (
+        <span className="invoice-field-error" role="alert">
+          Export failed. Try again.
+        </span>
+      )}
+      {job?.status === "EXPIRED" && (
+        <span className="invoice-field-error" role="alert">
+          This export has expired.
+        </span>
+      )}
+      {error && (
+        <span className="invoice-field-error" role="alert">
+          {error}
+        </span>
+      )}
     </div>
   );
 }

@@ -14,9 +14,7 @@ function positiveInteger(name: string, fallback: number) {
 }
 
 @Injectable()
-export class RedisClientService
-  implements OnApplicationBootstrap, OnApplicationShutdown
-{
+export class RedisClientService implements OnApplicationBootstrap, OnApplicationShutdown {
   private readonly logger = new Logger(RedisClientService.name);
   private readonly client: RedisClientType;
 

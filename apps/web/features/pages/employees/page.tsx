@@ -1,41 +1,336 @@
 "use client";
-import { useCallback, useEffect, useMemo, useState } from "react";
+
 import type { Permission } from "@puffinpal/permissions";
-import { AppModal } from "../../../components/app-modal";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { errorMessage, type WorkspaceApi } from "../../../lib/api";
+import {
+  createSalaryStructure,
+  loadEmployee,
+  loadEmployeeWorkspace,
+  loadSalaryStructures,
+  saveEmployee,
+} from "./api";
+import { EmployeeDirectory } from "./employee-directory";
+import { EmployeeFormModal } from "./employee-form-modal";
+import {
+  ConfirmationModal,
+  DepartmentModal,
+  EmployeeDetailsModal,
+  SalaryFormModal,
+} from "./employee-management-modals";
+import {
+  currentDate,
+  employeeToForm,
+  emptyEmployeeForm,
+  emptySalaryForm,
+  type Department,
+  type Employee,
+  type EmployeeFormValues,
+  type MemberSummary,
+  type SalaryFormValues,
+  type SalaryStructure,
+} from "./types";
 
-type Department = { id: string; name: string; description?: string | null };
-type Employee = { id: string; employeeCode: string; firstName: string; lastName: string; workEmail?: string | null; phoneNumber?: string | null; jobTitle: string; employmentType: string; status: string; hireDate: string; terminationDate?: string | null; departmentId?: string | null; managerId?: string | null; linkedUserId?: string | null; version: number; department?: Department | null; manager?: { id: string; firstName: string; lastName: string } | null };
-type Salary = { id: string; compensationType: string; baseAmount: string; currency: string; payFrequency: string; effectiveFrom: string; effectiveTo?: string | null; notes?: string | null; version: number; components: { id: string; name: string; type: string; amount: string }[] };
-type Member = { user: { id: string; fullName: string; email: string } };
-const today = () => new Date().toISOString().slice(0, 10);
-const blank = { employeeCode: "", firstName: "", lastName: "", workEmail: "", phoneNumber: "", jobTitle: "", employmentType: "FULL_TIME", status: "ACTIVE", hireDate: today(), departmentId: "", managerId: "", linkedUserId: "" };
+interface EmployeesPageProps {
+  api: WorkspaceApi;
+  currency: string;
+  permissions: readonly Permission[];
+  onSaved: (message: string) => void;
+}
 
-export default function EmployeesPage({ api, currency, permissions, onSaved }: { api: WorkspaceApi; currency: string; permissions: readonly Permission[]; onSaved: (message: string) => void }) {
-  const [rows, setRows] = useState<Employee[]>([]), [departments, setDepartments] = useState<Department[]>([]), [members, setMembers] = useState<Member[]>([]), [error, setError] = useState("");
-  const [search, setSearch] = useState(""), [status, setStatus] = useState(""), [department, setDepartment] = useState("");
-  const [editing, setEditing] = useState<Employee | "new" | null>(null), [viewing, setViewing] = useState<Employee | null>(null), [form, setForm] = useState(blank), [saving, setSaving] = useState(false);
-  const [salary, setSalary] = useState<Salary[]>([]), [salaryOpen, setSalaryOpen] = useState(false), [departmentsOpen, setDepartmentsOpen] = useState(false), [salaryForm, setSalaryForm] = useState({ compensationType: "FIXED_SALARY", baseAmount: "", payFrequency: "MONTHLY", effectiveFrom: today(), effectiveTo: "", notes: "", components: [] as { name: string; type: string; amount: string }[] });
-  const can = (permission: Permission) => permissions.includes(permission);
-  const canManageEmployees = permissions.includes("employees:manage");
-  const load = useCallback(async () => { try { const [employeeResult, departmentResult, memberResult] = await Promise.all([api<{ items: Employee[] }>("/employees?limit=100&offset=0"), api<Department[]>("/departments"), canManageEmployees ? api<Member[]>("/members?limit=100&offset=0") : Promise.resolve([])]); setRows(employeeResult.items); setDepartments(departmentResult); setMembers(memberResult); } catch (failure) { setError(errorMessage(failure)); } }, [api, canManageEmployees]);
-  useEffect(() => { let active = true; Promise.all([api<{ items: Employee[] }>("/employees?limit=100&offset=0"), api<Department[]>("/departments"), canManageEmployees ? api<Member[]>("/members?limit=100&offset=0") : Promise.resolve([])]).then(([employeeResult, departmentResult, memberResult]) => { if (active) { setRows(employeeResult.items); setDepartments(departmentResult); setMembers(memberResult); } }).catch((failure: unknown) => { if (active) setError(errorMessage(failure)); }); return () => { active = false; }; }, [api, canManageEmployees]);
-  const visible = useMemo(() => rows.filter((row) => (!search || `${row.employeeCode} ${row.firstName} ${row.lastName} ${row.jobTitle}`.toLowerCase().includes(search.toLowerCase())) && (!status || row.status === status) && (!department || row.departmentId === department)), [rows, search, status, department]);
-  function openForm(row?: Employee) { setForm(row ? { employeeCode: row.employeeCode, firstName: row.firstName, lastName: row.lastName, workEmail: row.workEmail ?? "", phoneNumber: row.phoneNumber ?? "", jobTitle: row.jobTitle, employmentType: row.employmentType, status: row.status, hireDate: row.hireDate.slice(0, 10), departmentId: row.departmentId ?? "", managerId: row.managerId ?? "", linkedUserId: row.linkedUserId ?? "" } : blank); setEditing(row ?? "new"); }
-  async function save() { setSaving(true); setError(""); try { const body = { ...form, departmentId: form.departmentId || undefined, managerId: form.managerId || undefined, linkedUserId: form.linkedUserId || undefined, workEmail: form.workEmail || undefined, phoneNumber: form.phoneNumber || undefined, ...(editing !== "new" && editing ? { expectedVersion: editing.version } : {}) }; await api(editing === "new" ? "/employees" : `/employees/${editing!.id}`, { method: editing === "new" ? "POST" : "PATCH", body }); setEditing(null); await load(); onSaved(editing === "new" ? "Employee created." : "Employee updated."); } catch (failure) { setError(errorMessage(failure)); } finally { setSaving(false); } }
-  async function openEmployee(row: Employee) { try { const employee = await api<Employee>(`/employees/${row.id}`); setViewing(employee); if (can("salaries:read")) setSalary(await api<Salary[]>(`/employees/${row.id}/salary-structures`)); } catch (failure) { setError(errorMessage(failure)); } }
-  async function addSalary() { if (!viewing) return; setSaving(true); try { await api(`/employees/${viewing.id}/salary-structures`, { method: "POST", body: { ...salaryForm, currency, effectiveTo: salaryForm.effectiveTo || undefined, expectedCurrentVersion: salary.find((item) => !item.effectiveTo)?.version } }); setSalary(await api<Salary[]>(`/employees/${viewing.id}/salary-structures`)); setSalaryOpen(false); onSaved("Salary structure added."); } catch (failure) { setError(errorMessage(failure)); } finally { setSaving(false); } }
-  async function addDepartment() { const name = window.prompt("Department name"); if (!name?.trim()) return; try { await api("/departments", { method: "POST", body: { name } }); await load(); onSaved("Department created."); } catch (failure) { setError(errorMessage(failure)); } }
-  async function terminate() { if (!viewing) return; const terminationDate = window.prompt("Termination date (YYYY-MM-DD)", today()); if (!terminationDate) return; try { await api(`/employees/${viewing.id}/terminate`, { method: "POST", body: { expectedVersion: viewing.version, terminationDate } }); setViewing(null); await load(); onSaved("Employee terminated."); } catch (failure) { setError(errorMessage(failure)); } }
-  async function renameDepartment(value: Department) { const name = window.prompt("Department name", value.name); if (!name?.trim()) return; await api(`/departments/${value.id}`, { method: "PATCH", body: { name } }); await load(); }
-  async function deleteDepartment(value: Department) { if (!window.confirm(`Delete ${value.name}?`)) return; await api(`/departments/${value.id}`, { method: "DELETE" }); await load(); }
-  return <>
-    <section className="panel employee-toolbar"><div className="employee-filters"><input aria-label="Search employees" placeholder="Search name, code or role" value={search} onChange={(e) => setSearch(e.target.value)} /><select aria-label="Filter by status" value={status} onChange={(e) => setStatus(e.target.value)}><option value="">All statuses</option>{["ACTIVE", "ON_LEAVE", "INACTIVE", "TERMINATED"].map((value) => <option key={value}>{value}</option>)}</select><select aria-label="Filter by department" value={department} onChange={(e) => setDepartment(e.target.value)}><option value="">All departments</option>{departments.map((value) => <option key={value.id} value={value.id}>{value.name}</option>)}</select></div><div className="row-actions">{can("employees:manage") && <button className="button secondary" onClick={() => setDepartmentsOpen(true)}>Departments</button>}{can("employees:create") && <button className="button primary" onClick={() => openForm()}>+ Employee</button>}</div></section>
-    {error && <p className="alert" role="alert">{error}<button className="text-button" onClick={() => setError("")}>×</button></p>}
-    <section className="panel"><div className="panel-heading"><h3>Employee directory</h3><span className="muted">{visible.length} employees</span></div>{visible.length === 0 ? <div className="empty-state"><span className="empty-symbol">♙</span><h3>No employees found</h3><p>Add an employee or adjust your filters.</p></div> : <div className="table-scroll"><table><thead><tr><th>Employee</th><th>Role</th><th>Department</th><th>Manager</th><th>Status</th><th /></tr></thead><tbody>{visible.map((row) => <tr key={row.id}><td><button className="employee-name" onClick={() => void openEmployee(row)}><strong>{row.firstName} {row.lastName}</strong><small>{row.employeeCode}{row.workEmail ? ` · ${row.workEmail}` : ""}</small></button></td><td>{row.jobTitle}<small className="muted employee-subtitle">{row.employmentType.replaceAll("_", " ")}</small></td><td>{row.department?.name ?? "—"}</td><td>{row.manager ? `${row.manager.firstName} ${row.manager.lastName}` : "—"}</td><td><span className={`status-badge status-${row.status.toLowerCase()}`}>{row.status.replaceAll("_", " ")}</span></td><td>{can("employees:update") && row.status !== "TERMINATED" && <button className="text-button" onClick={() => openForm(row)}>Edit</button>}</td></tr>)}</tbody></table></div>}</section>
-    {editing && <AppModal title={editing === "new" ? "Add employee" : "Edit employee"} badge="Employee" onClose={() => setEditing(null)}><form className="employee-form" onSubmit={(e) => { e.preventDefault(); void save(); }}><div className="form-grid"><label>Employee code<input required value={form.employeeCode} onChange={(e) => setForm({ ...form, employeeCode: e.target.value })}/></label><label>Job title<input required value={form.jobTitle} onChange={(e) => setForm({ ...form, jobTitle: e.target.value })}/></label><label>First name<input required value={form.firstName} onChange={(e) => setForm({ ...form, firstName: e.target.value })}/></label><label>Last name<input required value={form.lastName} onChange={(e) => setForm({ ...form, lastName: e.target.value })}/></label><label>Work email<input type="email" value={form.workEmail} onChange={(e) => setForm({ ...form, workEmail: e.target.value })}/></label><label>Phone<input value={form.phoneNumber} onChange={(e) => setForm({ ...form, phoneNumber: e.target.value })}/></label><label>Employment type<select value={form.employmentType} onChange={(e) => setForm({ ...form, employmentType: e.target.value })}>{["FULL_TIME", "PART_TIME", "CONTRACT", "INTERN"].map((value) => <option key={value}>{value.replaceAll("_", " ")}</option>)}</select></label><label>Status<select value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })}>{["ACTIVE", "ON_LEAVE", "INACTIVE"].map((value) => <option key={value}>{value.replaceAll("_", " ")}</option>)}</select></label><label>Hire date<input type="date" required value={form.hireDate} onChange={(e) => setForm({ ...form, hireDate: e.target.value })}/></label><label>Department<select value={form.departmentId} onChange={(e) => setForm({ ...form, departmentId: e.target.value })}><option value="">No department</option>{departments.map((value) => <option key={value.id} value={value.id}>{value.name}</option>)}</select></label><label>Manager<select value={form.managerId} onChange={(e) => setForm({ ...form, managerId: e.target.value })}><option value="">No manager</option>{rows.filter((row) => row.id !== (editing === "new" ? "" : editing.id)).map((row) => <option key={row.id} value={row.id}>{row.firstName} {row.lastName}</option>)}</select></label><label>Linked account<select value={form.linkedUserId} onChange={(e) => setForm({ ...form, linkedUserId: e.target.value })}><option value="">No account</option>{members.map((member) => <option key={member.user.id} value={member.user.id}>{member.user.fullName} · {member.user.email}</option>)}</select></label></div><div className="modal-form-actions"><button type="button" className="button secondary" onClick={() => setEditing(null)}>Cancel</button><button className="button primary" disabled={saving}>{saving ? "Saving…" : "Save employee"}</button></div></form></AppModal>}
-    {viewing && <AppModal title={`${viewing.firstName} ${viewing.lastName}`} badge={viewing.status.replaceAll("_", " ")} onClose={() => setViewing(null)}><div className="employee-profile"><dl><div><dt>Employee code</dt><dd>{viewing.employeeCode}</dd></div><div><dt>Role</dt><dd>{viewing.jobTitle}</dd></div><div><dt>Department</dt><dd>{viewing.department?.name ?? "—"}</dd></div><div><dt>Hire date</dt><dd>{new Date(viewing.hireDate).toLocaleDateString()}</dd></div></dl>{can("employees:manage") && viewing.status !== "TERMINATED" && <button className="button danger" onClick={() => void terminate()}>Terminate employment</button>}{can("salaries:read") && <section className="salary-history"><div className="panel-heading"><h3>Salary history</h3>{can("salaries:manage") && <button className="button secondary compact" onClick={() => setSalaryOpen(true)}>+ Salary</button>}</div>{salary.length === 0 ? <p className="muted">No salary structures recorded.</p> : salary.map((item) => <article key={item.id}><strong>{new Intl.NumberFormat("en", { style: "currency", currency: item.currency }).format(Number(item.baseAmount))}</strong><span>{item.compensationType.replaceAll("_", " ")} · {item.payFrequency.toLowerCase()}</span><small>{new Date(item.effectiveFrom).toLocaleDateString()} – {item.effectiveTo ? new Date(item.effectiveTo).toLocaleDateString() : "Current"}</small>{item.components.length > 0 && <small>{item.components.map((component) => `${component.name}: ${component.amount}`).join(" · ")}</small>}</article>)}</section>}</div></AppModal>}
-    {salaryOpen && <AppModal title="Add salary structure" badge="Confidential" onClose={() => setSalaryOpen(false)}><form className="employee-form" onSubmit={(e) => { e.preventDefault(); void addSalary(); }}><div className="form-grid"><label>Compensation<select value={salaryForm.compensationType} onChange={(e) => setSalaryForm({ ...salaryForm, compensationType: e.target.value })}><option value="FIXED_SALARY">Fixed salary</option><option value="HOURLY">Hourly</option></select></label><label>Base amount ({currency})<input required inputMode="decimal" value={salaryForm.baseAmount} onChange={(e) => setSalaryForm({ ...salaryForm, baseAmount: e.target.value })}/></label><label>Pay frequency<select value={salaryForm.payFrequency} onChange={(e) => setSalaryForm({ ...salaryForm, payFrequency: e.target.value })}><option value="MONTHLY">Monthly</option><option value="BIWEEKLY">Biweekly</option><option value="WEEKLY">Weekly</option></select></label><label>Effective from<input type="date" required value={salaryForm.effectiveFrom} onChange={(e) => setSalaryForm({ ...salaryForm, effectiveFrom: e.target.value })}/></label><label>Effective to <small>optional</small><input type="date" value={salaryForm.effectiveTo} onChange={(e) => setSalaryForm({ ...salaryForm, effectiveTo: e.target.value })}/></label></div><label>Notes <small>optional</small><textarea rows={2} value={salaryForm.notes} onChange={(e) => setSalaryForm({ ...salaryForm, notes: e.target.value })}/></label><fieldset><legend>Allowances and deductions</legend>{salaryForm.components.map((component, index) => <div className="salary-component" key={index}><input required placeholder="Component name" value={component.name} onChange={(e) => setSalaryForm({ ...salaryForm, components: salaryForm.components.map((value, i) => i === index ? { ...value, name: e.target.value } : value) })}/><select value={component.type} onChange={(e) => setSalaryForm({ ...salaryForm, components: salaryForm.components.map((value, i) => i === index ? { ...value, type: e.target.value } : value) })}><option value="EARNING">Earning</option><option value="DEDUCTION">Deduction</option></select><input required inputMode="decimal" placeholder="0.00" value={component.amount} onChange={(e) => setSalaryForm({ ...salaryForm, components: salaryForm.components.map((value, i) => i === index ? { ...value, amount: e.target.value } : value) })}/><button type="button" className="text-button" onClick={() => setSalaryForm({ ...salaryForm, components: salaryForm.components.filter((_, i) => i !== index) })}>Remove</button></div>)}<button type="button" className="button secondary compact" onClick={() => setSalaryForm({ ...salaryForm, components: [...salaryForm.components, { name: "", type: "EARNING", amount: "" }] })}>+ Component</button></fieldset><div className="modal-form-actions"><button type="button" className="button secondary" onClick={() => setSalaryOpen(false)}>Cancel</button><button className="button primary" disabled={saving}>Add salary</button></div></form></AppModal>}
-    {departmentsOpen && <AppModal title="Departments" badge="Organization" onClose={() => setDepartmentsOpen(false)}><div className="department-list">{departments.map((value) => <div key={value.id}><strong>{value.name}</strong><div className="row-actions"><button className="text-button" onClick={() => void renameDepartment(value).catch((failure) => setError(errorMessage(failure)))}>Rename</button><button className="text-button danger-text" onClick={() => void deleteDepartment(value).catch((failure) => setError(errorMessage(failure)))}>Delete</button></div></div>)}<button className="button primary" onClick={() => void addDepartment()}>+ Add department</button></div></AppModal>}
-  </>;
+export default function EmployeesPage({ api, currency, permissions, onSaved }: EmployeesPageProps) {
+  const [employees, setEmployees] = useState<Employee[]>([]);
+  const [departments, setDepartments] = useState<Department[]>([]);
+  const [members, setMembers] = useState<MemberSummary[]>([]);
+  const [error, setError] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
+  const [departmentFilter, setDepartmentFilter] = useState("");
+  const [editingEmployee, setEditingEmployee] = useState<Employee | "new" | null>(null);
+  const [employeeForm, setEmployeeForm] = useState<EmployeeFormValues>(emptyEmployeeForm);
+  const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
+  const [salaryStructures, setSalaryStructures] = useState<SalaryStructure[]>([]);
+  const [salaryForm, setSalaryForm] = useState<SalaryFormValues>(emptySalaryForm);
+  const [isSalaryFormOpen, setIsSalaryFormOpen] = useState(false);
+  const [isDepartmentModalOpen, setIsDepartmentModalOpen] = useState(false);
+  const [isTerminationOpen, setIsTerminationOpen] = useState(false);
+  const [terminationDate, setTerminationDate] = useState(currentDate());
+  const [departmentToDelete, setDepartmentToDelete] = useState<Department | null>(null);
+
+  const can = useCallback(
+    (permission: Permission) => permissions.includes(permission),
+    [permissions],
+  );
+  const canManageEmployees = can("employees:manage");
+
+  const refreshWorkspace = useCallback(async () => {
+    const data = await loadEmployeeWorkspace(api, canManageEmployees);
+    setEmployees(data.employees);
+    setDepartments(data.departments);
+    setMembers(data.members);
+  }, [api, canManageEmployees]);
+
+  useEffect(() => {
+    let active = true;
+    loadEmployeeWorkspace(api, canManageEmployees)
+      .then((data) => {
+        if (!active) return;
+        setEmployees(data.employees);
+        setDepartments(data.departments);
+        setMembers(data.members);
+      })
+      .catch((failure: unknown) => {
+        if (active) setError(errorMessage(failure));
+      });
+    return () => {
+      active = false;
+    };
+  }, [api, canManageEmployees]);
+
+  const filteredEmployees = useMemo(() => {
+    const query = search.trim().toLowerCase();
+    return employees.filter((employee) => {
+      const text = [employee.employeeCode, employee.firstName, employee.lastName, employee.jobTitle]
+        .join(" ")
+        .toLowerCase();
+      return (
+        (!query || text.includes(query)) &&
+        (!statusFilter || employee.status === statusFilter) &&
+        (!departmentFilter || employee.departmentId === departmentFilter)
+      );
+    });
+  }, [departmentFilter, employees, search, statusFilter]);
+
+  function openEmployeeForm(employee?: Employee) {
+    setEditingEmployee(employee ?? "new");
+    setEmployeeForm(employee ? employeeToForm(employee) : emptyEmployeeForm());
+  }
+
+  async function handleEmployeeSubmit() {
+    const employee = editingEmployee === "new" ? undefined : (editingEmployee ?? undefined);
+    setIsSaving(true);
+    setError("");
+    try {
+      await saveEmployee(api, employeeForm, employee);
+      setEditingEmployee(null);
+      await refreshWorkspace();
+      onSaved(employee ? "Employee updated." : "Employee created.");
+    } catch (failure) {
+      setError(errorMessage(failure));
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
+  async function handleEmployeeSelect(employee: Employee) {
+    setError("");
+    try {
+      const [details, salaries] = await Promise.all([
+        loadEmployee(api, employee.id),
+        can("salaries:read") ? loadSalaryStructures(api, employee.id) : Promise.resolve([]),
+      ]);
+      setSelectedEmployee(details);
+      setSalaryStructures(salaries);
+    } catch (failure) {
+      setError(errorMessage(failure));
+    }
+  }
+
+  async function handleSalarySubmit() {
+    if (!selectedEmployee) return;
+    setIsSaving(true);
+    setError("");
+    try {
+      const currentSalary = salaryStructures.find((salary) => !salary.effectiveTo);
+      await createSalaryStructure(
+        api,
+        selectedEmployee.id,
+        currency,
+        salaryForm,
+        currentSalary?.version,
+      );
+      setSalaryStructures(await loadSalaryStructures(api, selectedEmployee.id));
+      setSalaryForm(emptySalaryForm());
+      setIsSalaryFormOpen(false);
+      onSaved("Salary structure added.");
+    } catch (failure) {
+      setError(errorMessage(failure));
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
+  async function handleDepartmentSave(name: string, department?: Department) {
+    setIsSaving(true);
+    setError("");
+    try {
+      await api(department ? `/departments/${department.id}` : "/departments", {
+        method: department ? "PATCH" : "POST",
+        body: { name },
+      });
+      await refreshWorkspace();
+      onSaved(department ? "Department renamed." : "Department created.");
+    } catch (failure) {
+      setError(errorMessage(failure));
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
+  async function handleDepartmentDelete() {
+    if (!departmentToDelete) return;
+    setIsSaving(true);
+    setError("");
+    try {
+      await api(`/departments/${departmentToDelete.id}`, { method: "DELETE" });
+      setDepartmentToDelete(null);
+      await refreshWorkspace();
+      onSaved("Department deleted.");
+    } catch (failure) {
+      setError(errorMessage(failure));
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
+  async function handleTermination() {
+    if (!selectedEmployee) return;
+    setIsSaving(true);
+    setError("");
+    try {
+      await api(`/employees/${selectedEmployee.id}/terminate`, {
+        method: "POST",
+        body: { expectedVersion: selectedEmployee.version, terminationDate },
+      });
+      setIsTerminationOpen(false);
+      setSelectedEmployee(null);
+      await refreshWorkspace();
+      onSaved("Employee terminated.");
+    } catch (failure) {
+      setError(errorMessage(failure));
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
+  return (
+    <>
+      <EmployeeDirectory
+        employees={filteredEmployees}
+        departments={departments}
+        search={search}
+        status={statusFilter}
+        departmentId={departmentFilter}
+        canCreate={can("employees:create")}
+        canUpdate={can("employees:update")}
+        canManage={canManageEmployees}
+        onSearchChange={setSearch}
+        onStatusChange={setStatusFilter}
+        onDepartmentChange={setDepartmentFilter}
+        onCreate={() => openEmployeeForm()}
+        onEdit={openEmployeeForm}
+        onSelect={(employee) => void handleEmployeeSelect(employee)}
+        onManageDepartments={() => setIsDepartmentModalOpen(true)}
+      />
+
+      {error && (
+        <p className="alert" role="alert">
+          {error}
+          <button className="text-button" onClick={() => setError("")} aria-label="Dismiss error">
+            ×
+          </button>
+        </p>
+      )}
+
+      {editingEmployee && (
+        <EmployeeFormModal
+          employee={editingEmployee === "new" ? undefined : editingEmployee}
+          values={employeeForm}
+          employees={employees}
+          departments={departments}
+          members={members}
+          isSaving={isSaving}
+          onChange={setEmployeeForm}
+          onSubmit={() => void handleEmployeeSubmit()}
+          onClose={() => setEditingEmployee(null)}
+        />
+      )}
+
+      {selectedEmployee && !isTerminationOpen && !isSalaryFormOpen && (
+        <EmployeeDetailsModal
+          employee={selectedEmployee}
+          salaryStructures={salaryStructures}
+          currency={currency}
+          canManage={canManageEmployees}
+          canReadSalary={can("salaries:read")}
+          canManageSalary={can("salaries:manage")}
+          onTerminate={() => setIsTerminationOpen(true)}
+          onAddSalary={() => {
+            setSalaryForm(emptySalaryForm());
+            setIsSalaryFormOpen(true);
+          }}
+          onClose={() => setSelectedEmployee(null)}
+        />
+      )}
+
+      {isSalaryFormOpen && (
+        <SalaryFormModal
+          values={salaryForm}
+          currency={currency}
+          isSaving={isSaving}
+          onChange={setSalaryForm}
+          onSubmit={() => void handleSalarySubmit()}
+          onClose={() => setIsSalaryFormOpen(false)}
+        />
+      )}
+
+      {isDepartmentModalOpen && (
+        <DepartmentModal
+          departments={departments}
+          isSaving={isSaving}
+          onSave={(name, department) => void handleDepartmentSave(name, department)}
+          onDelete={(department) => {
+            setIsDepartmentModalOpen(false);
+            setDepartmentToDelete(department);
+          }}
+          onClose={() => setIsDepartmentModalOpen(false)}
+        />
+      )}
+
+      {isTerminationOpen && selectedEmployee && (
+        <ConfirmationModal
+          title="Terminate employment"
+          message={`End employment for ${selectedEmployee.firstName} ${selectedEmployee.lastName}? Their history will be retained.`}
+          confirmLabel="Terminate employee"
+          danger
+          isSaving={isSaving}
+          onConfirm={() => void handleTermination()}
+          onClose={() => setIsTerminationOpen(false)}
+        >
+          <label>
+            Termination date
+            <input
+              type="date"
+              min={selectedEmployee.hireDate.slice(0, 10)}
+              value={terminationDate}
+              onChange={(event) => setTerminationDate(event.target.value)}
+            />
+          </label>
+        </ConfirmationModal>
+      )}
+
+      {departmentToDelete && (
+        <ConfirmationModal
+          title="Delete department"
+          message={`Delete ${departmentToDelete.name}? Assigned employees must be moved first.`}
+          confirmLabel="Delete department"
+          danger
+          isSaving={isSaving}
+          onConfirm={() => void handleDepartmentDelete()}
+          onClose={() => setDepartmentToDelete(null)}
+        />
+      )}
+    </>
+  );
 }

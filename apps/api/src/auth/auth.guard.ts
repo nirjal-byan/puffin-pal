@@ -29,9 +29,7 @@ export class AuthGuard implements CanActivate {
     )
       return true;
     const request = context.switchToHttp().getRequest<AuthenticatedRequest>();
-    const match = /^Bearer ([^\s]+)$/i.exec(
-      request.headers.authorization ?? "",
-    );
+    const match = /^Bearer ([^\s]+)$/i.exec(request.headers.authorization ?? "");
     if (!match) throw new UnauthorizedException("Bearer token required");
     let payload: Record<string, unknown>;
     try {

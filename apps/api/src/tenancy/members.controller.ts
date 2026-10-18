@@ -1,13 +1,4 @@
-import {
-  Body,
-  Controller,
-  Get,
-  Param,
-  ParseUUIDPipe,
-  Patch,
-  Post,
-  Query,
-} from "@nestjs/common";
+import { Body, Controller, Get, Param, ParseUUIDPipe, Patch, Post, Query } from "@nestjs/common";
 import { ApiBearerAuth, ApiProperty, ApiTags } from "@nestjs/swagger";
 import { IsIn } from "class-validator";
 import { ROLES, type Role } from "@puffinpal/permissions";
@@ -38,10 +29,7 @@ export class MembersController {
   }
   @Post()
   @RequirePermissions("members:manage")
-  create(
-    @CurrentTenant() tenant: TenantContext,
-    @Body() input: CreateMemberDto,
-  ) {
+  create(@CurrentTenant() tenant: TenantContext, @Body() input: CreateMemberDto) {
     return this.auth.createMember(tenant, input);
   }
   @Patch(":userId/role")

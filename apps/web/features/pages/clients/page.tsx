@@ -60,7 +60,10 @@ export default function ClientsPage({
           taxId: String(fields.get("taxId")),
         },
       });
-      if (!editing) window.dispatchEvent(new CustomEvent("puffinpal:tutorial-client-created", { detail: { id: saved.id } }));
+      if (!editing)
+        window.dispatchEvent(
+          new CustomEvent("puffinpal:tutorial-client-created", { detail: { id: saved.id } }),
+        );
       setEditing(null);
       form.reset();
       onSaved(editing ? "Client updated." : "Client added.");
@@ -104,24 +107,31 @@ export default function ClientsPage({
                     {(canUpdate || canDelete) && (
                       <td>
                         <div className="client-row-actions">
-                          {canUpdate && <button
-                            className="text-button"
-                            type="button"
-                            disabled={busy}
-                            onClick={() => setEditing(client)}
-                            aria-label={`Edit ${client.name}`}
-                          >
-                            Edit ↗
-                          </button>}
-                          {canDelete && <button
-                            className="text-button danger-text"
-                            type="button"
-                            disabled={busy}
-                            onClick={() => { setDeleteError(""); setDeleting(client); }}
-                            aria-label={`Delete ${client.name}`}
-                          >
-                            Delete
-                          </button>}
+                          {canUpdate && (
+                            <button
+                              className="text-button"
+                              type="button"
+                              disabled={busy}
+                              onClick={() => setEditing(client)}
+                              aria-label={`Edit ${client.name}`}
+                            >
+                              Edit ↗
+                            </button>
+                          )}
+                          {canDelete && (
+                            <button
+                              className="text-button danger-text"
+                              type="button"
+                              disabled={busy}
+                              onClick={() => {
+                                setDeleteError("");
+                                setDeleting(client);
+                              }}
+                              aria-label={`Delete ${client.name}`}
+                            >
+                              Delete
+                            </button>
+                          )}
                         </div>
                       </td>
                     )}
@@ -195,11 +205,7 @@ export default function ClientsPage({
                 {busy ? "Saving…" : editing ? "Save changes" : "Add client +"}
               </button>
               {editing && (
-                <button
-                  type="button"
-                  className="button secondary"
-                  onClick={() => setEditing(null)}
-                >
+                <button type="button" className="button secondary" onClick={() => setEditing(null)}>
                   Cancel editing
                 </button>
               )}
@@ -218,12 +224,33 @@ export default function ClientsPage({
         onClose={() => setDeleting(null)}
       >
         <h2>Delete client?</h2>
-        <p><strong>{deleting?.name}</strong></p>
+        <p>
+          <strong>{deleting?.name}</strong>
+        </p>
         <p>This permanently deletes the client. Clients with invoices cannot be deleted.</p>
-        {deleteError && <p className="alert" role="alert">{deleteError}</p>}
+        {deleteError && (
+          <p className="alert" role="alert">
+            {deleteError}
+          </p>
+        )}
         <div className="invoice-actions">
-          <button autoFocus type="button" className="button secondary" disabled={busy} onClick={() => setDeleting(null)}>Cancel</button>
-          <button type="button" className="button danger" disabled={busy} onClick={() => void removeClient()}>{busy ? "Deleting…" : "Delete permanently"}</button>
+          <button
+            autoFocus
+            type="button"
+            className="button secondary"
+            disabled={busy}
+            onClick={() => setDeleting(null)}
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            className="button danger"
+            disabled={busy}
+            onClick={() => void removeClient()}
+          >
+            {busy ? "Deleting…" : "Delete permanently"}
+          </button>
         </div>
       </dialog>
     </PageLayout>

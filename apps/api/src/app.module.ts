@@ -11,7 +11,18 @@ import { DashboardModule } from "./dashboard/dashboard.module.js";
 import { RecurringInvoicesModule } from "./recurring-invoices/recurring-invoices.module.js";
 import { EmployeesModule } from "./employees/employees.module.js";
 @Module({
-  imports: [DatabaseModule, StorageModule, AuthModule, TenancyModule, InvoicesModule, ExpensesModule, BackgroundJobsModule, DashboardModule, RecurringInvoicesModule, EmployeesModule],
+  imports: [
+    DatabaseModule,
+    StorageModule,
+    AuthModule,
+    TenancyModule,
+    InvoicesModule,
+    ExpensesModule,
+    BackgroundJobsModule,
+    DashboardModule,
+    RecurringInvoicesModule,
+    EmployeesModule,
+  ],
   controllers: [HealthController],
 })
 export class AppModule {}

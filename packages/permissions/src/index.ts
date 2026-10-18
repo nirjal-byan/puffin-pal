@@ -1,9 +1,4 @@
-export const ROLES = [
-  "OWNER",
-  "ADMIN",
-  "PROJECT_MANAGER",
-  "FINANCE_VIEWER",
-] as const;
+export const ROLES = ["OWNER", "ADMIN", "PROJECT_MANAGER", "FINANCE_VIEWER"] as const;
 export type Role = (typeof ROLES)[number];
 export const PERMISSIONS = [
   "profile:read",
@@ -49,24 +44,23 @@ const readPermissions: readonly Permission[] = [
   "expenses:read",
   "retainers:read",
 ];
-export const ROLE_PERMISSIONS: Readonly<Record<Role, readonly Permission[]>> =
-  Object.freeze({
-    OWNER: Object.freeze([...PERMISSIONS]),
-    ADMIN: Object.freeze([...PERMISSIONS]),
-    PROJECT_MANAGER: Object.freeze([
-      ...readPermissions,
-      "clients:create",
-      "clients:update",
-      "invoices:create",
-      "invoices:update",
-      "expenses:create",
-      "expenses:update",
-      "expenses:submit",
-      "retainers:create",
-      "retainers:update",
-    ] as Permission[]),
-    FINANCE_VIEWER: Object.freeze([...readPermissions, "salaries:read"] as Permission[]),
-  });
+export const ROLE_PERMISSIONS: Readonly<Record<Role, readonly Permission[]>> = Object.freeze({
+  OWNER: Object.freeze([...PERMISSIONS]),
+  ADMIN: Object.freeze([...PERMISSIONS]),
+  PROJECT_MANAGER: Object.freeze([
+    ...readPermissions,
+    "clients:create",
+    "clients:update",
+    "invoices:create",
+    "invoices:update",
+    "expenses:create",
+    "expenses:update",
+    "expenses:submit",
+    "retainers:create",
+    "retainers:update",
+  ] as Permission[]),
+  FINANCE_VIEWER: Object.freeze([...readPermissions, "salaries:read"] as Permission[]),
+});
 export function isRole(value: unknown): value is Role {
   return typeof value === "string" && ROLES.some((role) => role === value);
 }
@@ -81,6 +75,5 @@ export function permissionsFor(role: Role): readonly Permission[] {
 export function canAssignRole(actor: Role, target: Role): boolean {
   return actor === "OWNER"
     ? target !== "OWNER"
-    : actor === "ADMIN" &&
-        (target === "PROJECT_MANAGER" || target === "FINANCE_VIEWER");
+    : actor === "ADMIN" && (target === "PROJECT_MANAGER" || target === "FINANCE_VIEWER");
 }

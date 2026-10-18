@@ -6,11 +6,7 @@ import {
   type OnApplicationShutdown,
 } from "@nestjs/common";
 import { Queue } from "bullmq";
-import {
-  bullConnection,
-  bullPrefix,
-  INVOICE_EXPORT_QUEUE,
-} from "./bullmq.config.js";
+import { bullConnection, bullPrefix, INVOICE_EXPORT_QUEUE } from "./bullmq.config.js";
 
 export type InvoiceExportJob = {
   exportId: string;
@@ -18,9 +14,7 @@ export type InvoiceExportJob = {
 };
 
 @Injectable()
-export class InvoiceExportQueue
-  implements OnApplicationBootstrap, OnApplicationShutdown
-{
+export class InvoiceExportQueue implements OnApplicationBootstrap, OnApplicationShutdown {
   private readonly logger = new Logger(InvoiceExportQueue.name);
   readonly queue = new Queue<InvoiceExportJob>(INVOICE_EXPORT_QUEUE, {
     connection: bullConnection(),

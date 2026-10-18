@@ -28,12 +28,7 @@ export class InvoiceExportStorageService {
       throw new Error("Invoice export object metadata is invalid");
   }
 
-  async put(
-    key: string,
-    stream: Readable,
-    organizationId: string,
-    exportId: string,
-  ) {
+  async put(key: string, stream: Readable, organizationId: string, exportId: string) {
     try {
       await this.objects.putStream(
         key,

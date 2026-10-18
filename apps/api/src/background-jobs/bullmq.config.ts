@@ -38,8 +38,7 @@ export function bullPrefix() {
   return prefix;
 }
 
-export const exportWorkerConcurrency = () =>
-  integer("INVOICE_EXPORT_WORKER_CONCURRENCY", 2, 1, 10);
+export const exportWorkerConcurrency = () => integer("INVOICE_EXPORT_WORKER_CONCURRENCY", 2, 1, 10);
 
 export const recurringInvoiceWorkerConcurrency = () =>
   integer("RECURRING_INVOICE_WORKER_CONCURRENCY", 2, 1, 10);

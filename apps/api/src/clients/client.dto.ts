@@ -1,12 +1,5 @@
 import { PartialType, ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
-import {
-  IsEmail,
-  IsOptional,
-  IsString,
-  Matches,
-  MaxLength,
-  MinLength,
-} from "class-validator";
+import { IsEmail, IsOptional, IsString, Matches, MaxLength, MinLength } from "class-validator";
 import { Transform } from "class-transformer";
 
 export class CreateClientDto {

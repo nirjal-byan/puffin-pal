@@ -7,8 +7,7 @@ export function WorkspaceIllustration() {
       aria-labelledby="workspace-illustration-title"
     >
       <title id="workspace-illustration-title">
-        Invoices, expenses, retainers, and team access connected in one
-        workspace
+        Invoices, expenses, retainers, and team access connected in one workspace
       </title>
       <defs>
         <linearGradient id="paper" x2="0.6" y2="1">
@@ -23,20 +22,8 @@ export function WorkspaceIllustration() {
           <stop stopColor="#fff" stopOpacity=".24" />
           <stop offset="1" stopColor="#fff" stopOpacity=".07" />
         </linearGradient>
-        <filter
-          id="illustration-shadow"
-          x="-50%"
-          y="-50%"
-          width="200%"
-          height="220%"
-        >
-          <feDropShadow
-            dx="0"
-            dy="16"
-            stdDeviation="16"
-            floodColor="#002b80"
-            floodOpacity=".28"
-          />
+        <filter id="illustration-shadow" x="-50%" y="-50%" width="200%" height="220%">
+          <feDropShadow dx="0" dy="16" stdDeviation="16" floodColor="#002b80" floodOpacity=".28" />
         </filter>
       </defs>
       <circle
@@ -57,38 +44,15 @@ export function WorkspaceIllustration() {
         strokeOpacity=".12"
         strokeDasharray="3 9"
       />
-      <g
-        fill="none"
-        stroke="#b7ddff"
-        strokeWidth="1.5"
-        strokeDasharray="4 6"
-        opacity=".65"
-      >
+      <g fill="none" stroke="#b7ddff" strokeWidth="1.5" strokeDasharray="4 6" opacity=".65">
         <path d="M83 97H113Q128 97 128 117V152" />
         <path d="M325 106H347V156" />
         <path d="M102 275H128V240" />
         <path d="M308 239H347V279" />
       </g>
-      <g
-        transform="translate(130 66) rotate(-7 95 122)"
-        filter="url(#illustration-shadow)"
-      >
-        <rect
-          x="8"
-          y="10"
-          width="190"
-          height="245"
-          rx="20"
-          fill="#bcd8ff"
-          opacity=".4"
-        />
-        <rect
-          width="190"
-          height="245"
-          rx="20"
-          fill="url(#paper)"
-          stroke="#fff"
-        />
+      <g transform="translate(130 66) rotate(-7 95 122)" filter="url(#illustration-shadow)">
+        <rect x="8" y="10" width="190" height="245" rx="20" fill="#bcd8ff" opacity=".4" />
+        <rect width="190" height="245" rx="20" fill="url(#paper)" stroke="#fff" />
         <rect x="20" y="22" width="35" height="35" rx="11" fill="url(#tile)" />
         <g fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round">
           <path d="M31 32h13M31 38h13M31 44h8" />
@@ -103,12 +67,7 @@ export function WorkspaceIllustration() {
         <rect x="20" y="90" width="97" height="7" rx="3.5" fill="#b5cdec" />
         <rect x="20" y="106" width="63" height="5" rx="2.5" fill="#d1e1f5" />
         <rect x="20" y="134" width="150" height="45" rx="10" fill="#e1edfc" />
-        <path
-          d="M33 150H105M33 163H79"
-          stroke="#a8c6eb"
-          strokeWidth="5"
-          strokeLinecap="round"
-        />
+        <path d="M33 150H105M33 163H79" stroke="#a8c6eb" strokeWidth="5" strokeLinecap="round" />
         <circle cx="150" cy="157" r="10" fill="#0754d6" />
         <path
           d="m146 157 3 3 5-6"
@@ -122,14 +81,7 @@ export function WorkspaceIllustration() {
         <text x="20" y="224" fill="#6883a5" fontSize="9">
           Workspace currency
         </text>
-        <text
-          x="170"
-          y="224"
-          textAnchor="end"
-          fill="#0754d6"
-          fontSize="11"
-          fontWeight="650"
-        >
+        <text x="170" y="224" textAnchor="end" fill="#0754d6" fontSize="11" fontWeight="650">
           USD
         </text>
       </g>
@@ -192,12 +144,7 @@ export function WorkspaceIllustration() {
         <circle cx="309" cy="46" r="4" />
         <circle cx="52" cy="192" r="3" />
         <circle cx="200" cy="338" r="3" />
-        <path
-          d="M365 61v12m-6-6h12"
-          stroke="#c6e7ff"
-          strokeWidth="1.5"
-          strokeLinecap="round"
-        />
+        <path d="M365 61v12m-6-6h12" stroke="#c6e7ff" strokeWidth="1.5" strokeLinecap="round" />
       </g>
     </svg>
   );

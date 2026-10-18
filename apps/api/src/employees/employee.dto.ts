@@ -1,6 +1,20 @@
 import { PartialType } from "@nestjs/swagger";
 import { Type } from "class-transformer";
-import { ArrayMaxSize, IsArray, IsEmail, IsIn, IsInt, IsOptional, IsString, IsUUID, Matches, Max, MaxLength, Min, ValidateNested } from "class-validator";
+import {
+  ArrayMaxSize,
+  IsArray,
+  IsEmail,
+  IsIn,
+  IsInt,
+  IsOptional,
+  IsString,
+  IsUUID,
+  Matches,
+  Max,
+  MaxLength,
+  Min,
+  ValidateNested,
+} from "class-validator";
 
 export const EMPLOYMENT_TYPES = ["FULL_TIME", "PART_TIME", "CONTRACT", "INTERN"] as const;
 export const EMPLOYMENT_STATUSES = ["ACTIVE", "ON_LEAVE", "INACTIVE", "TERMINATED"] as const;
@@ -16,14 +30,17 @@ export class CreateEmployeeDto {
   @IsOptional() @IsString() @MaxLength(2000) notes?: string;
   @IsString() @Matches(/\S/) @MaxLength(120) jobTitle!: string;
   @IsIn(EMPLOYMENT_TYPES) employmentType!: (typeof EMPLOYMENT_TYPES)[number];
-  @IsOptional() @IsIn(EMPLOYMENT_STATUSES.filter((value) => value !== "TERMINATED")) status?: "ACTIVE" | "ON_LEAVE" | "INACTIVE";
+  @IsOptional() @IsIn(EMPLOYMENT_STATUSES.filter((value) => value !== "TERMINATED")) status?:
+    "ACTIVE" | "ON_LEAVE" | "INACTIVE";
   @Matches(DATE) hireDate!: string;
   @IsOptional() @IsUUID() departmentId?: string;
   @IsOptional() @IsUUID() managerId?: string;
   @IsOptional() @IsUUID() linkedUserId?: string;
 }
 
-export class UpdateEmployeeDto extends PartialType(CreateEmployeeDto, { skipNullProperties: false }) {
+export class UpdateEmployeeDto extends PartialType(CreateEmployeeDto, {
+  skipNullProperties: false,
+}) {
   @IsInt() @Min(1) expectedVersion!: number;
 }
 
@@ -39,14 +56,17 @@ export class EmployeeQueryDto {
   @IsOptional() @IsIn(EMPLOYMENT_STATUSES) status?: (typeof EMPLOYMENT_STATUSES)[number];
   @IsOptional() @IsIn(EMPLOYMENT_TYPES) employmentType?: (typeof EMPLOYMENT_TYPES)[number];
   @IsOptional() @IsUUID() departmentId?: string;
-  @IsOptional() @IsIn(["name", "employeeCode", "hireDate"]) sort: "name" | "employeeCode" | "hireDate" = "name";
+  @IsOptional() @IsIn(["name", "employeeCode", "hireDate"]) sort:
+    "name" | "employeeCode" | "hireDate" = "name";
 }
 
 export class CreateDepartmentDto {
   @IsString() @Matches(/\S/) @MaxLength(100) name!: string;
   @IsOptional() @IsString() @MaxLength(500) description?: string;
 }
-export class UpdateDepartmentDto extends PartialType(CreateDepartmentDto, { skipNullProperties: false }) {}
+export class UpdateDepartmentDto extends PartialType(CreateDepartmentDto, {
+  skipNullProperties: false,
+}) {}
 
 export class SalaryComponentDto {
   @IsString() @Matches(/\S/) @MaxLength(100) name!: string;
@@ -64,5 +84,10 @@ export class CreateSalaryStructureDto {
   @IsOptional() @Matches(DATE) effectiveTo?: string;
   @IsOptional() @IsString() @MaxLength(1000) notes?: string;
   @IsOptional() @IsInt() @Min(1) expectedCurrentVersion?: number;
-  @IsOptional() @IsArray() @ArrayMaxSize(30) @ValidateNested({ each: true }) @Type(() => SalaryComponentDto) components: SalaryComponentDto[] = [];
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(30)
+  @ValidateNested({ each: true })
+  @Type(() => SalaryComponentDto)
+  components: SalaryComponentDto[] = [];
 }

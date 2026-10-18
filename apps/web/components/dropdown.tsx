@@ -1,12 +1,5 @@
 "use client";
-import {
-  useEffect,
-  useId,
-  useRef,
-  useState,
-  type ReactNode,
-  type KeyboardEvent,
-} from "react";
+import { useEffect, useId, useRef, useState, type ReactNode, type KeyboardEvent } from "react";
 import { createPortal } from "react-dom";
 
 export interface DropdownOption {
@@ -72,10 +65,7 @@ export function Dropdown({
     const below = window.innerHeight - rect.bottom - 16;
     const above = rect.top - 16;
     const openBelow = below >= 280 || below >= above;
-    const desiredHeight = Math.min(
-      320,
-      options.length * 40 + (searchable ? 64 : 14),
-    );
+    const desiredHeight = Math.min(320, options.length * 40 + (searchable ? 64 : 14));
     const height = Math.min(desiredHeight, openBelow ? below : above);
     setQuery("");
     setActive(
@@ -94,8 +84,7 @@ export function Dropdown({
   useEffect(() => {
     if (!position) return;
     if (searchable) searchRef.current?.focus();
-    else
-      panelRef.current?.querySelector<HTMLElement>('[role="listbox"]')?.focus();
+    else panelRef.current?.querySelector<HTMLElement>('[role="listbox"]')?.focus();
     function outside(event: PointerEvent) {
       if (
         !panelRef.current?.contains(event.target as Node) &&
@@ -132,13 +121,7 @@ export function Dropdown({
     else if (event.key === "ArrowDown" || event.key === "ArrowUp") {
       event.preventDefault();
       setActive((index) =>
-        Math.max(
-          0,
-          Math.min(
-            filtered.length - 1,
-            index + (event.key === "ArrowDown" ? 1 : -1),
-          ),
-        ),
+        Math.max(0, Math.min(filtered.length - 1, index + (event.key === "ArrowDown" ? 1 : -1))),
       );
     } else if (event.key === "Enter") {
       event.preventDefault();
@@ -150,9 +133,7 @@ export function Dropdown({
       <button
         ref={triggerRef}
         className={
-          compact
-            ? "phone-country-trigger phone-country-display"
-            : "registration-dropdown-trigger"
+          compact ? "phone-country-trigger phone-country-display" : "registration-dropdown-trigger"
         }
         data-dropdown-name={name}
         type="button"
@@ -174,11 +155,7 @@ export function Dropdown({
           </span>
         )}
         <span className={!selected ? "dropdown-placeholder" : ""}>
-          {selected
-            ? compact
-              ? selected.detail
-              : selected.label
-            : placeholder}
+          {selected ? (compact ? selected.detail : selected.label) : placeholder}
         </span>
         <svg
           className={position ? "country-chevron-open" : ""}
@@ -229,9 +206,7 @@ export function Dropdown({
                   aria-autocomplete="list"
                   aria-controls={`${id}-options`}
                   aria-activedescendant={
-                    filtered[active]
-                      ? `${id}-option-${filtered[active].value}`
-                      : undefined
+                    filtered[active] ? `${id}-option-${filtered[active].value}` : undefined
                   }
                   value={query}
                   placeholder={searchPlaceholder}

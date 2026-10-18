@@ -53,9 +53,7 @@ export function DatePicker({
   const selected = parseDate(value);
   const minimum = min ? parseDate(min) : undefined;
   const [open, setOpen] = useState(false);
-  const [visibleMonth, setVisibleMonth] = useState(
-    () => selected ?? minimum ?? new Date(),
-  );
+  const [visibleMonth, setVisibleMonth] = useState(() => selected ?? minimum ?? new Date());
   const rootRef = useRef<HTMLDivElement>(null);
   const calendarId = useId();
 
@@ -74,9 +72,13 @@ export function DatePicker({
   }
 
   return (
-    <div className="date-picker" ref={rootRef} onKeyDown={(event) => {
-      if (event.key === "Escape") setOpen(false);
-    }}>
+    <div
+      className="date-picker"
+      ref={rootRef}
+      onKeyDown={(event) => {
+        if (event.key === "Escape") setOpen(false);
+      }}
+    >
       <button
         type="button"
         className="date-picker-trigger"
@@ -101,21 +103,55 @@ export function DatePicker({
             : "Select date"}
         </span>
         <svg className="date-picker-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none">
-          <path d="M7 3v3m10-3v3M4.5 9h15M6 5h12a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Z" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+          <path
+            d="M7 3v3m10-3v3M4.5 9h15M6 5h12a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Z"
+            stroke="currentColor"
+            strokeWidth="1.7"
+            strokeLinecap="round"
+          />
         </svg>
       </button>
       <input type="hidden" name={name} value={value} />
       {open && (
-        <div className="date-picker-popover" id={calendarId} role="dialog" aria-label={`${ariaLabel} calendar`}>
+        <div
+          className="date-picker-popover"
+          id={calendarId}
+          role="dialog"
+          aria-label={`${ariaLabel} calendar`}
+        >
           <div className="date-picker-header">
-            <strong>{visibleMonth.toLocaleDateString(undefined, { month: "long", year: "numeric" })}</strong>
+            <strong>
+              {visibleMonth.toLocaleDateString(undefined, { month: "long", year: "numeric" })}
+            </strong>
             <div>
-              <button type="button" aria-label="Previous month" onClick={() => setVisibleMonth(new Date(visibleMonth.getFullYear(), visibleMonth.getMonth() - 1, 1))}>‹</button>
-              <button type="button" aria-label="Next month" onClick={() => setVisibleMonth(new Date(visibleMonth.getFullYear(), visibleMonth.getMonth() + 1, 1))}>›</button>
+              <button
+                type="button"
+                aria-label="Previous month"
+                onClick={() =>
+                  setVisibleMonth(
+                    new Date(visibleMonth.getFullYear(), visibleMonth.getMonth() - 1, 1),
+                  )
+                }
+              >
+                ‹
+              </button>
+              <button
+                type="button"
+                aria-label="Next month"
+                onClick={() =>
+                  setVisibleMonth(
+                    new Date(visibleMonth.getFullYear(), visibleMonth.getMonth() + 1, 1),
+                  )
+                }
+              >
+                ›
+              </button>
             </div>
           </div>
           <div className="date-picker-weekdays" aria-hidden="true">
-            {WEEKDAYS.map((day) => <span key={day}>{day}</span>)}
+            {WEEKDAYS.map((day) => (
+              <span key={day}>{day}</span>
+            ))}
           </div>
           <div className="date-picker-days">
             {monthDays(visibleMonth).map((date) => {
@@ -133,7 +169,10 @@ export function DatePicker({
                   className={isSelected ? "selected" : undefined}
                   disabled={unavailable}
                   aria-pressed={isSelected}
-                  onClick={() => { onChange(dateValue); setOpen(false); }}
+                  onClick={() => {
+                    onChange(dateValue);
+                    setOpen(false);
+                  }}
                 >
                   {date.getDate()}
                 </button>
@@ -141,12 +180,26 @@ export function DatePicker({
             })}
           </div>
           <div className="date-picker-footer">
-            <button type="button" onClick={() => { onChange(""); setOpen(false); }}>Clear</button>
-            <button type="button" onClick={() => {
-              const today = new Date();
-              const next = minimum && today < minimum ? minimum : today;
-              onChange(toValue(next)); setOpen(false);
-            }}>Today</button>
+            <button
+              type="button"
+              onClick={() => {
+                onChange("");
+                setOpen(false);
+              }}
+            >
+              Clear
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                const today = new Date();
+                const next = minimum && today < minimum ? minimum : today;
+                onChange(toValue(next));
+                setOpen(false);
+              }}
+            >
+              Today
+            </button>
           </div>
         </div>
       )}

@@ -8,6 +8,11 @@ Nest decorator metadata. The API and shared database package use TypeScript 6 be
 does not support TypeScript 7 and Prisma contract brands must resolve consistently
 across those packages; the frontend and root retain TypeScript 7.
 
+## Code formatting
+
+Run `pnpm format` to format TypeScript, React, and Markdown files. Run
+`pnpm format:check` in CI or before review to verify formatting without changing files.
+
 ## Local services
 
 `make services.start` runs `services/docker-compose.yml` as project `puffinpal`.

@@ -16,10 +16,7 @@ import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 import { RequirePermissions } from "../auth/auth.decorators.js";
 import { PageDto } from "../tenancy/page.dto.js";
 import { CreateInvoiceDto } from "./dto/create-invoice.dto.js";
-import {
-  UpdateInvoiceDto,
-  DeleteInvoiceDto,
-} from "./dto/update-invoice.dto.js";
+import { UpdateInvoiceDto, DeleteInvoiceDto } from "./dto/update-invoice.dto.js";
 import { IssueInvoiceDto } from "./dto/issue-invoice.dto.js";
 import { CreatePaymentDto } from "./dto/create-payment.dto.js";
 import { InvoicesService } from "./invoices.service.js";
@@ -58,34 +55,22 @@ export class InvoicesController {
   @Post(":id/issue")
   @HttpCode(200)
   @RequirePermissions("invoices:issue")
-  issue(
-    @Param("id", ParseUUIDPipe) id: string,
-    @Body() input: IssueInvoiceDto,
-  ) {
+  issue(@Param("id", ParseUUIDPipe) id: string, @Body() input: IssueInvoiceDto) {
     return this.invoices.issueInvoice(id, input.expectedVersion);
   }
   @Post(":id/payments")
   @RequirePermissions("invoices:record-payment")
-  recordPayment(
-    @Param("id", ParseUUIDPipe) id: string,
-    @Body() input: CreatePaymentDto,
-  ) {
+  recordPayment(@Param("id", ParseUUIDPipe) id: string, @Body() input: CreatePaymentDto) {
     return this.invoices.recordPayment(id, input);
   }
   @Patch(":id")
   @RequirePermissions("invoices:update")
-  update(
-    @Param("id", ParseUUIDPipe) id: string,
-    @Body() input: UpdateInvoiceDto,
-  ) {
+  update(@Param("id", ParseUUIDPipe) id: string, @Body() input: UpdateInvoiceDto) {
     return this.invoices.updateInvoice(id, input);
   }
   @Delete(":id")
   @RequirePermissions("invoices:delete")
-  remove(
-    @Param("id", ParseUUIDPipe) id: string,
-    @Body() input: DeleteInvoiceDto,
-  ) {
+  remove(@Param("id", ParseUUIDPipe) id: string, @Body() input: DeleteInvoiceDto) {
     return this.invoices.deleteInvoice(id, input.expectedVersion);
   }
   @Get(":invoiceId/items")

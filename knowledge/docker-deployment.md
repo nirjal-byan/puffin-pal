@@ -193,4 +193,3 @@ Before EC2 deployment:
 8. Run migration verification, back up, then run the explicit migration job during releases.
 
 This single-host design is suitable for an initial EC2 deployment. Moving PostgreSQL, Redis, or object storage to managed services later requires changing URLs and credentials, not application architecture.
-

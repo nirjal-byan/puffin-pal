@@ -26,12 +26,9 @@ export class ObjectStorageService {
     region: process.env.S3_REGION ?? "us-east-1",
     forcePathStyle: true,
     credentials: {
-      accessKeyId:
-        process.env.S3_ACCESS_KEY_ID ??
-        (this.production ? "" : "puffinpal_local"),
+      accessKeyId: process.env.S3_ACCESS_KEY_ID ?? (this.production ? "" : "puffinpal_local"),
       secretAccessKey:
-        process.env.S3_SECRET_ACCESS_KEY ??
-        (this.production ? "" : "puffinpal_local_secret"),
+        process.env.S3_SECRET_ACCESS_KEY ?? (this.production ? "" : "puffinpal_local_secret"),
     },
   });
   private ready?: Promise<void>;
@@ -39,26 +36,24 @@ export class ObjectStorageService {
   private ensureBucket() {
     if (!this.ready)
       this.ready = (async () => {
-      if (
-        this.production &&
-        (!process.env.S3_ACCESS_KEY_ID ||
-          !process.env.S3_SECRET_ACCESS_KEY ||
-          !process.env.S3_ENDPOINT)
-      )
-        throw new ServiceUnavailableException("Object storage is not configured");
-      try {
-        await this.client.send(new HeadBucketCommand({ Bucket: this.bucket }));
-      } catch {
+        if (
+          this.production &&
+          (!process.env.S3_ACCESS_KEY_ID ||
+            !process.env.S3_SECRET_ACCESS_KEY ||
+            !process.env.S3_ENDPOINT)
+        )
+          throw new ServiceUnavailableException("Object storage is not configured");
         try {
-          await this.client.send(
-            new CreateBucketCommand({ Bucket: this.bucket }),
-          );
-        } catch (error) {
-          throw new ServiceUnavailableException("Object storage is unavailable", {
-            cause: error,
-          });
+          await this.client.send(new HeadBucketCommand({ Bucket: this.bucket }));
+        } catch {
+          try {
+            await this.client.send(new CreateBucketCommand({ Bucket: this.bucket }));
+          } catch (error) {
+            throw new ServiceUnavailableException("Object storage is unavailable", {
+              cause: error,
+            });
+          }
         }
-      }
       })().catch((error: unknown) => {
         this.ready = undefined;
         throw error;
@@ -92,9 +87,7 @@ export class ObjectStorageService {
 
   async get(key: string): Promise<StoredObject> {
     await this.ensureBucket();
-    const result = await this.client.send(
-      new GetObjectCommand({ Bucket: this.bucket, Key: key }),
-    );
+    const result = await this.client.send(new GetObjectCommand({ Bucket: this.bucket, Key: key }));
     if (!result.Body) throw new Error("Stored object body is missing");
     return {
       buffer: Buffer.from(await result.Body.transformToByteArray()),
@@ -105,9 +98,7 @@ export class ObjectStorageService {
 
   async getStream(key: string) {
     await this.ensureBucket();
-    const result = await this.client.send(
-      new GetObjectCommand({ Bucket: this.bucket, Key: key }),
-    );
+    const result = await this.client.send(new GetObjectCommand({ Bucket: this.bucket, Key: key }));
     if (!result.Body || !("pipe" in result.Body))
       throw new Error("Stored object stream is missing");
     return {
@@ -120,9 +111,7 @@ export class ObjectStorageService {
 
   async head(key: string) {
     await this.ensureBucket();
-    const result = await this.client.send(
-      new HeadObjectCommand({ Bucket: this.bucket, Key: key }),
-    );
+    const result = await this.client.send(new HeadObjectCommand({ Bucket: this.bucket, Key: key }));
     return {
       contentType: result.ContentType,
       contentLength: result.ContentLength,
@@ -156,8 +145,6 @@ export class ObjectStorageService {
 
   async delete(key: string) {
     await this.ensureBucket();
-    await this.client.send(
-      new DeleteObjectCommand({ Bucket: this.bucket, Key: key }),
-    );
+    await this.client.send(new DeleteObjectCommand({ Bucket: this.bucket, Key: key }));
   }
 }

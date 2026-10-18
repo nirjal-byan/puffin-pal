@@ -20,10 +20,8 @@ export function reportingRange(from: string, to: string) {
     const end = Temporal.PlainDate.from(to);
     const days = start.until(end, { largestUnit: "day" }).days;
     if (days < 0) throw new BadRequestException("from must be on or before to");
-    if (days > 1_826)
-      throw new BadRequestException("Reporting ranges cannot exceed five years");
-    const granularity: DashboardGranularity =
-      days <= 31 ? "day" : days <= 180 ? "week" : "month";
+    if (days > 1_826) throw new BadRequestException("Reporting ranges cannot exceed five years");
+    const granularity: DashboardGranularity = days <= 31 ? "day" : days <= 180 ? "week" : "month";
     return { granularity };
   } catch (error) {
     if (error instanceof BadRequestException) throw error;
@@ -202,7 +200,9 @@ export class FinancialSummaryService {
           'bucket', bucket, 'amount', to_char(amount, 'FM999999999999990.00'), 'count', count) ORDER BY bucket)
           FROM aging), '[]'::json)
       )::text AS payload
-    `.returnsRow({ payload: "pg/text@1" }).build();
+    `
+      .returnsRow({ payload: "pg/text@1" })
+      .build();
     const rows = await this.db.runtime().query(plan);
     const row = rows[0];
     if (!row) throw new BadRequestException("Organization reporting data is unavailable");

@@ -62,9 +62,7 @@ export function CompanyLogoSettings({
         <button
           type="submit"
           className="button primary settings-save"
-          disabled={
-            busy || preparing || logo === (organization.logoUrl ?? null)
-          }
+          disabled={busy || preparing || logo === (organization.logoUrl ?? null)}
         >
           {busy ? "Saving…" : "Save company logo"}
         </button>

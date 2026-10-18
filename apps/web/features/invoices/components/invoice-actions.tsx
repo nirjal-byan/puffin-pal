@@ -43,7 +43,9 @@ export function InvoiceActions({
     setFailure("");
     try {
       await deleteInvoice(api, reviewed.id, reviewed.version);
-      window.dispatchEvent(new CustomEvent("puffinpal:tutorial-invoice-deleted", { detail: { id: reviewed.id } }));
+      window.dispatchEvent(
+        new CustomEvent("puffinpal:tutorial-invoice-deleted", { detail: { id: reviewed.id } }),
+      );
       setOpen(false);
       onDeleted();
     } catch (error) {
@@ -92,8 +94,7 @@ export function InvoiceActions({
         <h2>Delete draft invoice?</h2>
         <p className="invoice-number">{reviewed.invoiceNumber}</p>
         <p>
-          This permanently deletes the draft and all its line items. This action
-          cannot be undone.
+          This permanently deletes the draft and all its line items. This action cannot be undone.
         </p>
         {failure && (
           <p className="alert" role="alert">
@@ -122,12 +123,7 @@ export function InvoiceActions({
               Reload latest invoice
             </button>
           ) : (
-            <button
-              type="button"
-              className="button danger"
-              disabled={busy}
-              onClick={remove}
-            >
+            <button type="button" className="button danger" disabled={busy} onClick={remove}>
               {busy ? "Deleting…" : "Delete permanently"}
             </button>
           )}

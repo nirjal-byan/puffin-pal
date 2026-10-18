@@ -50,14 +50,14 @@ export class InvoiceExportsService {
     createdAt: { toString(): string };
     completedAt: { toString(): string } | null;
   }) {
-    const expired = Temporal.Instant.compare(
-      Temporal.Instant.from(record.expiresAt.toString()),
-      Temporal.Now.instant(),
-    ) <= 0;
+    const expired =
+      Temporal.Instant.compare(
+        Temporal.Instant.from(record.expiresAt.toString()),
+        Temporal.Now.instant(),
+      ) <= 0;
     return {
       jobId: record.id,
-      status:
-        expired && record.status === "COMPLETED" ? "EXPIRED" : record.status,
+      status: expired && record.status === "COMPLETED" ? "EXPIRED" : record.status,
       progress: record.progress,
       filename: record.archiveName,
       size: record.archiveSize,
@@ -71,18 +71,13 @@ export class InvoiceExportsService {
   async create(input: CreateInvoiceExportDto) {
     const { organizationId, userId } = this.tenant;
     const invoiceIds = [...input.invoiceIds].sort();
-    const fingerprint = createHash("sha256")
-      .update(invoiceIds.join("\n"))
-      .digest("hex");
+    const fingerprint = createHash("sha256").update(invoiceIds.join("\n")).digest("hex");
     let record = await this.db.orm.public.InvoiceExport.where({
       organizationId,
       requestId: input.requestId,
     }).first();
     if (record) {
-      if (
-        record.requestedByUserId !== userId ||
-        record.requestFingerprint !== fingerprint
-      )
+      if (record.requestedByUserId !== userId || record.requestFingerprint !== fingerprint)
         throw new ConflictException("Export request ID is already in use");
       if (record.status === "FAILED") {
         const [queued] = await this.db.orm.public.InvoiceExport.where({
@@ -105,9 +100,7 @@ export class InvoiceExportsService {
     if (
       invoices.length !== invoiceIds.length ||
       invoices.some(
-        (invoice) =>
-          !invoice.issuedAt ||
-          !["ISSUED", "PAID", "OVERDUE"].includes(invoice.status),
+        (invoice) => !invoice.issuedAt || !["ISSUED", "PAID", "OVERDUE"].includes(invoice.status),
       )
     )
       throw new NotFoundException("One or more eligible invoices were not found");
@@ -177,11 +170,7 @@ export class InvoiceExportsService {
       throw new GoneException("Invoice export has expired");
     if (record.status !== "COMPLETED" || !record.archiveKey)
       throw new ConflictException("Invoice export is not ready");
-    const stored = await this.storage.download(
-      record.archiveKey,
-      organizationId,
-      record.id,
-    );
+    const stored = await this.storage.download(record.archiveKey, organizationId, record.id);
     return {
       ...stored,
       filename: record.archiveName ?? `invoice-export-${record.id}.zip`,

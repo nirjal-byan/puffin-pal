@@ -6,7 +6,11 @@ import { downloadInvoicePdf } from "../api/invoices";
 import { canDownloadInvoicePdf } from "../schemas/invoice.schema";
 import type { InvoiceDetail } from "../types/invoice.types";
 
-export function InvoicePdfAction({ invoice, api, permissions }: {
+export function InvoicePdfAction({
+  invoice,
+  api,
+  permissions,
+}: {
   invoice: InvoiceDetail;
   api: WorkspaceApi;
   permissions: readonly Permission[];
@@ -47,11 +51,20 @@ export function InvoicePdfAction({ invoice, api, permissions }: {
   if (!invoice.issuedAt || !canDownloadInvoicePdf(invoice.status, permissions)) return null;
   return (
     <div className="invoice-actions">
-      <button type="button" className="button secondary" disabled={busy}
-        aria-busy={busy} onClick={download}>
+      <button
+        type="button"
+        className="button secondary"
+        disabled={busy}
+        aria-busy={busy}
+        onClick={download}
+      >
         {busy ? "Preparing PDF…" : "Download PDF"}
       </button>
-      {failure && <p className="alert" role="alert">{failure}</p>}
+      {failure && (
+        <p className="alert" role="alert">
+          {failure}
+        </p>
+      )}
     </div>
   );
 }

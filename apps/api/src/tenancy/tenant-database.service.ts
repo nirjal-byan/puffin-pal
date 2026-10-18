@@ -10,10 +10,7 @@ import { REQUEST } from "@nestjs/core";
 import { DATABASE } from "../database.module.js";
 import type { Database } from "../database/client.js";
 import type { AuthenticatedRequest } from "../auth/auth.types.js";
-import type {
-  CreateClientDto,
-  UpdateClientDto,
-} from "../clients/client.dto.js";
+import type { CreateClientDto, UpdateClientDto } from "../clients/client.dto.js";
 import type { PageDto } from "./page.dto.js";
 
 // Request-scoped access: callers cannot supply or override organizationId.
@@ -49,9 +46,7 @@ export class TenantDatabaseService {
       organizationId: this.organizationId,
       name: input.name.trim(),
       email: input.email,
-      ...(input.companyName !== undefined
-        ? { companyName: input.companyName }
-        : {}),
+      ...(input.companyName !== undefined ? { companyName: input.companyName } : {}),
       ...(input.taxId !== undefined ? { taxId: input.taxId } : {}),
     });
   }
@@ -60,9 +55,7 @@ export class TenantDatabaseService {
     const data = {
       ...(input.name !== undefined ? { name: input.name.trim() } : {}),
       ...(input.email !== undefined ? { email: input.email } : {}),
-      ...(input.companyName !== undefined
-        ? { companyName: input.companyName }
-        : {}),
+      ...(input.companyName !== undefined ? { companyName: input.companyName } : {}),
       ...(input.taxId !== undefined ? { taxId: input.taxId } : {}),
     };
     if (!Object.keys(data).length) return this.getClient(id);
@@ -83,11 +76,11 @@ export class TenantDatabaseService {
     const invoice = await this.db.orm.public.Invoice.where({
       organizationId,
       clientId: id,
-    }).select("id").first();
+    })
+      .select("id")
+      .first();
     if (invoice)
-      throw new ConflictException(
-        "This client cannot be deleted because they have invoices.",
-      );
+      throw new ConflictException("This client cannot be deleted because they have invoices.");
     await this.db.orm.public.Client.where({ organizationId, id }).delete();
     return { message: "Client deleted successfully." };
   }

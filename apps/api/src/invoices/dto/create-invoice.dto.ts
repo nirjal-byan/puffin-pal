@@ -36,8 +36,7 @@ export class CreateInvoiceItemDto {
   @ApiProperty({
     type: String,
     example: "125.50",
-    description:
-      "Nonnegative decimal string with at most 10 integer digits and 2 decimal places.",
+    description: "Nonnegative decimal string with at most 10 integer digits and 2 decimal places.",
   })
   @IsString()
   @Matches(UNIT_PRICE_PATTERN)
@@ -49,8 +48,7 @@ export class CreateInvoiceDto {
   clientId!: string;
   @ApiProperty({
     example: "2026-10-10",
-    description:
-      "ISO calendar date (UTC midnight) or ISO timestamp with an explicit timezone.",
+    description: "ISO calendar date (UTC midnight) or ISO timestamp with an explicit timezone.",
   })
   @IsDateString({ strict: true })
   @Matches(DATE_PATTERN)

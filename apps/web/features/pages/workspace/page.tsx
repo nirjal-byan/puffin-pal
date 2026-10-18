@@ -70,10 +70,10 @@ export default function WorkspacePage({
     try {
       const saved = localStorage.getItem("puffinpal-theme");
       if (saved === "light" || saved === "dark") return saved;
-    } catch { /* Local storage may be unavailable. */ }
-    return window.matchMedia("(prefers-color-scheme: dark)").matches
-      ? "dark"
-      : "light";
+    } catch {
+      /* Local storage may be unavailable. */
+    }
+    return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
   });
   const [notifications, setNotifications] = useState<string[]>([]);
   function toggleTheme() {
@@ -81,7 +81,9 @@ export default function WorkspacePage({
     setTheme(next);
     try {
       localStorage.setItem("puffinpal-theme", next);
-    } catch { /* Theme still applies for the current page. */ }
+    } catch {
+      /* Theme still applies for the current page. */
+    }
   }
   function recordNotification(message: string) {
     setNotice(message);
@@ -99,7 +101,7 @@ export default function WorkspacePage({
         : "Invoice details"
       : tab === "overview"
         ? "Financial overview"
-        : NAV.find((item) => item.key === tab)?.label ?? "Workspace";
+        : (NAV.find((item) => item.key === tab)?.label ?? "Workspace");
   const [previousTab, setPreviousTab] = useState(tab);
   const [offset, setOffset] = useState(0);
   const [rows, setRows] = useState<(Client | Member | FinancialRecord)[]>([]);
@@ -109,14 +111,18 @@ export default function WorkspacePage({
   const [notice, setNotice] = useState("");
   const [revision, setRevision] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
-  const can = (permission: Permission) =>
-    session.permissions.includes(permission);
+  const can = (permission: Permission) => session.permissions.includes(permission);
   const currentNav = NAV.find((item) => item.key === tab)!;
   const allowed = can(currentNav.permission);
   const api: WorkspaceApi = useCallback(
     async <T,>(
       path: string,
-      options?: { method?: string; body?: unknown; signal?: AbortSignal; responseType?: "blob" | "file" },
+      options?: {
+        method?: string;
+        body?: unknown;
+        signal?: AbortSignal;
+        responseType?: "blob" | "file";
+      },
     ) => {
       try {
         return await apiRequest<T>(path, {
@@ -124,8 +130,7 @@ export default function WorkspacePage({
           token: session.accessToken,
         });
       } catch (failure) {
-        if (failure instanceof ApiError && failure.status === 401)
-          onSignOut(true);
+        if (failure instanceof ApiError && failure.status === 401) onSignOut(true);
         throw failure;
       }
     },
@@ -135,15 +140,16 @@ export default function WorkspacePage({
     if (
       invoiceId ||
       ["overview", "access", "profile", "password"].includes(tab) ||
-      tab === "expenses" || tab === "retainers" || tab === "employees" ||
+      tab === "expenses" ||
+      tab === "retainers" ||
+      tab === "employees" ||
       !allowed
     )
       return;
     const controller = new AbortController();
-    api<(Client | Member | FinancialRecord)[]>(
-      `/${tab}?limit=20&offset=${offset}`,
-      { signal: controller.signal },
-    )
+    api<(Client | Member | FinancialRecord)[]>(`/${tab}?limit=20&offset=${offset}`, {
+      signal: controller.signal,
+    })
       .then((data) => {
         if (!controller.signal.aborted) {
           setRows(data);
@@ -194,8 +200,7 @@ export default function WorkspacePage({
       setRefreshing(false);
     }
   }
-  const CurrentSettingsPage =
-    tab === "password" ? ChangePasswordPage : EditProfilePage;
+  const CurrentSettingsPage = tab === "password" ? ChangePasswordPage : EditProfilePage;
   return (
     <WorkspaceLayout theme={theme}>
       <DocumentTitle title={pageTitle} />
@@ -209,63 +214,50 @@ export default function WorkspacePage({
         notifications={notifications}
         onClearNotifications={() => setNotifications([])}
       />
-      <Sidebar
-        session={session}
-        tab={tab}
-        area={activeSection.key}
-        onSignOut={() => onSignOut()}
-      />
+      <Sidebar session={session} tab={tab} area={activeSection.key} onSignOut={() => onSignOut()} />
       <main className="workspace-main">
         <header className="topbar">
           <span>
             {activeSection.label} <span className="breadcrumb">/</span>{" "}
-            {invoiceId
-              ? "Invoice Details"
-              : currentNav.label}
+            {invoiceId ? "Invoice Details" : currentNav.label}
           </span>
         </header>
-        <div
-          key={`${tab}-${creatingInvoice}`}
-          className="workspace-content page-transition"
-        >
-          {tab !== "overview" && <div className="page-heading" data-tour="page-heading">
-            <div>
-              <span className="eyebrow">{session.organization.name}</span>
-              <h1>
-                {invoiceId
-                  ? "Invoice Details"
-                  : currentNav.label === "My access"
+        <div key={`${tab}-${creatingInvoice}`} className="workspace-content page-transition">
+          {tab !== "overview" && (
+            <div className="page-heading" data-tour="page-heading">
+              <div>
+                <span className="eyebrow">{session.organization.name}</span>
+                <h1>
+                  {invoiceId
+                    ? "Invoice Details"
+                    : currentNav.label === "My access"
                       ? "Your workspace access"
                       : currentNav.label}
-              </h1>
-              <p className="muted">
-                {DESCRIPTION[tab]}
-              </p>
-            </div>
-            <div className="page-heading-actions">
-              {!creatingInvoice &&
-                !invoiceId &&
-                tab === "invoices" &&
-                can("invoices:create") && (
+                </h1>
+                <p className="muted">{DESCRIPTION[tab]}</p>
+              </div>
+              <div className="page-heading-actions">
+                {!creatingInvoice && !invoiceId && tab === "invoices" && can("invoices:create") && (
                   <Link className="button primary" href="/invoices/new" data-tour="create-invoice">
                     + Create Invoice
                   </Link>
                 )}
-              {!creatingInvoice &&
-                !invoiceId &&
-                !["overview", "access", "profile", "password"].includes(tab) &&
-                allowed && (
-                  <button
-                    className="button secondary"
-                    type="button"
-                    onClick={reload}
-                    disabled={loading}
-                  >
-                    ↻ Refresh
-                  </button>
-                )}
+                {!creatingInvoice &&
+                  !invoiceId &&
+                  !["overview", "access", "profile", "password"].includes(tab) &&
+                  allowed && (
+                    <button
+                      className="button secondary"
+                      type="button"
+                      onClick={reload}
+                      disabled={loading}
+                    >
+                      ↻ Refresh
+                    </button>
+                  )}
+              </div>
             </div>
-          </div>}
+          )}
           {error && (
             <div className="alert" role="alert">
               {error}
@@ -279,22 +271,18 @@ export default function WorkspacePage({
               </button>
             </div>
           )}
-          {!creatingInvoice &&
-            !invoiceId &&
-            tab === "invoices" &&
-            recentDraft && (
-              <section className="panel invoice-saved-card" role="status">
-                <div>
-                  <span className="eyebrow">Draft saved successfully</span>
-                  <strong>{recentDraft.invoiceNumber}</strong>
-                  <p>
-                    {recentDraft.items.length} line items · Total{" "}
-                    {recentDraft.total}
-                  </p>
-                </div>
-                <span className="role-badge">Draft</span>
-              </section>
-            )}
+          {!creatingInvoice && !invoiceId && tab === "invoices" && recentDraft && (
+            <section className="panel invoice-saved-card" role="status">
+              <div>
+                <span className="eyebrow">Draft saved successfully</span>
+                <strong>{recentDraft.invoiceNumber}</strong>
+                <p>
+                  {recentDraft.items.length} line items · Total {recentDraft.total}
+                </p>
+              </div>
+              <span className="role-badge">Draft</span>
+            </section>
+          )}
           {notice && (
             <p className="notice" role="status">
               {notice}
@@ -314,14 +302,20 @@ export default function WorkspacePage({
               <span className="empty-symbol">◎</span>
               <h3>This area needs additional access</h3>
               <p>
-                Your {roleLabel(session.role)} role doesn’t include team
-                management. Ask your owner or administrator if you need access.
+                Your {roleLabel(session.role)} role doesn’t include team management. Ask your owner
+                or administrator if you need access.
               </p>
             </section>
           ) : tab === "overview" ? (
             <OverviewPage session={session} navigate={navigate} api={api} />
           ) : tab === "profile" || tab === "password" ? (
-            <div className={tab === "profile" && can("organization:update") ? "profile-settings-columns" : undefined}>
+            <div
+              className={
+                tab === "profile" && can("organization:update")
+                  ? "profile-settings-columns"
+                  : undefined
+              }
+            >
               <CurrentSettingsPage
                 key={tab}
                 user={session.user}
@@ -329,22 +323,17 @@ export default function WorkspacePage({
                 onProfileChange={onProfileChange}
                 onSaved={recordNotification}
               />
-              {tab === "profile" &&
-                session.permissions.includes("organization:update") && (
-                  <CompanyLogoSettings
-                    organization={session.organization}
-                    api={api}
-                    onProfileChange={onProfileChange}
-                    onSaved={recordNotification}
-                  />
-                )}
+              {tab === "profile" && session.permissions.includes("organization:update") && (
+                <CompanyLogoSettings
+                  organization={session.organization}
+                  api={api}
+                  onProfileChange={onProfileChange}
+                  onSaved={recordNotification}
+                />
+              )}
             </div>
           ) : tab === "access" ? (
-            <AccessPage
-              session={session}
-              refreshAccess={refreshAccess}
-              refreshing={refreshing}
-            />
+            <AccessPage session={session} refreshAccess={refreshAccess} refreshing={refreshing} />
           ) : tab === "expenses" ? (
             <ExpensesPage
               api={api}
@@ -354,9 +343,19 @@ export default function WorkspacePage({
               onError={(failure) => setError(errorMessage(failure))}
             />
           ) : tab === "retainers" ? (
-            <RetainersPage api={api} currency={session.organization.currency} permissions={session.permissions} onSaved={recordNotification} />
+            <RetainersPage
+              api={api}
+              currency={session.organization.currency}
+              permissions={session.permissions}
+              onSaved={recordNotification}
+            />
           ) : tab === "employees" ? (
-            <EmployeesPage api={api} currency={session.organization.currency} permissions={session.permissions} onSaved={recordNotification} />
+            <EmployeesPage
+              api={api}
+              currency={session.organization.currency}
+              permissions={session.permissions}
+              onSaved={recordNotification}
+            />
           ) : loading ? (
             <section className="panel loading" role="status">
               <span className="spinner" />
@@ -366,11 +365,7 @@ export default function WorkspacePage({
             <section className="panel empty-state">
               <h3>We couldn’t load these records</h3>
               <p>Check the message above and try again.</p>
-              <button
-                type="button"
-                className="button secondary"
-                onClick={reload}
-              >
+              <button type="button" className="button secondary" onClick={reload}>
                 Try again
               </button>
             </section>
@@ -446,16 +441,30 @@ export default function WorkspacePage({
             </>
           )}
           {creatingInvoice && can("invoices:create") && (
-            <AppModal title="Create invoice" badge="Draft" wide onClose={() => router.push("/invoices")}>
+            <AppModal
+              title="Create invoice"
+              badge="Draft"
+              wide
+              onClose={() => router.push("/invoices")}
+            >
               <InvoiceForm
                 api={api}
                 modalActions
-                onCreated={(invoice) => router.push(searchParams.has("tutorialClient") ? `/invoices/${invoice.id}` : "/invoices")}
+                onCreated={(invoice) =>
+                  router.push(
+                    searchParams.has("tutorialClient") ? `/invoices/${invoice.id}` : "/invoices",
+                  )
+                }
               />
             </AppModal>
           )}
           {editingInvoice && invoiceId && (
-            <AppModal title="Edit draft invoice" badge="Draft" wide onClose={() => router.push(`/invoices/${invoiceId}`)}>
+            <AppModal
+              title="Edit draft invoice"
+              badge="Draft"
+              wide
+              onClose={() => router.push(`/invoices/${invoiceId}`)}
+            >
               <InvoiceDetailPage
                 id={invoiceId}
                 editing

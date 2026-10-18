@@ -8,10 +8,6 @@ import { InvoiceExportsService } from "./invoice-exports.service.js";
 @Module({
   imports: [StorageModule],
   controllers: [InvoiceExportsController],
-  providers: [
-    InvoiceExportQueue,
-    InvoiceExportStorageService,
-    InvoiceExportsService,
-  ],
+  providers: [InvoiceExportQueue, InvoiceExportStorageService, InvoiceExportsService],
 })
 export class BackgroundJobsModule {}

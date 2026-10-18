@@ -10,12 +10,7 @@ export class InvoicePdfStorageService {
     return `organizations/${organizationId}/invoices/${invoiceId}/${randomUUID()}.pdf`;
   }
 
-  async put(
-    key: string,
-    buffer: Buffer,
-    organizationId: string,
-    invoiceId: string,
-  ) {
+  async put(key: string, buffer: Buffer, organizationId: string, invoiceId: string) {
     try {
       await this.objects.put(
         key,

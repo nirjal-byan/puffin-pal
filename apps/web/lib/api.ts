@@ -1,8 +1,9 @@
 import type { Permission, Role } from "@puffinpal/permissions";
 
-export const API_URL = (
-  process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001/api/v1"
-).replace(/\/$/, "");
+export const API_URL = (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001/api/v1").replace(
+  /\/$/,
+  "",
+);
 export interface User {
   id: string;
   fullName: string;
@@ -100,16 +101,13 @@ async function rawRequest<T>(
           : {}),
         ...(options.token ? { Authorization: `Bearer ${options.token}` } : {}),
       },
-        ...(options.body !== undefined
-          ? { body: options.body instanceof FormData ? options.body : JSON.stringify(options.body) }
+      ...(options.body !== undefined
+        ? { body: options.body instanceof FormData ? options.body : JSON.stringify(options.body) }
         : {}),
     });
   } catch (error) {
     if (error instanceof Error && error.name === "AbortError") throw error;
-    throw new ApiError(
-      "Cannot reach the API. Check that the backend is running and try again.",
-      0,
-    );
+    throw new ApiError("Cannot reach the API. Check that the backend is running and try again.", 0);
   }
   if (response.ok && options.responseType === "file") return (await response.blob()) as T;
   if (response.ok && options.responseType === "blob") {
@@ -157,14 +155,11 @@ export function setActiveSession(next: Session | null) {
 export function refreshSession(): Promise<Session> {
   if (refreshPromise) return refreshPromise;
   const generation = sessionGeneration;
-  const pending = rawRequest<Session>("/auth/refresh", { method: "POST" }).then(
-    (session) => {
-      if (generation !== sessionGeneration)
-        throw new ApiError("Session changed. Try again.", 409);
-      publishSession(session);
-      return session;
-    },
-  );
+  const pending = rawRequest<Session>("/auth/refresh", { method: "POST" }).then((session) => {
+    if (generation !== sessionGeneration) throw new ApiError("Session changed. Try again.", 409);
+    publishSession(session);
+    return session;
+  });
   refreshPromise = pending;
   void pending
     .finally(() => {
@@ -184,16 +179,12 @@ export async function apiRequest<T>(
   } = {},
 ): Promise<T> {
   const generation = sessionGeneration;
-  const token = options.token
-    ? (activeSession?.accessToken ?? options.token)
-    : undefined;
+  const token = options.token ? (activeSession?.accessToken ?? options.token) : undefined;
   try {
     return await rawRequest<T>(path, { ...options, token });
   } catch (error) {
-    if (!(error instanceof ApiError) || error.status !== 401 || !options.token)
-      throw error;
-    if (generation !== sessionGeneration)
-      throw new ApiError("Session changed. Try again.", 409);
+    if (!(error instanceof ApiError) || error.status !== 401 || !options.token) throw error;
+    if (generation !== sessionGeneration) throw new ApiError("Session changed. Try again.", 409);
     // Other requests may already have renewed this token. Share one refresh
     // request and retry once rather than logging out on normal token expiry.
     try {
@@ -201,15 +192,13 @@ export async function apiRequest<T>(
         activeSession?.accessToken !== token && activeSession
           ? activeSession
           : await refreshSession();
-      if (generation !== sessionGeneration)
-        throw new ApiError("Session changed. Try again.", 409);
+      if (generation !== sessionGeneration) throw new ApiError("Session changed. Try again.", 409);
       return await rawRequest<T>(path, {
         ...options,
         token: session.accessToken,
       });
     } catch (failure) {
-      if (generation !== sessionGeneration)
-        throw new ApiError("Session changed. Try again.", 409);
+      if (generation !== sessionGeneration) throw new ApiError("Session changed. Try again.", 409);
       throw failure;
     }
   }
@@ -221,13 +210,16 @@ export const roleLabel = (role: Role) =>
     .replaceAll("_", " ")
     .replace(/\b\w/g, (letter) => letter.toUpperCase());
 export const errorMessage = (error: unknown) =>
-  error instanceof Error
-    ? error.message
-    : "Something went wrong. Please try again.";
+  error instanceof Error ? error.message : "Something went wrong. Please try again.";
 
 export interface WorkspaceApi {
   <T>(
     path: string,
-    options?: { method?: string; body?: unknown; signal?: AbortSignal; responseType?: "blob" | "file" },
+    options?: {
+      method?: string;
+      body?: unknown;
+      signal?: AbortSignal;
+      responseType?: "blob" | "file";
+    },
   ): Promise<T>;
 }

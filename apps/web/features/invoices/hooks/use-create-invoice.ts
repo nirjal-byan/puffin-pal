@@ -1,15 +1,8 @@
 "use client";
 import { useRef, useState } from "react";
 import type { WorkspaceApi } from "../../../lib/api";
-import {
-  createInvoice,
-  rememberCreatedInvoice,
-  updateInvoice,
-} from "../api/invoices";
-import type {
-  CreateInvoicePayload,
-  InvoiceDetail,
-} from "../types/invoice.types";
+import { createInvoice, rememberCreatedInvoice, updateInvoice } from "../api/invoices";
+import type { CreateInvoicePayload, InvoiceDetail } from "../types/invoice.types";
 import { submissionGate } from "./submission-gate";
 export function useCreateInvoice(api: WorkspaceApi, initial?: InvoiceDetail) {
   // Pin the version associated with the loaded form, even after token refresh.

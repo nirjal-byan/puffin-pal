@@ -36,15 +36,11 @@ export function CompanyLogoPicker({
         {label} <span className="optional">Optional</span>
       </div>
       <div className="company-logo-upload">
-        <div className={`company-logo-preview${value ? " has-image" : ""}${kind === "profile" ? " profile-picture-preview" : ""}`}>
+        <div
+          className={`company-logo-preview${value ? " has-image" : ""}${kind === "profile" ? " profile-picture-preview" : ""}`}
+        >
           {value ? (
-            <Image
-              src={value}
-              alt={`${label} preview`}
-              width={64}
-              height={64}
-              unoptimized
-            />
+            <Image src={value} alt={`${label} preview`} width={64} height={64} unoptimized />
           ) : (
             <svg
               width="28"
@@ -86,9 +82,7 @@ export function CompanyLogoPicker({
             )}
           </div>
           <p className="field-hint">PNG, JPEG or WebP · Up to 5 MB</p>
-          <p className="field-hint">
-            Resized automatically to fit your workspace.
-          </p>
+          <p className="field-hint">Resized automatically to fit your workspace.</p>
         </div>
       </div>
       <input

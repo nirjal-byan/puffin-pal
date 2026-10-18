@@ -4,13 +4,7 @@ import { Brand } from "../../../components/brand";
 import LoginLayout from "./layout";
 import { createRegistrationDraft } from "../../../lib/registration";
 import { RegistrationFields } from "./registration-fields";
-import {
-  useEffect,
-  useLayoutEffect,
-  useRef,
-  useState,
-  type FormEvent,
-} from "react";
+import { useEffect, useLayoutEffect, useRef, useState, type FormEvent } from "react";
 import { apiRequest, errorMessage, type Session } from "../../../lib/api";
 
 export default function LoginPage({
@@ -62,16 +56,11 @@ export default function LoginPage({
     const card = cardRef.current;
     if (!card) return;
     const from =
-      cardAnimation.current?.playState === "running"
-        ? card.offsetHeight
-        : previousHeight.current;
+      cardAnimation.current?.playState === "running" ? card.offsetHeight : previousHeight.current;
     cardAnimation.current?.cancel();
     const to = card.offsetHeight;
     previousHeight.current = to;
-    if (
-      from !== null &&
-      !window.matchMedia("(prefers-reduced-motion: reduce)").matches
-    ) {
+    if (from !== null && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
       cardAnimation.current = card.animate(
         [
           { height: `${from}px`, overflow: "hidden" },
@@ -108,15 +97,15 @@ export default function LoginPage({
     if (signup && signupStep === 1 && !registrationDraft.employeeCount) {
       setError("Choose the number of employees before continuing.");
       event.currentTarget
-        .querySelector<HTMLButtonElement>(
-          '[data-dropdown-name="employeeCount"]',
-        )
+        .querySelector<HTMLButtonElement>('[data-dropdown-name="employeeCount"]')
         ?.focus();
       return;
     }
     if (signup && signupStep === 1 && !registrationDraft.currency) {
       setError("Choose your workspace currency before continuing.");
-      event.currentTarget.querySelector<HTMLButtonElement>('[data-dropdown-name="currency"]')?.focus();
+      event.currentTarget
+        .querySelector<HTMLButtonElement>('[data-dropdown-name="currency"]')
+        ?.focus();
       return;
     }
     if (signup && signupStep < 2) {
@@ -133,44 +122,33 @@ export default function LoginPage({
     }
     setBusy(true);
     const credentials = {
-      organizationSlug: String(data.get("organizationSlug"))
-        .trim()
-        .toLowerCase(),
+      organizationSlug: String(data.get("organizationSlug")).trim().toLowerCase(),
       email: String(data.get("email")).trim().toLowerCase(),
       password: String(data.get("password")),
     };
     try {
-      const session = await apiRequest<Session>(
-        signup ? "/auth/signup" : "/auth/login",
-        {
-          method: "POST",
-          body: signup
-            ? {
-                ...credentials,
-                organizationName: String(data.get("organizationName")),
-                ...(registrationDraft.logoUrl
-                  ? { logoUrl: registrationDraft.logoUrl }
-                  : {}),
-                fullName: [
-                  data.get("firstName"),
-                  data.get("middleName"),
-                  data.get("lastName"),
-                ]
-                  .map((part) => String(part ?? "").trim())
-                  .filter(Boolean)
-                  .join(" "),
-                firstName: String(data.get("firstName")).trim(),
-                middleName: String(data.get("middleName") ?? "").trim(),
-                lastName: String(data.get("lastName")).trim(),
-                phoneNumber: String(data.get("phoneNumber")),
-                companyWebsite: String(data.get("companyWebsite")).trim(),
-                employeeCount: String(data.get("employeeCount")),
-                currency: String(data.get("currency")),
-                confirmPassword: String(data.get("confirmPassword")),
-              }
-            : credentials,
-        },
-      );
+      const session = await apiRequest<Session>(signup ? "/auth/signup" : "/auth/login", {
+        method: "POST",
+        body: signup
+          ? {
+              ...credentials,
+              organizationName: String(data.get("organizationName")),
+              ...(registrationDraft.logoUrl ? { logoUrl: registrationDraft.logoUrl } : {}),
+              fullName: [data.get("firstName"), data.get("middleName"), data.get("lastName")]
+                .map((part) => String(part ?? "").trim())
+                .filter(Boolean)
+                .join(" "),
+              firstName: String(data.get("firstName")).trim(),
+              middleName: String(data.get("middleName") ?? "").trim(),
+              lastName: String(data.get("lastName")).trim(),
+              phoneNumber: String(data.get("phoneNumber")),
+              companyWebsite: String(data.get("companyWebsite")).trim(),
+              employeeCount: String(data.get("employeeCount")),
+              currency: String(data.get("currency")),
+              confirmPassword: String(data.get("confirmPassword")),
+            }
+          : credentials,
+      });
       onAuthenticated(session);
     } catch (failure) {
       setError(errorMessage(failure));
@@ -180,11 +158,7 @@ export default function LoginPage({
   }
   return (
     <LoginLayout formAreaRef={formAreaRef} signup={signup}>
-      <div
-        className="auth-form-card"
-        ref={cardRef}
-        data-mode={signup ? "signup" : "login"}
-      >
+      <div className="auth-form-card" ref={cardRef} data-mode={signup ? "signup" : "login"}>
         {signup && (
           <button
             type="button"
@@ -202,10 +176,7 @@ export default function LoginPage({
           {signup ? "Create your workspace" : "Log in"}
         </h2>
         {signup && (
-          <ol
-            className="registration-progress"
-            aria-label="Registration progress"
-          >
+          <ol className="registration-progress" aria-label="Registration progress">
             {["Your details", "Company", "Security"].map((label, index) => (
               <li
                 key={label}
@@ -228,11 +199,7 @@ export default function LoginPage({
             {error}
           </p>
         )}
-        <form
-          onSubmit={submit}
-          noValidate={signup}
-          key={signup ? "signup" : "login"}
-        >
+        <form onSubmit={submit} noValidate={signup} key={signup ? "signup" : "login"}>
           <fieldset disabled={busy} className="form-fields">
             {signup ? (
               <RegistrationFields
@@ -282,9 +249,7 @@ export default function LoginPage({
                     required
                     minLength={signup ? 12 : 1}
                     maxLength={128}
-                    placeholder={
-                      signup ? "At least 12 characters" : "Your password"
-                    }
+                    placeholder={signup ? "At least 12 characters" : "Your password"}
                     autoComplete={signup ? "new-password" : "current-password"}
                   />
                 </label>
@@ -296,8 +261,7 @@ export default function LoginPage({
                   className="button secondary"
                   type="button"
                   onClick={() => {
-                    previousHeight.current =
-                      cardRef.current?.offsetHeight ?? null;
+                    previousHeight.current = cardRef.current?.offsetHeight ?? null;
                     setSignupStep((step) => step - 1);
                     setError("");
                   }}
@@ -305,10 +269,7 @@ export default function LoginPage({
                   ← Previous
                 </button>
               )}
-              <button
-                className={`button primary ${signup ? "" : "full"}`}
-                type="submit"
-              >
+              <button className={`button primary ${signup ? "" : "full"}`} type="submit">
                 {busy
                   ? "Creating workspace…"
                   : signup
@@ -333,9 +294,7 @@ export default function LoginPage({
             </button>
           </p>
         )}
-        <p className="auth-note">
-          Each organization has its own accounts and business records.
-        </p>
+        <p className="auth-note">Each organization has its own accounts and business records.</p>
       </div>
     </LoginLayout>
   );

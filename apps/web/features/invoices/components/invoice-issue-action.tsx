@@ -45,9 +45,7 @@ export function InvoiceIssueAction({
       setFailure(errorMessage(error));
       // A lost response may follow a committed issuance. Read before retrying.
       setReloadRequired(
-        !(error instanceof ApiError) ||
-          error.status === 409 ||
-          error.status >= 500,
+        !(error instanceof ApiError) || error.status === 409 || error.status >= 500,
       );
     } finally {
       pending.current = false;
@@ -86,12 +84,11 @@ export function InvoiceIssueAction({
           {reviewed.client.name} · {currency} {reviewed.total}
         </p>
         <p>
-          Issue date: {reviewed.issueDate.slice(0, 10)} · Due date:{" "}
-          {reviewed.dueDate.slice(0, 10)}
+          Issue date: {reviewed.issueDate.slice(0, 10)} · Due date: {reviewed.dueDate.slice(0, 10)}
         </p>
         <p>
-          Issuing finalizes this invoice. Its billing details, dates and amounts
-          will be locked, and it cannot be edited or deleted.
+          Issuing finalizes this invoice. Its billing details, dates and amounts will be locked, and
+          it cannot be edited or deleted.
         </p>
         {failure && (
           <p className="alert" role="alert">
@@ -120,12 +117,7 @@ export function InvoiceIssueAction({
               Reload latest invoice
             </button>
           ) : (
-            <button
-              type="button"
-              className="button"
-              disabled={busy}
-              onClick={issue}
-            >
+            <button type="button" className="button" disabled={busy} onClick={issue}>
               {busy ? "Issuing…" : "Confirm issuance"}
             </button>
           )}
