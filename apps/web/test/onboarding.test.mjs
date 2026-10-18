@@ -102,6 +102,26 @@ test("current feature steps are permission scoped", () => {
   assert.ok(!employeeViewer.some((step) => step.id === "salaries"));
   assert.ok(!tourSteps(["expenses:read"]).some((step) => step.id === "expense-approvals"));
 });
+
+test("record-dependent features use stable page-level spotlights", () => {
+  const steps = tourSteps([
+    "invoices:read",
+    "invoices:record-payment",
+    "expenses:read",
+    "expenses:approve",
+    "employees:read",
+    "salaries:read",
+  ]);
+  for (const id of [
+    "issuance",
+    "payment-basics",
+    "bulk-exports",
+    "expense-approvals",
+    "salaries",
+  ]) {
+    assert.equal(steps.find((step) => step.id === id)?.target, "page-heading");
+  }
+});
 test("missing, hidden and zero-size targets are unavailable", (t) => {
   globalThis.getComputedStyle = () => ({ display: "block", visibility: "visible" });
   t.after(() => {
@@ -148,16 +168,12 @@ test("popover remains inside desktop, mobile and short viewports", () => {
 
 test("payment explanations follow permissions for readers and payment recorders", () => {
   const reader = tourSteps(["invoices:read"]);
-  for (const id of ["payment-balance", "payment-history", "payment-status"])
-    assert.ok(reader.some((step) => step.id === id));
-  for (const id of ["payment-basics", "record-payment"])
-    assert.ok(!reader.some((step) => step.id === id));
+  assert.ok(reader.some((step) => step.id === "issuance"));
+  assert.ok(!reader.some((step) => step.id === "payment-basics"));
   const writer = tourSteps(["invoices:read", "invoices:record-payment"]);
-  assert.equal(writer.find((step) => step.id === "record-payment").target, "record-payment");
-  assert.ok(writer.find((step) => step.id === "record-payment").detail);
-  assert.ok(
-    !tourSteps([]).some((step) => step.id.startsWith("payment-") || step.id === "record-payment"),
-  );
+  assert.equal(writer.find((step) => step.id === "payment-basics").target, "page-heading");
+  assert.equal(writer.find((step) => step.id === "payment-basics").route, "/invoices");
+  assert.ok(!tourSteps([]).some((step) => step.id === "payment-basics"));
 });
 test("old progress and completion survive new steps, which also resume during manual replay", () => {
   const old = { active: true, manual: false, step: "team" };
@@ -165,20 +181,21 @@ test("old progress and completion survive new steps, which also resume during ma
   assert.equal(initialTour({ onboardingStatus: "PENDING" }, null).step, "welcome");
   for (const status of ["LEGACY", "COMPLETED", "SKIPPED"])
     assert.equal(initialTour({ onboardingStatus: status }, null).active, false);
-  for (const step of [
-    "payment-basics",
-    "record-payment",
-    "payment-balance",
-    "payment-history",
-    "payment-status",
-  ]) {
+  for (const step of ["payment-basics", "record-payment", "payment-balance", "payment-history"]) {
     assert.equal(
       initialTour({ onboardingStatus: "IN_PROGRESS", onboardingStep: step }, null).step,
-      step,
+      "payment-basics",
     );
     const manual = { active: true, manual: true, step };
-    assert.deepEqual(initialTour({ onboardingStatus: "COMPLETED" }, manual), manual);
+    assert.deepEqual(initialTour({ onboardingStatus: "COMPLETED" }, manual), {
+      ...manual,
+      step: "payment-basics",
+    });
   }
+  assert.equal(
+    initialTour({ onboardingStatus: "IN_PROGRESS", onboardingStep: "payment-status" }, null).step,
+    "issuance",
+  );
 });
 test("payment tour chooses existing invoice links without making payments or inventing routes", () => {
   const route = "/invoices/12345678-1234-1234-1234-123456789abc";
@@ -204,10 +221,8 @@ test("payment tour chooses existing invoice links without making payments or inv
   ])
     assert.equal(invoiceTourRoute(bad), undefined);
 });
-test("missing payment steps can be skipped in either direction without trapping Back", () => {
+test("condensed payment step remains navigable in both directions", () => {
   const steps = tourSteps(["invoices:read", "invoices:record-payment"]);
-  assert.equal(adjacentStep(steps, "record-payment", 1), "payment-balance");
-  assert.equal(adjacentStep(steps, "record-payment", -1), "payment-basics");
-  assert.equal(adjacentStep(steps, "payment-history", 1), "payment-status");
-  assert.equal(adjacentStep(tourSteps(["invoices:read"]), "record-payment", 1), "payment-balance");
+  assert.equal(adjacentStep(steps, "payment-basics", 1), "bulk-exports");
+  assert.equal(adjacentStep(steps, "payment-basics", -1), "issuance");
 });

@@ -121,7 +121,7 @@ export function FinancialDashboard({ api }: { api: WorkspaceApi }) {
 
   return (
     <section className="financial-dashboard" aria-labelledby="financial-dashboard-title">
-      <div className="dashboard-heading-row">
+      <div className="dashboard-heading-row" data-tour="page-heading">
         <div>
           <h1 id="financial-dashboard-title">Financial overview</h1>
           <p>Track billing and cash flow at a glance.</p>

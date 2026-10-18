@@ -14,7 +14,7 @@ import {
   type TourState,
 } from "./tour";
 
-const TARGET_WAIT_MS = 2_500;
+const TARGET_WAIT_MS = 600;
 
 export function ProductTour({ session, api }: { session: Session; api: WorkspaceApi }) {
   const router = useRouter();
@@ -118,10 +118,18 @@ export function ProductTour({ session, api }: { session: Session; api: Workspace
     const started = performance.now();
     let frame = 0;
     const update = () => {
-      const element = step.target
+      const primary = step.target
         ? document.querySelector<HTMLElement>(`[data-tour="${step.target}"]`)
         : null;
-      const target = visibleTourTarget(element) ? element : null;
+      const fallback = step.target
+        ? document.querySelector<HTMLElement>('[data-tour="page-heading"]')
+        : null;
+      const elapsed = performance.now() - started;
+      const target = visibleTourTarget(primary)
+        ? primary
+        : elapsed >= TARGET_WAIT_MS && visibleTourTarget(fallback)
+          ? fallback
+          : null;
       const bounds = target?.getBoundingClientRect();
       const nextRect = bounds
         ? {
@@ -140,7 +148,7 @@ export function ProductTour({ session, api }: { session: Session; api: Workspace
         ),
       );
       if (target) target.scrollIntoView({ block: "center", behavior: "smooth" });
-      else if (performance.now() - started < TARGET_WAIT_MS) frame = requestAnimationFrame(update);
+      else if (elapsed < TARGET_WAIT_MS) frame = requestAnimationFrame(update);
     };
     update();
     const observer = new ResizeObserver(update);
@@ -170,7 +178,11 @@ export function ProductTour({ session, api }: { session: Session; api: Workspace
 
   return (
     <div className="tour-layer">
-      {rect ? <div className="tour-spotlight" style={rect} /> : <div className="tour-dim" />}
+      {onRoute && rect ? (
+        <div className="tour-spotlight" style={rect} />
+      ) : (
+        <div className="tour-dim" />
+      )}
       <div
         ref={panel}
         className="tour-panel"

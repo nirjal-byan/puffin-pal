@@ -64,59 +64,23 @@ export const TOUR_STEPS: readonly TutorialStep[] = [
     route: "/invoices",
     target: "page-heading",
     requiredPermissions: ["invoices:read"],
-    title: "Finalize, then download",
+    title: "Issue and track invoices",
     description:
-      "Owners and admins can issue a draft from its detail page. Issuance locks billing details and amounts; issued invoices can be downloaded as PDFs.",
+      "Issuing locks billing details and enables PDF downloads. The list then shows paid, outstanding, and overdue status.",
   },
   {
     id: "payment-basics",
     route: "/invoices",
     target: "page-heading",
     requiredPermissions: ["invoices:record-payment"],
-    title: "Record money received",
+    title: "Track payments",
     description:
-      "Open an issued invoice and choose Record Payment. Enter the amount, date and method. Record the full balance or a partial payment; nothing is submitted during this tour.",
-  },
-  {
-    id: "record-payment",
-    detail: true,
-    target: "record-payment",
-    requiredPermissions: ["invoices:record-payment"],
-    title: "Full or partial payments",
-    description:
-      "Use this button after receiving money. You can add a reference and notes. Each payment reduces the balance, and payments cannot exceed what is outstanding.",
-  },
-  {
-    id: "payment-balance",
-    detail: true,
-    target: "invoice-balances",
-    requiredPermissions: ["invoices:read"],
-    title: "See what remains",
-    description:
-      "Total paid adds up recorded payments. Outstanding shows what is still owed. A partial payment leaves a balance; paying in full marks the invoice PAID.",
-  },
-  {
-    id: "payment-history",
-    detail: true,
-    target: "payment-history",
-    requiredPermissions: ["invoices:read"],
-    title: "Review payment history",
-    description:
-      "Review each payment’s date, amount, method, reference and notes here. Recorded payments cannot be edited or removed.",
-  },
-  {
-    id: "payment-status",
-    route: "/invoices",
-    target: "page-heading",
-    requiredPermissions: ["invoices:read"],
-    title: "Know what is due",
-    description:
-      "The invoice list shows paid and outstanding amounts. PAID means no balance remains. OVERDUE appears when a balance remains after the due date, using UTC calendar days.",
+      "Record full or partial payments on issued invoices. Each entry updates the outstanding balance and stays available in payment history.",
   },
   {
     id: "bulk-exports",
     route: "/invoices",
-    target: "invoice-list",
+    target: "page-heading",
     requiredPermissions: ["invoices:read"],
     title: "Export invoice PDFs",
     description: "Select eligible invoices to prepare a private ZIP export in the background.",
@@ -132,7 +96,7 @@ export const TOUR_STEPS: readonly TutorialStep[] = [
   {
     id: "expense-approvals",
     route: "/?section=expenses&area=workspace",
-    target: "expense-list",
+    target: "page-heading",
     requiredPermissions: ["expenses:approve"],
     title: "Review submitted expenses",
     description: "Approve or reject pending expenses and review their approval history.",
@@ -156,7 +120,7 @@ export const TOUR_STEPS: readonly TutorialStep[] = [
   {
     id: "salaries",
     route: "/?section=employees",
-    target: "employee-list",
+    target: "page-heading",
     requiredPermissions: ["salaries:read"],
     title: "Review compensation history",
     description: "Authorized users can view effective-dated salaries and compensation components.",
@@ -192,6 +156,19 @@ export interface TourState {
   invoiceRoute?: string;
   direction?: 1 | -1;
 }
+const LEGACY_STEP_ALIASES: Readonly<Record<string, string>> = {
+  "record-payment": "payment-basics",
+  "payment-balance": "payment-basics",
+  "payment-history": "payment-basics",
+  "payment-status": "issuance",
+};
+
+function currentStepId(value: unknown) {
+  if (typeof value !== "string") return undefined;
+  const candidate = LEGACY_STEP_ALIASES[value] ?? value;
+  return TOUR_STEPS.some((step) => step.id === candidate) ? candidate : undefined;
+}
+
 export function invoiceTourRoute(value: unknown): string | undefined {
   return typeof value === "string" &&
     /^\/invoices\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value)
@@ -218,17 +195,18 @@ export function tourSteps(permissions: readonly Permission[]) {
   );
 }
 export function initialTour(user: User, saved: unknown): TourState {
+  const savedStep =
+    saved && typeof saved === "object" && "step" in saved ? currentStepId(saved.step) : undefined;
   if (
     saved &&
     typeof saved === "object" &&
-    "step" in saved &&
-    TOUR_STEPS.some((step) => step.id === saved.step) &&
+    savedStep &&
     "active" in saved &&
     typeof saved.active === "boolean" &&
     "manual" in saved &&
     typeof saved.manual === "boolean"
   ) {
-    const state = saved as TourState;
+    const state = { ...(saved as TourState), step: savedStep };
     if (
       state.manual ||
       !state.active ||
@@ -240,9 +218,8 @@ export function initialTour(user: User, saved: unknown): TourState {
     active: user.onboardingStatus === "PENDING" || user.onboardingStatus === "IN_PROGRESS",
     manual: false,
     step:
-      user.onboardingStatus === "IN_PROGRESS" &&
-      TOUR_STEPS.some((step) => step.id === user.onboardingStep)
-        ? user.onboardingStep!
+      user.onboardingStatus === "IN_PROGRESS"
+        ? (currentStepId(user.onboardingStep) ?? "welcome")
         : "welcome",
   };
 }
