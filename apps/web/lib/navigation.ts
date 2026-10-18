@@ -4,6 +4,7 @@ export type Tab =
   | "overview"
   | "clients"
   | "members"
+  | "employees"
   | "invoices"
   | "expenses"
   | "retainers"
@@ -18,6 +19,7 @@ export const NAV: {
 }[] = [
   { key: "overview", label: "Overview", icon: "", permission: "profile:read" },
   { key: "clients", label: "Clients", icon: "◈", permission: "clients:read" },
+  { key: "employees", label: "Employees", icon: "♙", permission: "employees:read" },
   {
     key: "invoices",
     label: "Invoices",
@@ -60,7 +62,7 @@ export const NAV: {
 export type NavigationSection = "workspace" | "people" | "settings";
 export const NAV_SECTIONS: { key: NavigationSection; label: string; tabs: Tab[] }[] = [
   { key: "workspace", label: "Workspace", tabs: ["overview", "clients", "invoices", "expenses", "retainers"] },
-  { key: "people", label: "People", tabs: ["clients", "members"] },
+  { key: "people", label: "People", tabs: ["clients", "employees", "members"] },
   { key: "settings", label: "Settings", tabs: ["profile", "password", "access"] },
 ];
 
@@ -95,6 +97,7 @@ export const ICON_PATHS: Record<Tab, string> = {
     "M16 7a6 6 0 0 0-10-2L3 8 M3 3v5h5 M4 13a6 6 0 0 0 10 2l3-3 M17 17v-5h-5",
   members:
     "M7 9a3 3 0 1 0 0-6a3 3 0 1 0 0 6 M2 17v-2a5 5 0 0 1 10 0v2 M14 4a3 3 0 0 1 0 6 M15 12a4 4 0 0 1 3 4v1",
+  employees: "M10 10a4 4 0 1 0 0-8a4 4 0 1 0 0 8 M3 18v-1a7 7 0 0 1 14 0v1 M15 3h3 M16.5 1.5v3",
   access: "M10 2l7 3v5c0 4-7 8-7 8S3 14 3 10V5z M7 10l2 2 4-4",
 };
 
@@ -104,6 +107,7 @@ export const DESCRIPTION: Record<Tab, string> = {
   password: "Update the password you use to sign in.",
   clients: "The people and businesses you work with.",
   members: "The right people. The right permissions.",
+  employees: "Your employee directory and compensation history.",
   invoices: "Your organization’s invoice records.",
   expenses: "Keep an eye on your business spending.",
   retainers: "Your recurring client relationships.",

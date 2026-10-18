@@ -11,6 +11,12 @@ export const PERMISSIONS = [
   "organization:update",
   "members:read",
   "members:manage",
+  "employees:read",
+  "employees:create",
+  "employees:update",
+  "employees:manage",
+  "salaries:read",
+  "salaries:manage",
   "clients:read",
   "clients:create",
   "clients:update",
@@ -37,6 +43,7 @@ export type Permission = (typeof PERMISSIONS)[number];
 const readPermissions: readonly Permission[] = [
   "profile:read",
   "organization:read",
+  "employees:read",
   "clients:read",
   "invoices:read",
   "expenses:read",
@@ -58,7 +65,7 @@ export const ROLE_PERMISSIONS: Readonly<Record<Role, readonly Permission[]>> =
       "retainers:create",
       "retainers:update",
     ] as Permission[]),
-    FINANCE_VIEWER: Object.freeze([...readPermissions]),
+    FINANCE_VIEWER: Object.freeze([...readPermissions, "salaries:read"] as Permission[]),
   });
 export function isRole(value: unknown): value is Role {
   return typeof value === "string" && ROLES.some((role) => role === value);

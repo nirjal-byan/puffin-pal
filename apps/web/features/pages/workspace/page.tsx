@@ -44,6 +44,7 @@ import ChangePasswordPage from "../change-password/page";
 import InvoicesPage from "../invoices/page";
 import ExpensesPage from "../expenses/page";
 import RetainersPage from "../retainers/page";
+import EmployeesPage from "../employees/page";
 
 export default function WorkspacePage({
   session,
@@ -134,7 +135,7 @@ export default function WorkspacePage({
     if (
       invoiceId ||
       ["overview", "access", "profile", "password"].includes(tab) ||
-      tab === "expenses" || tab === "retainers" ||
+      tab === "expenses" || tab === "retainers" || tab === "employees" ||
       !allowed
     )
       return;
@@ -354,6 +355,8 @@ export default function WorkspacePage({
             />
           ) : tab === "retainers" ? (
             <RetainersPage api={api} currency={session.organization.currency} permissions={session.permissions} onSaved={recordNotification} />
+          ) : tab === "employees" ? (
+            <EmployeesPage api={api} currency={session.organization.currency} permissions={session.permissions} onSaved={recordNotification} />
           ) : loading ? (
             <section className="panel loading" role="status">
               <span className="spinner" />

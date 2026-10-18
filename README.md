@@ -57,6 +57,14 @@ Owners and administrators can view organization members, add users with supporte
 
 **Why it matters:** Access can grow with the business while remaining understandable and auditable.
 
+### Employee Directory & Salary Structures
+
+Employee records are independent from login accounts and include employment type, status, department, manager, contact details, and lifecycle dates. Owners and administrators maintain effective-dated salary structures, while separate salary permissions keep compensation out of ordinary directory responses.
+
+**Real-world example:** Kestrel IT Services organizes staff by department, records a manager hierarchy, and schedules a new salary rate without losing the employee's prior compensation history.
+
+**Why it matters:** Organizations can manage people and confidential compensation history without granting every employee an application account or mixing payroll records with access control.
+
 ### Client Management
 
 Users can create, edit, list, and delete organization-scoped client profiles containing names, email addresses, companies, and tax identifiers. Invoice forms use these client records as the source for billing details.
@@ -426,8 +434,7 @@ puffin-pal/
 
 The following capabilities are future work and are not part of the current implementation:
 
-- Employee profiles and organization directories
-- Salary structures and payroll calculations
+- Payroll calculations and tax withholding
 - Payslip generation
 - Attendance and leave management
 - Cash-flow forecasting
@@ -445,4 +452,5 @@ The following capabilities are future work and are not part of the current imple
 - [Background jobs](knowledge/background-jobs.md)
 - [Expense approvals](knowledge/expense-approvals.md)
 - [Recurring invoices](knowledge/recurring-invoices.md)
+- [Employee management](knowledge/employee-management.md)
 - [Docker deployment](knowledge/docker-deployment.md)

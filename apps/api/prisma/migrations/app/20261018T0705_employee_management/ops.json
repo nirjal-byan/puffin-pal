@@ -1,0 +1,1499 @@
+[
+  {
+    "id": "table.departments",
+    "label": "Create table \"departments\"",
+    "summary": "Creates table \"departments\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "departments"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"departments\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"departments\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"departments\"",
+        "sql": "CREATE TABLE \"public\".\"departments\" (\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"description\" text,\n  \"id\" text NOT NULL,\n  \"name\" text NOT NULL,\n  \"organizationId\" text NOT NULL,\n  \"updatedAt\" timestamptz NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"departments\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"departments\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.employee_audit_events",
+    "label": "Create table \"employee_audit_events\"",
+    "summary": "Creates table \"employee_audit_events\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "employee_audit_events"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"employee_audit_events\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"employee_audit_events\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"employee_audit_events\"",
+        "sql": "CREATE TABLE \"public\".\"employee_audit_events\" (\n  \"action\" text NOT NULL,\n  \"actorId\" text NOT NULL,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"details\" text,\n  \"employeeId\" text NOT NULL,\n  \"id\" text NOT NULL,\n  \"organizationId\" text NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"employee_audit_events_action_check_9545292c\" CHECK (\"action\" IN ('CREATED', 'UPDATED', 'STATUS_CHANGED', 'TERMINATED', 'SALARY_CREATED'))\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"employee_audit_events\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"employee_audit_events\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.employees",
+    "label": "Create table \"employees\"",
+    "summary": "Creates table \"employees\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "employees"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"employees\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"employees\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"employees\"",
+        "sql": "CREATE TABLE \"public\".\"employees\" (\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"departmentId\" text,\n  \"employeeCode\" text NOT NULL,\n  \"employmentType\" text NOT NULL,\n  \"firstName\" text NOT NULL,\n  \"hireDate\" timestamptz NOT NULL,\n  \"id\" text NOT NULL,\n  \"jobTitle\" text NOT NULL,\n  \"lastName\" text NOT NULL,\n  \"linkedUserId\" text,\n  \"managerId\" text,\n  \"organizationId\" text NOT NULL,\n  \"phoneNumber\" text,\n  \"status\" text DEFAULT 'ACTIVE' NOT NULL,\n  \"terminationDate\" timestamptz,\n  \"updatedAt\" timestamptz NOT NULL,\n  \"version\" int4 DEFAULT 1 NOT NULL,\n  \"workEmail\" text,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"employees_employmentType_check_a3ef5608\" CHECK (\"employmentType\" IN ('FULL_TIME', 'PART_TIME', 'CONTRACT', 'INTERN')),\n  CONSTRAINT \"employees_status_check_fa83b510\" CHECK (\"status\" IN ('ACTIVE', 'ON_LEAVE', 'INACTIVE', 'TERMINATED'))\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"employees\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"employees\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.salary_components",
+    "label": "Create table \"salary_components\"",
+    "summary": "Creates table \"salary_components\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "salary_components"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"salary_components\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"salary_components\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"salary_components\"",
+        "sql": "CREATE TABLE \"public\".\"salary_components\" (\n  \"amount\" numeric(12,2) NOT NULL,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"id\" text NOT NULL,\n  \"name\" text NOT NULL,\n  \"organizationId\" text NOT NULL,\n  \"salaryStructureId\" text NOT NULL,\n  \"type\" text NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"salary_components_type_check_950f4ce8\" CHECK (\"type\" IN ('EARNING', 'DEDUCTION'))\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"salary_components\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"salary_components\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.salary_structures",
+    "label": "Create table \"salary_structures\"",
+    "summary": "Creates table \"salary_structures\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "salary_structures"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"salary_structures\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"salary_structures\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"salary_structures\"",
+        "sql": "CREATE TABLE \"public\".\"salary_structures\" (\n  \"baseAmount\" numeric(12,2) NOT NULL,\n  \"compensationType\" text NOT NULL,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"createdById\" text NOT NULL,\n  \"currency\" text NOT NULL,\n  \"effectiveFrom\" timestamptz NOT NULL,\n  \"effectiveTo\" timestamptz,\n  \"employeeId\" text NOT NULL,\n  \"id\" text NOT NULL,\n  \"notes\" text,\n  \"organizationId\" text NOT NULL,\n  \"payFrequency\" text NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"salary_structures_compensationType_check_1a0d65c2\" CHECK (\"compensationType\" IN ('FIXED_SALARY', 'HOURLY')),\n  CONSTRAINT \"salary_structures_payFrequency_check_01d702e4\" CHECK (\"payFrequency\" IN ('MONTHLY', 'BIWEEKLY', 'WEEKLY'))\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"salary_structures\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"salary_structures\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.departments.departments_organizationId_id_key",
+    "label": "Add unique constraint on \"departments\" (organizationId, id)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "departments_organizationId_id_key",
+        "table": "departments"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"departments_organizationId_id_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "departments_organizationId_id_key",
+          "public",
+          "\"public\".\"departments\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"departments_organizationId_id_key\"",
+        "sql": "ALTER TABLE \"public\".\"departments\" ADD CONSTRAINT \"departments_organizationId_id_key\" UNIQUE (\"organizationId\", \"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"departments_organizationId_id_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "departments_organizationId_id_key",
+          "public",
+          "\"public\".\"departments\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.departments.departments_organizationId_name_key",
+    "label": "Add unique constraint on \"departments\" (organizationId, name)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "departments_organizationId_name_key",
+        "table": "departments"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"departments_organizationId_name_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "departments_organizationId_name_key",
+          "public",
+          "\"public\".\"departments\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"departments_organizationId_name_key\"",
+        "sql": "ALTER TABLE \"public\".\"departments\" ADD CONSTRAINT \"departments_organizationId_name_key\" UNIQUE (\"organizationId\", \"name\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"departments_organizationId_name_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "departments_organizationId_name_key",
+          "public",
+          "\"public\".\"departments\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.employees.employees_organizationId_id_key",
+    "label": "Add unique constraint on \"employees\" (organizationId, id)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "employees_organizationId_id_key",
+        "table": "employees"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"employees_organizationId_id_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "employees_organizationId_id_key",
+          "public",
+          "\"public\".\"employees\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"employees_organizationId_id_key\"",
+        "sql": "ALTER TABLE \"public\".\"employees\" ADD CONSTRAINT \"employees_organizationId_id_key\" UNIQUE (\"organizationId\", \"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"employees_organizationId_id_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "employees_organizationId_id_key",
+          "public",
+          "\"public\".\"employees\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.employees.employees_organizationId_employeeCode_key",
+    "label": "Add unique constraint on \"employees\" (organizationId, employeeCode)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "employees_organizationId_employeeCode_key",
+        "table": "employees"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"employees_organizationId_employeeCode_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "employees_organizationId_employeeCode_key",
+          "public",
+          "\"public\".\"employees\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"employees_organizationId_employeeCode_key\"",
+        "sql": "ALTER TABLE \"public\".\"employees\" ADD CONSTRAINT \"employees_organizationId_employeeCode_key\" UNIQUE (\"organizationId\", \"employeeCode\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"employees_organizationId_employeeCode_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "employees_organizationId_employeeCode_key",
+          "public",
+          "\"public\".\"employees\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.employees.employees_organizationId_linkedUserId_key",
+    "label": "Add unique constraint on \"employees\" (organizationId, linkedUserId)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "employees_organizationId_linkedUserId_key",
+        "table": "employees"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"employees_organizationId_linkedUserId_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "employees_organizationId_linkedUserId_key",
+          "public",
+          "\"public\".\"employees\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"employees_organizationId_linkedUserId_key\"",
+        "sql": "ALTER TABLE \"public\".\"employees\" ADD CONSTRAINT \"employees_organizationId_linkedUserId_key\" UNIQUE (\"organizationId\", \"linkedUserId\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"employees_organizationId_linkedUserId_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "employees_organizationId_linkedUserId_key",
+          "public",
+          "\"public\".\"employees\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.salary_structures.salary_structures_organizationId_id_key",
+    "label": "Add unique constraint on \"salary_structures\" (organizationId, id)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "salary_structures_organizationId_id_key",
+        "table": "salary_structures"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"salary_structures_organizationId_id_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "salary_structures_organizationId_id_key",
+          "public",
+          "\"public\".\"salary_structures\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"salary_structures_organizationId_id_key\"",
+        "sql": "ALTER TABLE \"public\".\"salary_structures\" ADD CONSTRAINT \"salary_structures_organizationId_id_key\" UNIQUE (\"organizationId\", \"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"salary_structures_organizationId_id_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "salary_structures_organizationId_id_key",
+          "public",
+          "\"public\".\"salary_structures\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.departments.departments_organizationId_idx_2e17ef41",
+    "label": "Create index \"departments_organizationId_idx_2e17ef41\" on \"departments\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "departments_organizationId_idx_2e17ef41",
+        "table": "departments"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"departments_organizationId_idx_2e17ef41\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"departments_organizationId_idx_2e17ef41\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"departments_organizationId_idx_2e17ef41\"",
+        "sql": "CREATE INDEX \"departments_organizationId_idx_2e17ef41\" ON \"public\".\"departments\" (\"organizationId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"departments_organizationId_idx_2e17ef41\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"departments_organizationId_idx_2e17ef41\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.employee_audit_events.employee_audit_created_idx",
+    "label": "Create index \"employee_audit_created_idx\" on \"employee_audit_events\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "employee_audit_created_idx",
+        "table": "employee_audit_events"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"employee_audit_created_idx\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"employee_audit_created_idx\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"employee_audit_created_idx\"",
+        "sql": "CREATE INDEX \"employee_audit_created_idx\" ON \"public\".\"employee_audit_events\" (\"organizationId\", \"employeeId\", \"createdAt\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"employee_audit_created_idx\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"employee_audit_created_idx\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.employee_audit_events.employee_audit_events_organizationId_actorId_idx_327c2974",
+    "label": "Create index \"employee_audit_events_organizationId_actorId_idx_327c2974\" on \"employee_audit_events\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "employee_audit_events_organizationId_actorId_idx_327c2974",
+        "table": "employee_audit_events"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"employee_audit_events_organizationId_actorId_idx_327c2974\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"employee_audit_events_organizationId_actorId_idx_327c2974\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"employee_audit_events_organizationId_actorId_idx_327c2974\"",
+        "sql": "CREATE INDEX \"employee_audit_events_organizationId_actorId_idx_327c2974\" ON \"public\".\"employee_audit_events\" (\"organizationId\", \"actorId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"employee_audit_events_organizationId_actorId_idx_327c2974\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"employee_audit_events_organizationId_actorId_idx_327c2974\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.employee_audit_events.employee_audit_events_organizationId_employeeId_idx_f6f89764",
+    "label": "Create index \"employee_audit_events_organizationId_employeeId_idx_f6f89764\" on \"employee_audit_events\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "employee_audit_events_organizationId_employeeId_idx_f6f89764",
+        "table": "employee_audit_events"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"employee_audit_events_organizationId_employeeId_idx_f6f89764\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"employee_audit_events_organizationId_employeeId_idx_f6f89764\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"employee_audit_events_organizationId_employeeId_idx_f6f89764\"",
+        "sql": "CREATE INDEX \"employee_audit_events_organizationId_employeeId_idx_f6f89764\" ON \"public\".\"employee_audit_events\" (\"organizationId\", \"employeeId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"employee_audit_events_organizationId_employeeId_idx_f6f89764\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"employee_audit_events_organizationId_employeeId_idx_f6f89764\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.employee_audit_events.employee_audit_events_organizationId_idx_2e17ef41",
+    "label": "Create index \"employee_audit_events_organizationId_idx_2e17ef41\" on \"employee_audit_events\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "employee_audit_events_organizationId_idx_2e17ef41",
+        "table": "employee_audit_events"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"employee_audit_events_organizationId_idx_2e17ef41\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"employee_audit_events_organizationId_idx_2e17ef41\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"employee_audit_events_organizationId_idx_2e17ef41\"",
+        "sql": "CREATE INDEX \"employee_audit_events_organizationId_idx_2e17ef41\" ON \"public\".\"employee_audit_events\" (\"organizationId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"employee_audit_events_organizationId_idx_2e17ef41\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"employee_audit_events_organizationId_idx_2e17ef41\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.employees.employees_organizationId_departmentId_idx_425ca78f",
+    "label": "Create index \"employees_organizationId_departmentId_idx_425ca78f\" on \"employees\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "employees_organizationId_departmentId_idx_425ca78f",
+        "table": "employees"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"employees_organizationId_departmentId_idx_425ca78f\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"employees_organizationId_departmentId_idx_425ca78f\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"employees_organizationId_departmentId_idx_425ca78f\"",
+        "sql": "CREATE INDEX \"employees_organizationId_departmentId_idx_425ca78f\" ON \"public\".\"employees\" (\"organizationId\", \"departmentId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"employees_organizationId_departmentId_idx_425ca78f\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"employees_organizationId_departmentId_idx_425ca78f\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.employees.employees_organizationId_idx_2e17ef41",
+    "label": "Create index \"employees_organizationId_idx_2e17ef41\" on \"employees\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "employees_organizationId_idx_2e17ef41",
+        "table": "employees"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"employees_organizationId_idx_2e17ef41\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"employees_organizationId_idx_2e17ef41\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"employees_organizationId_idx_2e17ef41\"",
+        "sql": "CREATE INDEX \"employees_organizationId_idx_2e17ef41\" ON \"public\".\"employees\" (\"organizationId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"employees_organizationId_idx_2e17ef41\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"employees_organizationId_idx_2e17ef41\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.employees.employees_organizationId_managerId_idx_256b438c",
+    "label": "Create index \"employees_organizationId_managerId_idx_256b438c\" on \"employees\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "employees_organizationId_managerId_idx_256b438c",
+        "table": "employees"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"employees_organizationId_managerId_idx_256b438c\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"employees_organizationId_managerId_idx_256b438c\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"employees_organizationId_managerId_idx_256b438c\"",
+        "sql": "CREATE INDEX \"employees_organizationId_managerId_idx_256b438c\" ON \"public\".\"employees\" (\"organizationId\", \"managerId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"employees_organizationId_managerId_idx_256b438c\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"employees_organizationId_managerId_idx_256b438c\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.employees.employees_organizationId_status_idx_21af5e82",
+    "label": "Create index \"employees_organizationId_status_idx_21af5e82\" on \"employees\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "employees_organizationId_status_idx_21af5e82",
+        "table": "employees"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"employees_organizationId_status_idx_21af5e82\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"employees_organizationId_status_idx_21af5e82\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"employees_organizationId_status_idx_21af5e82\"",
+        "sql": "CREATE INDEX \"employees_organizationId_status_idx_21af5e82\" ON \"public\".\"employees\" (\"organizationId\", \"status\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"employees_organizationId_status_idx_21af5e82\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"employees_organizationId_status_idx_21af5e82\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.salary_components.salary_component_structure_idx",
+    "label": "Create index \"salary_component_structure_idx\" on \"salary_components\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "salary_component_structure_idx",
+        "table": "salary_components"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"salary_component_structure_idx\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"salary_component_structure_idx\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"salary_component_structure_idx\"",
+        "sql": "CREATE INDEX \"salary_component_structure_idx\" ON \"public\".\"salary_components\" (\"organizationId\", \"salaryStructureId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"salary_component_structure_idx\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"salary_component_structure_idx\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.salary_structures.salary_employee_effective_idx",
+    "label": "Create index \"salary_employee_effective_idx\" on \"salary_structures\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "salary_employee_effective_idx",
+        "table": "salary_structures"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"salary_employee_effective_idx\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"salary_employee_effective_idx\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"salary_employee_effective_idx\"",
+        "sql": "CREATE INDEX \"salary_employee_effective_idx\" ON \"public\".\"salary_structures\" (\"organizationId\", \"employeeId\", \"effectiveFrom\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"salary_employee_effective_idx\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"salary_employee_effective_idx\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.salary_structures.salary_structures_organizationId_createdById_idx_4fb80a04",
+    "label": "Create index \"salary_structures_organizationId_createdById_idx_4fb80a04\" on \"salary_structures\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "salary_structures_organizationId_createdById_idx_4fb80a04",
+        "table": "salary_structures"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"salary_structures_organizationId_createdById_idx_4fb80a04\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"salary_structures_organizationId_createdById_idx_4fb80a04\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"salary_structures_organizationId_createdById_idx_4fb80a04\"",
+        "sql": "CREATE INDEX \"salary_structures_organizationId_createdById_idx_4fb80a04\" ON \"public\".\"salary_structures\" (\"organizationId\", \"createdById\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"salary_structures_organizationId_createdById_idx_4fb80a04\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"salary_structures_organizationId_createdById_idx_4fb80a04\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.salary_structures.salary_structures_organizationId_employeeId_idx_f6f89764",
+    "label": "Create index \"salary_structures_organizationId_employeeId_idx_f6f89764\" on \"salary_structures\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "salary_structures_organizationId_employeeId_idx_f6f89764",
+        "table": "salary_structures"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"salary_structures_organizationId_employeeId_idx_f6f89764\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"salary_structures_organizationId_employeeId_idx_f6f89764\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"salary_structures_organizationId_employeeId_idx_f6f89764\"",
+        "sql": "CREATE INDEX \"salary_structures_organizationId_employeeId_idx_f6f89764\" ON \"public\".\"salary_structures\" (\"organizationId\", \"employeeId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"salary_structures_organizationId_employeeId_idx_f6f89764\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"salary_structures_organizationId_employeeId_idx_f6f89764\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.salary_structures.salary_structures_organizationId_idx_2e17ef41",
+    "label": "Create index \"salary_structures_organizationId_idx_2e17ef41\" on \"salary_structures\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "salary_structures_organizationId_idx_2e17ef41",
+        "table": "salary_structures"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"salary_structures_organizationId_idx_2e17ef41\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"salary_structures_organizationId_idx_2e17ef41\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"salary_structures_organizationId_idx_2e17ef41\"",
+        "sql": "CREATE INDEX \"salary_structures_organizationId_idx_2e17ef41\" ON \"public\".\"salary_structures\" (\"organizationId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"salary_structures_organizationId_idx_2e17ef41\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"salary_structures_organizationId_idx_2e17ef41\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.departments.departments_organizationId_fkey",
+    "label": "Add foreign key \"departments_organizationId_fkey\" on \"departments\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "departments_organizationId_fkey",
+        "table": "departments"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"departments_organizationId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "departments_organizationId_fkey",
+          "public",
+          "\"public\".\"departments\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"departments_organizationId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"departments\"\nADD CONSTRAINT \"departments_organizationId_fkey\"\nFOREIGN KEY (\"organizationId\")\nREFERENCES \"public\".\"organizations\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"departments_organizationId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "departments_organizationId_fkey",
+          "public",
+          "\"public\".\"departments\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.employee_audit_events.employee_audit_events_organizationId_fkey",
+    "label": "Add foreign key \"employee_audit_events_organizationId_fkey\" on \"employee_audit_events\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "employee_audit_events_organizationId_fkey",
+        "table": "employee_audit_events"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"employee_audit_events_organizationId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "employee_audit_events_organizationId_fkey",
+          "public",
+          "\"public\".\"employee_audit_events\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"employee_audit_events_organizationId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"employee_audit_events\"\nADD CONSTRAINT \"employee_audit_events_organizationId_fkey\"\nFOREIGN KEY (\"organizationId\")\nREFERENCES \"public\".\"organizations\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"employee_audit_events_organizationId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "employee_audit_events_organizationId_fkey",
+          "public",
+          "\"public\".\"employee_audit_events\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.employee_audit_events.employee_audit_events_organizationId_employeeId_fkey",
+    "label": "Add foreign key \"employee_audit_events_organizationId_employeeId_fkey\" on \"employee_audit_events\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "employee_audit_events_organizationId_employeeId_fkey",
+        "table": "employee_audit_events"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"employee_audit_events_organizationId_employeeId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "employee_audit_events_organizationId_employeeId_fkey",
+          "public",
+          "\"public\".\"employee_audit_events\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"employee_audit_events_organizationId_employeeId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"employee_audit_events\"\nADD CONSTRAINT \"employee_audit_events_organizationId_employeeId_fkey\"\nFOREIGN KEY (\"organizationId\", \"employeeId\")\nREFERENCES \"public\".\"employees\" (\"organizationId\", \"id\")\nON DELETE RESTRICT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"employee_audit_events_organizationId_employeeId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "employee_audit_events_organizationId_employeeId_fkey",
+          "public",
+          "\"public\".\"employee_audit_events\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.employee_audit_events.employee_audit_events_organizationId_actorId_fkey",
+    "label": "Add foreign key \"employee_audit_events_organizationId_actorId_fkey\" on \"employee_audit_events\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "employee_audit_events_organizationId_actorId_fkey",
+        "table": "employee_audit_events"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"employee_audit_events_organizationId_actorId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "employee_audit_events_organizationId_actorId_fkey",
+          "public",
+          "\"public\".\"employee_audit_events\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"employee_audit_events_organizationId_actorId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"employee_audit_events\"\nADD CONSTRAINT \"employee_audit_events_organizationId_actorId_fkey\"\nFOREIGN KEY (\"organizationId\", \"actorId\")\nREFERENCES \"public\".\"users\" (\"organizationId\", \"id\")\nON DELETE RESTRICT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"employee_audit_events_organizationId_actorId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "employee_audit_events_organizationId_actorId_fkey",
+          "public",
+          "\"public\".\"employee_audit_events\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.employees.employees_organizationId_fkey",
+    "label": "Add foreign key \"employees_organizationId_fkey\" on \"employees\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "employees_organizationId_fkey",
+        "table": "employees"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"employees_organizationId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "employees_organizationId_fkey",
+          "public",
+          "\"public\".\"employees\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"employees_organizationId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"employees\"\nADD CONSTRAINT \"employees_organizationId_fkey\"\nFOREIGN KEY (\"organizationId\")\nREFERENCES \"public\".\"organizations\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"employees_organizationId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "employees_organizationId_fkey",
+          "public",
+          "\"public\".\"employees\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.employees.employees_organizationId_departmentId_fkey",
+    "label": "Add foreign key \"employees_organizationId_departmentId_fkey\" on \"employees\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "employees_organizationId_departmentId_fkey",
+        "table": "employees"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"employees_organizationId_departmentId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "employees_organizationId_departmentId_fkey",
+          "public",
+          "\"public\".\"employees\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"employees_organizationId_departmentId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"employees\"\nADD CONSTRAINT \"employees_organizationId_departmentId_fkey\"\nFOREIGN KEY (\"organizationId\", \"departmentId\")\nREFERENCES \"public\".\"departments\" (\"organizationId\", \"id\")\nON DELETE RESTRICT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"employees_organizationId_departmentId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "employees_organizationId_departmentId_fkey",
+          "public",
+          "\"public\".\"employees\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.employees.employees_organizationId_managerId_fkey",
+    "label": "Add foreign key \"employees_organizationId_managerId_fkey\" on \"employees\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "employees_organizationId_managerId_fkey",
+        "table": "employees"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"employees_organizationId_managerId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "employees_organizationId_managerId_fkey",
+          "public",
+          "\"public\".\"employees\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"employees_organizationId_managerId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"employees\"\nADD CONSTRAINT \"employees_organizationId_managerId_fkey\"\nFOREIGN KEY (\"organizationId\", \"managerId\")\nREFERENCES \"public\".\"employees\" (\"organizationId\", \"id\")\nON DELETE RESTRICT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"employees_organizationId_managerId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "employees_organizationId_managerId_fkey",
+          "public",
+          "\"public\".\"employees\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.employees.employees_organizationId_linkedUserId_fkey",
+    "label": "Add foreign key \"employees_organizationId_linkedUserId_fkey\" on \"employees\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "employees_organizationId_linkedUserId_fkey",
+        "table": "employees"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"employees_organizationId_linkedUserId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "employees_organizationId_linkedUserId_fkey",
+          "public",
+          "\"public\".\"employees\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"employees_organizationId_linkedUserId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"employees\"\nADD CONSTRAINT \"employees_organizationId_linkedUserId_fkey\"\nFOREIGN KEY (\"organizationId\", \"linkedUserId\")\nREFERENCES \"public\".\"users\" (\"organizationId\", \"id\")\nON DELETE RESTRICT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"employees_organizationId_linkedUserId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "employees_organizationId_linkedUserId_fkey",
+          "public",
+          "\"public\".\"employees\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.salary_components.salary_components_organizationId_salaryStructureId_fkey",
+    "label": "Add foreign key \"salary_components_organizationId_salaryStructureId_fkey\" on \"salary_components\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "salary_components_organizationId_salaryStructureId_fkey",
+        "table": "salary_components"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"salary_components_organizationId_salaryStructureId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "salary_components_organizationId_salaryStructureId_fkey",
+          "public",
+          "\"public\".\"salary_components\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"salary_components_organizationId_salaryStructureId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"salary_components\"\nADD CONSTRAINT \"salary_components_organizationId_salaryStructureId_fkey\"\nFOREIGN KEY (\"organizationId\", \"salaryStructureId\")\nREFERENCES \"public\".\"salary_structures\" (\"organizationId\", \"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"salary_components_organizationId_salaryStructureId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "salary_components_organizationId_salaryStructureId_fkey",
+          "public",
+          "\"public\".\"salary_components\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.salary_structures.salary_structures_organizationId_fkey",
+    "label": "Add foreign key \"salary_structures_organizationId_fkey\" on \"salary_structures\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "salary_structures_organizationId_fkey",
+        "table": "salary_structures"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"salary_structures_organizationId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "salary_structures_organizationId_fkey",
+          "public",
+          "\"public\".\"salary_structures\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"salary_structures_organizationId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"salary_structures\"\nADD CONSTRAINT \"salary_structures_organizationId_fkey\"\nFOREIGN KEY (\"organizationId\")\nREFERENCES \"public\".\"organizations\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"salary_structures_organizationId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "salary_structures_organizationId_fkey",
+          "public",
+          "\"public\".\"salary_structures\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.salary_structures.salary_structures_organizationId_employeeId_fkey",
+    "label": "Add foreign key \"salary_structures_organizationId_employeeId_fkey\" on \"salary_structures\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "salary_structures_organizationId_employeeId_fkey",
+        "table": "salary_structures"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"salary_structures_organizationId_employeeId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "salary_structures_organizationId_employeeId_fkey",
+          "public",
+          "\"public\".\"salary_structures\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"salary_structures_organizationId_employeeId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"salary_structures\"\nADD CONSTRAINT \"salary_structures_organizationId_employeeId_fkey\"\nFOREIGN KEY (\"organizationId\", \"employeeId\")\nREFERENCES \"public\".\"employees\" (\"organizationId\", \"id\")\nON DELETE RESTRICT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"salary_structures_organizationId_employeeId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "salary_structures_organizationId_employeeId_fkey",
+          "public",
+          "\"public\".\"salary_structures\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.salary_structures.salary_structures_organizationId_createdById_fkey",
+    "label": "Add foreign key \"salary_structures_organizationId_createdById_fkey\" on \"salary_structures\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "salary_structures_organizationId_createdById_fkey",
+        "table": "salary_structures"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"salary_structures_organizationId_createdById_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "salary_structures_organizationId_createdById_fkey",
+          "public",
+          "\"public\".\"salary_structures\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"salary_structures_organizationId_createdById_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"salary_structures\"\nADD CONSTRAINT \"salary_structures_organizationId_createdById_fkey\"\nFOREIGN KEY (\"organizationId\", \"createdById\")\nREFERENCES \"public\".\"users\" (\"organizationId\", \"id\")\nON DELETE RESTRICT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"salary_structures_organizationId_createdById_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "salary_structures_organizationId_createdById_fkey",
+          "public",
+          "\"public\".\"salary_structures\""
+        ]
+      }
+    ]
+  }
+]

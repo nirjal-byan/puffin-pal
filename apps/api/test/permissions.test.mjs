@@ -49,3 +49,12 @@ test("only owners and admins have the dedicated invoice issuance permission", ()
     );
   }
 });
+
+test("employee directory and salary permissions remain separate", () => {
+  assert.equal(hasPermission("PROJECT_MANAGER", "employees:read"), true);
+  assert.equal(hasPermission("PROJECT_MANAGER", "salaries:read"), false);
+  assert.equal(hasPermission("FINANCE_VIEWER", "employees:read"), true);
+  assert.equal(hasPermission("FINANCE_VIEWER", "salaries:read"), true);
+  assert.equal(hasPermission("FINANCE_VIEWER", "salaries:manage"), false);
+  assert.equal(hasPermission("ADMIN", "salaries:manage"), true);
+});

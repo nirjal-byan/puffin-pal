@@ -95,6 +95,46 @@ enum RecurringScheduleAction {
   RETRIED
 }
 
+enum EmploymentType {
+  FULL_TIME
+  PART_TIME
+  CONTRACT
+  INTERN
+}
+
+enum EmploymentStatus {
+  ACTIVE
+  ON_LEAVE
+  INACTIVE
+  TERMINATED
+}
+
+enum CompensationType {
+  FIXED_SALARY
+  HOURLY
+}
+
+enum PayFrequency {
+  MONTHLY
+  BIWEEKLY
+  WEEKLY
+}
+
+enum SalaryComponentType {
+  EARNING
+  DEDUCTION
+}
+
+enum EmployeeAuditAction {
+  CREATED
+  UPDATED
+  STATUS_CHANGED
+  TERMINATED
+  SALARY_CREATED
+  SALARY_REVISED
+  SALARY_SCHEDULED
+}
+
 model Organization {
   id                      String                       @id @default(uuid())
   name                    String
@@ -118,6 +158,10 @@ model Organization {
   recurringSchedules      RecurringInvoiceSchedule[]
   recurringOccurrences    RecurringInvoiceOccurrence[]
   recurringScheduleEvents RecurringScheduleEvent[]
+  departments             Department[]
+  employees               Employee[]
+  salaryStructures        SalaryStructure[]
+  employeeAuditEvents     EmployeeAuditEvent[]
 
   @@map("organizations")
 }
@@ -172,11 +216,127 @@ model User {
   expenseApprovalEvents   ExpenseApprovalHistory[]   @relation("ExpenseApprovalActor")
   recurringSchedules      RecurringInvoiceSchedule[] @relation("RecurringScheduleCreator")
   recurringScheduleEvents RecurringScheduleEvent[]   @relation("RecurringScheduleActor")
+  linkedEmployee          Employee?                  @relation("EmployeeUser")
+  createdSalaryStructures SalaryStructure[]          @relation("SalaryCreator")
+  employeeAuditEvents     EmployeeAuditEvent[]       @relation("EmployeeAuditActor")
 
   @@unique([organizationId, id])
   @@unique([organizationId, email])
 
   @@map("users")
+}
+
+model Department {
+  id             String       @id @default(uuid())
+  organizationId String
+  name           String
+  description    String?
+  createdAt      DateTime     @default(now())
+  updatedAt      temporal.updatedAt()
+
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  employees      Employee[]
+
+  @@unique([organizationId, id])
+  @@unique([organizationId, name])
+  @@map("departments")
+}
+
+model Employee {
+  id                 String             @id @default(uuid())
+  organizationId     String
+  employeeCode       String
+  firstName          String
+  lastName           String
+  workEmail          String?
+  phoneNumber        String?
+  notes              String?
+  jobTitle           String
+  employmentType     EmploymentType
+  status             EmploymentStatus   @default(ACTIVE)
+  hireDate           DateTime
+  terminationDate    DateTime?
+  departmentId       String?
+  managerId          String?
+  linkedUserId       String?
+  version            Int                @default(1)
+  createdAt          DateTime           @default(now())
+  updatedAt          temporal.updatedAt()
+
+  organization       Organization       @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  department         Department?        @relation(fields: [organizationId, departmentId], references: [organizationId, id], onDelete: Restrict)
+  manager            Employee?          @relation("EmployeeManager", fields: [organizationId, managerId], references: [organizationId, id], onDelete: Restrict)
+  directReports      Employee[]          @relation("EmployeeManager")
+  linkedUser         User?               @relation("EmployeeUser", fields: [organizationId, linkedUserId], references: [organizationId, id], onDelete: Restrict)
+  salaryStructures   SalaryStructure[]
+  auditEvents        EmployeeAuditEvent[]
+
+  @@unique([organizationId, id])
+  @@unique([organizationId, employeeCode])
+  @@unique([organizationId, linkedUserId])
+  @@index([organizationId, status])
+  @@index([organizationId, departmentId])
+  @@index([organizationId, managerId])
+  @@map("employees")
+}
+
+model SalaryStructure {
+  id               String           @id @default(uuid())
+  organizationId   String
+  employeeId       String
+  compensationType CompensationType
+  baseAmount       Numeric(12, 2)
+  currency         String
+  payFrequency     PayFrequency
+  effectiveFrom    DateTime
+  effectiveTo      DateTime?
+  notes            String?
+  createdById      String
+  version          Int              @default(1)
+  createdAt        DateTime         @default(now())
+  updatedAt        temporal.updatedAt()
+
+  organization     Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  employee         Employee         @relation(fields: [organizationId, employeeId], references: [organizationId, id], onDelete: Restrict)
+  createdBy        User             @relation("SalaryCreator", fields: [organizationId, createdById], references: [organizationId, id], onDelete: Restrict)
+  components       SalaryComponent[]
+
+  @@unique([organizationId, id])
+  @@index([organizationId, employeeId, effectiveFrom], map: "salary_employee_effective_idx")
+  @@map("salary_structures")
+}
+
+model SalaryComponent {
+  id                String              @id @default(uuid())
+  organizationId    String
+  salaryStructureId String
+  name              String
+  type              SalaryComponentType
+  amount            Numeric(12, 2)
+  sortOrder         Int                 @default(0)
+  createdAt         DateTime            @default(now())
+
+  salaryStructure   SalaryStructure     @relation(fields: [organizationId, salaryStructureId], references: [organizationId, id], onDelete: Cascade)
+
+  @@index([organizationId, salaryStructureId], map: "salary_component_structure_idx")
+  @@map("salary_components")
+}
+
+model EmployeeAuditEvent {
+  id             String              @id @default(uuid())
+  organizationId String
+  employeeId     String
+  actorId        String
+  action         EmployeeAuditAction
+  details        String?
+  createdAt      DateTime            @default(now())
+
+  organization   Organization        @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  employee       Employee            @relation(fields: [organizationId, employeeId], references: [organizationId, id], onDelete: Restrict)
+  actor          User                @relation("EmployeeAuditActor", fields: [organizationId, actorId], references: [organizationId, id], onDelete: Restrict)
+
+  @@index([organizationId, employeeId, createdAt], map: "employee_audit_created_idx")
+  @@map("employee_audit_events")
 }
 
 model Membership {

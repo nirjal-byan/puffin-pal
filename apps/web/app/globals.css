@@ -8,6 +8,29 @@
   --heading-font: var(--font-site), Arial, sans-serif;
   color-scheme: light;
 }
+
+.employee-toolbar { display: flex; align-items: end; justify-content: space-between; gap: 1rem; padding: 1rem; }
+.employee-filters { display: grid; grid-template-columns: minmax(220px, 1fr) 170px 190px; gap: .75rem; flex: 1; }
+.employee-name { border: 0; background: transparent; color: inherit; padding: 0; text-align: left; cursor: pointer; }
+.employee-name:hover strong { color: var(--accent, #1559d6); }
+.employee-name small, .employee-subtitle { display: block; margin-top: .2rem; font-size: .74rem; color: var(--muted); text-transform: none; }
+.employee-form { display: grid; gap: 1rem; }
+.employee-profile dl { display: grid; grid-template-columns: 1fr 1fr; gap: .9rem; margin: 0 0 1.25rem; }
+.employee-profile dl div { padding: .8rem; border: 1px solid var(--border); border-radius: .65rem; }
+.employee-profile dt { color: var(--muted); font-size: .75rem; margin-bottom: .25rem; }
+.employee-profile dd { margin: 0; font-weight: 600; }
+.salary-history { border-top: 1px solid var(--border); padding-top: 1rem; }
+.salary-history article { display: grid; grid-template-columns: 1fr auto; gap: .2rem 1rem; padding: .75rem 0; border-top: 1px solid var(--border); }
+.salary-history article span { text-align: right; }
+.salary-history article small { color: var(--muted); }
+.salary-component { display: grid; grid-template-columns: 1.4fr 1fr 1fr auto; gap: .5rem; margin-bottom: .5rem; }
+.department-list { display: grid; gap: .65rem; }
+.department-list > div { display: flex; align-items: center; justify-content: space-between; padding: .75rem; border: 1px solid var(--border); border-radius: .65rem; }
+@media (max-width: 760px) {
+  .employee-toolbar { align-items: stretch; flex-direction: column; }
+  .employee-filters, .employee-profile dl { grid-template-columns: 1fr; }
+  .salary-component { grid-template-columns: 1fr; }
+}
 * {
   box-sizing: border-box;
   margin: 0;

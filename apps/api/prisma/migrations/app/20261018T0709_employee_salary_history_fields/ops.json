@@ -1,0 +1,333 @@
+[
+  {
+    "id": "dropCheckConstraint.employee_audit_events.employee_audit_events_action_check_9545292c",
+    "label": "Drop check constraint \"employee_audit_events_action_check_9545292c\" on \"employee_audit_events\"",
+    "operationClass": "destructive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "checkConstraint",
+        "name": "employee_audit_events_action_check_9545292c",
+        "table": "employee_audit_events"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"employee_audit_events_action_check_9545292c\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "employee_audit_events_action_check_9545292c",
+          "public",
+          "\"public\".\"employee_audit_events\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "drop check constraint \"employee_audit_events_action_check_9545292c\"",
+        "sql": "ALTER TABLE \"public\".\"employee_audit_events\" DROP CONSTRAINT \"employee_audit_events_action_check_9545292c\""
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"employee_audit_events_action_check_9545292c\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "employee_audit_events_action_check_9545292c",
+          "public",
+          "\"public\".\"employee_audit_events\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.employees.notes",
+    "label": "Add column \"notes\" to \"employees\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "notes",
+        "table": "employees"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"notes\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "employees",
+          "notes"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"notes\"",
+        "sql": "ALTER TABLE \"public\".\"employees\" ADD COLUMN \"notes\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"notes\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "employees",
+          "notes"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.salary_components.sortOrder",
+    "label": "Add column \"sortOrder\" to \"salary_components\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "sortOrder",
+        "table": "salary_components"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"sortOrder\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "salary_components",
+          "sortOrder"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"sortOrder\"",
+        "sql": "ALTER TABLE \"public\".\"salary_components\" ADD COLUMN \"sortOrder\" int4 DEFAULT 0 NOT NULL"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"sortOrder\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "salary_components",
+          "sortOrder"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.salary_structures.version",
+    "label": "Add column \"version\" to \"salary_structures\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "version",
+        "table": "salary_structures"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"version\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "salary_structures",
+          "version"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"version\"",
+        "sql": "ALTER TABLE \"public\".\"salary_structures\" ADD COLUMN \"version\" int4 DEFAULT 1 NOT NULL"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"version\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "salary_structures",
+          "version"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.salary_structures.updatedAt",
+    "label": "Add column \"updatedAt\" to \"salary_structures\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "updatedAt",
+        "table": "salary_structures"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"updatedAt\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "salary_structures",
+          "updatedAt"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"updatedAt\"",
+        "sql": "ALTER TABLE \"public\".\"salary_structures\" ADD COLUMN \"updatedAt\" timestamptz"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"updatedAt\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "salary_structures",
+          "updatedAt"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "data_migration.backfill-salary_structures-updatedAt",
+    "label": "Data transform: backfill-salary_structures-updatedAt",
+    "operationClass": "data",
+    "target": {
+      "id": "postgres"
+    },
+    "precheck": [
+      {
+        "description": "Check backfill-salary_structures-updatedAt has work to do",
+        "sql": "SELECT EXISTS (SELECT \"id\" AS \"id\" FROM \"public\".\"salary_structures\" WHERE \"updatedAt\" IS NULL LIMIT 1) AS ok",
+        "params": []
+      }
+    ],
+    "execute": [
+      {
+        "description": "Run backfill-salary_structures-updatedAt",
+        "sql": "UPDATE \"public\".\"salary_structures\" SET \"updatedAt\" = $1 WHERE \"updatedAt\" IS NULL",
+        "params": [
+          "2026-10-18T00:00:00Z"
+        ]
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "Verify backfill-salary_structures-updatedAt resolved all violations",
+        "sql": "SELECT NOT EXISTS (SELECT \"id\" AS \"id\" FROM \"public\".\"salary_structures\" WHERE \"updatedAt\" IS NULL LIMIT 1) AS ok",
+        "params": []
+      }
+    ]
+  },
+  {
+    "id": "alterNullability.setNotNull.salary_structures.updatedAt",
+    "label": "Set NOT NULL on \"salary_structures\".\"updatedAt\"",
+    "operationClass": "destructive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "updatedAt",
+        "table": "salary_structures"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"updatedAt\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "salary_structures",
+          "updatedAt"
+        ]
+      },
+      {
+        "description": "ensure no NULL values in \"updatedAt\"",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"public\".\"salary_structures\" WHERE \"updatedAt\" IS NULL) AS \"result\"",
+        "params": []
+      }
+    ],
+    "execute": [
+      {
+        "description": "set NOT NULL on \"updatedAt\"",
+        "sql": "ALTER TABLE \"public\".\"salary_structures\" ALTER COLUMN \"updatedAt\" SET NOT NULL"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"updatedAt\" is NOT NULL",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3 AND \"is_nullable\" = $4)) AS \"result\"",
+        "params": [
+          "public",
+          "salary_structures",
+          "updatedAt",
+          "NO"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "checkConstraint.employee_audit_events.employee_audit_events_action_check_95de5bd1",
+    "label": "Add check constraint \"employee_audit_events_action_check_95de5bd1\" on \"employee_audit_events\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "checkConstraint",
+        "name": "employee_audit_events_action_check_95de5bd1",
+        "table": "employee_audit_events"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"employee_audit_events_action_check_95de5bd1\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "employee_audit_events_action_check_95de5bd1",
+          "public",
+          "\"public\".\"employee_audit_events\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add check constraint \"employee_audit_events_action_check_95de5bd1\"",
+        "sql": "ALTER TABLE \"public\".\"employee_audit_events\" ADD CONSTRAINT \"employee_audit_events_action_check_95de5bd1\" CHECK (\"action\" IN ('CREATED', 'UPDATED', 'STATUS_CHANGED', 'TERMINATED', 'SALARY_CREATED', 'SALARY_REVISED', 'SALARY_SCHEDULED'))"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"employee_audit_events_action_check_95de5bd1\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "employee_audit_events_action_check_95de5bd1",
+          "public",
+          "\"public\".\"employee_audit_events\""
+        ]
+      }
+    ]
+  }
+]

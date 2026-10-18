@@ -10,7 +10,7 @@ test("navigation has three sections and includes all destinations", () => {
 
 test("main features belong to Workspace and access belongs to Settings", () => {
   for (const tab of ["overview", "invoices", "expenses", "retainers"]) assert.equal(sectionForTab(tab).key, "workspace");
-  for (const tab of ["clients", "members"]) assert.equal(sectionForTab(tab).key, "people");
+  for (const tab of ["clients", "employees", "members"]) assert.equal(sectionForTab(tab).key, "people");
   for (const tab of ["profile", "password", "access"]) assert.equal(sectionForTab(tab).key, "settings");
 });
 
