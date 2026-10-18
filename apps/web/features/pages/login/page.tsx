@@ -4,7 +4,13 @@ import { Brand } from "../../../components/brand";
 import LoginLayout from "./layout";
 import { createRegistrationDraft } from "../../../lib/registration";
 import { RegistrationFields } from "./registration-fields";
-import { useLayoutEffect, useRef, useState, type FormEvent } from "react";
+import {
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type FormEvent,
+} from "react";
 import { apiRequest, errorMessage, type Session } from "../../../lib/api";
 
 export default function LoginPage({
@@ -28,6 +34,10 @@ export default function LoginPage({
   const cardRef = useRef<HTMLDivElement>(null);
   const previousHeight = useRef<number | null>(null);
   const cardAnimation = useRef<Animation | null>(null);
+
+  useEffect(() => {
+    document.title = `${signup ? "Create account" : "Sign in"} — PuffinPal`;
+  }, [signup]);
 
   useLayoutEffect(() => {
     const card = cardRef.current;

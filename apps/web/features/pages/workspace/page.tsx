@@ -33,6 +33,7 @@ import { Navbar } from "../../../components/navbar";
 import { Sidebar } from "../../../components/sidebar";
 import { Footer } from "../../../components/footer";
 import { AppModal } from "../../../components/app-modal";
+import { DocumentTitle } from "../../../components/document-title";
 import WorkspaceLayout from "./layout";
 import OverviewPage from "../overview/page";
 import ClientsPage from "../clients/page";
@@ -89,6 +90,15 @@ export default function WorkspacePage({
   const searchParams = useSearchParams();
   const tab = resolveTab(pathname, searchParams.get("section"), initialTab);
   const activeSection = sectionForTab(tab, searchParams.get("area"));
+  const pageTitle = creatingInvoice
+    ? "Create invoice"
+    : invoiceId
+      ? editingInvoice
+        ? "Edit invoice"
+        : "Invoice details"
+      : tab === "overview"
+        ? "Financial overview"
+        : NAV.find((item) => item.key === tab)?.label ?? "Workspace";
   const [previousTab, setPreviousTab] = useState(tab);
   const [offset, setOffset] = useState(0);
   const [rows, setRows] = useState<(Client | Member | FinancialRecord)[]>([]);
@@ -187,6 +197,7 @@ export default function WorkspacePage({
     tab === "password" ? ChangePasswordPage : EditProfilePage;
   return (
     <WorkspaceLayout theme={theme}>
+      <DocumentTitle title={pageTitle} />
       <ProductTour key={session.user.id} session={session} api={api} />
       <Navbar
         session={session}

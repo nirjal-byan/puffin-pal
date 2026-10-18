@@ -9,7 +9,10 @@ const siteFont = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "PuffinPal — Your workspace",
+  title: {
+    default: "PuffinPal — Your workspace",
+    template: "%s — PuffinPal",
+  },
   description: "Manage your clients, team, and business records in PuffinPal.",
   icons: { icon: "/puffinpal-icon.svg" },
 };
