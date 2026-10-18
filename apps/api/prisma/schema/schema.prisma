@@ -47,6 +47,21 @@ enum ExpenseCategory {
   OTHER
 }
 
+enum ExpenseApprovalStatus {
+  DRAFT
+  PENDING_APPROVAL
+  APPROVED
+  REJECTED
+}
+
+enum ExpenseApprovalAction {
+  SUBMITTED
+  APPROVED
+  REJECTED
+  REOPENED
+  RESUBMITTED
+}
+
 model Organization {
   id             String               @id @default(uuid())
   name           String
@@ -65,6 +80,7 @@ model Organization {
   invoiceExports InvoiceExport[]
   payments       Payment[]
   expenses       Expense[]
+  expenseApprovalHistory ExpenseApprovalHistory[]
   retainers      Retainer[]
 
   @@map("organizations")
@@ -114,6 +130,10 @@ model User {
 
   organization     Organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   memberships      Membership[]
+  createdExpenses  Expense[]                @relation("ExpenseCreator")
+  submittedExpenses Expense[]               @relation("ExpenseSubmitter")
+  reviewedExpenses Expense[]                @relation("ExpenseReviewer")
+  expenseApprovalEvents ExpenseApprovalHistory[] @relation("ExpenseApprovalActor")
 
   @@unique([organizationId, id])
   @@unique([organizationId, email])
@@ -243,13 +263,47 @@ model Expense {
   receiptMime    String?
   receiptSize    Int?
   date           DateTime
+  createdByUserId String?
+  approvalStatus ExpenseApprovalStatus @default(APPROVED)
+  submittedById String?
+  submittedAt   DateTime?
+  reviewedById  String?
+  reviewedAt    DateTime?
+  rejectionReason String?
+  version        Int                  @default(1)
   createdAt      DateTime             @default(now())
   updatedAt      temporal.updatedAt()
 
   organization   Organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  createdBy      User?                @relation("ExpenseCreator", fields: [organizationId, createdByUserId], references: [organizationId, id], onDelete: Restrict)
+  submittedBy    User?                @relation("ExpenseSubmitter", fields: [organizationId, submittedById], references: [organizationId, id], onDelete: Restrict)
+  reviewedBy     User?                @relation("ExpenseReviewer", fields: [organizationId, reviewedById], references: [organizationId, id], onDelete: Restrict)
+  approvalHistory ExpenseApprovalHistory[]
 
+  @@unique([organizationId, id])
   @@index([organizationId, date])
+  @@index([organizationId, approvalStatus, submittedAt])
+  @@index([organizationId, submittedById])
   @@map("expenses")
+}
+
+model ExpenseApprovalHistory {
+  id             String                @id @default(uuid())
+  organizationId String
+  expenseId      String
+  actorId        String
+  action         ExpenseApprovalAction
+  previousStatus ExpenseApprovalStatus
+  newStatus      ExpenseApprovalStatus
+  rejectionReason String?
+  createdAt      DateTime              @default(now())
+
+  organization   Organization          @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  expense        Expense               @relation(fields: [organizationId, expenseId], references: [organizationId, id], onDelete: Cascade)
+  actor          User                  @relation("ExpenseApprovalActor", fields: [organizationId, actorId], references: [organizationId, id], onDelete: Restrict)
+
+  @@index([organizationId, expenseId, createdAt], map: "expense_history_expense_created_idx")
+  @@map("expense_approval_history")
 }
 
 model Retainer {

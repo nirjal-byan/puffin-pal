@@ -8,6 +8,10 @@
       "model": "Client",
       "namespace": "public"
     },
+    "expense_approval_history": {
+      "model": "ExpenseApprovalHistory",
+      "namespace": "public"
+    },
     "expenses": {
       "model": "Expense",
       "namespace": "public"
@@ -49,6 +53,52 @@
     "namespaces": {
       "public": {
         "enum": {
+          "ExpenseApprovalAction": {
+            "codecId": "pg/text@1",
+            "members": [
+              {
+                "name": "SUBMITTED",
+                "value": "SUBMITTED"
+              },
+              {
+                "name": "APPROVED",
+                "value": "APPROVED"
+              },
+              {
+                "name": "REJECTED",
+                "value": "REJECTED"
+              },
+              {
+                "name": "REOPENED",
+                "value": "REOPENED"
+              },
+              {
+                "name": "RESUBMITTED",
+                "value": "RESUBMITTED"
+              }
+            ]
+          },
+          "ExpenseApprovalStatus": {
+            "codecId": "pg/text@1",
+            "members": [
+              {
+                "name": "DRAFT",
+                "value": "DRAFT"
+              },
+              {
+                "name": "PENDING_APPROVAL",
+                "value": "PENDING_APPROVAL"
+              },
+              {
+                "name": "APPROVED",
+                "value": "APPROVED"
+              },
+              {
+                "name": "REJECTED",
+                "value": "REJECTED"
+              }
+            ]
+          },
           "ExpenseCategory": {
             "codecId": "pg/text@1",
             "members": [
@@ -339,6 +389,19 @@
                   }
                 }
               },
+              "approvalStatus": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                },
+                "valueSet": {
+                  "entityKind": "enum",
+                  "entityName": "ExpenseApprovalStatus",
+                  "namespaceId": "public",
+                  "plane": "domain"
+                }
+              },
               "category": {
                 "nullable": false,
                 "type": {
@@ -356,6 +419,13 @@
                 "nullable": false,
                 "type": {
                   "codecId": "pg/timestamptz-temporal@1",
+                  "kind": "scalar"
+                }
+              },
+              "createdByUserId": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
                   "kind": "scalar"
                 }
               },
@@ -429,6 +499,41 @@
                   "kind": "scalar"
                 }
               },
+              "rejectionReason": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "reviewedAt": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "kind": "scalar"
+                }
+              },
+              "reviewedById": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "submittedAt": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "kind": "scalar"
+                }
+              },
+              "submittedById": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
               "title": {
                 "nullable": false,
                 "type": {
@@ -449,9 +554,51 @@
                   "codecId": "pg/text@1",
                   "kind": "scalar"
                 }
+              },
+              "version": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
               }
             },
             "relations": {
+              "approvalHistory": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "organizationId",
+                    "id"
+                  ],
+                  "targetFields": [
+                    "organizationId",
+                    "expenseId"
+                  ]
+                },
+                "to": {
+                  "model": "ExpenseApprovalHistory",
+                  "namespace": "public"
+                }
+              },
+              "createdBy": {
+                "cardinality": "N:1",
+                "nullable": true,
+                "on": {
+                  "localFields": [
+                    "organizationId",
+                    "createdByUserId"
+                  ],
+                  "targetFields": [
+                    "organizationId",
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "User",
+                  "namespace": "public"
+                }
+              },
               "organization": {
                 "cardinality": "N:1",
                 "nullable": false,
@@ -467,6 +614,42 @@
                   "model": "Organization",
                   "namespace": "public"
                 }
+              },
+              "reviewedBy": {
+                "cardinality": "N:1",
+                "nullable": true,
+                "on": {
+                  "localFields": [
+                    "organizationId",
+                    "reviewedById"
+                  ],
+                  "targetFields": [
+                    "organizationId",
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "User",
+                  "namespace": "public"
+                }
+              },
+              "submittedBy": {
+                "cardinality": "N:1",
+                "nullable": true,
+                "on": {
+                  "localFields": [
+                    "organizationId",
+                    "submittedById"
+                  ],
+                  "targetFields": [
+                    "organizationId",
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "User",
+                  "namespace": "public"
+                }
               }
             },
             "storage": {
@@ -474,11 +657,17 @@
                 "amount": {
                   "column": "amount"
                 },
+                "approvalStatus": {
+                  "column": "approvalStatus"
+                },
                 "category": {
                   "column": "category"
                 },
                 "createdAt": {
                   "column": "createdAt"
+                },
+                "createdByUserId": {
+                  "column": "createdByUserId"
                 },
                 "date": {
                   "column": "date"
@@ -510,6 +699,21 @@
                 "receiptUrl": {
                   "column": "receiptUrl"
                 },
+                "rejectionReason": {
+                  "column": "rejectionReason"
+                },
+                "reviewedAt": {
+                  "column": "reviewedAt"
+                },
+                "reviewedById": {
+                  "column": "reviewedById"
+                },
+                "submittedAt": {
+                  "column": "submittedAt"
+                },
+                "submittedById": {
+                  "column": "submittedById"
+                },
                 "title": {
                   "column": "title"
                 },
@@ -518,10 +722,185 @@
                 },
                 "vendor": {
                   "column": "vendor"
+                },
+                "version": {
+                  "column": "version"
                 }
               },
               "namespaceId": "public",
               "table": "expenses"
+            }
+          },
+          "ExpenseApprovalHistory": {
+            "fields": {
+              "action": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                },
+                "valueSet": {
+                  "entityKind": "enum",
+                  "entityName": "ExpenseApprovalAction",
+                  "namespaceId": "public",
+                  "plane": "domain"
+                }
+              },
+              "actorId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "createdAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "kind": "scalar"
+                }
+              },
+              "expenseId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "newStatus": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                },
+                "valueSet": {
+                  "entityKind": "enum",
+                  "entityName": "ExpenseApprovalStatus",
+                  "namespaceId": "public",
+                  "plane": "domain"
+                }
+              },
+              "organizationId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "previousStatus": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                },
+                "valueSet": {
+                  "entityKind": "enum",
+                  "entityName": "ExpenseApprovalStatus",
+                  "namespaceId": "public",
+                  "plane": "domain"
+                }
+              },
+              "rejectionReason": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "actor": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "organizationId",
+                    "actorId"
+                  ],
+                  "targetFields": [
+                    "organizationId",
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "User",
+                  "namespace": "public"
+                }
+              },
+              "expense": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "organizationId",
+                    "expenseId"
+                  ],
+                  "targetFields": [
+                    "organizationId",
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "Expense",
+                  "namespace": "public"
+                }
+              },
+              "organization": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "organizationId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "Organization",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "action": {
+                  "column": "action"
+                },
+                "actorId": {
+                  "column": "actorId"
+                },
+                "createdAt": {
+                  "column": "createdAt"
+                },
+                "expenseId": {
+                  "column": "expenseId"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "newStatus": {
+                  "column": "newStatus"
+                },
+                "organizationId": {
+                  "column": "organizationId"
+                },
+                "previousStatus": {
+                  "column": "previousStatus"
+                },
+                "rejectionReason": {
+                  "column": "rejectionReason"
+                }
+              },
+              "namespaceId": "public",
+              "table": "expense_approval_history"
             }
           },
           "Invoice": {
@@ -1358,6 +1737,21 @@
                   "namespace": "public"
                 }
               },
+              "expenseApprovalHistory": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "organizationId"
+                  ]
+                },
+                "to": {
+                  "model": "ExpenseApprovalHistory",
+                  "namespace": "public"
+                }
+              },
               "expenses": {
                 "cardinality": "1:N",
                 "on": {
@@ -1864,6 +2258,40 @@
               }
             },
             "relations": {
+              "createdExpenses": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "organizationId",
+                    "id"
+                  ],
+                  "targetFields": [
+                    "organizationId",
+                    "createdByUserId"
+                  ]
+                },
+                "to": {
+                  "model": "Expense",
+                  "namespace": "public"
+                }
+              },
+              "expenseApprovalEvents": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "organizationId",
+                    "id"
+                  ],
+                  "targetFields": [
+                    "organizationId",
+                    "actorId"
+                  ]
+                },
+                "to": {
+                  "model": "ExpenseApprovalHistory",
+                  "namespace": "public"
+                }
+              },
               "memberships": {
                 "cardinality": "1:N",
                 "on": {
@@ -1894,6 +2322,40 @@
                 },
                 "to": {
                   "model": "Organization",
+                  "namespace": "public"
+                }
+              },
+              "reviewedExpenses": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "organizationId",
+                    "id"
+                  ],
+                  "targetFields": [
+                    "organizationId",
+                    "reviewedById"
+                  ]
+                },
+                "to": {
+                  "model": "Expense",
+                  "namespace": "public"
+                }
+              },
+              "submittedExpenses": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "organizationId",
+                    "id"
+                  ],
+                  "targetFields": [
+                    "organizationId",
+                    "submittedById"
+                  ]
+                },
+                "to": {
+                  "model": "Expense",
                   "namespace": "public"
                 }
               }
@@ -2046,8 +2508,201 @@
                 }
               ]
             },
+            "expense_approval_history": {
+              "checks": [
+                {
+                  "expression": "\"action\" IN ('SUBMITTED', 'APPROVED', 'REJECTED', 'REOPENED', 'RESUBMITTED')",
+                  "name": "expense_approval_history_action_check_8586241b",
+                  "prefix": "expense_approval_history_action_check"
+                },
+                {
+                  "expression": "\"newStatus\" IN ('DRAFT', 'PENDING_APPROVAL', 'APPROVED', 'REJECTED')",
+                  "name": "expense_approval_history_newStatus_check_b818a279",
+                  "prefix": "expense_approval_history_newStatus_check"
+                },
+                {
+                  "expression": "\"previousStatus\" IN ('DRAFT', 'PENDING_APPROVAL', 'APPROVED', 'REJECTED')",
+                  "name": "expense_approval_history_previousStatus_check_23699b52",
+                  "prefix": "expense_approval_history_previousStatus_check"
+                }
+              ],
+              "columns": {
+                "action": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false,
+                  "valueSet": {
+                    "entityKind": "valueSet",
+                    "entityName": "ExpenseApprovalAction",
+                    "namespaceId": "public",
+                    "plane": "storage"
+                  }
+                },
+                "actorId": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "createdAt": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "expenseId": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "id": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "newStatus": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false,
+                  "valueSet": {
+                    "entityKind": "valueSet",
+                    "entityName": "ExpenseApprovalStatus",
+                    "namespaceId": "public",
+                    "plane": "storage"
+                  }
+                },
+                "organizationId": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "previousStatus": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false,
+                  "valueSet": {
+                    "entityKind": "valueSet",
+                    "entityName": "ExpenseApprovalStatus",
+                    "namespaceId": "public",
+                    "plane": "storage"
+                  }
+                },
+                "rejectionReason": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                }
+              },
+              "foreignKeys": [
+                {
+                  "onDelete": "cascade",
+                  "source": {
+                    "columns": [
+                      "organizationId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "expense_approval_history"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "organizations"
+                  }
+                },
+                {
+                  "onDelete": "cascade",
+                  "source": {
+                    "columns": [
+                      "organizationId",
+                      "expenseId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "expense_approval_history"
+                  },
+                  "target": {
+                    "columns": [
+                      "organizationId",
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "expenses"
+                  }
+                },
+                {
+                  "onDelete": "restrict",
+                  "source": {
+                    "columns": [
+                      "organizationId",
+                      "actorId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "expense_approval_history"
+                  },
+                  "target": {
+                    "columns": [
+                      "organizationId",
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "users"
+                  }
+                }
+              ],
+              "indexes": [
+                {
+                  "columns": [
+                    "organizationId",
+                    "actorId"
+                  ],
+                  "name": "expense_approval_history_organizationId_actorId_idx_327c2974",
+                  "prefix": "expense_approval_history_organizationId_actorId_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "organizationId",
+                    "expenseId"
+                  ],
+                  "name": "expense_approval_history_organizationId_expenseId_idx_5740def0",
+                  "prefix": "expense_approval_history_organizationId_expenseId_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "organizationId"
+                  ],
+                  "name": "expense_approval_history_organizationId_idx_2e17ef41",
+                  "prefix": "expense_approval_history_organizationId_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "organizationId",
+                    "expenseId",
+                    "createdAt"
+                  ],
+                  "name": "expense_history_expense_created_idx",
+                  "unique": false
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": []
+            },
             "expenses": {
               "checks": [
+                {
+                  "expression": "\"approvalStatus\" IN ('DRAFT', 'PENDING_APPROVAL', 'APPROVED', 'REJECTED')",
+                  "name": "expenses_approvalStatus_check_bfafdfc7",
+                  "prefix": "expenses_approvalStatus_check"
+                },
                 {
                   "expression": "\"category\" IN ('SOFTWARE', 'HARDWARE', 'TRAVEL', 'MARKETING', 'OTHER')",
                   "name": "expenses_category_check_4cd6a704",
@@ -2062,6 +2717,21 @@
                   "typeParams": {
                     "precision": 12,
                     "scale": 2
+                  }
+                },
+                "approvalStatus": {
+                  "codecId": "pg/text@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": "APPROVED"
+                  },
+                  "nativeType": "text",
+                  "nullable": false,
+                  "valueSet": {
+                    "entityKind": "valueSet",
+                    "entityName": "ExpenseApprovalStatus",
+                    "namespaceId": "public",
+                    "plane": "storage"
                   }
                 },
                 "category": {
@@ -2087,6 +2757,11 @@
                   },
                   "nativeType": "timestamptz",
                   "nullable": false
+                },
+                "createdByUserId": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
                 },
                 "date": {
                   "codecId": "pg/timestamptz-temporal@1",
@@ -2138,6 +2813,31 @@
                   "nativeType": "text",
                   "nullable": true
                 },
+                "rejectionReason": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "reviewedAt": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "nativeType": "timestamptz",
+                  "nullable": true
+                },
+                "reviewedById": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "submittedAt": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "nativeType": "timestamptz",
+                  "nullable": true
+                },
+                "submittedById": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
                 "title": {
                   "codecId": "pg/text@1",
                   "nativeType": "text",
@@ -2152,6 +2852,15 @@
                   "codecId": "pg/text@1",
                   "nativeType": "text",
                   "nullable": true
+                },
+                "version": {
+                  "codecId": "pg/int4@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": 1
+                  },
+                  "nativeType": "int4",
+                  "nullable": false
                 }
               },
               "foreignKeys": [
@@ -2171,9 +2880,85 @@
                     "namespaceId": "public",
                     "tableName": "organizations"
                   }
+                },
+                {
+                  "onDelete": "restrict",
+                  "source": {
+                    "columns": [
+                      "organizationId",
+                      "createdByUserId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "expenses"
+                  },
+                  "target": {
+                    "columns": [
+                      "organizationId",
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "users"
+                  }
+                },
+                {
+                  "onDelete": "restrict",
+                  "source": {
+                    "columns": [
+                      "organizationId",
+                      "submittedById"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "expenses"
+                  },
+                  "target": {
+                    "columns": [
+                      "organizationId",
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "users"
+                  }
+                },
+                {
+                  "onDelete": "restrict",
+                  "source": {
+                    "columns": [
+                      "organizationId",
+                      "reviewedById"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "expenses"
+                  },
+                  "target": {
+                    "columns": [
+                      "organizationId",
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "users"
+                  }
                 }
               ],
               "indexes": [
+                {
+                  "columns": [
+                    "organizationId",
+                    "approvalStatus",
+                    "submittedAt"
+                  ],
+                  "name": "expenses_organizationId_approvalStatus_submittedAt_idx_184f1a29",
+                  "prefix": "expenses_organizationId_approvalStatus_submittedAt_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "organizationId",
+                    "createdByUserId"
+                  ],
+                  "name": "expenses_organizationId_createdByUserId_idx_a1ea2c41",
+                  "prefix": "expenses_organizationId_createdByUserId_idx",
+                  "unique": false
+                },
                 {
                   "columns": [
                     "organizationId",
@@ -2190,6 +2975,24 @@
                   "name": "expenses_organizationId_idx_2e17ef41",
                   "prefix": "expenses_organizationId_idx",
                   "unique": false
+                },
+                {
+                  "columns": [
+                    "organizationId",
+                    "reviewedById"
+                  ],
+                  "name": "expenses_organizationId_reviewedById_idx_82814071",
+                  "prefix": "expenses_organizationId_reviewedById_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "organizationId",
+                    "submittedById"
+                  ],
+                  "name": "expenses_organizationId_submittedById_idx_944e86fb",
+                  "prefix": "expenses_organizationId_submittedById_idx",
+                  "unique": false
                 }
               ],
               "primaryKey": {
@@ -2197,7 +3000,14 @@
                   "id"
                 ]
               },
-              "uniques": []
+              "uniques": [
+                {
+                  "columns": [
+                    "organizationId",
+                    "id"
+                  ]
+                }
+              ]
             },
             "invoice_exports": {
               "checks": [
@@ -3310,6 +4120,25 @@
             }
           },
           "valueSet": {
+            "ExpenseApprovalAction": {
+              "kind": "valueSet",
+              "values": [
+                "SUBMITTED",
+                "APPROVED",
+                "REJECTED",
+                "REOPENED",
+                "RESUBMITTED"
+              ]
+            },
+            "ExpenseApprovalStatus": {
+              "kind": "valueSet",
+              "values": [
+                "DRAFT",
+                "PENDING_APPROVAL",
+                "APPROVED",
+                "REJECTED"
+              ]
+            },
             "ExpenseCategory": {
               "kind": "valueSet",
               "values": [
@@ -3376,10 +4205,10 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "d51251a8c67afd97dd92aa72b9b47c14d04de3614162b0e2d52e077ab93998aa"
+    "storageHash": "c4f998fa379b245c06e0e5056f7173488525226494dba5333e06f56adfdb6f0c"
   },
   "execution": {
-    "executionHash": "0e23c2f019a47e83a0e7583ae6089b09d7d3611a25c1238efe932acc8b8384a8",
+    "executionHash": "c48ed6268c8e59ef9426305c4757a61c7a647b386fb55694b8c0bb66e9919edc",
     "mutations": {
       "defaults": [
         {
@@ -3405,6 +4234,17 @@
           "ref": {
             "entry": "clients",
             "field": "updatedAt",
+            "namespace": "public"
+          }
+        },
+        {
+          "onCreate": {
+            "id": "uuidv4",
+            "kind": "generator"
+          },
+          "ref": {
+            "entry": "expense_approval_history",
+            "field": "id",
             "namespace": "public"
           }
         },

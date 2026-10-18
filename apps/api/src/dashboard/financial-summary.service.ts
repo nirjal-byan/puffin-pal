@@ -112,6 +112,7 @@ export class FinancialSummaryService {
                       AND p."paymentDate" >= k.bucket_start AND p."paymentDate" < k.bucket_end), 0) AS collections,
           COALESCE((SELECT SUM(e.amount) FROM expenses e
                     WHERE e."organizationId" = ${organizationId}
+                      AND e."approvalStatus" = 'APPROVED'
                       AND e.date >= k.bucket_start AND e.date < k.bucket_end), 0) AS expenses
         FROM buckets k
       ),
@@ -138,6 +139,7 @@ export class FinancialSummaryService {
         FROM (VALUES ('SOFTWARE'), ('HARDWARE'), ('TRAVEL'), ('MARKETING'), ('OTHER')) categories(category)
         CROSS JOIN bounds b
         LEFT JOIN expenses e ON e."organizationId" = ${organizationId}
+          AND e."approvalStatus" = 'APPROVED'
           AND e.category = categories.category
           AND e.date >= b.from_date AND e.date < b.end_exclusive
         GROUP BY categories.category
@@ -171,6 +173,7 @@ export class FinancialSummaryService {
             WHERE outstanding > 0 AND due_date < to_date), 0), 'FM999999999999990.00'),
           'expenses', to_char(COALESCE((SELECT SUM(e.amount) FROM expenses e, bounds b
             WHERE e."organizationId" = ${organizationId}
+              AND e."approvalStatus" = 'APPROVED'
               AND e.date >= b.from_date AND e.date < b.end_exclusive), 0), 'FM999999999999990.00'),
           'netCashFlow', to_char(
             COALESCE((SELECT SUM(p.amount) FROM payments p
@@ -180,6 +183,7 @@ export class FinancialSummaryService {
                 AND p."paymentDate" >= b.from_date AND p."paymentDate" < b.end_exclusive), 0)
             - COALESCE((SELECT SUM(e.amount) FROM expenses e, bounds b
               WHERE e."organizationId" = ${organizationId}
+                AND e."approvalStatus" = 'APPROVED'
                 AND e.date >= b.from_date AND e.date < b.end_exclusive), 0),
             'FM999999999999990.00')
         ),

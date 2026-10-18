@@ -1,10 +1,11 @@
 import "reflect-metadata";
 import assert from "node:assert/strict";
 import { test } from "node:test";
+import { readFile } from "node:fs/promises";
 import { plainToInstance } from "class-transformer";
 import { validate } from "class-validator";
 import { hasPermission } from "@puffinpal/permissions";
-import { CreateExpenseDto, ExpenseQueryDto } from "../dist/src/expenses/expense.dto.js";
+import { CreateExpenseDto, ExpenseQueryDto, ExpenseTransitionDto, RejectExpenseDto } from "../dist/src/expenses/expense.dto.js";
 import { expenseAmount } from "../dist/src/expenses/expense-money.js";
 import { validateReceipt } from "../dist/src/expenses/receipt-validation.js";
 import { ExpensesService } from "../dist/src/expenses/expenses.service.js";
@@ -20,6 +21,8 @@ test("expense DTO and filters reject invalid input", async () => {
   for (const change of [{ title: "" }, { amount: "1.001" }, { category: "FOOD" }, { date: "14/10/2026" }, { organizationId: "other" }])
     assert.ok((await validate(plainToInstance(CreateExpenseDto, { ...valid, ...change }), { whitelist: true, forbidNonWhitelisted: true })).length);
   assert.equal((await validate(plainToInstance(ExpenseQueryDto, { limit: "20", offset: "0", category: "TRAVEL", order: "asc" }))).length, 0);
+  assert.equal((await validate(plainToInstance(ExpenseTransitionDto, { expectedVersion: 1 }))).length, 0);
+  assert.ok((await validate(plainToInstance(RejectExpenseDto, { expectedVersion: 1, reason: " " }))).length);
 });
 test("receipt validation checks MIME, size and signature", () => {
   const jpeg = { originalname: "receipt.jpg", mimetype: "image/jpeg", size: 4, buffer: Buffer.from([255, 216, 255, 217]) };
@@ -34,11 +37,13 @@ test("expense permissions match the role policy", () => {
     assert.equal(hasPermission(role, "expenses:create"), role !== "FINANCE_VIEWER");
     assert.equal(hasPermission(role, "expenses:update"), role !== "FINANCE_VIEWER");
     assert.equal(hasPermission(role, "expenses:delete"), ["OWNER", "ADMIN"].includes(role));
+    assert.equal(hasPermission(role, "expenses:submit"), role !== "FINANCE_VIEWER");
+    assert.equal(hasPermission(role, "expenses:approve"), ["OWNER", "ADMIN"].includes(role));
   }
 });
 test("expense service scopes reads and writes to the authenticated organization", async () => {
   const filters = [];
-  const row = { id: "expense-a", organizationId: "org-a", title: "Hosting", description: null, amount: "12.34", category: "SOFTWARE", vendor: null, notes: null, receiptUrl: null, receiptKey: null, receiptName: null, receiptMime: null, receiptSize: null, date: { toString: () => "2026-10-14T00:00:00Z" }, createdAt: "2026-10-14", updatedAt: "2026-10-14" };
+  const row = { id: "expense-a", organizationId: "org-a", title: "Hosting", description: null, amount: "12.34", category: "SOFTWARE", vendor: null, notes: null, receiptUrl: null, receiptKey: null, receiptName: null, receiptMime: null, receiptSize: null, date: { toString: () => "2026-10-14T00:00:00Z" }, createdByUserId: "user-a", submittedById: null, reviewedById: null, approvalStatus: "DRAFT", version: 1, createdAt: "2026-10-14", updatedAt: "2026-10-14" };
   const model = {
     where(filter) {
       filters.push(filter);
@@ -52,7 +57,9 @@ test("expense service scopes reads and writes to the authenticated organization"
     async create(data) { return { ...row, ...data }; },
   };
   const storage = { async delete() {}, async put() {}, async get() { return Buffer.from("receipt"); } };
-  const service = new ExpensesService({ orm: { public: { Expense: model } } }, { auth: { organizationId: "org-a" } }, storage);
+  const users = { where() { return { select() { return { async all() { return [{ id: "user-a", fullName: "User A" }]; } }; } }; } };
+  const history = { where() { return { async first() { return null; }, orderBy() { return { async all() { return []; } }; } }; } };
+  const service = new ExpensesService({ orm: { public: { Expense: model, User: users, ExpenseApprovalHistory: history } } }, { auth: { organizationId: "org-a", userId: "user-a", role: "PROJECT_MANAGER" } }, storage);
   const listed = await service.list({ limit: 20, offset: 0, sort: "date", order: "desc" });
   assert.equal(listed.total, 1);
   assert.equal("receiptKey" in listed.items[0], false);
@@ -64,11 +71,16 @@ test("expense service scopes reads and writes to the authenticated organization"
 });
 test("receipt replacement cleans the new object if the database update fails", async () => {
   const deleted = [];
-  const row = { id: "expense-a", organizationId: "org-a", title: "Hosting", receiptKey: "old-key", receiptUrl: null };
-  const db = { orm: { public: { Expense: { where() { return { async first() { return row; }, async update() { throw new Error("database failed"); } }; } } } } };
+  const row = { id: "expense-a", organizationId: "org-a", title: "Hosting", receiptKey: "old-key", receiptUrl: null, approvalStatus: "DRAFT", version: 1, createdByUserId: "user-a" };
+  const db = { orm: { public: { Expense: { where() { return { async first() { return row; }, async updateAll() { throw new Error("database failed"); }, async update() { throw new Error("database failed"); } }; } } } } };
   const storage = { async put() {}, async delete(key) { deleted.push(key); } };
-  const service = new ExpensesService(db, { auth: { organizationId: "org-a" } }, storage);
+  const service = new ExpensesService(db, { auth: { organizationId: "org-a", userId: "user-a", role: "PROJECT_MANAGER" } }, storage);
   await assert.rejects(service.uploadReceipt("expense-a", { originalname: "receipt.jpg", mimetype: "image/jpeg", size: 4, buffer: Buffer.from([255,216,255,217]) }), /database failed/);
   assert.equal(deleted.length, 1);
   assert.match(deleted[0], /^organizations\/org-a\/expenses\/expense-a\//);
+});
+test("approval migration preserves legacy expenses as approved", async () => {
+  const migration = await readFile(new URL("../prisma/migrations/app/20261017T0851_expense_approvals/migration.ts", import.meta.url), "utf8");
+  assert.match(migration, /col\('approvalStatus'/);
+  assert.match(migration, /default: lit\('APPROVED'\)/);
 });

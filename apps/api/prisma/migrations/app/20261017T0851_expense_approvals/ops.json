@@ -1,0 +1,1025 @@
+[
+  {
+    "id": "table.expense_approval_history",
+    "label": "Create table \"expense_approval_history\"",
+    "summary": "Creates table \"expense_approval_history\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "expense_approval_history"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"expense_approval_history\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"expense_approval_history\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"expense_approval_history\"",
+        "sql": "CREATE TABLE \"public\".\"expense_approval_history\" (\n  \"action\" text NOT NULL,\n  \"actorId\" text NOT NULL,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"expenseId\" text NOT NULL,\n  \"id\" text NOT NULL,\n  \"newStatus\" text NOT NULL,\n  \"organizationId\" text NOT NULL,\n  \"previousStatus\" text NOT NULL,\n  \"rejectionReason\" text,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"expense_approval_history_action_check_8586241b\" CHECK (\"action\" IN ('SUBMITTED', 'APPROVED', 'REJECTED', 'REOPENED', 'RESUBMITTED')),\n  CONSTRAINT \"expense_approval_history_newStatus_check_b818a279\" CHECK (\"newStatus\" IN ('DRAFT', 'PENDING_APPROVAL', 'APPROVED', 'REJECTED')),\n  CONSTRAINT \"expense_approval_history_previousStatus_check_23699b52\" CHECK (\"previousStatus\" IN ('DRAFT', 'PENDING_APPROVAL', 'APPROVED', 'REJECTED'))\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"expense_approval_history\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"expense_approval_history\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.expenses.approvalStatus",
+    "label": "Add column \"approvalStatus\" to \"expenses\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "approvalStatus",
+        "table": "expenses"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"approvalStatus\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "expenses",
+          "approvalStatus"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"approvalStatus\"",
+        "sql": "ALTER TABLE \"public\".\"expenses\" ADD COLUMN \"approvalStatus\" text DEFAULT 'APPROVED' NOT NULL"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"approvalStatus\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "expenses",
+          "approvalStatus"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.expenses.createdByUserId",
+    "label": "Add column \"createdByUserId\" to \"expenses\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "createdByUserId",
+        "table": "expenses"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"createdByUserId\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "expenses",
+          "createdByUserId"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"createdByUserId\"",
+        "sql": "ALTER TABLE \"public\".\"expenses\" ADD COLUMN \"createdByUserId\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"createdByUserId\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "expenses",
+          "createdByUserId"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.expenses.rejectionReason",
+    "label": "Add column \"rejectionReason\" to \"expenses\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "rejectionReason",
+        "table": "expenses"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"rejectionReason\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "expenses",
+          "rejectionReason"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"rejectionReason\"",
+        "sql": "ALTER TABLE \"public\".\"expenses\" ADD COLUMN \"rejectionReason\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"rejectionReason\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "expenses",
+          "rejectionReason"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.expenses.reviewedAt",
+    "label": "Add column \"reviewedAt\" to \"expenses\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "reviewedAt",
+        "table": "expenses"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"reviewedAt\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "expenses",
+          "reviewedAt"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"reviewedAt\"",
+        "sql": "ALTER TABLE \"public\".\"expenses\" ADD COLUMN \"reviewedAt\" timestamptz"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"reviewedAt\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "expenses",
+          "reviewedAt"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.expenses.reviewedById",
+    "label": "Add column \"reviewedById\" to \"expenses\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "reviewedById",
+        "table": "expenses"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"reviewedById\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "expenses",
+          "reviewedById"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"reviewedById\"",
+        "sql": "ALTER TABLE \"public\".\"expenses\" ADD COLUMN \"reviewedById\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"reviewedById\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "expenses",
+          "reviewedById"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.expenses.submittedAt",
+    "label": "Add column \"submittedAt\" to \"expenses\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "submittedAt",
+        "table": "expenses"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"submittedAt\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "expenses",
+          "submittedAt"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"submittedAt\"",
+        "sql": "ALTER TABLE \"public\".\"expenses\" ADD COLUMN \"submittedAt\" timestamptz"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"submittedAt\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "expenses",
+          "submittedAt"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.expenses.submittedById",
+    "label": "Add column \"submittedById\" to \"expenses\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "submittedById",
+        "table": "expenses"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"submittedById\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "expenses",
+          "submittedById"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"submittedById\"",
+        "sql": "ALTER TABLE \"public\".\"expenses\" ADD COLUMN \"submittedById\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"submittedById\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "expenses",
+          "submittedById"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.expenses.version",
+    "label": "Add column \"version\" to \"expenses\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "version",
+        "table": "expenses"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"version\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "expenses",
+          "version"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"version\"",
+        "sql": "ALTER TABLE \"public\".\"expenses\" ADD COLUMN \"version\" int4 DEFAULT 1 NOT NULL"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"version\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "expenses",
+          "version"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "checkConstraint.expenses.expenses_approvalStatus_check_bfafdfc7",
+    "label": "Add check constraint \"expenses_approvalStatus_check_bfafdfc7\" on \"expenses\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "checkConstraint",
+        "name": "expenses_approvalStatus_check_bfafdfc7",
+        "table": "expenses"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"expenses_approvalStatus_check_bfafdfc7\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "expenses_approvalStatus_check_bfafdfc7",
+          "public",
+          "\"public\".\"expenses\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add check constraint \"expenses_approvalStatus_check_bfafdfc7\"",
+        "sql": "ALTER TABLE \"public\".\"expenses\" ADD CONSTRAINT \"expenses_approvalStatus_check_bfafdfc7\" CHECK (\"approvalStatus\" IN ('DRAFT', 'PENDING_APPROVAL', 'APPROVED', 'REJECTED'))"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"expenses_approvalStatus_check_bfafdfc7\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "expenses_approvalStatus_check_bfafdfc7",
+          "public",
+          "\"public\".\"expenses\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.expenses.expenses_organizationId_id_key",
+    "label": "Add unique constraint on \"expenses\" (organizationId, id)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "expenses_organizationId_id_key",
+        "table": "expenses"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"expenses_organizationId_id_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "expenses_organizationId_id_key",
+          "public",
+          "\"public\".\"expenses\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"expenses_organizationId_id_key\"",
+        "sql": "ALTER TABLE \"public\".\"expenses\" ADD CONSTRAINT \"expenses_organizationId_id_key\" UNIQUE (\"organizationId\", \"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"expenses_organizationId_id_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "expenses_organizationId_id_key",
+          "public",
+          "\"public\".\"expenses\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.expense_approval_history.expense_approval_history_organizationId_actorId_idx_327c2974",
+    "label": "Create index \"expense_approval_history_organizationId_actorId_idx_327c2974\" on \"expense_approval_history\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "expense_approval_history_organizationId_actorId_idx_327c2974",
+        "table": "expense_approval_history"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"expense_approval_history_organizationId_actorId_idx_327c2974\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"expense_approval_history_organizationId_actorId_idx_327c2974\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"expense_approval_history_organizationId_actorId_idx_327c2974\"",
+        "sql": "CREATE INDEX \"expense_approval_history_organizationId_actorId_idx_327c2974\" ON \"public\".\"expense_approval_history\" (\"organizationId\", \"actorId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"expense_approval_history_organizationId_actorId_idx_327c2974\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"expense_approval_history_organizationId_actorId_idx_327c2974\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.expense_approval_history.expense_approval_history_organizationId_expenseId_idx_5740def0",
+    "label": "Create index \"expense_approval_history_organizationId_expenseId_idx_5740def0\" on \"expense_approval_history\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "expense_approval_history_organizationId_expenseId_idx_5740def0",
+        "table": "expense_approval_history"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"expense_approval_history_organizationId_expenseId_idx_5740def0\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"expense_approval_history_organizationId_expenseId_idx_5740def0\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"expense_approval_history_organizationId_expenseId_idx_5740def0\"",
+        "sql": "CREATE INDEX \"expense_approval_history_organizationId_expenseId_idx_5740def0\" ON \"public\".\"expense_approval_history\" (\"organizationId\", \"expenseId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"expense_approval_history_organizationId_expenseId_idx_5740def0\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"expense_approval_history_organizationId_expenseId_idx_5740def0\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.expense_approval_history.expense_approval_history_organizationId_idx_2e17ef41",
+    "label": "Create index \"expense_approval_history_organizationId_idx_2e17ef41\" on \"expense_approval_history\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "expense_approval_history_organizationId_idx_2e17ef41",
+        "table": "expense_approval_history"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"expense_approval_history_organizationId_idx_2e17ef41\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"expense_approval_history_organizationId_idx_2e17ef41\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"expense_approval_history_organizationId_idx_2e17ef41\"",
+        "sql": "CREATE INDEX \"expense_approval_history_organizationId_idx_2e17ef41\" ON \"public\".\"expense_approval_history\" (\"organizationId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"expense_approval_history_organizationId_idx_2e17ef41\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"expense_approval_history_organizationId_idx_2e17ef41\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.expense_approval_history.expense_history_expense_created_idx",
+    "label": "Create index \"expense_history_expense_created_idx\" on \"expense_approval_history\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "expense_history_expense_created_idx",
+        "table": "expense_approval_history"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"expense_history_expense_created_idx\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"expense_history_expense_created_idx\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"expense_history_expense_created_idx\"",
+        "sql": "CREATE INDEX \"expense_history_expense_created_idx\" ON \"public\".\"expense_approval_history\" (\"organizationId\", \"expenseId\", \"createdAt\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"expense_history_expense_created_idx\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"expense_history_expense_created_idx\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.expenses.expenses_organizationId_approvalStatus_submittedAt_idx_184f1a29",
+    "label": "Create index \"expenses_organizationId_approvalStatus_submittedAt_idx_184f1a29\" on \"expenses\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "expenses_organizationId_approvalStatus_submittedAt_idx_184f1a29",
+        "table": "expenses"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"expenses_organizationId_approvalStatus_submittedAt_idx_184f1a29\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"expenses_organizationId_approvalStatus_submittedAt_idx_184f1a29\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"expenses_organizationId_approvalStatus_submittedAt_idx_184f1a29\"",
+        "sql": "CREATE INDEX \"expenses_organizationId_approvalStatus_submittedAt_idx_184f1a29\" ON \"public\".\"expenses\" (\"organizationId\", \"approvalStatus\", \"submittedAt\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"expenses_organizationId_approvalStatus_submittedAt_idx_184f1a29\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"expenses_organizationId_approvalStatus_submittedAt_idx_184f1a29\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.expenses.expenses_organizationId_createdByUserId_idx_a1ea2c41",
+    "label": "Create index \"expenses_organizationId_createdByUserId_idx_a1ea2c41\" on \"expenses\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "expenses_organizationId_createdByUserId_idx_a1ea2c41",
+        "table": "expenses"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"expenses_organizationId_createdByUserId_idx_a1ea2c41\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"expenses_organizationId_createdByUserId_idx_a1ea2c41\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"expenses_organizationId_createdByUserId_idx_a1ea2c41\"",
+        "sql": "CREATE INDEX \"expenses_organizationId_createdByUserId_idx_a1ea2c41\" ON \"public\".\"expenses\" (\"organizationId\", \"createdByUserId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"expenses_organizationId_createdByUserId_idx_a1ea2c41\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"expenses_organizationId_createdByUserId_idx_a1ea2c41\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.expenses.expenses_organizationId_reviewedById_idx_82814071",
+    "label": "Create index \"expenses_organizationId_reviewedById_idx_82814071\" on \"expenses\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "expenses_organizationId_reviewedById_idx_82814071",
+        "table": "expenses"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"expenses_organizationId_reviewedById_idx_82814071\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"expenses_organizationId_reviewedById_idx_82814071\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"expenses_organizationId_reviewedById_idx_82814071\"",
+        "sql": "CREATE INDEX \"expenses_organizationId_reviewedById_idx_82814071\" ON \"public\".\"expenses\" (\"organizationId\", \"reviewedById\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"expenses_organizationId_reviewedById_idx_82814071\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"expenses_organizationId_reviewedById_idx_82814071\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.expenses.expenses_organizationId_submittedById_idx_944e86fb",
+    "label": "Create index \"expenses_organizationId_submittedById_idx_944e86fb\" on \"expenses\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "expenses_organizationId_submittedById_idx_944e86fb",
+        "table": "expenses"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"expenses_organizationId_submittedById_idx_944e86fb\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"expenses_organizationId_submittedById_idx_944e86fb\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"expenses_organizationId_submittedById_idx_944e86fb\"",
+        "sql": "CREATE INDEX \"expenses_organizationId_submittedById_idx_944e86fb\" ON \"public\".\"expenses\" (\"organizationId\", \"submittedById\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"expenses_organizationId_submittedById_idx_944e86fb\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"expenses_organizationId_submittedById_idx_944e86fb\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.expense_approval_history.expense_approval_history_organizationId_fkey",
+    "label": "Add foreign key \"expense_approval_history_organizationId_fkey\" on \"expense_approval_history\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "expense_approval_history_organizationId_fkey",
+        "table": "expense_approval_history"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"expense_approval_history_organizationId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "expense_approval_history_organizationId_fkey",
+          "public",
+          "\"public\".\"expense_approval_history\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"expense_approval_history_organizationId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"expense_approval_history\"\nADD CONSTRAINT \"expense_approval_history_organizationId_fkey\"\nFOREIGN KEY (\"organizationId\")\nREFERENCES \"public\".\"organizations\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"expense_approval_history_organizationId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "expense_approval_history_organizationId_fkey",
+          "public",
+          "\"public\".\"expense_approval_history\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.expense_approval_history.expense_approval_history_organizationId_expenseId_fkey",
+    "label": "Add foreign key \"expense_approval_history_organizationId_expenseId_fkey\" on \"expense_approval_history\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "expense_approval_history_organizationId_expenseId_fkey",
+        "table": "expense_approval_history"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"expense_approval_history_organizationId_expenseId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "expense_approval_history_organizationId_expenseId_fkey",
+          "public",
+          "\"public\".\"expense_approval_history\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"expense_approval_history_organizationId_expenseId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"expense_approval_history\"\nADD CONSTRAINT \"expense_approval_history_organizationId_expenseId_fkey\"\nFOREIGN KEY (\"organizationId\", \"expenseId\")\nREFERENCES \"public\".\"expenses\" (\"organizationId\", \"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"expense_approval_history_organizationId_expenseId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "expense_approval_history_organizationId_expenseId_fkey",
+          "public",
+          "\"public\".\"expense_approval_history\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.expense_approval_history.expense_approval_history_organizationId_actorId_fkey",
+    "label": "Add foreign key \"expense_approval_history_organizationId_actorId_fkey\" on \"expense_approval_history\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "expense_approval_history_organizationId_actorId_fkey",
+        "table": "expense_approval_history"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"expense_approval_history_organizationId_actorId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "expense_approval_history_organizationId_actorId_fkey",
+          "public",
+          "\"public\".\"expense_approval_history\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"expense_approval_history_organizationId_actorId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"expense_approval_history\"\nADD CONSTRAINT \"expense_approval_history_organizationId_actorId_fkey\"\nFOREIGN KEY (\"organizationId\", \"actorId\")\nREFERENCES \"public\".\"users\" (\"organizationId\", \"id\")\nON DELETE RESTRICT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"expense_approval_history_organizationId_actorId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "expense_approval_history_organizationId_actorId_fkey",
+          "public",
+          "\"public\".\"expense_approval_history\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.expenses.expenses_organizationId_createdByUserId_fkey",
+    "label": "Add foreign key \"expenses_organizationId_createdByUserId_fkey\" on \"expenses\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "expenses_organizationId_createdByUserId_fkey",
+        "table": "expenses"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"expenses_organizationId_createdByUserId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "expenses_organizationId_createdByUserId_fkey",
+          "public",
+          "\"public\".\"expenses\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"expenses_organizationId_createdByUserId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"expenses\"\nADD CONSTRAINT \"expenses_organizationId_createdByUserId_fkey\"\nFOREIGN KEY (\"organizationId\", \"createdByUserId\")\nREFERENCES \"public\".\"users\" (\"organizationId\", \"id\")\nON DELETE RESTRICT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"expenses_organizationId_createdByUserId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "expenses_organizationId_createdByUserId_fkey",
+          "public",
+          "\"public\".\"expenses\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.expenses.expenses_organizationId_reviewedById_fkey",
+    "label": "Add foreign key \"expenses_organizationId_reviewedById_fkey\" on \"expenses\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "expenses_organizationId_reviewedById_fkey",
+        "table": "expenses"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"expenses_organizationId_reviewedById_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "expenses_organizationId_reviewedById_fkey",
+          "public",
+          "\"public\".\"expenses\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"expenses_organizationId_reviewedById_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"expenses\"\nADD CONSTRAINT \"expenses_organizationId_reviewedById_fkey\"\nFOREIGN KEY (\"organizationId\", \"reviewedById\")\nREFERENCES \"public\".\"users\" (\"organizationId\", \"id\")\nON DELETE RESTRICT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"expenses_organizationId_reviewedById_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "expenses_organizationId_reviewedById_fkey",
+          "public",
+          "\"public\".\"expenses\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.expenses.expenses_organizationId_submittedById_fkey",
+    "label": "Add foreign key \"expenses_organizationId_submittedById_fkey\" on \"expenses\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "expenses_organizationId_submittedById_fkey",
+        "table": "expenses"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"expenses_organizationId_submittedById_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "expenses_organizationId_submittedById_fkey",
+          "public",
+          "\"public\".\"expenses\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"expenses_organizationId_submittedById_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"expenses\"\nADD CONSTRAINT \"expenses_organizationId_submittedById_fkey\"\nFOREIGN KEY (\"organizationId\", \"submittedById\")\nREFERENCES \"public\".\"users\" (\"organizationId\", \"id\")\nON DELETE RESTRICT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"expenses_organizationId_submittedById_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "expenses_organizationId_submittedById_fkey",
+          "public",
+          "\"public\".\"expenses\""
+        ]
+      }
+    ]
+  }
+]

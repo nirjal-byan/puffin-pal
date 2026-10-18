@@ -34,9 +34,9 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'d51251a8c67afd97dd92aa72b9b47c14d04de3614162b0e2d52e077ab93998aa'>;
+  StorageHashBase<'c4f998fa379b245c06e0e5056f7173488525226494dba5333e06f56adfdb6f0c'>;
 export type ExecutionHash =
-  ExecutionHashBase<'0e23c2f019a47e83a0e7583ae6089b09d7d3611a25c1238efe932acc8b8384a8'>;
+  ExecutionHashBase<'c48ed6268c8e59ef9426305c4757a61c7a647b386fb55694b8c0bb66e9919edc'>;
 export type ProfileHash =
   ProfileHashBase<'3916f444a8a17ad749191acf9e08dad97d1a327b88c2f1d45d12f240296aa8b2'>;
 
@@ -262,8 +262,10 @@ export type FieldOutputTypes = {
     };
     readonly Expense: {
       readonly amount: Numeric<12, 2>;
+      readonly approvalStatus: 'DRAFT' | 'PENDING_APPROVAL' | 'APPROVED' | 'REJECTED';
       readonly category: 'SOFTWARE' | 'HARDWARE' | 'TRAVEL' | 'MARKETING' | 'OTHER';
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly createdByUserId: CodecTypes['pg/text@1']['output'] | null;
       readonly date: CodecTypes['pg/timestamptz-temporal@1']['output'];
       readonly description: CodecTypes['pg/text@1']['output'] | null;
       readonly id: CodecTypes['pg/text@1']['output'];
@@ -274,9 +276,26 @@ export type FieldOutputTypes = {
       readonly receiptName: CodecTypes['pg/text@1']['output'] | null;
       readonly receiptSize: CodecTypes['pg/int4@1']['output'] | null;
       readonly receiptUrl: CodecTypes['pg/text@1']['output'] | null;
+      readonly rejectionReason: CodecTypes['pg/text@1']['output'] | null;
+      readonly reviewedAt: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
+      readonly reviewedById: CodecTypes['pg/text@1']['output'] | null;
+      readonly submittedAt: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
+      readonly submittedById: CodecTypes['pg/text@1']['output'] | null;
       readonly title: CodecTypes['pg/text@1']['output'];
       readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
       readonly vendor: CodecTypes['pg/text@1']['output'] | null;
+      readonly version: CodecTypes['pg/int4@1']['output'];
+    };
+    readonly ExpenseApprovalHistory: {
+      readonly action: 'SUBMITTED' | 'APPROVED' | 'REJECTED' | 'REOPENED' | 'RESUBMITTED';
+      readonly actorId: CodecTypes['pg/text@1']['output'];
+      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly expenseId: CodecTypes['pg/text@1']['output'];
+      readonly id: CodecTypes['pg/text@1']['output'];
+      readonly newStatus: 'DRAFT' | 'PENDING_APPROVAL' | 'APPROVED' | 'REJECTED';
+      readonly organizationId: CodecTypes['pg/text@1']['output'];
+      readonly previousStatus: 'DRAFT' | 'PENDING_APPROVAL' | 'APPROVED' | 'REJECTED';
+      readonly rejectionReason: CodecTypes['pg/text@1']['output'] | null;
     };
     readonly Invoice: {
       readonly billingCompanyName: CodecTypes['pg/text@1']['output'] | null;
@@ -403,8 +422,10 @@ export type FieldInputTypes = {
     };
     readonly Expense: {
       readonly amount: CodecTypes['pg/numeric@1']['input'];
+      readonly approvalStatus: 'DRAFT' | 'PENDING_APPROVAL' | 'APPROVED' | 'REJECTED';
       readonly category: 'SOFTWARE' | 'HARDWARE' | 'TRAVEL' | 'MARKETING' | 'OTHER';
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly createdByUserId: CodecTypes['pg/text@1']['input'] | null;
       readonly date: CodecTypes['pg/timestamptz-temporal@1']['input'];
       readonly description: CodecTypes['pg/text@1']['input'] | null;
       readonly id: CodecTypes['pg/text@1']['input'];
@@ -415,9 +436,26 @@ export type FieldInputTypes = {
       readonly receiptName: CodecTypes['pg/text@1']['input'] | null;
       readonly receiptSize: CodecTypes['pg/int4@1']['input'] | null;
       readonly receiptUrl: CodecTypes['pg/text@1']['input'] | null;
+      readonly rejectionReason: CodecTypes['pg/text@1']['input'] | null;
+      readonly reviewedAt: CodecTypes['pg/timestamptz-temporal@1']['input'] | null;
+      readonly reviewedById: CodecTypes['pg/text@1']['input'] | null;
+      readonly submittedAt: CodecTypes['pg/timestamptz-temporal@1']['input'] | null;
+      readonly submittedById: CodecTypes['pg/text@1']['input'] | null;
       readonly title: CodecTypes['pg/text@1']['input'];
       readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
       readonly vendor: CodecTypes['pg/text@1']['input'] | null;
+      readonly version: CodecTypes['pg/int4@1']['input'];
+    };
+    readonly ExpenseApprovalHistory: {
+      readonly action: 'SUBMITTED' | 'APPROVED' | 'REJECTED' | 'REOPENED' | 'RESUBMITTED';
+      readonly actorId: CodecTypes['pg/text@1']['input'];
+      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly expenseId: CodecTypes['pg/text@1']['input'];
+      readonly id: CodecTypes['pg/text@1']['input'];
+      readonly newStatus: 'DRAFT' | 'PENDING_APPROVAL' | 'APPROVED' | 'REJECTED';
+      readonly organizationId: CodecTypes['pg/text@1']['input'];
+      readonly previousStatus: 'DRAFT' | 'PENDING_APPROVAL' | 'APPROVED' | 'REJECTED';
+      readonly rejectionReason: CodecTypes['pg/text@1']['input'] | null;
     };
     readonly Invoice: {
       readonly billingCompanyName: CodecTypes['pg/text@1']['input'] | null;
@@ -542,10 +580,23 @@ export type StorageColumnTypes = {
       readonly taxId: CodecTypes['pg/text@1']['output'] | null;
       readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
     };
+    readonly expense_approval_history: {
+      readonly action: 'SUBMITTED' | 'APPROVED' | 'REJECTED' | 'REOPENED' | 'RESUBMITTED';
+      readonly actorId: CodecTypes['pg/text@1']['output'];
+      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly expenseId: CodecTypes['pg/text@1']['output'];
+      readonly id: CodecTypes['pg/text@1']['output'];
+      readonly newStatus: 'DRAFT' | 'PENDING_APPROVAL' | 'APPROVED' | 'REJECTED';
+      readonly organizationId: CodecTypes['pg/text@1']['output'];
+      readonly previousStatus: 'DRAFT' | 'PENDING_APPROVAL' | 'APPROVED' | 'REJECTED';
+      readonly rejectionReason: CodecTypes['pg/text@1']['output'] | null;
+    };
     readonly expenses: {
       readonly amount: Numeric<12, 2>;
+      readonly approvalStatus: 'DRAFT' | 'PENDING_APPROVAL' | 'APPROVED' | 'REJECTED';
       readonly category: 'SOFTWARE' | 'HARDWARE' | 'TRAVEL' | 'MARKETING' | 'OTHER';
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly createdByUserId: CodecTypes['pg/text@1']['output'] | null;
       readonly date: CodecTypes['pg/timestamptz-temporal@1']['output'];
       readonly description: CodecTypes['pg/text@1']['output'] | null;
       readonly id: CodecTypes['pg/text@1']['output'];
@@ -556,9 +607,15 @@ export type StorageColumnTypes = {
       readonly receiptName: CodecTypes['pg/text@1']['output'] | null;
       readonly receiptSize: CodecTypes['pg/int4@1']['output'] | null;
       readonly receiptUrl: CodecTypes['pg/text@1']['output'] | null;
+      readonly rejectionReason: CodecTypes['pg/text@1']['output'] | null;
+      readonly reviewedAt: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
+      readonly reviewedById: CodecTypes['pg/text@1']['output'] | null;
+      readonly submittedAt: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
+      readonly submittedById: CodecTypes['pg/text@1']['output'] | null;
       readonly title: CodecTypes['pg/text@1']['output'];
       readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
       readonly vendor: CodecTypes['pg/text@1']['output'] | null;
+      readonly version: CodecTypes['pg/int4@1']['output'];
     };
     readonly invoice_exports: {
       readonly archiveKey: CodecTypes['pg/text@1']['output'] | null;
@@ -683,10 +740,23 @@ export type StorageColumnInputTypes = {
       readonly taxId: CodecTypes['pg/text@1']['input'] | null;
       readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
     };
+    readonly expense_approval_history: {
+      readonly action: 'SUBMITTED' | 'APPROVED' | 'REJECTED' | 'REOPENED' | 'RESUBMITTED';
+      readonly actorId: CodecTypes['pg/text@1']['input'];
+      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly expenseId: CodecTypes['pg/text@1']['input'];
+      readonly id: CodecTypes['pg/text@1']['input'];
+      readonly newStatus: 'DRAFT' | 'PENDING_APPROVAL' | 'APPROVED' | 'REJECTED';
+      readonly organizationId: CodecTypes['pg/text@1']['input'];
+      readonly previousStatus: 'DRAFT' | 'PENDING_APPROVAL' | 'APPROVED' | 'REJECTED';
+      readonly rejectionReason: CodecTypes['pg/text@1']['input'] | null;
+    };
     readonly expenses: {
       readonly amount: CodecTypes['pg/numeric@1']['input'];
+      readonly approvalStatus: 'DRAFT' | 'PENDING_APPROVAL' | 'APPROVED' | 'REJECTED';
       readonly category: 'SOFTWARE' | 'HARDWARE' | 'TRAVEL' | 'MARKETING' | 'OTHER';
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly createdByUserId: CodecTypes['pg/text@1']['input'] | null;
       readonly date: CodecTypes['pg/timestamptz-temporal@1']['input'];
       readonly description: CodecTypes['pg/text@1']['input'] | null;
       readonly id: CodecTypes['pg/text@1']['input'];
@@ -697,9 +767,15 @@ export type StorageColumnInputTypes = {
       readonly receiptName: CodecTypes['pg/text@1']['input'] | null;
       readonly receiptSize: CodecTypes['pg/int4@1']['input'] | null;
       readonly receiptUrl: CodecTypes['pg/text@1']['input'] | null;
+      readonly rejectionReason: CodecTypes['pg/text@1']['input'] | null;
+      readonly reviewedAt: CodecTypes['pg/timestamptz-temporal@1']['input'] | null;
+      readonly reviewedById: CodecTypes['pg/text@1']['input'] | null;
+      readonly submittedAt: CodecTypes['pg/timestamptz-temporal@1']['input'] | null;
+      readonly submittedById: CodecTypes['pg/text@1']['input'] | null;
       readonly title: CodecTypes['pg/text@1']['input'];
       readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
       readonly vendor: CodecTypes['pg/text@1']['input'] | null;
+      readonly version: CodecTypes['pg/int4@1']['input'];
     };
     readonly invoice_exports: {
       readonly archiveKey: CodecTypes['pg/text@1']['input'] | null;
@@ -829,8 +905,10 @@ export namespace Models {
   };
   export type public_Expense = {
     amount: Numeric<12, 2>;
+    approvalStatus: 'DRAFT' | 'PENDING_APPROVAL' | 'APPROVED' | 'REJECTED';
     category: 'SOFTWARE' | 'HARDWARE' | 'TRAVEL' | 'MARKETING' | 'OTHER';
     createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+    createdByUserId: CodecTypes['pg/text@1']['output'] | null;
     date: CodecTypes['pg/timestamptz-temporal@1']['output'];
     description: CodecTypes['pg/text@1']['output'] | null;
     id: CodecTypes['pg/text@1']['output'];
@@ -841,11 +919,37 @@ export namespace Models {
     receiptName: CodecTypes['pg/text@1']['output'] | null;
     receiptSize: CodecTypes['pg/int4@1']['output'] | null;
     receiptUrl: CodecTypes['pg/text@1']['output'] | null;
+    rejectionReason: CodecTypes['pg/text@1']['output'] | null;
+    reviewedAt: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
+    reviewedById: CodecTypes['pg/text@1']['output'] | null;
+    submittedAt: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
+    submittedById: CodecTypes['pg/text@1']['output'] | null;
     title: CodecTypes['pg/text@1']['output'];
     updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
     vendor: CodecTypes['pg/text@1']['output'] | null;
+    version: CodecTypes['pg/int4@1']['output'];
+    approvalHistory: public_ExpenseApprovalHistory[];
+    createdBy: public_User | null;
     organization: public_Organization;
-    readonly [RelationKeys]?: 'organization';
+    reviewedBy: public_User | null;
+    submittedBy: public_User | null;
+    readonly [RelationKeys]?:
+      'approvalHistory' | 'createdBy' | 'organization' | 'reviewedBy' | 'submittedBy';
+  };
+  export type public_ExpenseApprovalHistory = {
+    action: 'SUBMITTED' | 'APPROVED' | 'REJECTED' | 'REOPENED' | 'RESUBMITTED';
+    actorId: CodecTypes['pg/text@1']['output'];
+    createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+    expenseId: CodecTypes['pg/text@1']['output'];
+    id: CodecTypes['pg/text@1']['output'];
+    newStatus: 'DRAFT' | 'PENDING_APPROVAL' | 'APPROVED' | 'REJECTED';
+    organizationId: CodecTypes['pg/text@1']['output'];
+    previousStatus: 'DRAFT' | 'PENDING_APPROVAL' | 'APPROVED' | 'REJECTED';
+    rejectionReason: CodecTypes['pg/text@1']['output'] | null;
+    actor: public_User;
+    expense: public_Expense;
+    organization: public_Organization;
+    readonly [RelationKeys]?: 'actor' | 'expense' | 'organization';
   };
   export type public_Invoice = {
     billingCompanyName: CodecTypes['pg/text@1']['output'] | null;
@@ -931,6 +1035,7 @@ export namespace Models {
     updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
     website: CodecTypes['pg/text@1']['output'] | null;
     clients: public_Client[];
+    expenseApprovalHistory: public_ExpenseApprovalHistory[];
     expenses: public_Expense[];
     invoiceExports: public_InvoiceExport[];
     invoices: public_Invoice[];
@@ -940,6 +1045,7 @@ export namespace Models {
     users: public_User[];
     readonly [RelationKeys]?:
       | 'clients'
+      | 'expenseApprovalHistory'
       | 'expenses'
       | 'invoiceExports'
       | 'invoices'
@@ -989,9 +1095,19 @@ export namespace Models {
     passwordHash: CodecTypes['pg/text@1']['output'];
     phoneNumber: CodecTypes['pg/text@1']['output'] | null;
     updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+    createdExpenses: public_Expense[];
+    expenseApprovalEvents: public_ExpenseApprovalHistory[];
     memberships: public_Membership[];
     organization: public_Organization;
-    readonly [RelationKeys]?: 'memberships' | 'organization';
+    reviewedExpenses: public_Expense[];
+    submittedExpenses: public_Expense[];
+    readonly [RelationKeys]?:
+      | 'createdExpenses'
+      | 'expenseApprovalEvents'
+      | 'memberships'
+      | 'organization'
+      | 'reviewedExpenses'
+      | 'submittedExpenses';
   };
 }
 
@@ -999,6 +1115,7 @@ export declare const models: {
   public: {
     Client: Models.public_Client;
     Expense: Models.public_Expense;
+    ExpenseApprovalHistory: Models.public_ExpenseApprovalHistory;
     Invoice: Models.public_Invoice;
     InvoiceExport: Models.public_InvoiceExport;
     InvoiceItem: Models.public_InvoiceItem;
@@ -1097,6 +1214,121 @@ type ContractBase = Omit<
                 },
               ];
             };
+            readonly expense_approval_history: {
+              columns: {
+                readonly action: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly actorId: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly createdAt: {
+                  readonly nativeType: 'timestamptz';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                  readonly nullable: false;
+                  readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
+                };
+                readonly expenseId: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly id: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly newStatus: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly organizationId: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly previousStatus: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly rejectionReason: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [];
+              indexes: readonly [
+                {
+                  readonly name: 'expense_approval_history_organizationId_actorId_idx_327c2974';
+                  readonly prefix: 'expense_approval_history_organizationId_actorId_idx';
+                  readonly columns: readonly ['organizationId', 'actorId'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'expense_approval_history_organizationId_expenseId_idx_5740def0';
+                  readonly prefix: 'expense_approval_history_organizationId_expenseId_idx';
+                  readonly columns: readonly ['organizationId', 'expenseId'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'expense_approval_history_organizationId_idx_2e17ef41';
+                  readonly prefix: 'expense_approval_history_organizationId_idx';
+                  readonly columns: readonly ['organizationId'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'expense_history_expense_created_idx';
+                  readonly columns: readonly ['organizationId', 'expenseId', 'createdAt'];
+                  readonly unique: false;
+                },
+              ];
+              foreignKeys: readonly [
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'expense_approval_history';
+                    readonly columns: readonly ['organizationId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'organizations';
+                    readonly columns: readonly ['id'];
+                  };
+                },
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'expense_approval_history';
+                    readonly columns: readonly ['organizationId', 'expenseId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'expenses';
+                    readonly columns: readonly ['organizationId', 'id'];
+                  };
+                },
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'expense_approval_history';
+                    readonly columns: readonly ['organizationId', 'actorId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'users';
+                    readonly columns: readonly ['organizationId', 'id'];
+                  };
+                },
+              ];
+            };
             readonly expenses: {
               columns: {
                 readonly amount: {
@@ -1104,6 +1336,15 @@ type ContractBase = Omit<
                   readonly codecId: 'pg/numeric@1';
                   readonly nullable: false;
                   readonly typeParams: { readonly precision: 12; readonly scale: 2 };
+                };
+                readonly approvalStatus: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/text@1', 'APPROVED'>;
+                  };
                 };
                 readonly category: {
                   readonly nativeType: 'text';
@@ -1119,6 +1360,11 @@ type ContractBase = Omit<
                   readonly codecId: 'pg/timestamptz-temporal@1';
                   readonly nullable: false;
                   readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
+                };
+                readonly createdByUserId: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
                 };
                 readonly date: {
                   readonly nativeType: 'timestamptz';
@@ -1170,6 +1416,31 @@ type ContractBase = Omit<
                   readonly codecId: 'pg/text@1';
                   readonly nullable: true;
                 };
+                readonly rejectionReason: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                };
+                readonly reviewedAt: {
+                  readonly nativeType: 'timestamptz';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                  readonly nullable: true;
+                };
+                readonly reviewedById: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                };
+                readonly submittedAt: {
+                  readonly nativeType: 'timestamptz';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                  readonly nullable: true;
+                };
+                readonly submittedById: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                };
                 readonly title: {
                   readonly nativeType: 'text';
                   readonly codecId: 'pg/text@1';
@@ -1185,10 +1456,31 @@ type ContractBase = Omit<
                   readonly codecId: 'pg/text@1';
                   readonly nullable: true;
                 };
+                readonly version: {
+                  readonly nativeType: 'int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/int4@1', 1>;
+                  };
+                };
               };
               primaryKey: { readonly columns: readonly ['id'] };
-              uniques: readonly [];
+              uniques: readonly [{ readonly columns: readonly ['organizationId', 'id'] }];
               indexes: readonly [
+                {
+                  readonly name: 'expenses_organizationId_approvalStatus_submittedAt_idx_184f1a29';
+                  readonly prefix: 'expenses_organizationId_approvalStatus_submittedAt_idx';
+                  readonly columns: readonly ['organizationId', 'approvalStatus', 'submittedAt'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'expenses_organizationId_createdByUserId_idx_a1ea2c41';
+                  readonly prefix: 'expenses_organizationId_createdByUserId_idx';
+                  readonly columns: readonly ['organizationId', 'createdByUserId'];
+                  readonly unique: false;
+                },
                 {
                   readonly name: 'expenses_organizationId_date_idx_eac2a339';
                   readonly prefix: 'expenses_organizationId_date_idx';
@@ -1199,6 +1491,18 @@ type ContractBase = Omit<
                   readonly name: 'expenses_organizationId_idx_2e17ef41';
                   readonly prefix: 'expenses_organizationId_idx';
                   readonly columns: readonly ['organizationId'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'expenses_organizationId_reviewedById_idx_82814071';
+                  readonly prefix: 'expenses_organizationId_reviewedById_idx';
+                  readonly columns: readonly ['organizationId', 'reviewedById'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'expenses_organizationId_submittedById_idx_944e86fb';
+                  readonly prefix: 'expenses_organizationId_submittedById_idx';
+                  readonly columns: readonly ['organizationId', 'submittedById'];
                   readonly unique: false;
                 },
               ];
@@ -1213,6 +1517,42 @@ type ContractBase = Omit<
                     readonly namespaceId: 'public' & NamespaceId;
                     readonly tableName: 'organizations';
                     readonly columns: readonly ['id'];
+                  };
+                },
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'expenses';
+                    readonly columns: readonly ['organizationId', 'createdByUserId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'users';
+                    readonly columns: readonly ['organizationId', 'id'];
+                  };
+                },
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'expenses';
+                    readonly columns: readonly ['organizationId', 'submittedById'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'users';
+                    readonly columns: readonly ['organizationId', 'id'];
+                  };
+                },
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'expenses';
+                    readonly columns: readonly ['organizationId', 'reviewedById'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'users';
+                    readonly columns: readonly ['organizationId', 'id'];
                   };
                 },
               ];
@@ -2044,6 +2384,20 @@ type ContractBase = Omit<
             };
           };
           readonly valueSet: {
+            readonly ExpenseApprovalAction: {
+              readonly kind: 'valueSet';
+              readonly values: readonly [
+                'SUBMITTED',
+                'APPROVED',
+                'REJECTED',
+                'REOPENED',
+                'RESUBMITTED',
+              ];
+            };
+            readonly ExpenseApprovalStatus: {
+              readonly kind: 'valueSet';
+              readonly values: readonly ['DRAFT', 'PENDING_APPROVAL', 'APPROVED', 'REJECTED'];
+            };
             readonly ExpenseCategory: {
               readonly kind: 'valueSet';
               readonly values: readonly ['SOFTWARE', 'HARDWARE', 'TRAVEL', 'MARKETING', 'OTHER'];
@@ -2093,6 +2447,10 @@ type ContractBase = Omit<
   readonly targetFamily: 'sql';
   readonly roots: {
     readonly clients: { readonly namespace: 'public' & NamespaceId; readonly model: 'Client' };
+    readonly expense_approval_history: {
+      readonly namespace: 'public' & NamespaceId;
+      readonly model: 'ExpenseApprovalHistory';
+    };
     readonly expenses: { readonly namespace: 'public' & NamespaceId; readonly model: 'Expense' };
     readonly invoice_exports: {
       readonly namespace: 'public' & NamespaceId;
@@ -2210,6 +2568,10 @@ type ContractBase = Omit<
                   readonly typeParams: { readonly precision: 12; readonly scale: 2 };
                 };
               };
+              readonly approvalStatus: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
               readonly category: {
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
@@ -2220,6 +2582,10 @@ type ContractBase = Omit<
                   readonly kind: 'scalar';
                   readonly codecId: 'pg/timestamptz-temporal@1';
                 };
+              };
+              readonly createdByUserId: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
               readonly date: {
                 readonly nullable: false;
@@ -2264,6 +2630,32 @@ type ContractBase = Omit<
                 readonly nullable: true;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
+              readonly rejectionReason: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly reviewedAt: {
+                readonly nullable: true;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                };
+              };
+              readonly reviewedById: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly submittedAt: {
+                readonly nullable: true;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                };
+              };
+              readonly submittedById: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
               readonly title: {
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
@@ -2279,8 +2671,158 @@ type ContractBase = Omit<
                 readonly nullable: true;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
+              readonly version: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
             };
             readonly relations: {
+              readonly approvalHistory: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'ExpenseApprovalHistory';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['organizationId', 'id'];
+                  readonly targetFields: readonly ['organizationId', 'expenseId'];
+                };
+              };
+              readonly createdBy: {
+                readonly to: { readonly namespace: 'public' & NamespaceId; readonly model: 'User' };
+                readonly cardinality: 'N:1';
+                readonly nullable: true;
+                readonly on: {
+                  readonly localFields: readonly ['organizationId', 'createdByUserId'];
+                  readonly targetFields: readonly ['organizationId', 'id'];
+                };
+              };
+              readonly organization: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'Organization';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['organizationId'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
+              readonly reviewedBy: {
+                readonly to: { readonly namespace: 'public' & NamespaceId; readonly model: 'User' };
+                readonly cardinality: 'N:1';
+                readonly nullable: true;
+                readonly on: {
+                  readonly localFields: readonly ['organizationId', 'reviewedById'];
+                  readonly targetFields: readonly ['organizationId', 'id'];
+                };
+              };
+              readonly submittedBy: {
+                readonly to: { readonly namespace: 'public' & NamespaceId; readonly model: 'User' };
+                readonly cardinality: 'N:1';
+                readonly nullable: true;
+                readonly on: {
+                  readonly localFields: readonly ['organizationId', 'submittedById'];
+                  readonly targetFields: readonly ['organizationId', 'id'];
+                };
+              };
+            };
+            readonly storage: {
+              readonly table: 'expenses';
+              readonly namespaceId: 'public';
+              readonly fields: {
+                readonly amount: { readonly column: 'amount' };
+                readonly approvalStatus: { readonly column: 'approvalStatus' };
+                readonly category: { readonly column: 'category' };
+                readonly createdAt: { readonly column: 'createdAt' };
+                readonly createdByUserId: { readonly column: 'createdByUserId' };
+                readonly date: { readonly column: 'date' };
+                readonly description: { readonly column: 'description' };
+                readonly id: { readonly column: 'id' };
+                readonly notes: { readonly column: 'notes' };
+                readonly organizationId: { readonly column: 'organizationId' };
+                readonly receiptKey: { readonly column: 'receiptKey' };
+                readonly receiptMime: { readonly column: 'receiptMime' };
+                readonly receiptName: { readonly column: 'receiptName' };
+                readonly receiptSize: { readonly column: 'receiptSize' };
+                readonly receiptUrl: { readonly column: 'receiptUrl' };
+                readonly rejectionReason: { readonly column: 'rejectionReason' };
+                readonly reviewedAt: { readonly column: 'reviewedAt' };
+                readonly reviewedById: { readonly column: 'reviewedById' };
+                readonly submittedAt: { readonly column: 'submittedAt' };
+                readonly submittedById: { readonly column: 'submittedById' };
+                readonly title: { readonly column: 'title' };
+                readonly updatedAt: { readonly column: 'updatedAt' };
+                readonly vendor: { readonly column: 'vendor' };
+                readonly version: { readonly column: 'version' };
+              };
+            };
+          };
+          readonly ExpenseApprovalHistory: {
+            readonly fields: {
+              readonly action: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly actorId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly createdAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                };
+              };
+              readonly expenseId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly newStatus: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly organizationId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly previousStatus: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly rejectionReason: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+            };
+            readonly relations: {
+              readonly actor: {
+                readonly to: { readonly namespace: 'public' & NamespaceId; readonly model: 'User' };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['organizationId', 'actorId'];
+                  readonly targetFields: readonly ['organizationId', 'id'];
+                };
+              };
+              readonly expense: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'Expense';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['organizationId', 'expenseId'];
+                  readonly targetFields: readonly ['organizationId', 'id'];
+                };
+              };
               readonly organization: {
                 readonly to: {
                   readonly namespace: 'public' & NamespaceId;
@@ -2295,25 +2837,18 @@ type ContractBase = Omit<
               };
             };
             readonly storage: {
-              readonly table: 'expenses';
+              readonly table: 'expense_approval_history';
               readonly namespaceId: 'public';
               readonly fields: {
-                readonly amount: { readonly column: 'amount' };
-                readonly category: { readonly column: 'category' };
+                readonly action: { readonly column: 'action' };
+                readonly actorId: { readonly column: 'actorId' };
                 readonly createdAt: { readonly column: 'createdAt' };
-                readonly date: { readonly column: 'date' };
-                readonly description: { readonly column: 'description' };
+                readonly expenseId: { readonly column: 'expenseId' };
                 readonly id: { readonly column: 'id' };
-                readonly notes: { readonly column: 'notes' };
+                readonly newStatus: { readonly column: 'newStatus' };
                 readonly organizationId: { readonly column: 'organizationId' };
-                readonly receiptKey: { readonly column: 'receiptKey' };
-                readonly receiptMime: { readonly column: 'receiptMime' };
-                readonly receiptName: { readonly column: 'receiptName' };
-                readonly receiptSize: { readonly column: 'receiptSize' };
-                readonly receiptUrl: { readonly column: 'receiptUrl' };
-                readonly title: { readonly column: 'title' };
-                readonly updatedAt: { readonly column: 'updatedAt' };
-                readonly vendor: { readonly column: 'vendor' };
+                readonly previousStatus: { readonly column: 'previousStatus' };
+                readonly rejectionReason: { readonly column: 'rejectionReason' };
               };
             };
           };
@@ -2828,6 +3363,17 @@ type ContractBase = Omit<
                   readonly targetFields: readonly ['organizationId'];
                 };
               };
+              readonly expenseApprovalHistory: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'ExpenseApprovalHistory';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['organizationId'];
+                };
+              };
               readonly expenses: {
                 readonly to: {
                   readonly namespace: 'public' & NamespaceId;
@@ -3147,6 +3693,28 @@ type ContractBase = Omit<
               };
             };
             readonly relations: {
+              readonly createdExpenses: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'Expense';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['organizationId', 'id'];
+                  readonly targetFields: readonly ['organizationId', 'createdByUserId'];
+                };
+              };
+              readonly expenseApprovalEvents: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'ExpenseApprovalHistory';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['organizationId', 'id'];
+                  readonly targetFields: readonly ['organizationId', 'actorId'];
+                };
+              };
               readonly memberships: {
                 readonly to: {
                   readonly namespace: 'public' & NamespaceId;
@@ -3168,6 +3736,28 @@ type ContractBase = Omit<
                 readonly on: {
                   readonly localFields: readonly ['organizationId'];
                   readonly targetFields: readonly ['id'];
+                };
+              };
+              readonly reviewedExpenses: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'Expense';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['organizationId', 'id'];
+                  readonly targetFields: readonly ['organizationId', 'reviewedById'];
+                };
+              };
+              readonly submittedExpenses: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'Expense';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['organizationId', 'id'];
+                  readonly targetFields: readonly ['organizationId', 'submittedById'];
                 };
               };
             };
@@ -3194,6 +3784,25 @@ type ContractBase = Omit<
           };
         };
         readonly enum: {
+          readonly ExpenseApprovalAction: {
+            readonly codecId: 'pg/text@1';
+            readonly members: readonly [
+              { readonly name: 'SUBMITTED'; readonly value: 'SUBMITTED' },
+              { readonly name: 'APPROVED'; readonly value: 'APPROVED' },
+              { readonly name: 'REJECTED'; readonly value: 'REJECTED' },
+              { readonly name: 'REOPENED'; readonly value: 'REOPENED' },
+              { readonly name: 'RESUBMITTED'; readonly value: 'RESUBMITTED' },
+            ];
+          };
+          readonly ExpenseApprovalStatus: {
+            readonly codecId: 'pg/text@1';
+            readonly members: readonly [
+              { readonly name: 'DRAFT'; readonly value: 'DRAFT' },
+              { readonly name: 'PENDING_APPROVAL'; readonly value: 'PENDING_APPROVAL' },
+              { readonly name: 'APPROVED'; readonly value: 'APPROVED' },
+              { readonly name: 'REJECTED'; readonly value: 'REJECTED' },
+            ];
+          };
           readonly ExpenseCategory: {
             readonly codecId: 'pg/text@1';
             readonly members: readonly [
@@ -3297,6 +3906,14 @@ type ContractBase = Omit<
           readonly ref: {
             readonly entry: 'clients';
             readonly field: 'updatedAt';
+            readonly namespace: 'public';
+          };
+        },
+        {
+          readonly onCreate: { readonly id: 'uuidv4'; readonly kind: 'generator' };
+          readonly ref: {
+            readonly entry: 'expense_approval_history';
+            readonly field: 'id';
             readonly namespace: 'public';
           };
         },

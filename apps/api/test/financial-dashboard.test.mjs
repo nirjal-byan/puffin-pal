@@ -40,4 +40,6 @@ test("financial summary binds the authenticated tenant and preserves decimal str
   assert.ok(plan.values.includes("org-a"));
   assert.equal(plan.values.includes("org-b"), false);
   assert.equal(result.metrics.invoicedRevenue, "10.10");
+  assert.match(plan.strings.join(""), /approvalStatus/);
+  assert.match(plan.strings.join(""), /APPROVED/);
 });
