@@ -4,6 +4,31 @@ PuffinPal is a multi-tenant invoicing and financial management platform that hel
 
 It is designed for software and digital agencies, consulting firms, freelancers, IT service providers, and other small and medium-sized businesses that need dependable billing workflows without relying on disconnected spreadsheets and file shares.
 
+```mermaid
+mindmap
+  root((PuffinPal))
+    Billing
+      Draft invoices
+      Immutable PDFs
+      Payments
+      Overdue tracking
+      Recurring schedules
+    Spending
+      Expenses
+      Private receipts
+      Approval workflow
+    Operations
+      Clients
+      Team roles
+      Bulk exports
+      Financial dashboard
+    Platform
+      Tenant isolation
+      Redis rate limits
+      BullMQ workers
+      S3-compatible storage
+```
+
 ## Features & Real-World Use Cases
 
 The companies and scenarios below are fictional examples used to illustrate practical workflows.
@@ -172,6 +197,116 @@ flowchart LR
 ```
 
 Normal application requests go directly from the API to PostgreSQL or object storage. BullMQ is used only for asynchronous workflows such as bulk exports and recurring billing.
+
+## Key Workflows
+
+### Invoice lifecycle
+
+```mermaid
+stateDiagram-v2
+    [*] --> DRAFT: Create invoice
+    DRAFT --> DRAFT: Edit with version check
+    DRAFT --> ISSUED: Validate, snapshot, and store PDF
+    DRAFT --> [*]: Delete draft
+    ISSUED --> ISSUED: Record partial payment
+    ISSUED --> OVERDUE: Due date passes with balance
+    OVERDUE --> OVERDUE: Record partial payment
+    ISSUED --> PAID: Balance reaches zero
+    OVERDUE --> PAID: Balance reaches zero
+    PAID --> [*]
+```
+
+The issuance transition captures immutable seller and client details. Payments update the financial state while the stored issuance PDF remains unchanged.
+
+### Invoice issuance and document storage
+
+```mermaid
+sequenceDiagram
+    actor User
+    participant Web as Next.js
+    participant API as NestJS API
+    participant DB as PostgreSQL
+    participant PDF as PDFKit
+    participant S3 as SeaweedFS
+
+    User->>Web: Review and issue draft
+    Web->>API: POST /invoices/:id/issue
+    API->>DB: Lock draft and validate version
+    API->>DB: Read client, seller, and line items
+    API->>PDF: Render billing snapshots
+    PDF-->>API: PDF bytes
+    API->>S3: Store immutable private object
+    API->>DB: Mark invoice issued and save PDF key
+    API-->>Web: Finalized invoice
+```
+
+### Expense approval lifecycle
+
+```mermaid
+stateDiagram-v2
+    [*] --> DRAFT
+    DRAFT --> PENDING_APPROVAL: Submit
+    PENDING_APPROVAL --> APPROVED: Approve
+    PENDING_APPROVAL --> REJECTED: Reject with reason
+    REJECTED --> DRAFT: Reopen and revise
+    DRAFT --> PENDING_APPROVAL: Resubmit
+    APPROVED --> [*]
+```
+
+Each transition uses a version check and records the user, previous state, new state, and relevant rejection information.
+
+### Recurring billing and worker recovery
+
+```mermaid
+sequenceDiagram
+    participant Scheduler as BullMQ scheduler
+    participant Worker as Recurring worker
+    participant DB as PostgreSQL
+    participant Invoice as Invoice service
+    participant S3 as SeaweedFS
+
+    Scheduler->>Worker: Scan due schedules
+    Worker->>DB: Revalidate ACTIVE schedule
+    Worker->>DB: Create unique occurrence
+    Worker->>Invoice: Generate draft
+    alt Draft mode
+        Invoice-->>DB: Keep editable DRAFT
+    else Automatic issuance
+        Invoice->>S3: Store immutable PDF
+        Invoice-->>DB: Finalize as ISSUED
+    end
+    Worker->>DB: Record result and next run
+    Note over Worker,DB: Missed dates are recovered in bounded batches
+```
+
+### Role capability overview
+
+| Capability                                      | Owner | Admin | Project manager | Finance viewer |
+| ----------------------------------------------- | :---: | :---: | :-------------: | :------------: |
+| View clients, invoices, expenses, and retainers |   ✓   |   ✓   |        ✓        |       ✓        |
+| Create and update clients                       |   ✓   |   ✓   |        ✓        |       —        |
+| Create and edit invoice drafts                  |   ✓   |   ✓   |        ✓        |       —        |
+| Issue invoices and record payments              |   ✓   |   ✓   |        —        |       —        |
+| Create, edit, and submit expenses               |   ✓   |   ✓   |        ✓        |       —        |
+| Approve or reject expenses                      |   ✓   |   ✓   |        —        |       —        |
+| Create and update recurring schedules           |   ✓   |   ✓   |        ✓        |       —        |
+| Enable recurring automatic issuance             |   ✓   |   ✓   |        —        |       —        |
+| Manage members and roles                        |   ✓   |   ✓   |        —        |       —        |
+
+The API remains the source of truth for authorization. Hidden frontend controls improve usability, but every protected operation is also checked server-side.
+
+### Bulk export flow
+
+```mermaid
+flowchart LR
+    Select[Select issued invoices] --> Validate[API validates permission<br/>and tenant ownership]
+    Validate --> Queue[Create durable export record<br/>and BullMQ job]
+    Queue --> Build[Worker streams PDFs<br/>into a ZIP archive]
+    Build --> Store[Store private archive<br/>in SeaweedFS]
+    Store --> Poll[Browser polls controlled status]
+    Poll --> Download[Authenticated ZIP download]
+    Store --> Expire[Retention cleanup expires archive]
+```
 
 ## Engineering Highlights
 
