@@ -14,12 +14,22 @@ type ApprovalEvent = { id: string; action: string; previousStatus: ApprovalStatu
 type Expense = { id: string; title: string; description: string | null; amount: string; category: typeof CATEGORIES[number]; vendor: string | null; notes: string | null; receiptName: string | null; receiptMime: string | null; receiptSize: number | null; date: string; createdAt: string; updatedAt: string; approvalStatus: ApprovalStatus; version: number; submittedAt: string | null; reviewedAt: string | null; rejectionReason: string | null; createdBy: Person; submittedBy: Person; reviewedBy: Person; approvalHistory?: ApprovalEvent[] };
 type ExpensePage = { items: Expense[]; total: number; pendingCount: number; limit: number; offset: number };
 const today = () => new Date().toISOString().slice(0, 10);
+const dateValue = (date: Date) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+function periodRange(period: string) {
+  const now = new Date();
+  if (period === "last7") { const from = new Date(now); from.setDate(from.getDate() - 6); return { from: dateValue(from), to: dateValue(now) }; }
+  if (period === "last30") { const from = new Date(now); from.setDate(from.getDate() - 29); return { from: dateValue(from), to: dateValue(now) }; }
+  if (period === "thisMonth") return { from: dateValue(new Date(now.getFullYear(), now.getMonth(), 1)), to: dateValue(now) };
+  if (period === "lastMonth") return { from: dateValue(new Date(now.getFullYear(), now.getMonth() - 1, 1)), to: dateValue(new Date(now.getFullYear(), now.getMonth(), 0)) };
+  if (period === "thisYear") return { from: dateValue(new Date(now.getFullYear(), 0, 1)), to: dateValue(now) };
+  return null;
+}
 
 export default function ExpensesPage({ api, currency, permissions, onSaved, onError }: { api: WorkspaceApi; currency: string; permissions: readonly Permission[]; onSaved: (message: string) => void; onError: (error: unknown) => void }) {
   const canCreate = permissions.includes("expenses:create"), canUpdate = permissions.includes("expenses:update"), canDelete = permissions.includes("expenses:delete"), canSubmit = permissions.includes("expenses:submit"), canApprove = permissions.includes("expenses:approve");
   const [page, setPage] = useState<ExpensePage>({ items: [], total: 0, pendingCount: 0, limit: 20, offset: 0 });
   const [offset, setOffset] = useState(0);
-  const [filters, setFilters] = useState({ search: "", category: "", approvalStatus: "", from: "", to: "", sort: "date", order: "desc" });
+  const [filters, setFilters] = useState({ search: "", category: "", approvalStatus: "", period: "", sort: "date", order: "desc" });
   const [applied, setApplied] = useState(filters);
   const [editing, setEditing] = useState<Expense | null>(null), [creating, setCreating] = useState(false), [deleting, setDeleting] = useState<Expense | null>(null);
   const [selected, setSelected] = useState<Expense | null>(null);
@@ -30,7 +40,9 @@ export default function ExpensesPage({ api, currency, permissions, onSaved, onEr
   const load = useCallback(async () => {
     setLoading(true); setFailure("");
     const query = new URLSearchParams({ limit: "20", offset: String(offset), sort: applied.sort, order: applied.order });
-    for (const [key, value] of Object.entries(applied)) if (value && !["sort", "order"].includes(key)) query.set(key, value);
+    for (const [key, value] of Object.entries(applied)) if (value && !["sort", "order", "period"].includes(key)) query.set(key, value);
+    const range = periodRange(applied.period);
+    if (range) { query.set("from", range.from); query.set("to", range.to); }
     try { setPage(await api<ExpensePage>(`/expenses?${query}`)); } catch (error) { setFailure(errorMessage(error)); } finally { setLoading(false); }
   }, [api, applied, offset]);
   // Loading is intentionally tied to the applied filters and page offset.
@@ -73,8 +85,7 @@ export default function ExpensesPage({ api, currency, permissions, onSaved, onEr
       <label>Search<input value={filters.search} onChange={(e) => setFilters({ ...filters, search: e.target.value })} placeholder="Title, vendor or notes" /></label>
       <label>Category<select value={filters.category} onChange={(e) => setFilters({ ...filters, category: e.target.value })}><option value="">All categories</option>{CATEGORIES.map((value) => <option key={value}>{value}</option>)}</select></label>
       <label>Status<select value={filters.approvalStatus} onChange={(e) => setFilters({ ...filters, approvalStatus: e.target.value })}><option value="">All statuses</option><option value="DRAFT">Draft</option><option value="PENDING_APPROVAL">Pending approval</option><option value="APPROVED">Approved</option><option value="REJECTED">Rejected</option></select></label>
-      <label>From<input type="date" value={filters.from} onChange={(e) => setFilters({ ...filters, from: e.target.value })} /></label>
-      <label>To<input type="date" value={filters.to} onChange={(e) => setFilters({ ...filters, to: e.target.value })} /></label>
+      <label>Period<select value={filters.period} onChange={(e) => setFilters({ ...filters, period: e.target.value })}><option value="">All time</option><option value="last7">Last 7 days</option><option value="last30">Last 30 days</option><option value="thisMonth">This month</option><option value="lastMonth">Last month</option><option value="thisYear">This year</option></select></label>
       <label>Sort<select value={`${filters.sort}:${filters.order}`} onChange={(e) => { const [sort, order] = e.target.value.split(":"); setFilters({ ...filters, sort: sort!, order: order! }); }}><option value="date:desc">Newest expense</option><option value="date:asc">Oldest expense</option><option value="amount:desc">Highest amount</option><option value="amount:asc">Lowest amount</option><option value="title:asc">Title A–Z</option></select></label>
       <button className="button secondary" type="submit">Apply filters</button>{canCreate && <button className="button primary" type="button" onClick={() => { setEditing(null); setCreating(true); }}>+ Create Expense</button>}
     </form></section>
