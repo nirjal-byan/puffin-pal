@@ -34,9 +34,24 @@ Replace every `replace-with-...` value. Generate secrets, for example:
 openssl rand -base64 48
 ```
 
+Keep `.env.production` outside version control with mode `600`. In a hosted deployment,
+inject secrets from the platform's secret manager instead of copying them into images,
+Compose files, CI logs, or source control. Use independent random values for PostgreSQL,
+Redis, JWT, and S3 credentials.
+
 If a password contains URL-reserved characters, percent-encode it in `DATABASE_URL`, `REDIS_URL`, and `BULLMQ_REDIS_URL`. The direct `POSTGRES_PASSWORD` and `REDIS_PASSWORD` values remain unencoded.
 
-For local HTTP, retain:
+The production template is configured for a public HTTPS hostname. Replace
+`billing.example.com` with the real DNS name, keep `COOKIE_SECURE=true`, and retain HSTS:
+
+```dotenv
+CADDY_SITE_ADDRESS=billing.example.com
+CADDY_HSTS=max-age=31536000; includeSubDomains
+WEB_ORIGIN=https://billing.example.com
+COOKIE_SECURE=true
+```
+
+For production-like testing on the same local machine only, use:
 
 ```dotenv
 CADDY_SITE_ADDRESS=http://localhost
@@ -45,17 +60,7 @@ WEB_ORIGIN=http://localhost
 COOKIE_SECURE=false
 ```
 
-For a real deployment, point DNS at the host and use:
-
-```dotenv
-CADDY_SITE_ADDRESS=billing.example.com
-CADDY_HSTS=max-age=31536000; includeSubDomains
-PUBLIC_APP_URL=https://billing.example.com
-WEB_ORIGIN=https://billing.example.com
-COOKIE_SECURE=true
-```
-
-Caddy then obtains and renews TLS certificates automatically. Ports 80 and 443 must be reachable. Do not use a public hostname during local testing.
+Caddy obtains and renews TLS certificates for a public hostname automatically. Ports 80 and 443 must be reachable. Never deploy a public instance with HTTP, `COOKIE_SECURE=false`, placeholder secrets, or development credentials.
 
 `NEXT_PUBLIC_API_URL` is compiled as `/api/v1`; it contains no secret and makes browser requests same-origin. Never place credentials in a `NEXT_PUBLIC_*` variable because Next.js embeds those values in browser assets.
 

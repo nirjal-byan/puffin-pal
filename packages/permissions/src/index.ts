@@ -38,6 +38,17 @@ export const PERMISSIONS = [
   "payroll:approve",
   "payroll:finalize",
   "payroll:payments:record",
+  "attendance:read",
+  "attendance:manage",
+  "attendance:self",
+  "leave:read",
+  "leave:request",
+  "leave:approve",
+  "leave:manage",
+  "overtime:read",
+  "overtime:request",
+  "overtime:approve",
+  "overtime:manage",
 ] as const;
 export type Permission = (typeof PERMISSIONS)[number];
 
@@ -49,6 +60,12 @@ const readPermissions: readonly Permission[] = [
   "invoices:read",
   "expenses:read",
   "retainers:read",
+  "attendance:read",
+  "attendance:self",
+  "leave:read",
+  "leave:request",
+  "overtime:read",
+  "overtime:request",
 ];
 export const ROLE_PERMISSIONS: Readonly<Record<Role, readonly Permission[]>> = Object.freeze({
   OWNER: Object.freeze([...PERMISSIONS]),
@@ -64,6 +81,9 @@ export const ROLE_PERMISSIONS: Readonly<Record<Role, readonly Permission[]>> = O
     "expenses:submit",
     "retainers:create",
     "retainers:update",
+    "attendance:manage",
+    "leave:approve",
+    "overtime:approve",
   ] as Permission[]),
   FINANCE_VIEWER: Object.freeze([
     ...readPermissions,

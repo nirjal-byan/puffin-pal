@@ -10,7 +10,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-puffinpal_password}
       POSTGRES_DB: ${POSTGRES_DB:-puffinpal_dev}
     ports:
-      - "5433:5432"
+      - "127.0.0.1:5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
@@ -45,12 +45,12 @@ services:
       retries: 5
 
   seaweedfs:
-    image: chrislusf/seaweedfs:latest
+    image: chrislusf/seaweedfs:3.97
     container_name: puffinpal-seaweedfs
     restart: always
     ports:
-      - "8333:8333"
-      - "9333:9333"
+      - "127.0.0.1:8333:8333"
+      - "127.0.0.1:9333:9333"
     command: "server -s3 -s3.config=/etc/seaweedfs/s3.json"
     volumes:
       - ./seaweedfs/s3.json:/etc/seaweedfs/s3.json:ro

@@ -5,6 +5,9 @@ export type Tab =
   | "clients"
   | "members"
   | "employees"
+  | "attendance"
+  | "leave"
+  | "overtime"
   | "invoices"
   | "expenses"
   | "retainers"
@@ -21,6 +24,9 @@ export const NAV: {
   { key: "overview", label: "Overview", icon: "", permission: "profile:read" },
   { key: "clients", label: "Clients", icon: "◈", permission: "clients:read" },
   { key: "employees", label: "Employees", icon: "♙", permission: "employees:read" },
+  { key: "attendance", label: "Attendance", icon: "◷", permission: "attendance:read" },
+  { key: "leave", label: "Leave", icon: "◇", permission: "leave:read" },
+  { key: "overtime", label: "Overtime", icon: "+", permission: "overtime:read" },
   {
     key: "invoices",
     label: "Invoices",
@@ -68,8 +74,12 @@ export const NAV_SECTIONS: { key: NavigationSection; label: string; tabs: Tab[] 
     label: "Workspace",
     tabs: ["overview", "clients", "invoices", "expenses", "retainers"],
   },
-  { key: "people", label: "People", tabs: ["clients", "employees", "members"] },
   { key: "payroll", label: "Payroll", tabs: ["payroll"] },
+  {
+    key: "people",
+    label: "People",
+    tabs: ["clients", "employees", "attendance", "leave", "overtime", "members"],
+  },
   { key: "settings", label: "Settings", tabs: ["profile", "password", "access"] },
 ];
 
@@ -110,6 +120,9 @@ export const ICON_PATHS: Record<Tab, string> = {
   members:
     "M7 9a3 3 0 1 0 0-6a3 3 0 1 0 0 6 M2 17v-2a5 5 0 0 1 10 0v2 M14 4a3 3 0 0 1 0 6 M15 12a4 4 0 0 1 3 4v1",
   employees: "M10 10a4 4 0 1 0 0-8a4 4 0 1 0 0 8 M3 18v-1a7 7 0 0 1 14 0v1 M15 3h3 M16.5 1.5v3",
+  attendance: "M10 3a7 7 0 1 0 0 14a7 7 0 1 0 0-14 M10 6v4l3 2",
+  leave: "M4 4h12v14H4z M7 2v4 M13 2v4 M4 8h12 M7 12h2 M11 12h2",
+  overtime: "M10 3a7 7 0 1 0 0 14a7 7 0 1 0 0-14 M10 6v4h4",
   access: "M10 2l7 3v5c0 4-7 8-7 8S3 14 3 10V5z M7 10l2 2 4-4",
 };
 
@@ -120,6 +133,9 @@ export const DESCRIPTION: Record<Tab, string> = {
   clients: "The people and businesses you work with.",
   members: "The right people. The right permissions.",
   employees: "Your employee directory and compensation history.",
+  attendance: "Track workdays, hours, and trusted check-ins.",
+  leave: "Manage leave requests, approvals, and balances.",
+  overtime: "Review requested and approved overtime.",
   invoices: "Your organization’s invoice records.",
   expenses: "Keep an eye on your business spending.",
   retainers: "Your recurring client relationships.",

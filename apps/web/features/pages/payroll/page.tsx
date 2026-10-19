@@ -35,6 +35,19 @@ type PayrollEntry = {
   payments: Array<{ id: string; amount: string; paymentDate: string; reference: string }>;
 };
 type PayrollDetails = PayrollRun & { entries: PayrollEntry[] };
+type WorkforceReview = {
+  employeeId: string;
+  employeeName: string;
+  recordedAttendanceDays: number;
+  workedMinutes: number;
+  scheduledWorkdays: number;
+  missingAttendanceRecords: number;
+  approvedPaidLeaveUnits: number;
+  approvedUnpaidLeaveUnits: number;
+  unresolvedLeaveRequests: number;
+  unresolvedOvertimeRequests: number;
+  approvedOvertime: Array<{ id: string; minutes?: number; rate?: string; imported: boolean }>;
+};
 type EmployeeOption = {
   id: string;
   employeeCode: string;
@@ -66,6 +79,7 @@ export default function PayrollPage({
 }) {
   const [runs, setRuns] = useState<PayrollRun[]>([]);
   const [selected, setSelected] = useState<PayrollDetails | null>(null);
+  const [workforceReview, setWorkforceReview] = useState<WorkforceReview[]>([]);
   const [creating, setCreating] = useState(false);
   const [employees, setEmployees] = useState<EmployeeOption[]>([]);
   const [employeeIds, setEmployeeIds] = useState<string[]>([]);
@@ -111,9 +125,34 @@ export default function PayrollPage({
   }, [api, creating]);
   async function open(run: PayrollRun) {
     try {
-      setSelected(await api<PayrollDetails>(`/payroll/runs/${run.id}`));
+      const [details, review] = await Promise.all([
+        api<PayrollDetails>(`/payroll/runs/${run.id}`),
+        api<WorkforceReview[]>(`/payroll/runs/${run.id}/workforce-review`),
+      ]);
+      setSelected(details);
+      setWorkforceReview(review);
     } catch (failure) {
       setError(errorMessage(failure));
+    }
+  }
+  async function importOvertime(entry: PayrollEntry, overtimeId: string) {
+    if (!selected) return;
+    setBusy(true);
+    setError("");
+    try {
+      const updated = await api<PayrollRun>(
+        `/payroll/runs/${selected.id}/entries/${entry.id}/overtime`,
+        {
+          method: "POST",
+          body: { expectedVersion: selected.version, overtimeRequestId: overtimeId },
+        },
+      );
+      await open(updated);
+      onSaved("Approved overtime imported.");
+    } catch (failure) {
+      setError(errorMessage(failure));
+    } finally {
+      setBusy(false);
     }
   }
   async function create() {
@@ -483,6 +522,56 @@ export default function PayrollPage({
                 </button>
               )}
             </div>
+            <section className="payroll-workforce-review" data-tour="payroll-attendance-review">
+              <div className="panel-heading">
+                <h3>Attendance review</h3>
+                <span className="muted">Review only · no automatic deductions</span>
+              </div>
+              <div className="payroll-review-grid">
+                {workforceReview.map((review) => {
+                  const entry = selected.entries.find(
+                    (item) => item.employeeId === review.employeeId,
+                  );
+                  return (
+                    <article key={review.employeeId}>
+                      <strong>{review.employeeName}</strong>
+                      <span>
+                        {review.recordedAttendanceDays} attendance days ·{" "}
+                        {(review.workedMinutes / 60).toFixed(1)} hours
+                      </span>
+                      <span>{review.missingAttendanceRecords} missing records · warning only</span>
+                      <span>
+                        {review.approvedPaidLeaveUnits / 2} paid ·{" "}
+                        {review.approvedUnpaidLeaveUnits / 2} unpaid leave days
+                      </span>
+                      {(review.unresolvedLeaveRequests > 0 ||
+                        review.unresolvedOvertimeRequests > 0) && (
+                        <small>
+                          {review.unresolvedLeaveRequests} leave and{" "}
+                          {review.unresolvedOvertimeRequests} overtime requests unresolved
+                        </small>
+                      )}
+                      {selected.status === "DRAFT" &&
+                        entry &&
+                        review.approvedOvertime
+                          .filter((item) => !item.imported)
+                          .map((item) => (
+                            <button
+                              key={item.id}
+                              className="text-button"
+                              disabled={busy || !item.rate}
+                              onClick={() => void importOvertime(entry, item.id)}
+                            >
+                              {item.rate
+                                ? `Import ${item.minutes ?? 0} overtime minutes`
+                                : "Overtime rate required"}
+                            </button>
+                          ))}
+                    </article>
+                  );
+                })}
+              </div>
+            </section>
             <div className="table-scroll">
               <table>
                 <thead>

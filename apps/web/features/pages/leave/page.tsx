@@ -1,0 +1,389 @@
+"use client";
+import type { Permission } from "@puffinpal/permissions";
+import { useCallback, useEffect, useState } from "react";
+import { AppModal } from "../../../components/app-modal";
+import { errorMessage, type WorkspaceApi } from "../../../lib/api";
+import { loadEmployees, loadLeave } from "../../workforce/api";
+import type { EmployeeOption, LeaveBalance, LeaveRequest, LeaveType } from "../../workforce/types";
+import { employeeName, shortDate } from "../../workforce/types";
+import { MetricCard, StatusBadge, WorkforceEmpty } from "../../workforce/workforce-ui";
+
+export default function LeavePage({
+  api,
+  permissions,
+  onSaved,
+}: {
+  api: WorkspaceApi;
+  permissions: readonly Permission[];
+  onSaved: (message: string) => void;
+}) {
+  const [types, setTypes] = useState<LeaveType[]>([]);
+  const [requests, setRequests] = useState<LeaveRequest[]>([]);
+  const [balances, setBalances] = useState<LeaveBalance[]>([]);
+  const [employees, setEmployees] = useState<EmployeeOption[]>([]);
+  const [error, setError] = useState("");
+  const [open, setOpen] = useState<"request" | "type" | null>(null);
+  const [form, setForm] = useState({
+    employeeId: "",
+    leaveTypeId: "",
+    startDate: "",
+    endDate: "",
+    dayPortion: "FULL_DAY",
+    reason: "",
+  });
+  const [typeForm, setTypeForm] = useState({
+    name: "",
+    code: "",
+    isPaid: true,
+    requiresApproval: true,
+    annualAllowanceUnits: 20,
+  });
+  const can = (permission: Permission) => permissions.includes(permission);
+  const refresh = useCallback(async () => {
+    const [[leaveTypes, leaveRequests, leaveBalances], people] = await Promise.all([
+      loadLeave(api),
+      loadEmployees(api),
+    ]);
+    setTypes(leaveTypes);
+    setRequests(leaveRequests);
+    setBalances(leaveBalances);
+    setEmployees(people);
+  }, [api]);
+  useEffect(() => {
+    let active = true;
+    Promise.all([loadLeave(api), loadEmployees(api)])
+      .then(([[leaveTypes, leaveRequests, leaveBalances], people]) => {
+        if (!active) return;
+        setTypes(leaveTypes);
+        setRequests(leaveRequests);
+        setBalances(leaveBalances);
+        setEmployees(people);
+      })
+      .catch((failure) => {
+        if (active) setError(errorMessage(failure));
+      });
+    return () => {
+      active = false;
+    };
+  }, [api]);
+  async function createRequest() {
+    setError("");
+    try {
+      const created = await api<LeaveRequest>(
+        can("leave:manage") ? "/leave/requests/manage" : "/leave/requests",
+        { method: "POST", body: form },
+      );
+      await api(`/leave/requests/${created.id}/submit`, {
+        method: "POST",
+        body: { expectedVersion: created.version },
+      });
+      setOpen(null);
+      await refresh();
+      onSaved("Leave request submitted.");
+    } catch (failure) {
+      setError(errorMessage(failure));
+    }
+  }
+  async function createType() {
+    setError("");
+    try {
+      await api("/leave/types", { method: "POST", body: typeForm });
+      setOpen(null);
+      await refresh();
+      onSaved("Leave type created.");
+    } catch (failure) {
+      setError(errorMessage(failure));
+    }
+  }
+  async function review(request: LeaveRequest, action: "approve" | "reject") {
+    setError("");
+    try {
+      await api(`/leave/requests/${request.id}/${action}`, {
+        method: "POST",
+        body: {
+          expectedVersion: request.version,
+          ...(action === "reject" ? { reason: "Not approved" } : {}),
+        },
+      });
+      await refresh();
+      onSaved(`Leave ${action}d.`);
+    } catch (failure) {
+      setError(errorMessage(failure));
+    }
+  }
+  const pending = requests.filter((request) => request.status === "PENDING_APPROVAL").length;
+  return (
+    <>
+      {error && (
+        <div className="alert" role="alert">
+          {error}
+        </div>
+      )}
+      <section className="workforce-metrics" data-tour="leave-overview">
+        <MetricCard label="Pending" value={pending} detail="Awaiting review" />
+        <MetricCard
+          label="Approved"
+          value={requests.filter((request) => request.status === "APPROVED").length}
+          detail="Current history"
+        />
+        <MetricCard
+          label="Upcoming"
+          value={
+            requests.filter(
+              (request) =>
+                request.status === "APPROVED" &&
+                shortDate(request.startDate) >= new Date().toISOString().slice(0, 10),
+            ).length
+          }
+          detail="Approved future leave"
+        />
+        <MetricCard
+          label="Leave types"
+          value={types.filter((type) => type.isActive).length}
+          detail="Active policies"
+        />
+      </section>
+      <section className="panel workforce-toolbar">
+        <div>
+          <h3>Leave management</h3>
+          <p className="muted">Workday-aware requests and auditable balances.</p>
+        </div>
+        <div className="row-actions">
+          {can("leave:manage") && (
+            <button className="button secondary" onClick={() => setOpen("type")}>
+              Leave types
+            </button>
+          )}
+          {can("leave:request") && (
+            <button
+              className="button primary"
+              data-tour="leave-request"
+              onClick={() => setOpen("request")}
+            >
+              + Request leave
+            </button>
+          )}
+        </div>
+      </section>
+      {balances.length > 0 && (
+        <section className="panel leave-balance-strip" data-tour="leave-balances">
+          <div className="panel-heading">
+            <h3>Leave balances</h3>
+            <span className="muted">Units use half-days</span>
+          </div>
+          <div className="balance-grid">
+            {balances.slice(0, 8).map((balance) => (
+              <article key={`${balance.employeeId}-${balance.leaveTypeId}`}>
+                <strong>{employeeName(employees, balance.employeeId)}</strong>
+                <span>{balance.leaveTypeName}</span>
+                <b>{balance.remainingUnits / 2} days left</b>
+              </article>
+            ))}
+          </div>
+        </section>
+      )}
+      <section className="panel" data-tour="leave-approvals">
+        <div className="panel-heading">
+          <h3>Requests</h3>
+          <span className="muted">{requests.length} total</span>
+        </div>
+        {!requests.length ? (
+          <WorkforceEmpty
+            title="No leave requests"
+            detail="Submitted requests and approval history will appear here."
+          />
+        ) : (
+          <div className="table-scroll">
+            <table>
+              <thead>
+                <tr>
+                  <th>Employee</th>
+                  <th>Type</th>
+                  <th>Dates</th>
+                  <th>Days</th>
+                  <th>Status</th>
+                  <th />
+                </tr>
+              </thead>
+              <tbody>
+                {requests.map((request) => (
+                  <tr key={request.id}>
+                    <td>{employeeName(employees, request.employeeId)}</td>
+                    <td>
+                      {types.find((type) => type.id === request.leaveTypeId)?.name ?? "Leave"}
+                    </td>
+                    <td>
+                      {shortDate(request.startDate)} – {shortDate(request.endDate)}
+                    </td>
+                    <td>{request.requestedUnits / 2}</td>
+                    <td>
+                      <StatusBadge status={request.status} />
+                    </td>
+                    <td>
+                      {request.status === "PENDING_APPROVAL" && can("leave:approve") && (
+                        <div className="row-actions">
+                          <button
+                            className="text-button"
+                            onClick={() => review(request, "approve")}
+                          >
+                            Approve
+                          </button>
+                          <button
+                            className="text-button danger-text"
+                            onClick={() => review(request, "reject")}
+                          >
+                            Reject
+                          </button>
+                        </div>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
+      {open === "request" && (
+        <AppModal title="Request leave" onClose={() => setOpen(null)}>
+          <div className="compact-form">
+            <label>
+              Employee
+              <select
+                value={form.employeeId}
+                onChange={(event) => setForm({ ...form, employeeId: event.target.value })}
+              >
+                <option value="">Select employee</option>
+                {employees.map((employee) => (
+                  <option key={employee.id} value={employee.id}>
+                    {employee.firstName} {employee.lastName}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label>
+              Leave type
+              <select
+                value={form.leaveTypeId}
+                onChange={(event) => setForm({ ...form, leaveTypeId: event.target.value })}
+              >
+                <option value="">Select type</option>
+                {types
+                  .filter((type) => type.isActive)
+                  .map((type) => (
+                    <option key={type.id} value={type.id}>
+                      {type.name}
+                    </option>
+                  ))}
+              </select>
+            </label>
+            <div className="form-grid">
+              <label>
+                Start
+                <input
+                  type="date"
+                  value={form.startDate}
+                  onChange={(event) => setForm({ ...form, startDate: event.target.value })}
+                />
+              </label>
+              <label>
+                End
+                <input
+                  type="date"
+                  value={form.endDate}
+                  onChange={(event) => setForm({ ...form, endDate: event.target.value })}
+                />
+              </label>
+            </div>
+            <label>
+              Duration
+              <select
+                value={form.dayPortion}
+                onChange={(event) => setForm({ ...form, dayPortion: event.target.value })}
+              >
+                <option value="FULL_DAY">Full days</option>
+                <option value="HALF_DAY">Half day</option>
+              </select>
+            </label>
+            <label>
+              Reason
+              <textarea
+                rows={3}
+                value={form.reason}
+                onChange={(event) => setForm({ ...form, reason: event.target.value })}
+              />
+            </label>
+            <div className="form-actions">
+              <button className="button secondary" onClick={() => setOpen(null)}>
+                Cancel
+              </button>
+              <button
+                className="button primary"
+                disabled={!form.employeeId || !form.leaveTypeId || !form.startDate || !form.endDate}
+                onClick={createRequest}
+              >
+                Submit request
+              </button>
+            </div>
+          </div>
+        </AppModal>
+      )}
+      {open === "type" && (
+        <AppModal title="Create leave type" onClose={() => setOpen(null)}>
+          <div className="compact-form">
+            <label>
+              Name
+              <input
+                value={typeForm.name}
+                onChange={(event) => setTypeForm({ ...typeForm, name: event.target.value })}
+              />
+            </label>
+            <label>
+              Code
+              <input
+                value={typeForm.code}
+                onChange={(event) =>
+                  setTypeForm({
+                    ...typeForm,
+                    code: event.target.value.toUpperCase().replaceAll(" ", "_"),
+                  })
+                }
+              />
+            </label>
+            <label>
+              Annual allowance (half-day units)
+              <input
+                type="number"
+                min="0"
+                value={typeForm.annualAllowanceUnits}
+                onChange={(event) =>
+                  setTypeForm({ ...typeForm, annualAllowanceUnits: Number(event.target.value) })
+                }
+              />
+            </label>
+            <label className="checkbox-row">
+              <input
+                type="checkbox"
+                checked={typeForm.isPaid}
+                onChange={(event) => setTypeForm({ ...typeForm, isPaid: event.target.checked })}
+              />{" "}
+              Paid leave
+            </label>
+            <div className="form-actions">
+              <button className="button secondary" onClick={() => setOpen(null)}>
+                Cancel
+              </button>
+              <button
+                className="button primary"
+                disabled={!typeForm.name || !typeForm.code}
+                onClick={createType}
+              >
+                Create type
+              </button>
+            </div>
+          </div>
+        </AppModal>
+      )}
+    </>
+  );
+}

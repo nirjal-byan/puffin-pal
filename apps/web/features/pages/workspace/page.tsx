@@ -46,6 +46,9 @@ import ExpensesPage from "../expenses/page";
 import RetainersPage from "../retainers/page";
 import EmployeesPage from "../employees/page";
 import PayrollPage from "../payroll/page";
+import AttendancePage from "../attendance/page";
+import LeavePage from "../leave/page";
+import OvertimePage from "../overtime/page";
 
 export default function WorkspacePage({
   session,
@@ -144,6 +147,9 @@ export default function WorkspacePage({
       tab === "expenses" ||
       tab === "retainers" ||
       tab === "employees" ||
+      tab === "attendance" ||
+      tab === "leave" ||
+      tab === "overtime" ||
       tab === "payroll" ||
       !allowed
     )
@@ -360,6 +366,20 @@ export default function WorkspacePage({
             />
           ) : tab === "payroll" ? (
             <PayrollPage api={api} permissions={session.permissions} onSaved={recordNotification} />
+          ) : tab === "attendance" ? (
+            <AttendancePage
+              api={api}
+              permissions={session.permissions}
+              onSaved={recordNotification}
+            />
+          ) : tab === "leave" ? (
+            <LeavePage api={api} permissions={session.permissions} onSaved={recordNotification} />
+          ) : tab === "overtime" ? (
+            <OvertimePage
+              api={api}
+              permissions={session.permissions}
+              onSaved={recordNotification}
+            />
           ) : loading ? (
             <section className="panel loading" role="status">
               <span className="spinner" />
