@@ -12,6 +12,39 @@ import {
   type RecurringSchedule,
 } from "../../recurring-invoices/types";
 
+const BILLING_FREQUENCIES = [
+  { value: "WEEKLY:1", label: "Every week" },
+  { value: "WEEKLY:2", label: "Every 2 weeks" },
+  { value: "MONTHLY:1", label: "Every month" },
+  { value: "MONTHLY:2", label: "Every 2 months" },
+  { value: "QUARTERLY:1", label: "Every quarter" },
+  { value: "MONTHLY:6", label: "Every 6 months" },
+  { value: "YEARLY:1", label: "Every year" },
+  { value: "YEARLY:2", label: "Every 2 years" },
+] as const;
+
+const PAYMENT_TERMS = [
+  { value: 0, label: "Due on receipt" },
+  { value: 7, label: "Net 7 — due in 7 days" },
+  { value: 14, label: "Net 14 — due in 14 days" },
+  { value: 30, label: "Net 30 — due in 30 days" },
+  { value: 45, label: "Net 45 — due in 45 days" },
+  { value: 60, label: "Net 60 — due in 60 days" },
+  { value: 90, label: "Net 90 — due in 90 days" },
+] as const;
+
+function frequencyLabel(frequency: string, interval: number) {
+  const unit =
+    frequency === "WEEKLY"
+      ? "week"
+      : frequency === "MONTHLY"
+        ? "month"
+        : frequency === "QUARTERLY"
+          ? "quarter"
+          : "year";
+  return `Every ${interval > 1 ? `${interval} ` : ""}${unit}${interval > 1 ? "s" : ""}`;
+}
+
 export default function RetainersPage({
   api,
   currency,
@@ -238,17 +271,6 @@ export default function RetainersPage({
               void save();
             }}
           >
-            <div className="workforce-form-intro">
-              <span className="workforce-form-icon" aria-hidden="true">
-                ↻
-              </span>
-              <div>
-                <strong>
-                  {editing === "new" ? "Set up repeat billing" : "Update this schedule"}
-                </strong>
-                <p>Choose when invoices are created and what each billing cycle includes.</p>
-              </div>
-            </div>
             <section className="workforce-form-section">
               <div className="workforce-form-section-heading">
                 <span>Schedule details</span>
@@ -283,25 +305,27 @@ export default function RetainersPage({
                   <small>Required</small>
                 </label>
                 <label>
-                  Frequency
+                  Billing frequency
                   <select
-                    value={form.frequency}
-                    onChange={(e) => setForm({ ...form, frequency: e.target.value })}
+                    value={`${form.frequency}:${form.interval}`}
+                    onChange={(e) => {
+                      const [frequency = "MONTHLY", interval = "1"] = e.target.value.split(":");
+                      setForm({ ...form, frequency, interval: Number(interval) });
+                    }}
                   >
-                    {["WEEKLY", "MONTHLY", "QUARTERLY", "YEARLY"].map((value) => (
-                      <option key={value}>{value}</option>
+                    {!BILLING_FREQUENCIES.some(
+                      (option) => option.value === `${form.frequency}:${form.interval}`,
+                    ) && (
+                      <option value={`${form.frequency}:${form.interval}`}>
+                        {frequencyLabel(form.frequency, form.interval)}
+                      </option>
+                    )}
+                    {BILLING_FREQUENCIES.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
                     ))}
                   </select>
-                </label>
-                <label>
-                  Every
-                  <input
-                    type="number"
-                    min="1"
-                    max="24"
-                    value={form.interval}
-                    onChange={(e) => setForm({ ...form, interval: Number(e.target.value) })}
-                  />
                 </label>
                 <label>
                   Start date
@@ -322,23 +346,31 @@ export default function RetainersPage({
                   <small>Optional</small>
                 </label>
                 <label>
-                  Payment due after
-                  <input
-                    type="number"
-                    min="0"
-                    max="365"
+                  Payment terms
+                  <select
                     value={form.dueDateOffsetDays}
                     onChange={(e) =>
                       setForm({ ...form, dueDateOffsetDays: Number(e.target.value) })
                     }
-                  />
+                  >
+                    {!PAYMENT_TERMS.some((option) => option.value === form.dueDateOffsetDays) && (
+                      <option value={form.dueDateOffsetDays}>
+                        Due {form.dueDateOffsetDays} days after issue
+                      </option>
+                    )}
+                    {PAYMENT_TERMS.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
                 </label>
               </div>
               <label>
                 Description
                 <textarea
-                  rows={3}
-                  placeholder="Add context for this recurring agreement"
+                  rows={2}
+                  placeholder="Optional note included with this recurring schedule"
                   value={form.description}
                   onChange={(e) => setForm({ ...form, description: e.target.value })}
                 />
