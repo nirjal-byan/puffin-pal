@@ -4963,8 +4963,7 @@ body:has(.workspace-layout[data-theme="dark"]) .country-picker-option.highlighte
 }
 .recurring-form {
   display: grid;
-  gap: 1rem;
-  padding: 1rem 1.25rem 1.25rem;
+  gap: 18px;
 }
 .recurring-form label {
   display: grid;
@@ -4981,20 +4980,104 @@ body:has(.workspace-layout[data-theme="dark"]) .country-picker-option.highlighte
   width: 100%;
 }
 .recurring-items {
+  display: grid;
+  gap: 10px;
   border: 1px solid var(--border);
-  border-radius: 0.65rem;
-  padding: 0.8rem;
+  border-radius: 12px;
+  padding: 18px;
+  background: #f9fbfd;
 }
 .recurring-items legend {
-  padding: 0 0.35rem;
-  font-weight: 700;
+  padding: 0 7px;
+  font-size: 14px;
+  font-weight: 650;
+}
+.recurring-item-head {
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) 100px 150px 64px;
+  gap: 10px;
+  padding: 0 4px;
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 650;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
 }
 .recurring-item {
   display: grid;
-  grid-template-columns: 1fr 6rem 8rem auto;
-  gap: 0.6rem;
+  grid-template-columns: minmax(220px, 1fr) 100px 150px 64px;
+  gap: 10px;
   align-items: center;
-  margin-bottom: 0.6rem;
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: #fff;
+}
+.recurring-item .text-button {
+  justify-self: end;
+  font-size: 12px;
+}
+.recurring-items > .button {
+  justify-self: start;
+  margin-top: 2px;
+}
+.recurring-auto-issue {
+  display: flex !important;
+  align-items: center !important;
+  gap: 13px !important;
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  border-radius: 11px;
+  background: #f5f9ff;
+  cursor: pointer;
+}
+.workforce-form .recurring-auto-issue input {
+  appearance: none;
+  width: 38px !important;
+  height: 22px;
+  min-height: 22px !important;
+  flex: 0 0 38px;
+  padding: 0;
+  border: 1px solid #afbccd;
+  border-radius: 999px;
+  background-color: #cbd4df;
+  background-image: radial-gradient(circle at 10px 10px, #fff 0 7px, transparent 7.5px);
+  box-shadow: inset 0 1px 2px rgb(15 35 68 / 10%);
+  cursor: pointer;
+  transition:
+    background-color 160ms ease,
+    background-position 160ms ease,
+    border-color 160ms ease;
+}
+.workforce-form .recurring-auto-issue input:checked {
+  border-color: var(--brand-blue);
+  background-color: var(--brand-blue);
+  background-image: radial-gradient(circle at 27px 10px, #fff 0 7px, transparent 7.5px);
+}
+.workforce-form .recurring-auto-issue input:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--brand-blue) 20%, transparent);
+  outline-offset: 2px;
+}
+.workforce-form .recurring-auto-issue input:disabled {
+  cursor: not-allowed;
+}
+.recurring-auto-issue:has(input:disabled) {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+.recurring-auto-copy {
+  display: grid;
+  gap: 3px;
+}
+.recurring-auto-copy strong {
+  font-size: 13px;
+  font-weight: 650;
+}
+.recurring-auto-copy small {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 400;
+  line-height: 1.45;
 }
 .recurring-history {
   border-top: 1px solid var(--border);
@@ -5029,6 +5112,12 @@ body:has(.workspace-layout[data-theme="dark"]) .country-picker-option.highlighte
   }
   .recurring-item {
     grid-template-columns: 1fr;
+  }
+  .recurring-item-head {
+    display: none;
+  }
+  .recurring-item .text-button {
+    justify-self: start;
   }
 }
 
@@ -5467,6 +5556,27 @@ body:has(.workspace-layout[data-theme="dark"]) .country-picker-option.highlighte
 .workspace-layout[data-theme="dark"] .workforce-form-actions {
   border-color: #34483c;
   background: color-mix(in srgb, #18231d 94%, transparent);
+}
+
+.workspace-layout[data-theme="dark"] .recurring-items,
+.workspace-layout[data-theme="dark"] .recurring-auto-issue {
+  border-color: #34483c;
+  background: #16221c;
+}
+
+.workspace-layout[data-theme="dark"] .recurring-item {
+  border-color: #3a4b40;
+  background: #19261f;
+}
+
+.workspace-layout[data-theme="dark"] .workforce-form .recurring-auto-issue input {
+  border-color: #52675a;
+  background-color: #415249;
+}
+
+.workspace-layout[data-theme="dark"] .workforce-form .recurring-auto-issue input:checked {
+  border-color: #6fc69a;
+  background-color: #339168;
 }
 
 @media (max-width: 600px) {

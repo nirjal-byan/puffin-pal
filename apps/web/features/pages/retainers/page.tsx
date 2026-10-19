@@ -2,6 +2,7 @@
 import { useCallback, useEffect, useState } from "react";
 import type { Permission } from "@puffinpal/permissions";
 import { AppModal } from "../../../components/app-modal";
+import { DatePicker } from "../../../components/date-picker";
 import { errorMessage, type Client, type WorkspaceApi } from "../../../lib/api";
 import { loadRecurringSchedule, loadRecurringWorkspace } from "../../recurring-invoices/api";
 import {
@@ -227,99 +228,131 @@ export default function RetainersPage({
         <AppModal
           title={editing === "new" ? "Create recurring invoice" : "Edit recurring invoice"}
           badge="Schedule"
+          wide
           onClose={() => setEditing(null)}
         >
           <form
-            className="recurring-form"
+            className="recurring-form workforce-form"
             onSubmit={(event) => {
               event.preventDefault();
               void save();
             }}
           >
-            <div className="form-grid">
-              <label>
-                Name
-                <input
-                  required
-                  maxLength={120}
-                  value={form.name}
-                  onChange={(e) => setForm({ ...form, name: e.target.value })}
-                />
-              </label>
-              <label>
-                Client
-                <select
-                  required
-                  value={form.clientId}
-                  onChange={(e) => setForm({ ...form, clientId: e.target.value })}
-                >
-                  <option value="">Select client</option>
-                  {clients.map((client) => (
-                    <option key={client.id} value={client.id}>
-                      {client.name}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <label>
-                Frequency
-                <select
-                  value={form.frequency}
-                  onChange={(e) => setForm({ ...form, frequency: e.target.value })}
-                >
-                  {["WEEKLY", "MONTHLY", "QUARTERLY", "YEARLY"].map((value) => (
-                    <option key={value}>{value}</option>
-                  ))}
-                </select>
-              </label>
-              <label>
-                Every
-                <input
-                  type="number"
-                  min="1"
-                  max="24"
-                  value={form.interval}
-                  onChange={(e) => setForm({ ...form, interval: Number(e.target.value) })}
-                />
-              </label>
-              <label>
-                Start date
-                <input
-                  type="date"
-                  required
-                  value={form.startDate}
-                  onChange={(e) => setForm({ ...form, startDate: e.target.value })}
-                />
-              </label>
-              <label>
-                End date <small>optional</small>
-                <input
-                  type="date"
-                  value={form.endDate}
-                  onChange={(e) => setForm({ ...form, endDate: e.target.value })}
-                />
-              </label>
-              <label>
-                Payment due after
-                <input
-                  type="number"
-                  min="0"
-                  max="365"
-                  value={form.dueDateOffsetDays}
-                  onChange={(e) => setForm({ ...form, dueDateOffsetDays: Number(e.target.value) })}
-                />
-              </label>
+            <div className="workforce-form-intro">
+              <span className="workforce-form-icon" aria-hidden="true">
+                ↻
+              </span>
+              <div>
+                <strong>
+                  {editing === "new" ? "Set up repeat billing" : "Update this schedule"}
+                </strong>
+                <p>Choose when invoices are created and what each billing cycle includes.</p>
+              </div>
             </div>
-            <label>
-              Description <small>optional</small>
-              <textarea
-                rows={2}
-                value={form.description}
-                onChange={(e) => setForm({ ...form, description: e.target.value })}
-              />
-            </label>
+            <section className="workforce-form-section">
+              <div className="workforce-form-section-heading">
+                <span>Schedule details</span>
+                <small>Client and billing cadence</small>
+              </div>
+              <div className="workforce-form-grid workforce-form-grid-3">
+                <label>
+                  Schedule name
+                  <input
+                    required
+                    maxLength={120}
+                    placeholder="Monthly support retainer"
+                    value={form.name}
+                    onChange={(e) => setForm({ ...form, name: e.target.value })}
+                  />
+                  <small>Required</small>
+                </label>
+                <label>
+                  Client
+                  <select
+                    required
+                    value={form.clientId}
+                    onChange={(e) => setForm({ ...form, clientId: e.target.value })}
+                  >
+                    <option value="">Select client</option>
+                    {clients.map((client) => (
+                      <option key={client.id} value={client.id}>
+                        {client.name}
+                      </option>
+                    ))}
+                  </select>
+                  <small>Required</small>
+                </label>
+                <label>
+                  Frequency
+                  <select
+                    value={form.frequency}
+                    onChange={(e) => setForm({ ...form, frequency: e.target.value })}
+                  >
+                    {["WEEKLY", "MONTHLY", "QUARTERLY", "YEARLY"].map((value) => (
+                      <option key={value}>{value}</option>
+                    ))}
+                  </select>
+                </label>
+                <label>
+                  Every
+                  <input
+                    type="number"
+                    min="1"
+                    max="24"
+                    value={form.interval}
+                    onChange={(e) => setForm({ ...form, interval: Number(e.target.value) })}
+                  />
+                </label>
+                <label>
+                  Start date
+                  <DatePicker
+                    value={form.startDate}
+                    onChange={(startDate) => setForm({ ...form, startDate })}
+                    ariaLabel="Recurring invoice start date"
+                  />
+                </label>
+                <label>
+                  End date
+                  <DatePicker
+                    value={form.endDate}
+                    onChange={(endDate) => setForm({ ...form, endDate })}
+                    min={form.startDate || undefined}
+                    ariaLabel="Recurring invoice end date"
+                  />
+                  <small>Optional</small>
+                </label>
+                <label>
+                  Payment due after
+                  <input
+                    type="number"
+                    min="0"
+                    max="365"
+                    value={form.dueDateOffsetDays}
+                    onChange={(e) =>
+                      setForm({ ...form, dueDateOffsetDays: Number(e.target.value) })
+                    }
+                  />
+                </label>
+              </div>
+              <label>
+                Description
+                <textarea
+                  rows={3}
+                  placeholder="Add context for this recurring agreement"
+                  value={form.description}
+                  onChange={(e) => setForm({ ...form, description: e.target.value })}
+                />
+                <small>Optional</small>
+              </label>
+            </section>
             <fieldset className="recurring-items">
-              <legend>Line items</legend>
+              <legend>Invoice line items</legend>
+              <div className="recurring-item-head" aria-hidden="true">
+                <span>Description</span>
+                <span>Quantity</span>
+                <span>Unit price ({currency})</span>
+                <span />
+              </div>
               {form.items.map((item, index) => (
                 <div className="recurring-item" key={index}>
                   <input
@@ -368,7 +401,7 @@ export default function RetainersPage({
                   {form.items.length > 1 && (
                     <button
                       type="button"
-                      className="text-button"
+                      className="text-button danger-text"
                       onClick={() =>
                         setForm({
                           ...form,
@@ -394,14 +427,17 @@ export default function RetainersPage({
                 + Add item
               </button>
             </fieldset>
-            <label className="checkbox-label">
+            <label className="checkbox-label recurring-auto-issue">
               <input
                 type="checkbox"
                 checked={form.autoIssue}
                 disabled={!permissions.includes("invoices:issue")}
                 onChange={(e) => setForm({ ...form, autoIssue: e.target.checked })}
-              />{" "}
-              Issue invoices automatically
+              />
+              <span className="recurring-auto-copy">
+                <strong>Issue invoices automatically</strong>
+                <small>Finalize and store each invoice automatically on its scheduled date.</small>
+              </span>
             </label>
             {editing !== "new" && occurrences.length > 0 && (
               <section className="recurring-history">
@@ -439,7 +475,7 @@ export default function RetainersPage({
                 ))}
               </section>
             )}
-            <div className="modal-form-actions">
+            <div className="workforce-form-actions">
               <button type="button" className="button secondary" onClick={() => setEditing(null)}>
                 Cancel
               </button>
