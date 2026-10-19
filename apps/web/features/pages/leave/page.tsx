@@ -2,6 +2,7 @@
 import type { Permission } from "@puffinpal/permissions";
 import { useCallback, useEffect, useState } from "react";
 import { AppModal } from "../../../components/app-modal";
+import { DatePicker } from "../../../components/date-picker";
 import { errorMessage, type WorkspaceApi } from "../../../lib/api";
 import { loadEmployees, loadLeave } from "../../workforce/api";
 import type { EmployeeOption, LeaveBalance, LeaveRequest, LeaveType } from "../../workforce/types";
@@ -245,75 +246,92 @@ export default function LeavePage({
         )}
       </section>
       {open === "request" && (
-        <AppModal title="Request leave" onClose={() => setOpen(null)}>
-          <div className="compact-form">
-            <label>
-              Employee
-              <select
-                value={form.employeeId}
-                onChange={(event) => setForm({ ...form, employeeId: event.target.value })}
-              >
-                <option value="">Select employee</option>
-                {employees.map((employee) => (
-                  <option key={employee.id} value={employee.id}>
-                    {employee.firstName} {employee.lastName}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label>
-              Leave type
-              <select
-                value={form.leaveTypeId}
-                onChange={(event) => setForm({ ...form, leaveTypeId: event.target.value })}
-              >
-                <option value="">Select type</option>
-                {types
-                  .filter((type) => type.isActive)
-                  .map((type) => (
-                    <option key={type.id} value={type.id}>
-                      {type.name}
-                    </option>
-                  ))}
-              </select>
-            </label>
-            <div className="form-grid">
-              <label>
-                Start
-                <input
-                  type="date"
-                  value={form.startDate}
-                  onChange={(event) => setForm({ ...form, startDate: event.target.value })}
-                />
-              </label>
-              <label>
-                End
-                <input
-                  type="date"
-                  value={form.endDate}
-                  onChange={(event) => setForm({ ...form, endDate: event.target.value })}
-                />
-              </label>
+        <AppModal title="Request leave" badge="Time off" onClose={() => setOpen(null)}>
+          <div className="workforce-form">
+            <div className="workforce-form-intro">
+              <span className="workforce-form-icon" aria-hidden="true">
+                ↗
+              </span>
+              <div>
+                <strong>Plan time away</strong>
+                <p>Select the policy and dates for this request.</p>
+              </div>
             </div>
-            <label>
-              Duration
-              <select
-                value={form.dayPortion}
-                onChange={(event) => setForm({ ...form, dayPortion: event.target.value })}
-              >
-                <option value="FULL_DAY">Full days</option>
-                <option value="HALF_DAY">Half day</option>
-              </select>
-            </label>
-            <label>
-              Reason
-              <textarea
-                rows={3}
-                value={form.reason}
-                onChange={(event) => setForm({ ...form, reason: event.target.value })}
-              />
-            </label>
-            <div className="form-actions">
+            <section className="workforce-form-section">
+              <div className="workforce-form-section-heading">
+                <span>Request details</span>
+                <small>All fields except reason are required</small>
+              </div>
+              <div className="workforce-form-grid">
+                <label>
+                  Employee
+                  <select
+                    value={form.employeeId}
+                    onChange={(event) => setForm({ ...form, employeeId: event.target.value })}
+                  >
+                    <option value="">Select employee</option>
+                    {employees.map((employee) => (
+                      <option key={employee.id} value={employee.id}>
+                        {employee.firstName} {employee.lastName}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label>
+                  Leave type
+                  <select
+                    value={form.leaveTypeId}
+                    onChange={(event) => setForm({ ...form, leaveTypeId: event.target.value })}
+                  >
+                    <option value="">Select type</option>
+                    {types
+                      .filter((type) => type.isActive)
+                      .map((type) => (
+                        <option key={type.id} value={type.id}>
+                          {type.name}
+                        </option>
+                      ))}
+                  </select>
+                </label>
+                <label>
+                  Start date
+                  <DatePicker
+                    value={form.startDate}
+                    onChange={(startDate) => setForm({ ...form, startDate })}
+                    ariaLabel="Leave start date"
+                  />
+                </label>
+                <label>
+                  End date
+                  <DatePicker
+                    value={form.endDate}
+                    onChange={(endDate) => setForm({ ...form, endDate })}
+                    min={form.startDate || undefined}
+                    ariaLabel="Leave end date"
+                  />
+                </label>
+                <label>
+                  Duration
+                  <select
+                    value={form.dayPortion}
+                    onChange={(event) => setForm({ ...form, dayPortion: event.target.value })}
+                  >
+                    <option value="FULL_DAY">Full days</option>
+                    <option value="HALF_DAY">Half day</option>
+                  </select>
+                </label>
+              </div>
+              <label>
+                Reason <small>Optional</small>
+                <textarea
+                  rows={3}
+                  placeholder="Add a short reason for the request"
+                  value={form.reason}
+                  onChange={(event) => setForm({ ...form, reason: event.target.value })}
+                />
+              </label>
+            </section>
+            <div className="workforce-form-actions">
               <button className="button secondary" onClick={() => setOpen(null)}>
                 Cancel
               </button>
@@ -329,47 +347,66 @@ export default function LeavePage({
         </AppModal>
       )}
       {open === "type" && (
-        <AppModal title="Create leave type" onClose={() => setOpen(null)}>
-          <div className="compact-form">
-            <label>
-              Name
-              <input
-                value={typeForm.name}
-                onChange={(event) => setTypeForm({ ...typeForm, name: event.target.value })}
-              />
-            </label>
-            <label>
-              Code
-              <input
-                value={typeForm.code}
-                onChange={(event) =>
-                  setTypeForm({
-                    ...typeForm,
-                    code: event.target.value.toUpperCase().replaceAll(" ", "_"),
-                  })
-                }
-              />
-            </label>
-            <label>
-              Annual allowance (half-day units)
-              <input
-                type="number"
-                min="0"
-                value={typeForm.annualAllowanceUnits}
-                onChange={(event) =>
-                  setTypeForm({ ...typeForm, annualAllowanceUnits: Number(event.target.value) })
-                }
-              />
-            </label>
-            <label className="checkbox-row">
-              <input
-                type="checkbox"
-                checked={typeForm.isPaid}
-                onChange={(event) => setTypeForm({ ...typeForm, isPaid: event.target.checked })}
-              />{" "}
-              Paid leave
-            </label>
-            <div className="form-actions">
+        <AppModal title="Create leave type" badge="Policy" onClose={() => setOpen(null)}>
+          <div className="workforce-form">
+            <div className="workforce-form-intro">
+              <span className="workforce-form-icon" aria-hidden="true">
+                ＋
+              </span>
+              <div>
+                <strong>Create a time-off policy</strong>
+                <p>Define how this leave appears and how much is available each year.</p>
+              </div>
+            </div>
+            <section className="workforce-form-section">
+              <div className="workforce-form-section-heading">
+                <span>Policy details</span>
+                <small>Reusable across your team</small>
+              </div>
+              <div className="workforce-form-grid">
+                <label>
+                  Name
+                  <input
+                    placeholder="Annual leave"
+                    value={typeForm.name}
+                    onChange={(event) => setTypeForm({ ...typeForm, name: event.target.value })}
+                  />
+                </label>
+                <label>
+                  Code
+                  <input
+                    placeholder="ANNUAL"
+                    value={typeForm.code}
+                    onChange={(event) =>
+                      setTypeForm({
+                        ...typeForm,
+                        code: event.target.value.toUpperCase().replaceAll(" ", "_"),
+                      })
+                    }
+                  />
+                </label>
+                <label>
+                  Annual allowance (half-day units)
+                  <input
+                    type="number"
+                    min="0"
+                    value={typeForm.annualAllowanceUnits}
+                    onChange={(event) =>
+                      setTypeForm({ ...typeForm, annualAllowanceUnits: Number(event.target.value) })
+                    }
+                  />
+                </label>
+              </div>
+              <label className="checkbox-row">
+                <input
+                  type="checkbox"
+                  checked={typeForm.isPaid}
+                  onChange={(event) => setTypeForm({ ...typeForm, isPaid: event.target.checked })}
+                />{" "}
+                Paid leave
+              </label>
+            </section>
+            <div className="workforce-form-actions">
               <button className="button secondary" onClick={() => setOpen(null)}>
                 Cancel
               </button>

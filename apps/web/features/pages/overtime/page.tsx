@@ -2,6 +2,7 @@
 import type { Permission } from "@puffinpal/permissions";
 import { useCallback, useEffect, useState } from "react";
 import { AppModal } from "../../../components/app-modal";
+import { DatePicker } from "../../../components/date-picker";
 import { errorMessage, type WorkspaceApi } from "../../../lib/api";
 import { loadEmployees, loadOvertime } from "../../workforce/api";
 import type { EmployeeOption, OvertimeRequest } from "../../workforce/types";
@@ -197,71 +198,95 @@ export default function OvertimePage({
         )}
       </section>
       {open && (
-        <AppModal title="Request overtime" onClose={() => setOpen(false)}>
-          <div className="compact-form">
-            <label>
-              Employee
-              <select
-                value={form.employeeId}
-                onChange={(event) => setForm({ ...form, employeeId: event.target.value })}
-              >
-                <option value="">Select employee</option>
-                {employees.map((employee) => (
-                  <option key={employee.id} value={employee.id}>
-                    {employee.firstName} {employee.lastName}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <div className="form-grid">
-              <label>
-                Work date
-                <input
-                  type="date"
-                  value={form.workDate}
-                  onChange={(event) => setForm({ ...form, workDate: event.target.value })}
-                />
-              </label>
-              <label>
-                Minutes
-                <input
-                  type="number"
-                  min="1"
-                  max="1440"
-                  value={form.requestedMinutes}
-                  onChange={(event) =>
-                    setForm({ ...form, requestedMinutes: Number(event.target.value) })
-                  }
-                />
-              </label>
+        <AppModal title="Request overtime" badge="Overtime" onClose={() => setOpen(false)}>
+          <div className="workforce-form">
+            <div className="workforce-form-intro">
+              <span className="workforce-form-icon" aria-hidden="true">
+                ◷
+              </span>
+              <div>
+                <strong>Log additional time</strong>
+                <p>Record the work performed and optional compensation details.</p>
+              </div>
             </div>
-            <label>
-              Reason
-              <textarea
-                rows={3}
-                value={form.reason}
-                onChange={(event) => setForm({ ...form, reason: event.target.value })}
-              />
-            </label>
-            <div className="form-grid">
+            <section className="workforce-form-section">
+              <div className="workforce-form-section-heading">
+                <span>Request details</span>
+                <small>Work information</small>
+              </div>
               <label>
-                Hourly rate <small>optional</small>
-                <input
-                  inputMode="decimal"
-                  value={form.hourlyRate}
-                  onChange={(event) => setForm({ ...form, hourlyRate: event.target.value })}
+                Employee
+                <select
+                  value={form.employeeId}
+                  onChange={(event) => setForm({ ...form, employeeId: event.target.value })}
+                >
+                  <option value="">Select employee</option>
+                  {employees.map((employee) => (
+                    <option key={employee.id} value={employee.id}>
+                      {employee.firstName} {employee.lastName}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <div className="workforce-form-grid">
+                <label>
+                  Work date
+                  <DatePicker
+                    value={form.workDate}
+                    onChange={(workDate) => setForm({ ...form, workDate })}
+                    ariaLabel="Overtime work date"
+                  />
+                </label>
+                <label>
+                  Minutes
+                  <input
+                    type="number"
+                    min="1"
+                    max="1440"
+                    value={form.requestedMinutes}
+                    onChange={(event) =>
+                      setForm({ ...form, requestedMinutes: Number(event.target.value) })
+                    }
+                  />
+                </label>
+              </div>
+              <label>
+                Reason
+                <textarea
+                  rows={3}
+                  placeholder="Describe the additional work"
+                  value={form.reason}
+                  onChange={(event) => setForm({ ...form, reason: event.target.value })}
                 />
               </label>
-              <label>
-                Multiplier <small>optional</small>
-                <input
-                  inputMode="decimal"
-                  value={form.multiplier}
-                  onChange={(event) => setForm({ ...form, multiplier: event.target.value })}
-                />
-              </label>
-            </div>
-            <div className="form-actions">
+            </section>
+            <section className="workforce-form-section workforce-form-section-muted">
+              <div className="workforce-form-section-heading">
+                <span>Compensation</span>
+                <small>Optional</small>
+              </div>
+              <div className="workforce-form-grid">
+                <label>
+                  Hourly rate <small>optional</small>
+                  <input
+                    inputMode="decimal"
+                    placeholder="Use salary rate"
+                    value={form.hourlyRate}
+                    onChange={(event) => setForm({ ...form, hourlyRate: event.target.value })}
+                  />
+                </label>
+                <label>
+                  Multiplier <small>optional</small>
+                  <input
+                    inputMode="decimal"
+                    placeholder="For example, 1.5"
+                    value={form.multiplier}
+                    onChange={(event) => setForm({ ...form, multiplier: event.target.value })}
+                  />
+                </label>
+              </div>
+            </section>
+            <div className="workforce-form-actions">
               <button className="button secondary" onClick={() => setOpen(false)}>
                 Cancel
               </button>

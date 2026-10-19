@@ -2,6 +2,7 @@
 import type { Permission } from "@puffinpal/permissions";
 import { useCallback, useEffect, useState } from "react";
 import { AppModal } from "../../../components/app-modal";
+import { DatePicker } from "../../../components/date-picker";
 import { errorMessage, type WorkspaceApi } from "../../../lib/api";
 import { loadAttendance, loadAttendanceSummary, loadEmployees } from "../../workforce/api";
 import type { AttendanceRecord, AttendanceSummary, EmployeeOption } from "../../workforce/types";
@@ -195,50 +196,68 @@ export default function AttendancePage({
         )}
       </section>
       {open && (
-        <AppModal title="Record attendance" onClose={() => setOpen(false)}>
-          <div className="compact-form">
-            <label>
-              Employee
-              <select
-                value={form.employeeId}
-                onChange={(event) => setForm({ ...form, employeeId: event.target.value })}
-              >
-                <option value="">Select employee</option>
-                {employees.map((employee) => (
-                  <option key={employee.id} value={employee.id}>
-                    {employee.firstName} {employee.lastName}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label>
-              Work date
-              <input
-                type="date"
-                value={form.workDate}
-                onChange={(event) => setForm({ ...form, workDate: event.target.value })}
-              />
-            </label>
-            <label>
-              Status
-              <select
-                value={form.status}
-                onChange={(event) => setForm({ ...form, status: event.target.value })}
-              >
-                {["PRESENT", "ABSENT", "HALF_DAY", "ON_LEAVE", "HOLIDAY"].map((status) => (
-                  <option key={status}>{status.replaceAll("_", " ")}</option>
-                ))}
-              </select>
-            </label>
-            <label>
-              Notes
-              <textarea
-                rows={3}
-                value={form.notes}
-                onChange={(event) => setForm({ ...form, notes: event.target.value })}
-              />
-            </label>
-            <div className="form-actions">
+        <AppModal title="Record attendance" badge="Attendance" onClose={() => setOpen(false)}>
+          <div className="workforce-form">
+            <div className="workforce-form-intro">
+              <span className="workforce-form-icon" aria-hidden="true">
+                ✓
+              </span>
+              <div>
+                <strong>Add a daily record</strong>
+                <p>Choose an employee, date, and attendance status.</p>
+              </div>
+            </div>
+            <section className="workforce-form-section">
+              <div className="workforce-form-section-heading">
+                <span>Record details</span>
+                <small>Required fields</small>
+              </div>
+              <div className="workforce-form-grid">
+                <label>
+                  Employee
+                  <select
+                    value={form.employeeId}
+                    onChange={(event) => setForm({ ...form, employeeId: event.target.value })}
+                  >
+                    <option value="">Select employee</option>
+                    {employees.map((employee) => (
+                      <option key={employee.id} value={employee.id}>
+                        {employee.firstName} {employee.lastName}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label>
+                  Work date
+                  <DatePicker
+                    value={form.workDate}
+                    onChange={(workDate) => setForm({ ...form, workDate })}
+                    ariaLabel="Work date"
+                  />
+                </label>
+                <label>
+                  Status
+                  <select
+                    value={form.status}
+                    onChange={(event) => setForm({ ...form, status: event.target.value })}
+                  >
+                    {["PRESENT", "ABSENT", "HALF_DAY", "ON_LEAVE", "HOLIDAY"].map((status) => (
+                      <option key={status}>{status.replaceAll("_", " ")}</option>
+                    ))}
+                  </select>
+                </label>
+              </div>
+              <label>
+                Notes <small>Optional context for this record</small>
+                <textarea
+                  rows={3}
+                  placeholder="Add context about this attendance record"
+                  value={form.notes}
+                  onChange={(event) => setForm({ ...form, notes: event.target.value })}
+                />
+              </label>
+            </section>
+            <div className="workforce-form-actions">
               <button className="button secondary" onClick={() => setOpen(false)}>
                 Cancel
               </button>
