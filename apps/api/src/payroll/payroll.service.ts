@@ -18,6 +18,7 @@ import type {
   PayrollAdjustmentDto,
   PayrollRunQueryDto,
   RecordPayrollPaymentDto,
+  ImportOvertimeDto,
 } from "./payroll.dto.js";
 import {
   calculateFixedPayroll,
@@ -26,6 +27,7 @@ import {
   payrollAmount,
   validatePayPeriod,
 } from "./payroll-calculations.js";
+import { overtimePay } from "../workforce/workforce-rules.js";
 import { PayrollPayslipQueue } from "./payroll-payslip.queue.js";
 import { PayrollPayslipStorageService } from "./payroll-payslip-storage.service.js";
 
@@ -401,6 +403,182 @@ export class PayrollService {
         `${input.type}:${input.name}:${input.amount}`,
         tx,
       );
+      return updated;
+    });
+  }
+  async workforceReview(runId: string) {
+    const run = await this.run(runId);
+    const entries = await this.db.orm.public.PayrollEntry.where({
+      organizationId: this.organizationId,
+      payrollRunId: runId,
+    }).all();
+    const [attendance, leave, leaveTypes, overtime, imported] = await Promise.all([
+      this.db.orm.public.AttendanceRecord.where({ organizationId: this.organizationId }).all(),
+      this.db.orm.public.LeaveRequest.where({ organizationId: this.organizationId }).all(),
+      this.db.orm.public.LeaveType.where({ organizationId: this.organizationId }).all(),
+      this.db.orm.public.OvertimeRequest.where({ organizationId: this.organizationId }).all(),
+      this.db.orm.public.PayrollEntryComponent.where({ organizationId: this.organizationId }).all(),
+    ]);
+    const from = this.day(run.periodStart);
+    const to = this.day(run.periodEnd);
+    let scheduledWorkdays = 0;
+    for (
+      let date = Temporal.PlainDate.from(from);
+      Temporal.PlainDate.compare(date, Temporal.PlainDate.from(to)) <= 0;
+      date = date.add({ days: 1 })
+    )
+      if (date.dayOfWeek <= 5) scheduledWorkdays++;
+    return entries.map((entry) => {
+      const employeeAttendance = attendance.filter(
+        (row) =>
+          row.employeeId === entry.employeeId &&
+          this.day(row.workDate) >= from &&
+          this.day(row.workDate) <= to,
+      );
+      const employeeLeave = leave.filter(
+        (row) =>
+          row.employeeId === entry.employeeId &&
+          this.day(row.startDate) <= to &&
+          this.day(row.endDate) >= from,
+      );
+      const employeeOvertime = overtime.filter(
+        (row) =>
+          row.employeeId === entry.employeeId &&
+          this.day(row.workDate) >= from &&
+          this.day(row.workDate) <= to,
+      );
+      return {
+        employeeId: entry.employeeId,
+        employeeName: entry.employeeName,
+        recordedAttendanceDays: employeeAttendance.length,
+        workedMinutes: employeeAttendance.reduce((sum, row) => sum + (row.workedMinutes ?? 0), 0),
+        scheduledWorkdays,
+        missingAttendanceRecords: Math.max(0, scheduledWorkdays - employeeAttendance.length),
+        approvedPaidLeaveUnits: employeeLeave
+          .filter(
+            (row) =>
+              row.status === "APPROVED" &&
+              leaveTypes.find((type) => type.id === row.leaveTypeId)?.isPaid,
+          )
+          .reduce((sum, row) => sum + row.requestedUnits, 0),
+        approvedUnpaidLeaveUnits: employeeLeave
+          .filter(
+            (row) =>
+              row.status === "APPROVED" &&
+              !leaveTypes.find((type) => type.id === row.leaveTypeId)?.isPaid,
+          )
+          .reduce((sum, row) => sum + row.requestedUnits, 0),
+        unresolvedLeaveRequests: employeeLeave.filter((row) => row.status === "PENDING_APPROVAL")
+          .length,
+        unresolvedOvertimeRequests: employeeOvertime.filter(
+          (row) => row.status === "PENDING_APPROVAL",
+        ).length,
+        approvedOvertime: employeeOvertime
+          .filter((row) => row.status === "APPROVED")
+          .map((row) => ({
+            id: row.id,
+            minutes: row.approvedMinutes,
+            rate: row.approvedRateSnapshot,
+            imported: imported.some((component) => component.sourceOvertimeRequestId === row.id),
+          })),
+      };
+    });
+  }
+  async importOvertime(runId: string, entryId: string, input: ImportOvertimeDto) {
+    const organizationId = this.organizationId;
+    return this.db.transaction(async (tx) => {
+      await tx.execute(
+        this.db.raw
+          .sql`SELECT id FROM payroll_runs WHERE id = ${runId} AND "organizationId" = ${organizationId} FOR UPDATE`
+          .affectedCount()
+          .build(),
+      );
+      const [run, entry, overtime] = await Promise.all([
+        tx.orm.public.PayrollRun.where({ organizationId, id: runId }).first(),
+        tx.orm.public.PayrollEntry.where({
+          organizationId,
+          id: entryId,
+          payrollRunId: runId,
+        }).first(),
+        tx.orm.public.OvertimeRequest.where({
+          organizationId,
+          id: input.overtimeRequestId,
+        }).first(),
+      ]);
+      if (!run || !entry || !overtime)
+        throw new NotFoundException("Payroll entry or overtime request not found");
+      if (run.status !== "DRAFT" || run.version !== input.expectedVersion)
+        throw new ConflictException("Only the current draft payroll can import overtime");
+      if (
+        overtime.employeeId !== entry.employeeId ||
+        overtime.status !== "APPROVED" ||
+        !overtime.approvedMinutes
+      )
+        throw new ConflictException("Overtime is not approved for this employee");
+      if (
+        this.day(overtime.workDate) < this.day(run.periodStart) ||
+        this.day(overtime.workDate) > this.day(run.periodEnd)
+      )
+        throw new ConflictException("Overtime is outside this payroll period");
+      if (!overtime.approvedRateSnapshot)
+        throw new BadRequestException("Approved overtime has no payable rate configured");
+      const amount = overtimePay(
+        String(overtime.approvedRateSnapshot),
+        overtime.multiplier ? String(overtime.multiplier) : null,
+        overtime.approvedMinutes,
+      );
+      try {
+        await tx.orm.public.PayrollEntryComponent.create({
+          organizationId,
+          payrollEntryId: entryId,
+          name: "Approved overtime",
+          type: "EARNING",
+          amount: payrollAmount(amount),
+          sourceOvertimeRequestId: overtime.id,
+          sourceMinutes: overtime.approvedMinutes,
+          rateSnapshot: overtime.approvedRateSnapshot,
+          isAdjustment: true,
+          sortOrder: 9000,
+        });
+      } catch (error) {
+        if (String(error).toLowerCase().includes("unique"))
+          throw new ConflictException("This overtime was already imported into payroll");
+        throw error;
+      }
+      const components = await tx.orm.public.PayrollEntryComponent.where({
+        organizationId,
+        payrollEntryId: entryId,
+      }).all();
+      const amounts = calculateFixedPayroll(entry.baseAmount, components);
+      await tx.orm.public.PayrollEntry.where({ organizationId, id: entryId }).update({
+        grossPay: payrollAmount(amounts.grossPay),
+        totalDeductions: payrollAmount(amounts.totalDeductions),
+        netPay: payrollAmount(amounts.netPay),
+        version: entry.version + 1,
+      });
+      const totals = await this.recomputeRun(tx, runId);
+      const [updated] = await tx.orm.public.PayrollRun.where({
+        organizationId,
+        id: runId,
+        version: input.expectedVersion,
+      }).updateAll({ ...totals, version: input.expectedVersion + 1 });
+      if (!updated) throw new ConflictException("Payroll changed. Reload and try again.");
+      await this.audit(
+        runId,
+        entryId,
+        "ADJUSTED",
+        `OVERTIME:${overtime.id}:${overtime.approvedMinutes}:${amount}`,
+        tx,
+      );
+      await tx.orm.public.WorkforceAuditEvent.create({
+        organizationId,
+        employeeId: entry.employeeId,
+        actorId: this.userId,
+        entityType: "OVERTIME",
+        entityId: overtime.id,
+        action: "IMPORTED_TO_PAYROLL",
+        details: JSON.stringify({ payrollRunId: runId, payrollEntryId: entryId, amount }),
+      });
       return updated;
     });
   }

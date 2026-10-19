@@ -11,6 +11,7 @@ import { DashboardModule } from "./dashboard/dashboard.module.js";
 import { RecurringInvoicesModule } from "./recurring-invoices/recurring-invoices.module.js";
 import { EmployeesModule } from "./employees/employees.module.js";
 import { PayrollModule } from "./payroll/payroll.module.js";
+import { WorkforceModule } from "./workforce/workforce.module.js";
 @Module({
   imports: [
     DatabaseModule,
@@ -24,6 +25,7 @@ import { PayrollModule } from "./payroll/payroll.module.js";
     RecurringInvoicesModule,
     EmployeesModule,
     PayrollModule,
+    WorkforceModule,
   ],
   controllers: [HealthController],
 })

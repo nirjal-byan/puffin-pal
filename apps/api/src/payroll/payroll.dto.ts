@@ -58,6 +58,10 @@ export class PayrollAdjustmentDto extends PayrollVersionDto {
   @Matches(MONEY) amount!: string;
 }
 
+export class ImportOvertimeDto extends PayrollVersionDto {
+  @IsUUID() overtimeRequestId!: string;
+}
+
 export class RecordPayrollPaymentDto {
   @Matches(MONEY) amount!: string;
   @Matches(DATE) paymentDate!: string;

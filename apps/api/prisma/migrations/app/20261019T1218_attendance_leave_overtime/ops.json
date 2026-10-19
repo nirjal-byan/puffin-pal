@@ -1,0 +1,3116 @@
+[
+  {
+    "id": "table.attendance_records",
+    "label": "Create table \"attendance_records\"",
+    "summary": "Creates table \"attendance_records\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "attendance_records"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"attendance_records\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"attendance_records\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"attendance_records\"",
+        "sql": "CREATE TABLE \"public\".\"attendance_records\" (\n  \"checkInAt\" timestamptz,\n  \"checkOutAt\" timestamptz,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"createdById\" text NOT NULL,\n  \"employeeId\" text NOT NULL,\n  \"id\" text NOT NULL,\n  \"isLate\" bool DEFAULT false NOT NULL,\n  \"notes\" text,\n  \"organizationId\" text NOT NULL,\n  \"source\" text DEFAULT 'MANUAL' NOT NULL,\n  \"status\" text NOT NULL,\n  \"updatedAt\" timestamptz NOT NULL,\n  \"updatedById\" text NOT NULL,\n  \"version\" int4 DEFAULT 1 NOT NULL,\n  \"workDate\" timestamptz NOT NULL,\n  \"workedMinutes\" int4,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"attendance_records_source_check_4aa26323\" CHECK (\"source\" IN ('MANUAL', 'SELF_SERVICE')),\n  CONSTRAINT \"attendance_records_status_check_23c88bfa\" CHECK (\"status\" IN ('PRESENT', 'ABSENT', 'HALF_DAY', 'ON_LEAVE', 'HOLIDAY'))\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"attendance_records\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"attendance_records\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.holidays",
+    "label": "Create table \"holidays\"",
+    "summary": "Creates table \"holidays\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "holidays"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"holidays\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"holidays\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"holidays\"",
+        "sql": "CREATE TABLE \"public\".\"holidays\" (\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"date\" timestamptz NOT NULL,\n  \"id\" text NOT NULL,\n  \"isRecurring\" bool DEFAULT false NOT NULL,\n  \"name\" text NOT NULL,\n  \"organizationId\" text NOT NULL,\n  \"updatedAt\" timestamptz NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"holidays\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"holidays\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.leave_ledger_entries",
+    "label": "Create table \"leave_ledger_entries\"",
+    "summary": "Creates table \"leave_ledger_entries\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "leave_ledger_entries"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"leave_ledger_entries\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"leave_ledger_entries\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"leave_ledger_entries\"",
+        "sql": "CREATE TABLE \"public\".\"leave_ledger_entries\" (\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"employeeId\" text NOT NULL,\n  \"id\" text NOT NULL,\n  \"kind\" text NOT NULL,\n  \"leaveRequestId\" text,\n  \"leaveTypeId\" text NOT NULL,\n  \"notes\" text,\n  \"organizationId\" text NOT NULL,\n  \"units\" int4 NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"leave_ledger_entries_kind_check_1749ad13\" CHECK (\"kind\" IN ('ALLOCATION', 'DEDUCTION', 'RESTORATION', 'ADJUSTMENT'))\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"leave_ledger_entries\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"leave_ledger_entries\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.leave_requests",
+    "label": "Create table \"leave_requests\"",
+    "summary": "Creates table \"leave_requests\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "leave_requests"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"leave_requests\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"leave_requests\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"leave_requests\"",
+        "sql": "CREATE TABLE \"public\".\"leave_requests\" (\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"dayPortion\" text DEFAULT 'FULL_DAY' NOT NULL,\n  \"employeeId\" text NOT NULL,\n  \"endDate\" timestamptz NOT NULL,\n  \"id\" text NOT NULL,\n  \"leaveTypeId\" text NOT NULL,\n  \"organizationId\" text NOT NULL,\n  \"reason\" text,\n  \"rejectionReason\" text,\n  \"requestedUnits\" int4 NOT NULL,\n  \"reviewedAt\" timestamptz,\n  \"reviewedById\" text,\n  \"startDate\" timestamptz NOT NULL,\n  \"status\" text DEFAULT 'DRAFT' NOT NULL,\n  \"submittedAt\" timestamptz,\n  \"updatedAt\" timestamptz NOT NULL,\n  \"version\" int4 DEFAULT 1 NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"leave_requests_dayPortion_check_bfc779d0\" CHECK (\"dayPortion\" IN ('FULL_DAY', 'HALF_DAY')),\n  CONSTRAINT \"leave_requests_status_check_b2e51141\" CHECK (\"status\" IN ('DRAFT', 'PENDING_APPROVAL', 'APPROVED', 'REJECTED', 'CANCELLED'))\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"leave_requests\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"leave_requests\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.leave_types",
+    "label": "Create table \"leave_types\"",
+    "summary": "Creates table \"leave_types\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "leave_types"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"leave_types\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"leave_types\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"leave_types\"",
+        "sql": "CREATE TABLE \"public\".\"leave_types\" (\n  \"annualAllowanceUnits\" int4 DEFAULT 0 NOT NULL,\n  \"code\" text NOT NULL,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"description\" text,\n  \"id\" text NOT NULL,\n  \"isActive\" bool DEFAULT true NOT NULL,\n  \"isPaid\" bool DEFAULT true NOT NULL,\n  \"name\" text NOT NULL,\n  \"organizationId\" text NOT NULL,\n  \"requiresApproval\" bool DEFAULT true NOT NULL,\n  \"updatedAt\" timestamptz NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"leave_types\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"leave_types\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.overtime_requests",
+    "label": "Create table \"overtime_requests\"",
+    "summary": "Creates table \"overtime_requests\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "overtime_requests"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"overtime_requests\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"overtime_requests\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"overtime_requests\"",
+        "sql": "CREATE TABLE \"public\".\"overtime_requests\" (\n  \"approvedMinutes\" int4,\n  \"approvedRateSnapshot\" numeric(14,4),\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"employeeId\" text NOT NULL,\n  \"hourlyRate\" numeric(14,4),\n  \"id\" text NOT NULL,\n  \"multiplier\" numeric(8,4),\n  \"organizationId\" text NOT NULL,\n  \"reason\" text NOT NULL,\n  \"rejectionReason\" text,\n  \"requestedMinutes\" int4 NOT NULL,\n  \"reviewedAt\" timestamptz,\n  \"reviewedById\" text,\n  \"status\" text DEFAULT 'DRAFT' NOT NULL,\n  \"updatedAt\" timestamptz NOT NULL,\n  \"version\" int4 DEFAULT 1 NOT NULL,\n  \"workDate\" timestamptz NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"overtime_requests_status_check_b2e51141\" CHECK (\"status\" IN ('DRAFT', 'PENDING_APPROVAL', 'APPROVED', 'REJECTED', 'CANCELLED'))\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"overtime_requests\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"overtime_requests\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.work_schedules",
+    "label": "Create table \"work_schedules\"",
+    "summary": "Creates table \"work_schedules\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "work_schedules"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"work_schedules\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"work_schedules\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"work_schedules\"",
+        "sql": "CREATE TABLE \"public\".\"work_schedules\" (\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"effectiveFrom\" timestamptz NOT NULL,\n  \"effectiveTo\" timestamptz,\n  \"employeeId\" text NOT NULL,\n  \"expectedDailyMinutes\" int4 NOT NULL,\n  \"id\" text NOT NULL,\n  \"organizationId\" text NOT NULL,\n  \"scheduledEndTime\" text NOT NULL,\n  \"scheduledStartTime\" text NOT NULL,\n  \"timezone\" text NOT NULL,\n  \"updatedAt\" timestamptz NOT NULL,\n  \"workdays\" text NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"work_schedules\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"work_schedules\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.workforce_audit_events",
+    "label": "Create table \"workforce_audit_events\"",
+    "summary": "Creates table \"workforce_audit_events\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "workforce_audit_events"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"workforce_audit_events\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"workforce_audit_events\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"workforce_audit_events\"",
+        "sql": "CREATE TABLE \"public\".\"workforce_audit_events\" (\n  \"action\" text NOT NULL,\n  \"actorId\" text NOT NULL,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"details\" text,\n  \"employeeId\" text NOT NULL,\n  \"entityId\" text NOT NULL,\n  \"entityType\" text NOT NULL,\n  \"id\" text NOT NULL,\n  \"organizationId\" text NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"workforce_audit_events\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"workforce_audit_events\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.payroll_entry_components.rateSnapshot",
+    "label": "Add column \"rateSnapshot\" to \"payroll_entry_components\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "rateSnapshot",
+        "table": "payroll_entry_components"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"rateSnapshot\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "payroll_entry_components",
+          "rateSnapshot"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"rateSnapshot\"",
+        "sql": "ALTER TABLE \"public\".\"payroll_entry_components\" ADD COLUMN \"rateSnapshot\" numeric(14,4)"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"rateSnapshot\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "payroll_entry_components",
+          "rateSnapshot"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.payroll_entry_components.sourceMinutes",
+    "label": "Add column \"sourceMinutes\" to \"payroll_entry_components\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "sourceMinutes",
+        "table": "payroll_entry_components"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"sourceMinutes\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "payroll_entry_components",
+          "sourceMinutes"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"sourceMinutes\"",
+        "sql": "ALTER TABLE \"public\".\"payroll_entry_components\" ADD COLUMN \"sourceMinutes\" int4"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"sourceMinutes\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "payroll_entry_components",
+          "sourceMinutes"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.payroll_entry_components.sourceOvertimeRequestId",
+    "label": "Add column \"sourceOvertimeRequestId\" to \"payroll_entry_components\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "sourceOvertimeRequestId",
+        "table": "payroll_entry_components"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"sourceOvertimeRequestId\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "payroll_entry_components",
+          "sourceOvertimeRequestId"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"sourceOvertimeRequestId\"",
+        "sql": "ALTER TABLE \"public\".\"payroll_entry_components\" ADD COLUMN \"sourceOvertimeRequestId\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"sourceOvertimeRequestId\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "payroll_entry_components",
+          "sourceOvertimeRequestId"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.attendance_records.attendance_records_organizationId_id_key",
+    "label": "Add unique constraint on \"attendance_records\" (organizationId, id)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "attendance_records_organizationId_id_key",
+        "table": "attendance_records"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"attendance_records_organizationId_id_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "attendance_records_organizationId_id_key",
+          "public",
+          "\"public\".\"attendance_records\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"attendance_records_organizationId_id_key\"",
+        "sql": "ALTER TABLE \"public\".\"attendance_records\" ADD CONSTRAINT \"attendance_records_organizationId_id_key\" UNIQUE (\"organizationId\", \"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"attendance_records_organizationId_id_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "attendance_records_organizationId_id_key",
+          "public",
+          "\"public\".\"attendance_records\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.attendance_records.attendance_records_organizationId_employeeId_workDate_key",
+    "label": "Add unique constraint on \"attendance_records\" (organizationId, employeeId, workDate)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "attendance_records_organizationId_employeeId_workDate_key",
+        "table": "attendance_records"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"attendance_records_organizationId_employeeId_workDate_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "attendance_records_organizationId_employeeId_workDate_key",
+          "public",
+          "\"public\".\"attendance_records\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"attendance_records_organizationId_employeeId_workDate_key\"",
+        "sql": "ALTER TABLE \"public\".\"attendance_records\" ADD CONSTRAINT \"attendance_records_organizationId_employeeId_workDate_key\" UNIQUE (\"organizationId\", \"employeeId\", \"workDate\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"attendance_records_organizationId_employeeId_workDate_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "attendance_records_organizationId_employeeId_workDate_key",
+          "public",
+          "\"public\".\"attendance_records\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.holidays.holidays_organizationId_id_key",
+    "label": "Add unique constraint on \"holidays\" (organizationId, id)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "holidays_organizationId_id_key",
+        "table": "holidays"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"holidays_organizationId_id_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "holidays_organizationId_id_key",
+          "public",
+          "\"public\".\"holidays\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"holidays_organizationId_id_key\"",
+        "sql": "ALTER TABLE \"public\".\"holidays\" ADD CONSTRAINT \"holidays_organizationId_id_key\" UNIQUE (\"organizationId\", \"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"holidays_organizationId_id_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "holidays_organizationId_id_key",
+          "public",
+          "\"public\".\"holidays\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.holidays.holidays_organizationId_date_name_key",
+    "label": "Add unique constraint on \"holidays\" (organizationId, date, name)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "holidays_organizationId_date_name_key",
+        "table": "holidays"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"holidays_organizationId_date_name_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "holidays_organizationId_date_name_key",
+          "public",
+          "\"public\".\"holidays\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"holidays_organizationId_date_name_key\"",
+        "sql": "ALTER TABLE \"public\".\"holidays\" ADD CONSTRAINT \"holidays_organizationId_date_name_key\" UNIQUE (\"organizationId\", \"date\", \"name\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"holidays_organizationId_date_name_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "holidays_organizationId_date_name_key",
+          "public",
+          "\"public\".\"holidays\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.leave_ledger_entries.leave_ledger_request_kind_key",
+    "label": "Add unique constraint on \"leave_ledger_entries\" (organizationId, leaveRequestId, kind)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "leave_ledger_request_kind_key",
+        "table": "leave_ledger_entries"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"leave_ledger_request_kind_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "leave_ledger_request_kind_key",
+          "public",
+          "\"public\".\"leave_ledger_entries\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"leave_ledger_request_kind_key\"",
+        "sql": "ALTER TABLE \"public\".\"leave_ledger_entries\" ADD CONSTRAINT \"leave_ledger_request_kind_key\" UNIQUE (\"organizationId\", \"leaveRequestId\", \"kind\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"leave_ledger_request_kind_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "leave_ledger_request_kind_key",
+          "public",
+          "\"public\".\"leave_ledger_entries\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.leave_requests.leave_requests_organizationId_id_key",
+    "label": "Add unique constraint on \"leave_requests\" (organizationId, id)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "leave_requests_organizationId_id_key",
+        "table": "leave_requests"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"leave_requests_organizationId_id_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "leave_requests_organizationId_id_key",
+          "public",
+          "\"public\".\"leave_requests\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"leave_requests_organizationId_id_key\"",
+        "sql": "ALTER TABLE \"public\".\"leave_requests\" ADD CONSTRAINT \"leave_requests_organizationId_id_key\" UNIQUE (\"organizationId\", \"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"leave_requests_organizationId_id_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "leave_requests_organizationId_id_key",
+          "public",
+          "\"public\".\"leave_requests\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.leave_types.leave_types_organizationId_id_key",
+    "label": "Add unique constraint on \"leave_types\" (organizationId, id)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "leave_types_organizationId_id_key",
+        "table": "leave_types"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"leave_types_organizationId_id_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "leave_types_organizationId_id_key",
+          "public",
+          "\"public\".\"leave_types\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"leave_types_organizationId_id_key\"",
+        "sql": "ALTER TABLE \"public\".\"leave_types\" ADD CONSTRAINT \"leave_types_organizationId_id_key\" UNIQUE (\"organizationId\", \"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"leave_types_organizationId_id_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "leave_types_organizationId_id_key",
+          "public",
+          "\"public\".\"leave_types\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.leave_types.leave_types_organizationId_code_key",
+    "label": "Add unique constraint on \"leave_types\" (organizationId, code)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "leave_types_organizationId_code_key",
+        "table": "leave_types"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"leave_types_organizationId_code_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "leave_types_organizationId_code_key",
+          "public",
+          "\"public\".\"leave_types\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"leave_types_organizationId_code_key\"",
+        "sql": "ALTER TABLE \"public\".\"leave_types\" ADD CONSTRAINT \"leave_types_organizationId_code_key\" UNIQUE (\"organizationId\", \"code\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"leave_types_organizationId_code_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "leave_types_organizationId_code_key",
+          "public",
+          "\"public\".\"leave_types\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.overtime_requests.overtime_requests_organizationId_id_key",
+    "label": "Add unique constraint on \"overtime_requests\" (organizationId, id)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "overtime_requests_organizationId_id_key",
+        "table": "overtime_requests"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"overtime_requests_organizationId_id_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "overtime_requests_organizationId_id_key",
+          "public",
+          "\"public\".\"overtime_requests\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"overtime_requests_organizationId_id_key\"",
+        "sql": "ALTER TABLE \"public\".\"overtime_requests\" ADD CONSTRAINT \"overtime_requests_organizationId_id_key\" UNIQUE (\"organizationId\", \"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"overtime_requests_organizationId_id_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "overtime_requests_organizationId_id_key",
+          "public",
+          "\"public\".\"overtime_requests\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.payroll_entry_components.payroll_component_overtime_key",
+    "label": "Add unique constraint on \"payroll_entry_components\" (organizationId, sourceOvertimeRequestId)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "payroll_component_overtime_key",
+        "table": "payroll_entry_components"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"payroll_component_overtime_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "payroll_component_overtime_key",
+          "public",
+          "\"public\".\"payroll_entry_components\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"payroll_component_overtime_key\"",
+        "sql": "ALTER TABLE \"public\".\"payroll_entry_components\" ADD CONSTRAINT \"payroll_component_overtime_key\" UNIQUE (\"organizationId\", \"sourceOvertimeRequestId\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"payroll_component_overtime_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "payroll_component_overtime_key",
+          "public",
+          "\"public\".\"payroll_entry_components\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.work_schedules.work_schedules_organizationId_id_key",
+    "label": "Add unique constraint on \"work_schedules\" (organizationId, id)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "work_schedules_organizationId_id_key",
+        "table": "work_schedules"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"work_schedules_organizationId_id_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "work_schedules_organizationId_id_key",
+          "public",
+          "\"public\".\"work_schedules\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"work_schedules_organizationId_id_key\"",
+        "sql": "ALTER TABLE \"public\".\"work_schedules\" ADD CONSTRAINT \"work_schedules_organizationId_id_key\" UNIQUE (\"organizationId\", \"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"work_schedules_organizationId_id_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "work_schedules_organizationId_id_key",
+          "public",
+          "\"public\".\"work_schedules\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.attendance_records.attendance_records_organizationId_createdById_idx_4fb80a04",
+    "label": "Create index \"attendance_records_organizationId_createdById_idx_4fb80a04\" on \"attendance_records\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "attendance_records_organizationId_createdById_idx_4fb80a04",
+        "table": "attendance_records"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"attendance_records_organizationId_createdById_idx_4fb80a04\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"attendance_records_organizationId_createdById_idx_4fb80a04\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"attendance_records_organizationId_createdById_idx_4fb80a04\"",
+        "sql": "CREATE INDEX \"attendance_records_organizationId_createdById_idx_4fb80a04\" ON \"public\".\"attendance_records\" (\"organizationId\", \"createdById\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"attendance_records_organizationId_createdById_idx_4fb80a04\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"attendance_records_organizationId_createdById_idx_4fb80a04\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.attendance_records.attendance_records_organizationId_employeeId_idx_f6f89764",
+    "label": "Create index \"attendance_records_organizationId_employeeId_idx_f6f89764\" on \"attendance_records\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "attendance_records_organizationId_employeeId_idx_f6f89764",
+        "table": "attendance_records"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"attendance_records_organizationId_employeeId_idx_f6f89764\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"attendance_records_organizationId_employeeId_idx_f6f89764\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"attendance_records_organizationId_employeeId_idx_f6f89764\"",
+        "sql": "CREATE INDEX \"attendance_records_organizationId_employeeId_idx_f6f89764\" ON \"public\".\"attendance_records\" (\"organizationId\", \"employeeId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"attendance_records_organizationId_employeeId_idx_f6f89764\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"attendance_records_organizationId_employeeId_idx_f6f89764\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.attendance_records.attendance_records_organizationId_idx_2e17ef41",
+    "label": "Create index \"attendance_records_organizationId_idx_2e17ef41\" on \"attendance_records\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "attendance_records_organizationId_idx_2e17ef41",
+        "table": "attendance_records"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"attendance_records_organizationId_idx_2e17ef41\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"attendance_records_organizationId_idx_2e17ef41\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"attendance_records_organizationId_idx_2e17ef41\"",
+        "sql": "CREATE INDEX \"attendance_records_organizationId_idx_2e17ef41\" ON \"public\".\"attendance_records\" (\"organizationId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"attendance_records_organizationId_idx_2e17ef41\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"attendance_records_organizationId_idx_2e17ef41\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.attendance_records.attendance_records_organizationId_updatedById_idx_70649bae",
+    "label": "Create index \"attendance_records_organizationId_updatedById_idx_70649bae\" on \"attendance_records\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "attendance_records_organizationId_updatedById_idx_70649bae",
+        "table": "attendance_records"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"attendance_records_organizationId_updatedById_idx_70649bae\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"attendance_records_organizationId_updatedById_idx_70649bae\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"attendance_records_organizationId_updatedById_idx_70649bae\"",
+        "sql": "CREATE INDEX \"attendance_records_organizationId_updatedById_idx_70649bae\" ON \"public\".\"attendance_records\" (\"organizationId\", \"updatedById\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"attendance_records_organizationId_updatedById_idx_70649bae\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"attendance_records_organizationId_updatedById_idx_70649bae\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.attendance_records.attendance_records_organizationId_workDate_status_idx_be7b5622",
+    "label": "Create index \"attendance_records_organizationId_workDate_status_idx_be7b5622\" on \"attendance_records\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "attendance_records_organizationId_workDate_status_idx_be7b5622",
+        "table": "attendance_records"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"attendance_records_organizationId_workDate_status_idx_be7b5622\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"attendance_records_organizationId_workDate_status_idx_be7b5622\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"attendance_records_organizationId_workDate_status_idx_be7b5622\"",
+        "sql": "CREATE INDEX \"attendance_records_organizationId_workDate_status_idx_be7b5622\" ON \"public\".\"attendance_records\" (\"organizationId\", \"workDate\", \"status\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"attendance_records_organizationId_workDate_status_idx_be7b5622\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"attendance_records_organizationId_workDate_status_idx_be7b5622\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.holidays.holidays_organizationId_date_idx_eac2a339",
+    "label": "Create index \"holidays_organizationId_date_idx_eac2a339\" on \"holidays\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "holidays_organizationId_date_idx_eac2a339",
+        "table": "holidays"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"holidays_organizationId_date_idx_eac2a339\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"holidays_organizationId_date_idx_eac2a339\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"holidays_organizationId_date_idx_eac2a339\"",
+        "sql": "CREATE INDEX \"holidays_organizationId_date_idx_eac2a339\" ON \"public\".\"holidays\" (\"organizationId\", \"date\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"holidays_organizationId_date_idx_eac2a339\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"holidays_organizationId_date_idx_eac2a339\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.holidays.holidays_organizationId_idx_2e17ef41",
+    "label": "Create index \"holidays_organizationId_idx_2e17ef41\" on \"holidays\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "holidays_organizationId_idx_2e17ef41",
+        "table": "holidays"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"holidays_organizationId_idx_2e17ef41\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"holidays_organizationId_idx_2e17ef41\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"holidays_organizationId_idx_2e17ef41\"",
+        "sql": "CREATE INDEX \"holidays_organizationId_idx_2e17ef41\" ON \"public\".\"holidays\" (\"organizationId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"holidays_organizationId_idx_2e17ef41\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"holidays_organizationId_idx_2e17ef41\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.leave_ledger_entries.leave_ledger_employee_type_idx",
+    "label": "Create index \"leave_ledger_employee_type_idx\" on \"leave_ledger_entries\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "leave_ledger_employee_type_idx",
+        "table": "leave_ledger_entries"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"leave_ledger_employee_type_idx\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"leave_ledger_employee_type_idx\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"leave_ledger_employee_type_idx\"",
+        "sql": "CREATE INDEX \"leave_ledger_employee_type_idx\" ON \"public\".\"leave_ledger_entries\" (\"organizationId\", \"employeeId\", \"leaveTypeId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"leave_ledger_employee_type_idx\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"leave_ledger_employee_type_idx\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.leave_ledger_entries.leave_ledger_entries_organizationId_employeeId_idx_f6f89764",
+    "label": "Create index \"leave_ledger_entries_organizationId_employeeId_idx_f6f89764\" on \"leave_ledger_entries\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "leave_ledger_entries_organizationId_employeeId_idx_f6f89764",
+        "table": "leave_ledger_entries"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"leave_ledger_entries_organizationId_employeeId_idx_f6f89764\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"leave_ledger_entries_organizationId_employeeId_idx_f6f89764\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"leave_ledger_entries_organizationId_employeeId_idx_f6f89764\"",
+        "sql": "CREATE INDEX \"leave_ledger_entries_organizationId_employeeId_idx_f6f89764\" ON \"public\".\"leave_ledger_entries\" (\"organizationId\", \"employeeId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"leave_ledger_entries_organizationId_employeeId_idx_f6f89764\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"leave_ledger_entries_organizationId_employeeId_idx_f6f89764\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.leave_ledger_entries.leave_ledger_entries_organizationId_idx_2e17ef41",
+    "label": "Create index \"leave_ledger_entries_organizationId_idx_2e17ef41\" on \"leave_ledger_entries\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "leave_ledger_entries_organizationId_idx_2e17ef41",
+        "table": "leave_ledger_entries"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"leave_ledger_entries_organizationId_idx_2e17ef41\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"leave_ledger_entries_organizationId_idx_2e17ef41\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"leave_ledger_entries_organizationId_idx_2e17ef41\"",
+        "sql": "CREATE INDEX \"leave_ledger_entries_organizationId_idx_2e17ef41\" ON \"public\".\"leave_ledger_entries\" (\"organizationId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"leave_ledger_entries_organizationId_idx_2e17ef41\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"leave_ledger_entries_organizationId_idx_2e17ef41\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.leave_ledger_entries.leave_ledger_entries_organizationId_leaveRequestId_idx_333305ec",
+    "label": "Create index \"leave_ledger_entries_organizationId_leaveRequestId_idx_333305ec\" on \"leave_ledger_entries\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "leave_ledger_entries_organizationId_leaveRequestId_idx_333305ec",
+        "table": "leave_ledger_entries"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"leave_ledger_entries_organizationId_leaveRequestId_idx_333305ec\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"leave_ledger_entries_organizationId_leaveRequestId_idx_333305ec\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"leave_ledger_entries_organizationId_leaveRequestId_idx_333305ec\"",
+        "sql": "CREATE INDEX \"leave_ledger_entries_organizationId_leaveRequestId_idx_333305ec\" ON \"public\".\"leave_ledger_entries\" (\"organizationId\", \"leaveRequestId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"leave_ledger_entries_organizationId_leaveRequestId_idx_333305ec\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"leave_ledger_entries_organizationId_leaveRequestId_idx_333305ec\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.leave_ledger_entries.leave_ledger_entries_organizationId_leaveTypeId_idx_bffb852c",
+    "label": "Create index \"leave_ledger_entries_organizationId_leaveTypeId_idx_bffb852c\" on \"leave_ledger_entries\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "leave_ledger_entries_organizationId_leaveTypeId_idx_bffb852c",
+        "table": "leave_ledger_entries"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"leave_ledger_entries_organizationId_leaveTypeId_idx_bffb852c\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"leave_ledger_entries_organizationId_leaveTypeId_idx_bffb852c\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"leave_ledger_entries_organizationId_leaveTypeId_idx_bffb852c\"",
+        "sql": "CREATE INDEX \"leave_ledger_entries_organizationId_leaveTypeId_idx_bffb852c\" ON \"public\".\"leave_ledger_entries\" (\"organizationId\", \"leaveTypeId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"leave_ledger_entries_organizationId_leaveTypeId_idx_bffb852c\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"leave_ledger_entries_organizationId_leaveTypeId_idx_bffb852c\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.leave_requests.leave_request_employee_dates_idx",
+    "label": "Create index \"leave_request_employee_dates_idx\" on \"leave_requests\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "leave_request_employee_dates_idx",
+        "table": "leave_requests"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"leave_request_employee_dates_idx\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"leave_request_employee_dates_idx\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"leave_request_employee_dates_idx\"",
+        "sql": "CREATE INDEX \"leave_request_employee_dates_idx\" ON \"public\".\"leave_requests\" (\"organizationId\", \"employeeId\", \"startDate\", \"endDate\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"leave_request_employee_dates_idx\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"leave_request_employee_dates_idx\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.leave_requests.leave_requests_organizationId_employeeId_idx_f6f89764",
+    "label": "Create index \"leave_requests_organizationId_employeeId_idx_f6f89764\" on \"leave_requests\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "leave_requests_organizationId_employeeId_idx_f6f89764",
+        "table": "leave_requests"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"leave_requests_organizationId_employeeId_idx_f6f89764\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"leave_requests_organizationId_employeeId_idx_f6f89764\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"leave_requests_organizationId_employeeId_idx_f6f89764\"",
+        "sql": "CREATE INDEX \"leave_requests_organizationId_employeeId_idx_f6f89764\" ON \"public\".\"leave_requests\" (\"organizationId\", \"employeeId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"leave_requests_organizationId_employeeId_idx_f6f89764\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"leave_requests_organizationId_employeeId_idx_f6f89764\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.leave_requests.leave_requests_organizationId_idx_2e17ef41",
+    "label": "Create index \"leave_requests_organizationId_idx_2e17ef41\" on \"leave_requests\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "leave_requests_organizationId_idx_2e17ef41",
+        "table": "leave_requests"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"leave_requests_organizationId_idx_2e17ef41\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"leave_requests_organizationId_idx_2e17ef41\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"leave_requests_organizationId_idx_2e17ef41\"",
+        "sql": "CREATE INDEX \"leave_requests_organizationId_idx_2e17ef41\" ON \"public\".\"leave_requests\" (\"organizationId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"leave_requests_organizationId_idx_2e17ef41\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"leave_requests_organizationId_idx_2e17ef41\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.leave_requests.leave_requests_organizationId_leaveTypeId_idx_bffb852c",
+    "label": "Create index \"leave_requests_organizationId_leaveTypeId_idx_bffb852c\" on \"leave_requests\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "leave_requests_organizationId_leaveTypeId_idx_bffb852c",
+        "table": "leave_requests"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"leave_requests_organizationId_leaveTypeId_idx_bffb852c\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"leave_requests_organizationId_leaveTypeId_idx_bffb852c\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"leave_requests_organizationId_leaveTypeId_idx_bffb852c\"",
+        "sql": "CREATE INDEX \"leave_requests_organizationId_leaveTypeId_idx_bffb852c\" ON \"public\".\"leave_requests\" (\"organizationId\", \"leaveTypeId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"leave_requests_organizationId_leaveTypeId_idx_bffb852c\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"leave_requests_organizationId_leaveTypeId_idx_bffb852c\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.leave_requests.leave_requests_organizationId_reviewedById_idx_82814071",
+    "label": "Create index \"leave_requests_organizationId_reviewedById_idx_82814071\" on \"leave_requests\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "leave_requests_organizationId_reviewedById_idx_82814071",
+        "table": "leave_requests"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"leave_requests_organizationId_reviewedById_idx_82814071\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"leave_requests_organizationId_reviewedById_idx_82814071\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"leave_requests_organizationId_reviewedById_idx_82814071\"",
+        "sql": "CREATE INDEX \"leave_requests_organizationId_reviewedById_idx_82814071\" ON \"public\".\"leave_requests\" (\"organizationId\", \"reviewedById\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"leave_requests_organizationId_reviewedById_idx_82814071\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"leave_requests_organizationId_reviewedById_idx_82814071\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.leave_requests.leave_requests_organizationId_status_idx_21af5e82",
+    "label": "Create index \"leave_requests_organizationId_status_idx_21af5e82\" on \"leave_requests\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "leave_requests_organizationId_status_idx_21af5e82",
+        "table": "leave_requests"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"leave_requests_organizationId_status_idx_21af5e82\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"leave_requests_organizationId_status_idx_21af5e82\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"leave_requests_organizationId_status_idx_21af5e82\"",
+        "sql": "CREATE INDEX \"leave_requests_organizationId_status_idx_21af5e82\" ON \"public\".\"leave_requests\" (\"organizationId\", \"status\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"leave_requests_organizationId_status_idx_21af5e82\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"leave_requests_organizationId_status_idx_21af5e82\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.leave_types.leave_types_organizationId_idx_2e17ef41",
+    "label": "Create index \"leave_types_organizationId_idx_2e17ef41\" on \"leave_types\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "leave_types_organizationId_idx_2e17ef41",
+        "table": "leave_types"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"leave_types_organizationId_idx_2e17ef41\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"leave_types_organizationId_idx_2e17ef41\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"leave_types_organizationId_idx_2e17ef41\"",
+        "sql": "CREATE INDEX \"leave_types_organizationId_idx_2e17ef41\" ON \"public\".\"leave_types\" (\"organizationId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"leave_types_organizationId_idx_2e17ef41\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"leave_types_organizationId_idx_2e17ef41\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.overtime_requests.overtime_employee_date_idx",
+    "label": "Create index \"overtime_employee_date_idx\" on \"overtime_requests\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "overtime_employee_date_idx",
+        "table": "overtime_requests"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"overtime_employee_date_idx\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"overtime_employee_date_idx\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"overtime_employee_date_idx\"",
+        "sql": "CREATE INDEX \"overtime_employee_date_idx\" ON \"public\".\"overtime_requests\" (\"organizationId\", \"employeeId\", \"workDate\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"overtime_employee_date_idx\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"overtime_employee_date_idx\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.overtime_requests.overtime_requests_organizationId_employeeId_idx_f6f89764",
+    "label": "Create index \"overtime_requests_organizationId_employeeId_idx_f6f89764\" on \"overtime_requests\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "overtime_requests_organizationId_employeeId_idx_f6f89764",
+        "table": "overtime_requests"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"overtime_requests_organizationId_employeeId_idx_f6f89764\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"overtime_requests_organizationId_employeeId_idx_f6f89764\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"overtime_requests_organizationId_employeeId_idx_f6f89764\"",
+        "sql": "CREATE INDEX \"overtime_requests_organizationId_employeeId_idx_f6f89764\" ON \"public\".\"overtime_requests\" (\"organizationId\", \"employeeId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"overtime_requests_organizationId_employeeId_idx_f6f89764\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"overtime_requests_organizationId_employeeId_idx_f6f89764\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.overtime_requests.overtime_requests_organizationId_idx_2e17ef41",
+    "label": "Create index \"overtime_requests_organizationId_idx_2e17ef41\" on \"overtime_requests\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "overtime_requests_organizationId_idx_2e17ef41",
+        "table": "overtime_requests"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"overtime_requests_organizationId_idx_2e17ef41\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"overtime_requests_organizationId_idx_2e17ef41\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"overtime_requests_organizationId_idx_2e17ef41\"",
+        "sql": "CREATE INDEX \"overtime_requests_organizationId_idx_2e17ef41\" ON \"public\".\"overtime_requests\" (\"organizationId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"overtime_requests_organizationId_idx_2e17ef41\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"overtime_requests_organizationId_idx_2e17ef41\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.overtime_requests.overtime_requests_organizationId_reviewedById_idx_82814071",
+    "label": "Create index \"overtime_requests_organizationId_reviewedById_idx_82814071\" on \"overtime_requests\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "overtime_requests_organizationId_reviewedById_idx_82814071",
+        "table": "overtime_requests"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"overtime_requests_organizationId_reviewedById_idx_82814071\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"overtime_requests_organizationId_reviewedById_idx_82814071\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"overtime_requests_organizationId_reviewedById_idx_82814071\"",
+        "sql": "CREATE INDEX \"overtime_requests_organizationId_reviewedById_idx_82814071\" ON \"public\".\"overtime_requests\" (\"organizationId\", \"reviewedById\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"overtime_requests_organizationId_reviewedById_idx_82814071\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"overtime_requests_organizationId_reviewedById_idx_82814071\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.overtime_requests.overtime_status_idx",
+    "label": "Create index \"overtime_status_idx\" on \"overtime_requests\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "overtime_status_idx",
+        "table": "overtime_requests"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"overtime_status_idx\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"overtime_status_idx\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"overtime_status_idx\"",
+        "sql": "CREATE INDEX \"overtime_status_idx\" ON \"public\".\"overtime_requests\" (\"organizationId\", \"status\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"overtime_status_idx\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"overtime_status_idx\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.work_schedules.work_schedule_effective_idx",
+    "label": "Create index \"work_schedule_effective_idx\" on \"work_schedules\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "work_schedule_effective_idx",
+        "table": "work_schedules"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"work_schedule_effective_idx\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"work_schedule_effective_idx\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"work_schedule_effective_idx\"",
+        "sql": "CREATE INDEX \"work_schedule_effective_idx\" ON \"public\".\"work_schedules\" (\"organizationId\", \"employeeId\", \"effectiveFrom\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"work_schedule_effective_idx\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"work_schedule_effective_idx\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.work_schedules.work_schedules_organizationId_employeeId_idx_f6f89764",
+    "label": "Create index \"work_schedules_organizationId_employeeId_idx_f6f89764\" on \"work_schedules\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "work_schedules_organizationId_employeeId_idx_f6f89764",
+        "table": "work_schedules"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"work_schedules_organizationId_employeeId_idx_f6f89764\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"work_schedules_organizationId_employeeId_idx_f6f89764\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"work_schedules_organizationId_employeeId_idx_f6f89764\"",
+        "sql": "CREATE INDEX \"work_schedules_organizationId_employeeId_idx_f6f89764\" ON \"public\".\"work_schedules\" (\"organizationId\", \"employeeId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"work_schedules_organizationId_employeeId_idx_f6f89764\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"work_schedules_organizationId_employeeId_idx_f6f89764\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.work_schedules.work_schedules_organizationId_idx_2e17ef41",
+    "label": "Create index \"work_schedules_organizationId_idx_2e17ef41\" on \"work_schedules\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "work_schedules_organizationId_idx_2e17ef41",
+        "table": "work_schedules"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"work_schedules_organizationId_idx_2e17ef41\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"work_schedules_organizationId_idx_2e17ef41\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"work_schedules_organizationId_idx_2e17ef41\"",
+        "sql": "CREATE INDEX \"work_schedules_organizationId_idx_2e17ef41\" ON \"public\".\"work_schedules\" (\"organizationId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"work_schedules_organizationId_idx_2e17ef41\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"work_schedules_organizationId_idx_2e17ef41\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.workforce_audit_events.workforce_audit_employee_idx",
+    "label": "Create index \"workforce_audit_employee_idx\" on \"workforce_audit_events\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "workforce_audit_employee_idx",
+        "table": "workforce_audit_events"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"workforce_audit_employee_idx\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"workforce_audit_employee_idx\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"workforce_audit_employee_idx\"",
+        "sql": "CREATE INDEX \"workforce_audit_employee_idx\" ON \"public\".\"workforce_audit_events\" (\"organizationId\", \"employeeId\", \"createdAt\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"workforce_audit_employee_idx\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"workforce_audit_employee_idx\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.workforce_audit_events.workforce_audit_entity_idx",
+    "label": "Create index \"workforce_audit_entity_idx\" on \"workforce_audit_events\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "workforce_audit_entity_idx",
+        "table": "workforce_audit_events"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"workforce_audit_entity_idx\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"workforce_audit_entity_idx\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"workforce_audit_entity_idx\"",
+        "sql": "CREATE INDEX \"workforce_audit_entity_idx\" ON \"public\".\"workforce_audit_events\" (\"organizationId\", \"entityType\", \"entityId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"workforce_audit_entity_idx\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"workforce_audit_entity_idx\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.workforce_audit_events.workforce_audit_events_organizationId_actorId_idx_327c2974",
+    "label": "Create index \"workforce_audit_events_organizationId_actorId_idx_327c2974\" on \"workforce_audit_events\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "workforce_audit_events_organizationId_actorId_idx_327c2974",
+        "table": "workforce_audit_events"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"workforce_audit_events_organizationId_actorId_idx_327c2974\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"workforce_audit_events_organizationId_actorId_idx_327c2974\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"workforce_audit_events_organizationId_actorId_idx_327c2974\"",
+        "sql": "CREATE INDEX \"workforce_audit_events_organizationId_actorId_idx_327c2974\" ON \"public\".\"workforce_audit_events\" (\"organizationId\", \"actorId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"workforce_audit_events_organizationId_actorId_idx_327c2974\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"workforce_audit_events_organizationId_actorId_idx_327c2974\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.workforce_audit_events.workforce_audit_events_organizationId_employeeId_idx_f6f89764",
+    "label": "Create index \"workforce_audit_events_organizationId_employeeId_idx_f6f89764\" on \"workforce_audit_events\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "workforce_audit_events_organizationId_employeeId_idx_f6f89764",
+        "table": "workforce_audit_events"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"workforce_audit_events_organizationId_employeeId_idx_f6f89764\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"workforce_audit_events_organizationId_employeeId_idx_f6f89764\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"workforce_audit_events_organizationId_employeeId_idx_f6f89764\"",
+        "sql": "CREATE INDEX \"workforce_audit_events_organizationId_employeeId_idx_f6f89764\" ON \"public\".\"workforce_audit_events\" (\"organizationId\", \"employeeId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"workforce_audit_events_organizationId_employeeId_idx_f6f89764\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"workforce_audit_events_organizationId_employeeId_idx_f6f89764\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.workforce_audit_events.workforce_audit_events_organizationId_idx_2e17ef41",
+    "label": "Create index \"workforce_audit_events_organizationId_idx_2e17ef41\" on \"workforce_audit_events\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "workforce_audit_events_organizationId_idx_2e17ef41",
+        "table": "workforce_audit_events"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"workforce_audit_events_organizationId_idx_2e17ef41\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"workforce_audit_events_organizationId_idx_2e17ef41\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"workforce_audit_events_organizationId_idx_2e17ef41\"",
+        "sql": "CREATE INDEX \"workforce_audit_events_organizationId_idx_2e17ef41\" ON \"public\".\"workforce_audit_events\" (\"organizationId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"workforce_audit_events_organizationId_idx_2e17ef41\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"workforce_audit_events_organizationId_idx_2e17ef41\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.attendance_records.attendance_records_organizationId_fkey",
+    "label": "Add foreign key \"attendance_records_organizationId_fkey\" on \"attendance_records\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "attendance_records_organizationId_fkey",
+        "table": "attendance_records"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"attendance_records_organizationId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "attendance_records_organizationId_fkey",
+          "public",
+          "\"public\".\"attendance_records\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"attendance_records_organizationId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"attendance_records\"\nADD CONSTRAINT \"attendance_records_organizationId_fkey\"\nFOREIGN KEY (\"organizationId\")\nREFERENCES \"public\".\"organizations\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"attendance_records_organizationId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "attendance_records_organizationId_fkey",
+          "public",
+          "\"public\".\"attendance_records\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.attendance_records.attendance_records_organizationId_employeeId_fkey",
+    "label": "Add foreign key \"attendance_records_organizationId_employeeId_fkey\" on \"attendance_records\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "attendance_records_organizationId_employeeId_fkey",
+        "table": "attendance_records"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"attendance_records_organizationId_employeeId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "attendance_records_organizationId_employeeId_fkey",
+          "public",
+          "\"public\".\"attendance_records\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"attendance_records_organizationId_employeeId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"attendance_records\"\nADD CONSTRAINT \"attendance_records_organizationId_employeeId_fkey\"\nFOREIGN KEY (\"organizationId\", \"employeeId\")\nREFERENCES \"public\".\"employees\" (\"organizationId\", \"id\")\nON DELETE RESTRICT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"attendance_records_organizationId_employeeId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "attendance_records_organizationId_employeeId_fkey",
+          "public",
+          "\"public\".\"attendance_records\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.attendance_records.attendance_records_organizationId_createdById_fkey",
+    "label": "Add foreign key \"attendance_records_organizationId_createdById_fkey\" on \"attendance_records\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "attendance_records_organizationId_createdById_fkey",
+        "table": "attendance_records"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"attendance_records_organizationId_createdById_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "attendance_records_organizationId_createdById_fkey",
+          "public",
+          "\"public\".\"attendance_records\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"attendance_records_organizationId_createdById_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"attendance_records\"\nADD CONSTRAINT \"attendance_records_organizationId_createdById_fkey\"\nFOREIGN KEY (\"organizationId\", \"createdById\")\nREFERENCES \"public\".\"users\" (\"organizationId\", \"id\")\nON DELETE RESTRICT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"attendance_records_organizationId_createdById_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "attendance_records_organizationId_createdById_fkey",
+          "public",
+          "\"public\".\"attendance_records\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.attendance_records.attendance_records_organizationId_updatedById_fkey",
+    "label": "Add foreign key \"attendance_records_organizationId_updatedById_fkey\" on \"attendance_records\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "attendance_records_organizationId_updatedById_fkey",
+        "table": "attendance_records"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"attendance_records_organizationId_updatedById_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "attendance_records_organizationId_updatedById_fkey",
+          "public",
+          "\"public\".\"attendance_records\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"attendance_records_organizationId_updatedById_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"attendance_records\"\nADD CONSTRAINT \"attendance_records_organizationId_updatedById_fkey\"\nFOREIGN KEY (\"organizationId\", \"updatedById\")\nREFERENCES \"public\".\"users\" (\"organizationId\", \"id\")\nON DELETE RESTRICT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"attendance_records_organizationId_updatedById_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "attendance_records_organizationId_updatedById_fkey",
+          "public",
+          "\"public\".\"attendance_records\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.holidays.holidays_organizationId_fkey",
+    "label": "Add foreign key \"holidays_organizationId_fkey\" on \"holidays\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "holidays_organizationId_fkey",
+        "table": "holidays"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"holidays_organizationId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "holidays_organizationId_fkey",
+          "public",
+          "\"public\".\"holidays\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"holidays_organizationId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"holidays\"\nADD CONSTRAINT \"holidays_organizationId_fkey\"\nFOREIGN KEY (\"organizationId\")\nREFERENCES \"public\".\"organizations\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"holidays_organizationId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "holidays_organizationId_fkey",
+          "public",
+          "\"public\".\"holidays\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.leave_ledger_entries.leave_ledger_entries_organizationId_fkey",
+    "label": "Add foreign key \"leave_ledger_entries_organizationId_fkey\" on \"leave_ledger_entries\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "leave_ledger_entries_organizationId_fkey",
+        "table": "leave_ledger_entries"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"leave_ledger_entries_organizationId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "leave_ledger_entries_organizationId_fkey",
+          "public",
+          "\"public\".\"leave_ledger_entries\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"leave_ledger_entries_organizationId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"leave_ledger_entries\"\nADD CONSTRAINT \"leave_ledger_entries_organizationId_fkey\"\nFOREIGN KEY (\"organizationId\")\nREFERENCES \"public\".\"organizations\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"leave_ledger_entries_organizationId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "leave_ledger_entries_organizationId_fkey",
+          "public",
+          "\"public\".\"leave_ledger_entries\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.leave_ledger_entries.leave_ledger_entries_organizationId_employeeId_fkey",
+    "label": "Add foreign key \"leave_ledger_entries_organizationId_employeeId_fkey\" on \"leave_ledger_entries\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "leave_ledger_entries_organizationId_employeeId_fkey",
+        "table": "leave_ledger_entries"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"leave_ledger_entries_organizationId_employeeId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "leave_ledger_entries_organizationId_employeeId_fkey",
+          "public",
+          "\"public\".\"leave_ledger_entries\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"leave_ledger_entries_organizationId_employeeId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"leave_ledger_entries\"\nADD CONSTRAINT \"leave_ledger_entries_organizationId_employeeId_fkey\"\nFOREIGN KEY (\"organizationId\", \"employeeId\")\nREFERENCES \"public\".\"employees\" (\"organizationId\", \"id\")\nON DELETE RESTRICT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"leave_ledger_entries_organizationId_employeeId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "leave_ledger_entries_organizationId_employeeId_fkey",
+          "public",
+          "\"public\".\"leave_ledger_entries\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.leave_ledger_entries.leave_ledger_entries_organizationId_leaveTypeId_fkey",
+    "label": "Add foreign key \"leave_ledger_entries_organizationId_leaveTypeId_fkey\" on \"leave_ledger_entries\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "leave_ledger_entries_organizationId_leaveTypeId_fkey",
+        "table": "leave_ledger_entries"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"leave_ledger_entries_organizationId_leaveTypeId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "leave_ledger_entries_organizationId_leaveTypeId_fkey",
+          "public",
+          "\"public\".\"leave_ledger_entries\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"leave_ledger_entries_organizationId_leaveTypeId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"leave_ledger_entries\"\nADD CONSTRAINT \"leave_ledger_entries_organizationId_leaveTypeId_fkey\"\nFOREIGN KEY (\"organizationId\", \"leaveTypeId\")\nREFERENCES \"public\".\"leave_types\" (\"organizationId\", \"id\")\nON DELETE RESTRICT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"leave_ledger_entries_organizationId_leaveTypeId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "leave_ledger_entries_organizationId_leaveTypeId_fkey",
+          "public",
+          "\"public\".\"leave_ledger_entries\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.leave_ledger_entries.leave_ledger_entries_organizationId_leaveRequestId_fkey",
+    "label": "Add foreign key \"leave_ledger_entries_organizationId_leaveRequestId_fkey\" on \"leave_ledger_entries\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "leave_ledger_entries_organizationId_leaveRequestId_fkey",
+        "table": "leave_ledger_entries"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"leave_ledger_entries_organizationId_leaveRequestId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "leave_ledger_entries_organizationId_leaveRequestId_fkey",
+          "public",
+          "\"public\".\"leave_ledger_entries\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"leave_ledger_entries_organizationId_leaveRequestId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"leave_ledger_entries\"\nADD CONSTRAINT \"leave_ledger_entries_organizationId_leaveRequestId_fkey\"\nFOREIGN KEY (\"organizationId\", \"leaveRequestId\")\nREFERENCES \"public\".\"leave_requests\" (\"organizationId\", \"id\")\nON DELETE RESTRICT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"leave_ledger_entries_organizationId_leaveRequestId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "leave_ledger_entries_organizationId_leaveRequestId_fkey",
+          "public",
+          "\"public\".\"leave_ledger_entries\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.leave_requests.leave_requests_organizationId_fkey",
+    "label": "Add foreign key \"leave_requests_organizationId_fkey\" on \"leave_requests\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "leave_requests_organizationId_fkey",
+        "table": "leave_requests"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"leave_requests_organizationId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "leave_requests_organizationId_fkey",
+          "public",
+          "\"public\".\"leave_requests\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"leave_requests_organizationId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"leave_requests\"\nADD CONSTRAINT \"leave_requests_organizationId_fkey\"\nFOREIGN KEY (\"organizationId\")\nREFERENCES \"public\".\"organizations\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"leave_requests_organizationId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "leave_requests_organizationId_fkey",
+          "public",
+          "\"public\".\"leave_requests\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.leave_requests.leave_requests_organizationId_employeeId_fkey",
+    "label": "Add foreign key \"leave_requests_organizationId_employeeId_fkey\" on \"leave_requests\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "leave_requests_organizationId_employeeId_fkey",
+        "table": "leave_requests"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"leave_requests_organizationId_employeeId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "leave_requests_organizationId_employeeId_fkey",
+          "public",
+          "\"public\".\"leave_requests\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"leave_requests_organizationId_employeeId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"leave_requests\"\nADD CONSTRAINT \"leave_requests_organizationId_employeeId_fkey\"\nFOREIGN KEY (\"organizationId\", \"employeeId\")\nREFERENCES \"public\".\"employees\" (\"organizationId\", \"id\")\nON DELETE RESTRICT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"leave_requests_organizationId_employeeId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "leave_requests_organizationId_employeeId_fkey",
+          "public",
+          "\"public\".\"leave_requests\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.leave_requests.leave_requests_organizationId_leaveTypeId_fkey",
+    "label": "Add foreign key \"leave_requests_organizationId_leaveTypeId_fkey\" on \"leave_requests\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "leave_requests_organizationId_leaveTypeId_fkey",
+        "table": "leave_requests"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"leave_requests_organizationId_leaveTypeId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "leave_requests_organizationId_leaveTypeId_fkey",
+          "public",
+          "\"public\".\"leave_requests\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"leave_requests_organizationId_leaveTypeId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"leave_requests\"\nADD CONSTRAINT \"leave_requests_organizationId_leaveTypeId_fkey\"\nFOREIGN KEY (\"organizationId\", \"leaveTypeId\")\nREFERENCES \"public\".\"leave_types\" (\"organizationId\", \"id\")\nON DELETE RESTRICT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"leave_requests_organizationId_leaveTypeId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "leave_requests_organizationId_leaveTypeId_fkey",
+          "public",
+          "\"public\".\"leave_requests\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.leave_requests.leave_requests_organizationId_reviewedById_fkey",
+    "label": "Add foreign key \"leave_requests_organizationId_reviewedById_fkey\" on \"leave_requests\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "leave_requests_organizationId_reviewedById_fkey",
+        "table": "leave_requests"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"leave_requests_organizationId_reviewedById_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "leave_requests_organizationId_reviewedById_fkey",
+          "public",
+          "\"public\".\"leave_requests\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"leave_requests_organizationId_reviewedById_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"leave_requests\"\nADD CONSTRAINT \"leave_requests_organizationId_reviewedById_fkey\"\nFOREIGN KEY (\"organizationId\", \"reviewedById\")\nREFERENCES \"public\".\"users\" (\"organizationId\", \"id\")\nON DELETE RESTRICT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"leave_requests_organizationId_reviewedById_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "leave_requests_organizationId_reviewedById_fkey",
+          "public",
+          "\"public\".\"leave_requests\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.leave_types.leave_types_organizationId_fkey",
+    "label": "Add foreign key \"leave_types_organizationId_fkey\" on \"leave_types\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "leave_types_organizationId_fkey",
+        "table": "leave_types"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"leave_types_organizationId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "leave_types_organizationId_fkey",
+          "public",
+          "\"public\".\"leave_types\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"leave_types_organizationId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"leave_types\"\nADD CONSTRAINT \"leave_types_organizationId_fkey\"\nFOREIGN KEY (\"organizationId\")\nREFERENCES \"public\".\"organizations\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"leave_types_organizationId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "leave_types_organizationId_fkey",
+          "public",
+          "\"public\".\"leave_types\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.overtime_requests.overtime_requests_organizationId_fkey",
+    "label": "Add foreign key \"overtime_requests_organizationId_fkey\" on \"overtime_requests\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "overtime_requests_organizationId_fkey",
+        "table": "overtime_requests"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"overtime_requests_organizationId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "overtime_requests_organizationId_fkey",
+          "public",
+          "\"public\".\"overtime_requests\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"overtime_requests_organizationId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"overtime_requests\"\nADD CONSTRAINT \"overtime_requests_organizationId_fkey\"\nFOREIGN KEY (\"organizationId\")\nREFERENCES \"public\".\"organizations\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"overtime_requests_organizationId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "overtime_requests_organizationId_fkey",
+          "public",
+          "\"public\".\"overtime_requests\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.overtime_requests.overtime_requests_organizationId_employeeId_fkey",
+    "label": "Add foreign key \"overtime_requests_organizationId_employeeId_fkey\" on \"overtime_requests\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "overtime_requests_organizationId_employeeId_fkey",
+        "table": "overtime_requests"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"overtime_requests_organizationId_employeeId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "overtime_requests_organizationId_employeeId_fkey",
+          "public",
+          "\"public\".\"overtime_requests\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"overtime_requests_organizationId_employeeId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"overtime_requests\"\nADD CONSTRAINT \"overtime_requests_organizationId_employeeId_fkey\"\nFOREIGN KEY (\"organizationId\", \"employeeId\")\nREFERENCES \"public\".\"employees\" (\"organizationId\", \"id\")\nON DELETE RESTRICT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"overtime_requests_organizationId_employeeId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "overtime_requests_organizationId_employeeId_fkey",
+          "public",
+          "\"public\".\"overtime_requests\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.overtime_requests.overtime_requests_organizationId_reviewedById_fkey",
+    "label": "Add foreign key \"overtime_requests_organizationId_reviewedById_fkey\" on \"overtime_requests\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "overtime_requests_organizationId_reviewedById_fkey",
+        "table": "overtime_requests"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"overtime_requests_organizationId_reviewedById_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "overtime_requests_organizationId_reviewedById_fkey",
+          "public",
+          "\"public\".\"overtime_requests\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"overtime_requests_organizationId_reviewedById_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"overtime_requests\"\nADD CONSTRAINT \"overtime_requests_organizationId_reviewedById_fkey\"\nFOREIGN KEY (\"organizationId\", \"reviewedById\")\nREFERENCES \"public\".\"users\" (\"organizationId\", \"id\")\nON DELETE RESTRICT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"overtime_requests_organizationId_reviewedById_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "overtime_requests_organizationId_reviewedById_fkey",
+          "public",
+          "\"public\".\"overtime_requests\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.payroll_entry_components.payroll_component_overtime_fkey",
+    "label": "Add foreign key \"payroll_component_overtime_fkey\" on \"payroll_entry_components\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "payroll_component_overtime_fkey",
+        "table": "payroll_entry_components"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"payroll_component_overtime_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "payroll_component_overtime_fkey",
+          "public",
+          "\"public\".\"payroll_entry_components\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"payroll_component_overtime_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"payroll_entry_components\"\nADD CONSTRAINT \"payroll_component_overtime_fkey\"\nFOREIGN KEY (\"organizationId\", \"sourceOvertimeRequestId\")\nREFERENCES \"public\".\"overtime_requests\" (\"organizationId\", \"id\")\nON DELETE RESTRICT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"payroll_component_overtime_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "payroll_component_overtime_fkey",
+          "public",
+          "\"public\".\"payroll_entry_components\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.work_schedules.work_schedules_organizationId_fkey",
+    "label": "Add foreign key \"work_schedules_organizationId_fkey\" on \"work_schedules\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "work_schedules_organizationId_fkey",
+        "table": "work_schedules"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"work_schedules_organizationId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "work_schedules_organizationId_fkey",
+          "public",
+          "\"public\".\"work_schedules\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"work_schedules_organizationId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"work_schedules\"\nADD CONSTRAINT \"work_schedules_organizationId_fkey\"\nFOREIGN KEY (\"organizationId\")\nREFERENCES \"public\".\"organizations\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"work_schedules_organizationId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "work_schedules_organizationId_fkey",
+          "public",
+          "\"public\".\"work_schedules\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.work_schedules.work_schedules_organizationId_employeeId_fkey",
+    "label": "Add foreign key \"work_schedules_organizationId_employeeId_fkey\" on \"work_schedules\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "work_schedules_organizationId_employeeId_fkey",
+        "table": "work_schedules"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"work_schedules_organizationId_employeeId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "work_schedules_organizationId_employeeId_fkey",
+          "public",
+          "\"public\".\"work_schedules\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"work_schedules_organizationId_employeeId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"work_schedules\"\nADD CONSTRAINT \"work_schedules_organizationId_employeeId_fkey\"\nFOREIGN KEY (\"organizationId\", \"employeeId\")\nREFERENCES \"public\".\"employees\" (\"organizationId\", \"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"work_schedules_organizationId_employeeId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "work_schedules_organizationId_employeeId_fkey",
+          "public",
+          "\"public\".\"work_schedules\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.workforce_audit_events.workforce_audit_events_organizationId_fkey",
+    "label": "Add foreign key \"workforce_audit_events_organizationId_fkey\" on \"workforce_audit_events\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "workforce_audit_events_organizationId_fkey",
+        "table": "workforce_audit_events"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"workforce_audit_events_organizationId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "workforce_audit_events_organizationId_fkey",
+          "public",
+          "\"public\".\"workforce_audit_events\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"workforce_audit_events_organizationId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"workforce_audit_events\"\nADD CONSTRAINT \"workforce_audit_events_organizationId_fkey\"\nFOREIGN KEY (\"organizationId\")\nREFERENCES \"public\".\"organizations\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"workforce_audit_events_organizationId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "workforce_audit_events_organizationId_fkey",
+          "public",
+          "\"public\".\"workforce_audit_events\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.workforce_audit_events.workforce_audit_events_organizationId_employeeId_fkey",
+    "label": "Add foreign key \"workforce_audit_events_organizationId_employeeId_fkey\" on \"workforce_audit_events\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "workforce_audit_events_organizationId_employeeId_fkey",
+        "table": "workforce_audit_events"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"workforce_audit_events_organizationId_employeeId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "workforce_audit_events_organizationId_employeeId_fkey",
+          "public",
+          "\"public\".\"workforce_audit_events\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"workforce_audit_events_organizationId_employeeId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"workforce_audit_events\"\nADD CONSTRAINT \"workforce_audit_events_organizationId_employeeId_fkey\"\nFOREIGN KEY (\"organizationId\", \"employeeId\")\nREFERENCES \"public\".\"employees\" (\"organizationId\", \"id\")\nON DELETE RESTRICT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"workforce_audit_events_organizationId_employeeId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "workforce_audit_events_organizationId_employeeId_fkey",
+          "public",
+          "\"public\".\"workforce_audit_events\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.workforce_audit_events.workforce_audit_events_organizationId_actorId_fkey",
+    "label": "Add foreign key \"workforce_audit_events_organizationId_actorId_fkey\" on \"workforce_audit_events\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "workforce_audit_events_organizationId_actorId_fkey",
+        "table": "workforce_audit_events"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"workforce_audit_events_organizationId_actorId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "workforce_audit_events_organizationId_actorId_fkey",
+          "public",
+          "\"public\".\"workforce_audit_events\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"workforce_audit_events_organizationId_actorId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"workforce_audit_events\"\nADD CONSTRAINT \"workforce_audit_events_organizationId_actorId_fkey\"\nFOREIGN KEY (\"organizationId\", \"actorId\")\nREFERENCES \"public\".\"users\" (\"organizationId\", \"id\")\nON DELETE RESTRICT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"workforce_audit_events_organizationId_actorId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "workforce_audit_events_organizationId_actorId_fkey",
+          "public",
+          "\"public\".\"workforce_audit_events\""
+        ]
+      }
+    ]
+  }
+]

@@ -18,6 +18,7 @@ import {
   PayrollAdjustmentDto,
   PayrollRunQueryDto,
   PayrollVersionDto,
+  ImportOvertimeDto,
   RecordPayrollPaymentDto,
   RejectPayrollDto,
 } from "./payroll.dto.js";
@@ -49,6 +50,18 @@ export class PayrollController {
     @Body() input: PayrollAdjustmentDto,
   ) {
     return this.payroll.adjust(id, entryId, input);
+  }
+  @Get(":id/workforce-review") @RequirePermissions("payroll:read") workforceReview(
+    @Param("id", ParseUUIDPipe) id: string,
+  ) {
+    return this.payroll.workforceReview(id);
+  }
+  @Post(":id/entries/:entryId/overtime") @RequirePermissions("payroll:manage") importOvertime(
+    @Param("id", ParseUUIDPipe) id: string,
+    @Param("entryId", ParseUUIDPipe) entryId: string,
+    @Body() input: ImportOvertimeDto,
+  ) {
+    return this.payroll.importOvertime(id, entryId, input);
   }
   @Post(":id/submit") @HttpCode(200) @RequirePermissions("payroll:manage") submit(
     @Param("id", ParseUUIDPipe) id: string,

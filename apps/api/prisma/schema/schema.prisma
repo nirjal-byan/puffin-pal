@@ -167,6 +167,47 @@ enum PayrollAuditAction {
   PAYMENT_RECORDED
 }
 
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
+  HALF_DAY
+  ON_LEAVE
+  HOLIDAY
+}
+
+enum AttendanceSource {
+  MANUAL
+  SELF_SERVICE
+}
+
+enum LeaveRequestStatus {
+  DRAFT
+  PENDING_APPROVAL
+  APPROVED
+  REJECTED
+  CANCELLED
+}
+
+enum LeaveDayPortion {
+  FULL_DAY
+  HALF_DAY
+}
+
+enum LeaveLedgerKind {
+  ALLOCATION
+  DEDUCTION
+  RESTORATION
+  ADJUSTMENT
+}
+
+enum OvertimeRequestStatus {
+  DRAFT
+  PENDING_APPROVAL
+  APPROVED
+  REJECTED
+  CANCELLED
+}
+
 model Organization {
   id                      String                       @id @default(uuid())
   name                    String
@@ -198,6 +239,14 @@ model Organization {
   payrollEntries          PayrollEntry[]
   payrollPayments         PayrollPayment[]
   payrollAuditEvents      PayrollAuditEvent[]
+  workSchedules           WorkSchedule[]
+  holidays                Holiday[]
+  attendanceRecords       AttendanceRecord[]
+  leaveTypes              LeaveType[]
+  leaveRequests           LeaveRequest[]
+  leaveLedgerEntries      LeaveLedgerEntry[]
+  overtimeRequests        OvertimeRequest[]
+  workforceAuditEvents    WorkforceAuditEvent[]
 
   @@map("organizations")
 }
@@ -260,6 +309,11 @@ model User {
   finalizedPayrollRuns    PayrollRun[]               @relation("PayrollRunFinalizer")
   payrollPayments         PayrollPayment[]           @relation("PayrollPaymentRecorder")
   payrollAuditEvents      PayrollAuditEvent[]        @relation("PayrollAuditActor")
+  createdAttendance       AttendanceRecord[]         @relation("AttendanceCreator")
+  updatedAttendance       AttendanceRecord[]         @relation("AttendanceUpdater")
+  reviewedLeaveRequests   LeaveRequest[]             @relation("LeaveReviewer")
+  reviewedOvertime        OvertimeRequest[]          @relation("OvertimeReviewer")
+  workforceAuditEvents    WorkforceAuditEvent[]      @relation("WorkforceAuditActor")
 
   @@unique([organizationId, id])
   @@unique([organizationId, email])
@@ -284,7 +338,7 @@ model Department {
 }
 
 model Employee {
-  id               String               @id @default(uuid())
+  id               String                @id @default(uuid())
   organizationId   String
   employeeCode     String
   firstName        String
@@ -294,24 +348,30 @@ model Employee {
   notes            String?
   jobTitle         String
   employmentType   EmploymentType
-  status           EmploymentStatus     @default(ACTIVE)
+  status           EmploymentStatus      @default(ACTIVE)
   hireDate         DateTime
   terminationDate  DateTime?
   departmentId     String?
   managerId        String?
   linkedUserId     String?
-  version          Int                  @default(1)
-  createdAt        DateTime             @default(now())
+  version          Int                   @default(1)
+  createdAt        DateTime              @default(now())
   updatedAt        temporal.updatedAt()
 
-  organization     Organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  department       Department?          @relation(fields: [organizationId, departmentId], references: [organizationId, id], onDelete: Restrict)
-  manager          Employee?            @relation("EmployeeManager", fields: [organizationId, managerId], references: [organizationId, id], onDelete: Restrict)
-  directReports    Employee[]           @relation("EmployeeManager")
-  linkedUser       User?                @relation("EmployeeUser", fields: [organizationId, linkedUserId], references: [organizationId, id], onDelete: Restrict)
+  organization     Organization          @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  department       Department?           @relation(fields: [organizationId, departmentId], references: [organizationId, id], onDelete: Restrict)
+  manager          Employee?             @relation("EmployeeManager", fields: [organizationId, managerId], references: [organizationId, id], onDelete: Restrict)
+  directReports    Employee[]            @relation("EmployeeManager")
+  linkedUser       User?                 @relation("EmployeeUser", fields: [organizationId, linkedUserId], references: [organizationId, id], onDelete: Restrict)
   salaryStructures SalaryStructure[]
   auditEvents      EmployeeAuditEvent[]
   payrollEntries   PayrollEntry[]
+  workSchedules    WorkSchedule[]
+  attendance       AttendanceRecord[]
+  leaveRequests    LeaveRequest[]
+  leaveLedger      LeaveLedgerEntry[]
+  overtimeRequests OvertimeRequest[]
+  workforceEvents  WorkforceAuditEvent[]
 
   @@unique([organizationId, id])
   @@unique([organizationId, employeeCode])
@@ -464,14 +524,211 @@ model PayrollEntryComponent {
   type                    PayrollComponentType
   amount                  Numeric(14, 2)
   sourceSalaryComponentId String?
+  sourceOvertimeRequestId String?
+  sourceMinutes           Int?
+  rateSnapshot            Numeric(14, 4)?
   isAdjustment            Boolean              @default(false)
   sortOrder               Int                  @default(0)
   createdAt               DateTime             @default(now())
 
   payrollEntry            PayrollEntry         @relation(fields: [organizationId, payrollEntryId], references: [organizationId, id], onDelete: Cascade)
+  sourceOvertimeRequest   OvertimeRequest?     @relation(fields: [organizationId, sourceOvertimeRequestId], references: [organizationId, id], onDelete: Restrict, map: "payroll_component_overtime_fkey")
 
+  @@unique([organizationId, sourceOvertimeRequestId], map: "payroll_component_overtime_key")
   @@index([organizationId, payrollEntryId], map: "payroll_component_entry_idx")
   @@map("payroll_entry_components")
+}
+
+model WorkSchedule {
+  id                   String               @id @default(uuid())
+  organizationId       String
+  employeeId           String
+  timezone             String
+  workdays             String
+  scheduledStartTime   String
+  scheduledEndTime     String
+  expectedDailyMinutes Int
+  effectiveFrom        DateTime
+  effectiveTo          DateTime?
+  createdAt            DateTime             @default(now())
+  updatedAt            temporal.updatedAt()
+
+  organization         Organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  employee             Employee             @relation(fields: [organizationId, employeeId], references: [organizationId, id], onDelete: Cascade)
+
+  @@unique([organizationId, id])
+  @@index([organizationId, employeeId, effectiveFrom], map: "work_schedule_effective_idx")
+  @@map("work_schedules")
+}
+
+model Holiday {
+  id             String               @id @default(uuid())
+  organizationId String
+  name           String
+  date           DateTime
+  isRecurring    Boolean              @default(false)
+  createdAt      DateTime             @default(now())
+  updatedAt      temporal.updatedAt()
+
+  organization   Organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, id])
+  @@unique([organizationId, date, name])
+  @@index([organizationId, date])
+  @@map("holidays")
+}
+
+model AttendanceRecord {
+  id             String               @id @default(uuid())
+  organizationId String
+  employeeId     String
+  workDate       DateTime
+  status         AttendanceStatus
+  checkInAt      DateTime?
+  checkOutAt     DateTime?
+  workedMinutes  Int?
+  isLate         Boolean              @default(false)
+  notes          String?
+  source         AttendanceSource     @default(MANUAL)
+  createdById    String
+  updatedById    String
+  version        Int                  @default(1)
+  createdAt      DateTime             @default(now())
+  updatedAt      temporal.updatedAt()
+
+  organization   Organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  employee       Employee             @relation(fields: [organizationId, employeeId], references: [organizationId, id], onDelete: Restrict)
+  createdBy      User                 @relation("AttendanceCreator", fields: [organizationId, createdById], references: [organizationId, id], onDelete: Restrict)
+  updatedBy      User                 @relation("AttendanceUpdater", fields: [organizationId, updatedById], references: [organizationId, id], onDelete: Restrict)
+
+  @@unique([organizationId, id])
+  @@unique([organizationId, employeeId, workDate])
+  @@index([organizationId, workDate, status])
+  @@map("attendance_records")
+}
+
+model LeaveType {
+  id                   String               @id @default(uuid())
+  organizationId       String
+  name                 String
+  code                 String
+  description          String?
+  isPaid               Boolean              @default(true)
+  requiresApproval     Boolean              @default(true)
+  annualAllowanceUnits Int                  @default(0)
+  isActive             Boolean              @default(true)
+  createdAt            DateTime             @default(now())
+  updatedAt            temporal.updatedAt()
+
+  organization         Organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  requests             LeaveRequest[]
+  ledgerEntries        LeaveLedgerEntry[]
+
+  @@unique([organizationId, id])
+  @@unique([organizationId, code])
+  @@map("leave_types")
+}
+
+model LeaveRequest {
+  id              String               @id @default(uuid())
+  organizationId  String
+  employeeId      String
+  leaveTypeId     String
+  startDate       DateTime
+  endDate         DateTime
+  dayPortion      LeaveDayPortion      @default(FULL_DAY)
+  requestedUnits  Int
+  reason          String?
+  status          LeaveRequestStatus   @default(DRAFT)
+  submittedAt     DateTime?
+  reviewedById    String?
+  reviewedAt      DateTime?
+  rejectionReason String?
+  version         Int                  @default(1)
+  createdAt       DateTime             @default(now())
+  updatedAt       temporal.updatedAt()
+
+  organization    Organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  employee        Employee             @relation(fields: [organizationId, employeeId], references: [organizationId, id], onDelete: Restrict)
+  leaveType       LeaveType            @relation(fields: [organizationId, leaveTypeId], references: [organizationId, id], onDelete: Restrict)
+  reviewedBy      User?                @relation("LeaveReviewer", fields: [organizationId, reviewedById], references: [organizationId, id], onDelete: Restrict)
+  ledgerEntries   LeaveLedgerEntry[]
+
+  @@unique([organizationId, id])
+  @@index([organizationId, employeeId, startDate, endDate], map: "leave_request_employee_dates_idx")
+  @@index([organizationId, status])
+  @@map("leave_requests")
+}
+
+model LeaveLedgerEntry {
+  id             String          @id @default(uuid())
+  organizationId String
+  employeeId     String
+  leaveTypeId    String
+  leaveRequestId String?
+  kind           LeaveLedgerKind
+  units          Int
+  notes          String?
+  createdAt      DateTime        @default(now())
+
+  organization   Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  employee       Employee        @relation(fields: [organizationId, employeeId], references: [organizationId, id], onDelete: Restrict)
+  leaveType      LeaveType       @relation(fields: [organizationId, leaveTypeId], references: [organizationId, id], onDelete: Restrict)
+  leaveRequest   LeaveRequest?   @relation(fields: [organizationId, leaveRequestId], references: [organizationId, id], onDelete: Restrict)
+
+  @@unique([organizationId, leaveRequestId, kind], map: "leave_ledger_request_kind_key")
+  @@index([organizationId, employeeId, leaveTypeId], map: "leave_ledger_employee_type_idx")
+  @@map("leave_ledger_entries")
+}
+
+model OvertimeRequest {
+  id                   String                  @id @default(uuid())
+  organizationId       String
+  employeeId           String
+  workDate             DateTime
+  requestedMinutes     Int
+  approvedMinutes      Int?
+  reason               String
+  status               OvertimeRequestStatus   @default(DRAFT)
+  hourlyRate           Numeric(14, 4)?
+  multiplier           Numeric(8, 4)?
+  approvedRateSnapshot Numeric(14, 4)?
+  reviewedById         String?
+  reviewedAt           DateTime?
+  rejectionReason      String?
+  version              Int                     @default(1)
+  createdAt            DateTime                @default(now())
+  updatedAt            temporal.updatedAt()
+
+  organization         Organization            @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  employee             Employee                @relation(fields: [organizationId, employeeId], references: [organizationId, id], onDelete: Restrict)
+  reviewedBy           User?                   @relation("OvertimeReviewer", fields: [organizationId, reviewedById], references: [organizationId, id], onDelete: Restrict)
+  payrollComponents    PayrollEntryComponent[]
+
+  @@unique([organizationId, id])
+  @@index([organizationId, employeeId, workDate], map: "overtime_employee_date_idx")
+  @@index([organizationId, status], map: "overtime_status_idx")
+  @@map("overtime_requests")
+}
+
+model WorkforceAuditEvent {
+  id             String       @id @default(uuid())
+  organizationId String
+  employeeId     String
+  actorId        String
+  entityType     String
+  entityId       String
+  action         String
+  details        String?
+  createdAt      DateTime     @default(now())
+
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  employee       Employee     @relation(fields: [organizationId, employeeId], references: [organizationId, id], onDelete: Restrict)
+  actor          User         @relation("WorkforceAuditActor", fields: [organizationId, actorId], references: [organizationId, id], onDelete: Restrict)
+
+  @@index([organizationId, employeeId, createdAt], map: "workforce_audit_employee_idx")
+  @@index([organizationId, entityType, entityId], map: "workforce_audit_entity_idx")
+  @@map("workforce_audit_events")
 }
 
 model PayrollPayment {
