@@ -1,6 +1,9 @@
 import "reflect-metadata";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { test } from "node:test";
 import { ConflictException, ForbiddenException } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
@@ -20,13 +23,20 @@ const fixture = () => ({
   client: { name: "Changed live client", email: "changed@client.test" },
 });
 function extract(t, buffer) {
-  const result = spawnSync("pdftotext", ["-layout", "-", "-"], { input: buffer });
+  const directory = mkdtempSync(join(tmpdir(), "puffinpal-pdf-test-"));
+  const input = join(directory, "input.pdf");
+  const output = join(directory, "output.txt");
+  writeFileSync(input, buffer);
+  const result = spawnSync("pdftotext", ["-layout", input, output], { timeout: 10_000 });
   if (result.error?.code === "ENOENT") {
+    rmSync(directory, { recursive: true, force: true });
     t.skip("PDF text extraction requires the optional Poppler pdftotext utility");
     return null;
   }
   assert.equal(result.status, 0, result.stderr?.toString());
-  return result.stdout.toString();
+  const text = readFileSync(output, "utf8");
+  rmSync(directory, { recursive: true, force: true });
+  return text;
 }
 test("PDF contains finalized billing, dates and exact monetary values", async (t) => {
   const invoice = fixture();

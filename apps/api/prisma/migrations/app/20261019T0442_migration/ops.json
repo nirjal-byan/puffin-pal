@@ -1,0 +1,124 @@
+[
+  {
+    "id": "column.public.payroll_runs.organizationName",
+    "label": "Add column \"organizationName\" to \"payroll_runs\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "organizationName",
+        "table": "payroll_runs"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"organizationName\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "payroll_runs",
+          "organizationName"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"organizationName\"",
+        "sql": "ALTER TABLE \"public\".\"payroll_runs\" ADD COLUMN \"organizationName\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"organizationName\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "payroll_runs",
+          "organizationName"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "data_migration.backfill-payroll_runs-organizationName",
+    "label": "Data transform: backfill-payroll_runs-organizationName",
+    "operationClass": "data",
+    "target": {
+      "id": "postgres"
+    },
+    "precheck": [
+      {
+        "description": "Check backfill-payroll_runs-organizationName has work to do",
+        "sql": "SELECT EXISTS (SELECT \"id\" AS \"id\" FROM \"public\".\"payroll_runs\" WHERE \"organizationName\" IS NULL LIMIT 1) AS ok",
+        "params": []
+      }
+    ],
+    "execute": [
+      {
+        "description": "Run backfill-payroll_runs-organizationName",
+        "sql": "UPDATE \"public\".\"payroll_runs\" SET \"organizationName\" = $1, \"updatedAt\" = $2 WHERE \"organizationName\" IS NULL",
+        "params": [
+          "Organization",
+          "2026-10-19T04:42:34.403Z"
+        ]
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "Verify backfill-payroll_runs-organizationName resolved all violations",
+        "sql": "SELECT NOT EXISTS (SELECT \"id\" AS \"id\" FROM \"public\".\"payroll_runs\" WHERE \"organizationName\" IS NULL LIMIT 1) AS ok",
+        "params": []
+      }
+    ]
+  },
+  {
+    "id": "alterNullability.setNotNull.payroll_runs.organizationName",
+    "label": "Set NOT NULL on \"payroll_runs\".\"organizationName\"",
+    "operationClass": "destructive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "organizationName",
+        "table": "payroll_runs"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"organizationName\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "payroll_runs",
+          "organizationName"
+        ]
+      },
+      {
+        "description": "ensure no NULL values in \"organizationName\"",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"public\".\"payroll_runs\" WHERE \"organizationName\" IS NULL) AS \"result\"",
+        "params": []
+      }
+    ],
+    "execute": [
+      {
+        "description": "set NOT NULL on \"organizationName\"",
+        "sql": "ALTER TABLE \"public\".\"payroll_runs\" ALTER COLUMN \"organizationName\" SET NOT NULL"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"organizationName\" is NOT NULL",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3 AND \"is_nullable\" = $4)) AS \"result\"",
+        "params": [
+          "public",
+          "payroll_runs",
+          "organizationName",
+          "NO"
+        ]
+      }
+    ]
+  }
+]

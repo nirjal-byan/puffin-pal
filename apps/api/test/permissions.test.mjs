@@ -31,11 +31,7 @@ test("protected routes fail closed without a policy and require every permission
   };
   const guard = new PermissionsGuard(new Reflector());
   assert.throws(() => guard.canActivate(context), ForbiddenException);
-  Reflect.defineMetadata(
-    REQUIRED_PERMISSIONS,
-    ["clients:read", "clients:create"],
-    handler,
-  );
+  Reflect.defineMetadata(REQUIRED_PERMISSIONS, ["clients:read", "clients:create"], handler);
   assert.throws(() => guard.canActivate(context), ForbiddenException);
   Reflect.defineMetadata(REQUIRED_PERMISSIONS, ["clients:read"], handler);
   assert.equal(guard.canActivate(context), true);
@@ -43,10 +39,7 @@ test("protected routes fail closed without a policy and require every permission
 
 test("only owners and admins have the dedicated invoice issuance permission", () => {
   for (const role of ["OWNER", "ADMIN", "PROJECT_MANAGER", "FINANCE_VIEWER"]) {
-    assert.equal(
-      hasPermission(role, "invoices:issue"),
-      role === "OWNER" || role === "ADMIN",
-    );
+    assert.equal(hasPermission(role, "invoices:issue"), role === "OWNER" || role === "ADMIN");
   }
 });
 
@@ -57,4 +50,12 @@ test("employee directory and salary permissions remain separate", () => {
   assert.equal(hasPermission("FINANCE_VIEWER", "salaries:read"), true);
   assert.equal(hasPermission("FINANCE_VIEWER", "salaries:manage"), false);
   assert.equal(hasPermission("ADMIN", "salaries:manage"), true);
+});
+
+test("payroll access excludes project managers and keeps finance viewers read-only", () => {
+  assert.equal(hasPermission("PROJECT_MANAGER", "payroll:read"), false);
+  assert.equal(hasPermission("FINANCE_VIEWER", "payroll:read"), true);
+  assert.equal(hasPermission("FINANCE_VIEWER", "payroll:manage"), false);
+  assert.equal(hasPermission("OWNER", "payroll:finalize"), true);
+  assert.equal(hasPermission("ADMIN", "payroll:payments:record"), true);
 });

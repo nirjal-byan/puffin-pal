@@ -135,6 +135,38 @@ enum EmployeeAuditAction {
   SALARY_SCHEDULED
 }
 
+enum PayrollRunStatus {
+  DRAFT
+  PENDING_APPROVAL
+  APPROVED
+  FINALIZED
+}
+
+enum PayrollComponentType {
+  EARNING
+  DEDUCTION
+}
+
+enum PayslipStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+enum PayrollAuditAction {
+  CREATED
+  CALCULATED
+  ADJUSTED
+  SUBMITTED
+  APPROVED
+  REJECTED
+  FINALIZED
+  PAYSLIP_GENERATED
+  PAYSLIP_FAILED
+  PAYMENT_RECORDED
+}
+
 model Organization {
   id                      String                       @id @default(uuid())
   name                    String
@@ -162,6 +194,10 @@ model Organization {
   employees               Employee[]
   salaryStructures        SalaryStructure[]
   employeeAuditEvents     EmployeeAuditEvent[]
+  payrollRuns             PayrollRun[]
+  payrollEntries          PayrollEntry[]
+  payrollPayments         PayrollPayment[]
+  payrollAuditEvents      PayrollAuditEvent[]
 
   @@map("organizations")
 }
@@ -219,6 +255,11 @@ model User {
   linkedEmployee          Employee?                  @relation("EmployeeUser")
   createdSalaryStructures SalaryStructure[]          @relation("SalaryCreator")
   employeeAuditEvents     EmployeeAuditEvent[]       @relation("EmployeeAuditActor")
+  createdPayrollRuns      PayrollRun[]               @relation("PayrollRunCreator")
+  approvedPayrollRuns     PayrollRun[]               @relation("PayrollRunApprover")
+  finalizedPayrollRuns    PayrollRun[]               @relation("PayrollRunFinalizer")
+  payrollPayments         PayrollPayment[]           @relation("PayrollPaymentRecorder")
+  payrollAuditEvents      PayrollAuditEvent[]        @relation("PayrollAuditActor")
 
   @@unique([organizationId, id])
   @@unique([organizationId, email])
@@ -227,14 +268,14 @@ model User {
 }
 
 model Department {
-  id             String       @id @default(uuid())
+  id             String               @id @default(uuid())
   organizationId String
   name           String
   description    String?
-  createdAt      DateTime     @default(now())
+  createdAt      DateTime             @default(now())
   updatedAt      temporal.updatedAt()
 
-  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organization   Organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   employees      Employee[]
 
   @@unique([organizationId, id])
@@ -243,33 +284,34 @@ model Department {
 }
 
 model Employee {
-  id                 String             @id @default(uuid())
-  organizationId     String
-  employeeCode       String
-  firstName          String
-  lastName           String
-  workEmail          String?
-  phoneNumber        String?
-  notes              String?
-  jobTitle           String
-  employmentType     EmploymentType
-  status             EmploymentStatus   @default(ACTIVE)
-  hireDate           DateTime
-  terminationDate    DateTime?
-  departmentId       String?
-  managerId          String?
-  linkedUserId       String?
-  version            Int                @default(1)
-  createdAt          DateTime           @default(now())
-  updatedAt          temporal.updatedAt()
+  id               String               @id @default(uuid())
+  organizationId   String
+  employeeCode     String
+  firstName        String
+  lastName         String
+  workEmail        String?
+  phoneNumber      String?
+  notes            String?
+  jobTitle         String
+  employmentType   EmploymentType
+  status           EmploymentStatus     @default(ACTIVE)
+  hireDate         DateTime
+  terminationDate  DateTime?
+  departmentId     String?
+  managerId        String?
+  linkedUserId     String?
+  version          Int                  @default(1)
+  createdAt        DateTime             @default(now())
+  updatedAt        temporal.updatedAt()
 
-  organization       Organization       @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  department         Department?        @relation(fields: [organizationId, departmentId], references: [organizationId, id], onDelete: Restrict)
-  manager            Employee?          @relation("EmployeeManager", fields: [organizationId, managerId], references: [organizationId, id], onDelete: Restrict)
-  directReports      Employee[]          @relation("EmployeeManager")
-  linkedUser         User?               @relation("EmployeeUser", fields: [organizationId, linkedUserId], references: [organizationId, id], onDelete: Restrict)
-  salaryStructures   SalaryStructure[]
-  auditEvents        EmployeeAuditEvent[]
+  organization     Organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  department       Department?          @relation(fields: [organizationId, departmentId], references: [organizationId, id], onDelete: Restrict)
+  manager          Employee?            @relation("EmployeeManager", fields: [organizationId, managerId], references: [organizationId, id], onDelete: Restrict)
+  directReports    Employee[]           @relation("EmployeeManager")
+  linkedUser       User?                @relation("EmployeeUser", fields: [organizationId, linkedUserId], references: [organizationId, id], onDelete: Restrict)
+  salaryStructures SalaryStructure[]
+  auditEvents      EmployeeAuditEvent[]
+  payrollEntries   PayrollEntry[]
 
   @@unique([organizationId, id])
   @@unique([organizationId, employeeCode])
@@ -281,7 +323,7 @@ model Employee {
 }
 
 model SalaryStructure {
-  id               String           @id @default(uuid())
+  id               String               @id @default(uuid())
   organizationId   String
   employeeId       String
   compensationType CompensationType
@@ -292,14 +334,15 @@ model SalaryStructure {
   effectiveTo      DateTime?
   notes            String?
   createdById      String
-  version          Int              @default(1)
-  createdAt        DateTime         @default(now())
+  version          Int                  @default(1)
+  createdAt        DateTime             @default(now())
   updatedAt        temporal.updatedAt()
 
-  organization     Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  employee         Employee         @relation(fields: [organizationId, employeeId], references: [organizationId, id], onDelete: Restrict)
-  createdBy        User             @relation("SalaryCreator", fields: [organizationId, createdById], references: [organizationId, id], onDelete: Restrict)
+  organization     Organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  employee         Employee             @relation(fields: [organizationId, employeeId], references: [organizationId, id], onDelete: Restrict)
+  createdBy        User                 @relation("SalaryCreator", fields: [organizationId, createdById], references: [organizationId, id], onDelete: Restrict)
   components       SalaryComponent[]
+  payrollEntries   PayrollEntry[]
 
   @@unique([organizationId, id])
   @@index([organizationId, employeeId, effectiveFrom], map: "salary_employee_effective_idx")
@@ -337,6 +380,138 @@ model EmployeeAuditEvent {
 
   @@index([organizationId, employeeId, createdAt], map: "employee_audit_created_idx")
   @@map("employee_audit_events")
+}
+
+model PayrollRun {
+  id               String               @id @default(uuid())
+  organizationId   String
+  name             String
+  periodStart      DateTime
+  periodEnd        DateTime
+  paymentDate      DateTime
+  status           PayrollRunStatus     @default(DRAFT)
+  currency         String
+  organizationName String
+  totalGross       Numeric(14, 2)       @default(0)
+  totalDeductions  Numeric(14, 2)       @default(0)
+  totalNet         Numeric(14, 2)       @default(0)
+  employeeCount    Int                  @default(0)
+  createdById      String
+  approvedById     String?
+  finalizedById    String?
+  rejectionReason  String?
+  approvedAt       DateTime?
+  finalizedAt      DateTime?
+  version          Int                  @default(1)
+  createdAt        DateTime             @default(now())
+  updatedAt        temporal.updatedAt()
+
+  organization     Organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  createdBy        User                 @relation("PayrollRunCreator", fields: [organizationId, createdById], references: [organizationId, id], onDelete: Restrict)
+  approvedBy       User?                @relation("PayrollRunApprover", fields: [organizationId, approvedById], references: [organizationId, id], onDelete: Restrict)
+  finalizedBy      User?                @relation("PayrollRunFinalizer", fields: [organizationId, finalizedById], references: [organizationId, id], onDelete: Restrict)
+  entries          PayrollEntry[]
+  auditEvents      PayrollAuditEvent[]
+
+  @@unique([organizationId, id])
+  @@index([organizationId, periodStart, periodEnd], map: "payroll_run_period_idx")
+  @@index([organizationId, status], map: "payroll_run_status_idx")
+  @@map("payroll_runs")
+}
+
+model PayrollEntry {
+  id                 String                  @id @default(uuid())
+  organizationId     String
+  payrollRunId       String
+  employeeId         String
+  salaryStructureId  String
+  employeeName       String
+  employeeCode       String
+  departmentName     String?
+  jobTitle           String
+  compensationType   CompensationType
+  payFrequency       PayFrequency
+  baseAmount         Numeric(14, 2)
+  grossPay           Numeric(14, 2)
+  totalDeductions    Numeric(14, 2)
+  netPay             Numeric(14, 2)
+  payslipStatus      PayslipStatus           @default(PENDING)
+  payslipKey         String?
+  payslipFailureCode String?
+  version            Int                     @default(1)
+  createdAt          DateTime                @default(now())
+  updatedAt          temporal.updatedAt()
+
+  organization       Organization            @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  payrollRun         PayrollRun              @relation(fields: [organizationId, payrollRunId], references: [organizationId, id], onDelete: Cascade)
+  employee           Employee                @relation(fields: [organizationId, employeeId], references: [organizationId, id], onDelete: Restrict)
+  salaryStructure    SalaryStructure         @relation(fields: [organizationId, salaryStructureId], references: [organizationId, id], onDelete: Restrict)
+  components         PayrollEntryComponent[]
+  payments           PayrollPayment[]
+  auditEvents        PayrollAuditEvent[]
+
+  @@unique([organizationId, id])
+  @@unique([organizationId, payrollRunId, employeeId])
+  @@index([organizationId, employeeId], map: "payroll_entry_employee_idx")
+  @@map("payroll_entries")
+}
+
+model PayrollEntryComponent {
+  id                      String               @id @default(uuid())
+  organizationId          String
+  payrollEntryId          String
+  name                    String
+  type                    PayrollComponentType
+  amount                  Numeric(14, 2)
+  sourceSalaryComponentId String?
+  isAdjustment            Boolean              @default(false)
+  sortOrder               Int                  @default(0)
+  createdAt               DateTime             @default(now())
+
+  payrollEntry            PayrollEntry         @relation(fields: [organizationId, payrollEntryId], references: [organizationId, id], onDelete: Cascade)
+
+  @@index([organizationId, payrollEntryId], map: "payroll_component_entry_idx")
+  @@map("payroll_entry_components")
+}
+
+model PayrollPayment {
+  id             String         @id @default(uuid())
+  organizationId String
+  payrollEntryId String
+  amount         Numeric(14, 2)
+  paymentDate    DateTime
+  reference      String
+  notes          String?
+  idempotencyKey String
+  recordedById   String
+  createdAt      DateTime       @default(now())
+
+  organization   Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  payrollEntry   PayrollEntry   @relation(fields: [organizationId, payrollEntryId], references: [organizationId, id], onDelete: Restrict)
+  recordedBy     User           @relation("PayrollPaymentRecorder", fields: [organizationId, recordedById], references: [organizationId, id], onDelete: Restrict)
+
+  @@unique([organizationId, idempotencyKey])
+  @@index([organizationId, payrollEntryId], map: "payroll_payment_entry_idx")
+  @@map("payroll_payments")
+}
+
+model PayrollAuditEvent {
+  id             String             @id @default(uuid())
+  organizationId String
+  payrollRunId   String
+  payrollEntryId String?
+  actorId        String
+  action         PayrollAuditAction
+  details        String?
+  createdAt      DateTime           @default(now())
+
+  organization   Organization       @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  payrollRun     PayrollRun         @relation(fields: [organizationId, payrollRunId], references: [organizationId, id], onDelete: Restrict)
+  payrollEntry   PayrollEntry?      @relation(fields: [organizationId, payrollEntryId], references: [organizationId, id], onDelete: Restrict)
+  actor          User               @relation("PayrollAuditActor", fields: [organizationId, actorId], references: [organizationId, id], onDelete: Restrict)
+
+  @@index([organizationId, payrollRunId, createdAt], map: "payroll_audit_run_idx")
+  @@map("payroll_audit_events")
 }
 
 model Membership {

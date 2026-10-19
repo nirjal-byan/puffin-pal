@@ -10,6 +10,7 @@ import { BackgroundJobsModule } from "./background-jobs/background-jobs.module.j
 import { DashboardModule } from "./dashboard/dashboard.module.js";
 import { RecurringInvoicesModule } from "./recurring-invoices/recurring-invoices.module.js";
 import { EmployeesModule } from "./employees/employees.module.js";
+import { PayrollModule } from "./payroll/payroll.module.js";
 @Module({
   imports: [
     DatabaseModule,
@@ -22,6 +23,7 @@ import { EmployeesModule } from "./employees/employees.module.js";
     DashboardModule,
     RecurringInvoicesModule,
     EmployeesModule,
+    PayrollModule,
   ],
   controllers: [HealthController],
 })

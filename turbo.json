@@ -18,6 +18,11 @@
       "persistent": true,
       "dependsOn": ["^build"]
     },
+    "dev:worker": {
+      "cache": false,
+      "persistent": true,
+      "dependsOn": ["^build"]
+    },
     "lint:fix": {
       "cache": false
     }

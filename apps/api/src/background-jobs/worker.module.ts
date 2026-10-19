@@ -7,6 +7,9 @@ import { StorageModule } from "../storage/storage.module.js";
 import { InvoiceExportProcessor } from "./invoice-export.processor.js";
 import { InvoiceExportStorageService } from "./invoice-export-storage.service.js";
 import { RecurringInvoiceProcessor } from "../recurring-invoices/recurring-invoice.processor.js";
+import { PayrollPayslipProcessor } from "../payroll/payroll-payslip.processor.js";
+import { PayrollPayslipStorageService } from "../payroll/payroll-payslip-storage.service.js";
+import { PayrollPdfService } from "../payroll/payroll-pdf.service.js";
 
 @Module({
   imports: [DatabaseModule, StorageModule],
@@ -17,6 +20,9 @@ import { RecurringInvoiceProcessor } from "../recurring-invoices/recurring-invoi
     InvoiceExportStorageService,
     InvoiceExportProcessor,
     RecurringInvoiceProcessor,
+    PayrollPayslipStorageService,
+    PayrollPdfService,
+    PayrollPayslipProcessor,
   ],
 })
 export class WorkerModule {}

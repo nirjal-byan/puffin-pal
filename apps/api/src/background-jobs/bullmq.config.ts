@@ -42,3 +42,5 @@ export const exportWorkerConcurrency = () => integer("INVOICE_EXPORT_WORKER_CONC
 
 export const recurringInvoiceWorkerConcurrency = () =>
   integer("RECURRING_INVOICE_WORKER_CONCURRENCY", 2, 1, 10);
+
+export const payrollWorkerConcurrency = () => integer("PAYROLL_WORKER_CONCURRENCY", 2, 1, 10);

@@ -4,6 +4,7 @@ import { NestFactory } from "@nestjs/core";
 import { InvoiceExportProcessor } from "./background-jobs/invoice-export.processor.js";
 import { WorkerModule } from "./background-jobs/worker.module.js";
 import { RecurringInvoiceProcessor } from "./recurring-invoices/recurring-invoice.processor.js";
+import { PayrollPayslipProcessor } from "./payroll/payroll-payslip.processor.js";
 
 async function bootstrap() {
   config({ quiet: true });
@@ -11,10 +12,12 @@ async function bootstrap() {
   const app = await NestFactory.createApplicationContext(WorkerModule);
   const processor = app.get(InvoiceExportProcessor);
   const recurring = app.get(RecurringInvoiceProcessor);
-  await Promise.all([processor.start(), recurring.start()]);
+  const payroll = app.get(PayrollPayslipProcessor);
+  await Promise.all([processor.start(), recurring.start(), payroll.start()]);
   const shutdown = async () => {
     await processor.close();
     await recurring.close();
+    await payroll.close();
     await app.close();
   };
   process.once("SIGTERM", () => void shutdown());

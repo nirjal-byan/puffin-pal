@@ -44,7 +44,7 @@ prisma.reset:
 	cd apps/api && pnpm run prisma:reset
 
 run:
-	@printf "\033[0;32m>>> Starting all apps in parallel\033[0m\n"
+	@printf "\033[0;32m>>> Starting web, API, and background worker with Turborepo\033[0m\n"
 	pnpm run dev
 
 run.api:
@@ -56,7 +56,7 @@ run.web:
 	pnpm run dev --filter @puffinpal/web
 
 run.worker:
-	@printf "\033[0;32m>>> Starting invoice export worker\033[0m\n"
+	@printf "\033[0;32m>>> Starting BullMQ background worker\033[0m\n"
 	cd apps/api && pnpm run dev:worker
 
 services.start:
@@ -71,8 +71,11 @@ typecheck:
 	@printf "\033[0;32m>>> Running type checks\033[0m\n"
 	pnpm run typecheck
 
+# Start infrastructure first, then keep the application processes attached.
+dev: services.start
+	@$(MAKE) run
+
 # Compatibility with the previous PuffinPal targets.
-dev: run
 services.up: services.start
 services.down: services.stop
 db.generate: prisma.generate

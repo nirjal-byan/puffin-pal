@@ -8,6 +8,7 @@ export type Tab =
   | "invoices"
   | "expenses"
   | "retainers"
+  | "payroll"
   | "access"
   | "profile"
   | "password";
@@ -38,6 +39,7 @@ export const NAV: {
     icon: "↻",
     permission: "retainers:read",
   },
+  { key: "payroll", label: "Payroll", icon: "$", permission: "payroll:read" },
   { key: "members", label: "Team", icon: "♧", permission: "members:read" },
   {
     key: "profile",
@@ -64,7 +66,7 @@ export const NAV_SECTIONS: { key: NavigationSection; label: string; tabs: Tab[] 
   {
     key: "workspace",
     label: "Workspace",
-    tabs: ["overview", "clients", "invoices", "expenses", "retainers"],
+    tabs: ["overview", "clients", "invoices", "expenses", "retainers", "payroll"],
   },
   { key: "people", label: "People", tabs: ["clients", "employees", "members"] },
   { key: "settings", label: "Settings", tabs: ["profile", "password", "access"] },
@@ -103,6 +105,7 @@ export const ICON_PATHS: Record<Tab, string> = {
   invoices: "M5 2h10v16l-2-1-3 1-3-1-2 1z M8 6h4 M8 10h4",
   expenses: "M3 14l5-5 3 3 6-8 M12 4h5v5",
   retainers: "M16 7a6 6 0 0 0-10-2L3 8 M3 3v5h5 M4 13a6 6 0 0 0 10 2l3-3 M17 17v-5h-5",
+  payroll: "M10 2v16 M14 5H8a3 3 0 0 0 0 6h4a3 3 0 0 1 0 6H6",
   members:
     "M7 9a3 3 0 1 0 0-6a3 3 0 1 0 0 6 M2 17v-2a5 5 0 0 1 10 0v2 M14 4a3 3 0 0 1 0 6 M15 12a4 4 0 0 1 3 4v1",
   employees: "M10 10a4 4 0 1 0 0-8a4 4 0 1 0 0 8 M3 18v-1a7 7 0 0 1 14 0v1 M15 3h3 M16.5 1.5v3",
@@ -119,5 +122,6 @@ export const DESCRIPTION: Record<Tab, string> = {
   invoices: "Your organization’s invoice records.",
   expenses: "Keep an eye on your business spending.",
   retainers: "Your recurring client relationships.",
+  payroll: "Calculate, approve, and pay your team with an auditable workflow.",
   access: "Your account and permissions in this organization.",
 };

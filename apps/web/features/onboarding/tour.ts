@@ -126,6 +126,31 @@ export const TOUR_STEPS: readonly TutorialStep[] = [
     description: "Authorized users can view effective-dated salaries and compensation components.",
   },
   {
+    id: "payroll",
+    route: "/?section=payroll",
+    target: "nav-payroll",
+    requiredPermissions: ["payroll:read"],
+    title: "Run payroll",
+    description:
+      "Calculate fixed salaries, route pay runs for approval, and download finalized payslips.",
+  },
+  {
+    id: "payroll-approval",
+    route: "/?section=payroll",
+    target: "payroll-overview",
+    requiredPermissions: ["payroll:approve"],
+    title: "Review before finalizing",
+    description: "Approvers verify totals before finalized payroll is locked.",
+  },
+  {
+    id: "payroll-payments",
+    route: "/?section=payroll",
+    target: "payroll-overview",
+    requiredPermissions: ["payroll:payments:record"],
+    title: "Track salary payments",
+    description: "Record external payments and download private payslips from finalized runs.",
+  },
+  {
     id: "team",
     route: "/?section=members",
     target: "nav-members",

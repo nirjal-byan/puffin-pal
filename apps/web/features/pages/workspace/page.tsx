@@ -45,6 +45,7 @@ import InvoicesPage from "../invoices/page";
 import ExpensesPage from "../expenses/page";
 import RetainersPage from "../retainers/page";
 import EmployeesPage from "../employees/page";
+import PayrollPage from "../payroll/page";
 
 export default function WorkspacePage({
   session,
@@ -143,6 +144,7 @@ export default function WorkspacePage({
       tab === "expenses" ||
       tab === "retainers" ||
       tab === "employees" ||
+      tab === "payroll" ||
       !allowed
     )
       return;
@@ -356,6 +358,8 @@ export default function WorkspacePage({
               permissions={session.permissions}
               onSaved={recordNotification}
             />
+          ) : tab === "payroll" ? (
+            <PayrollPage api={api} permissions={session.permissions} onSaved={recordNotification} />
           ) : loading ? (
             <section className="panel loading" role="status">
               <span className="spinner" />
