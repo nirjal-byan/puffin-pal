@@ -61,14 +61,15 @@ export const NAV: {
   },
 ];
 // Clients are available in both Workspace and People; the URL retains that context.
-export type NavigationSection = "workspace" | "people" | "settings";
+export type NavigationSection = "workspace" | "people" | "payroll" | "settings";
 export const NAV_SECTIONS: { key: NavigationSection; label: string; tabs: Tab[] }[] = [
   {
     key: "workspace",
     label: "Workspace",
-    tabs: ["overview", "clients", "invoices", "expenses", "retainers", "payroll"],
+    tabs: ["overview", "clients", "invoices", "expenses", "retainers"],
   },
   { key: "people", label: "People", tabs: ["clients", "employees", "members"] },
+  { key: "payroll", label: "Payroll", tabs: ["payroll"] },
   { key: "settings", label: "Settings", tabs: ["profile", "password", "access"] },
 ];
 

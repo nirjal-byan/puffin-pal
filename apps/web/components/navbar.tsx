@@ -37,11 +37,14 @@ export function Navbar({
       <span className="header-divider" aria-hidden="true" />
       <span className="header-workspace-name">{session.organization.name}</span>
       <nav className="header-shortcuts" aria-label="Platform navigation">
-        {NAV_SECTIONS.map((section) => (
+        {NAV_SECTIONS.filter(
+          (section) => section.key !== "payroll" || session.permissions.includes("payroll:read"),
+        ).map((section) => (
           <Link
             key={section.key}
             href={tabHref(section.tabs[0]!, section.key)}
             aria-current={sectionForTab(tab, area).key === section.key ? "location" : undefined}
+            data-tour={section.key === "payroll" ? "nav-payroll" : undefined}
           >
             {section.label}
           </Link>
