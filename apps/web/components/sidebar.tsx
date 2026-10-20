@@ -1,11 +1,11 @@
 "use client";
-import type { Permission } from "@puffinpal/permissions";
 import { roleLabel, type Session } from "../lib/api";
 import Link from "next/link";
 import Image from "next/image";
 import {
   NAV,
   ICON_PATHS,
+  canAccessNavigationItem,
   sectionForTab,
   tabHref,
   type Tab,
@@ -23,7 +23,6 @@ export function Sidebar({
   area: NavigationSection;
   onSignOut: () => void;
 }) {
-  const can = (permission: Permission) => session.permissions.includes(permission);
   const section = sectionForTab(tab, area);
   return (
     <aside className="sidebar">
@@ -47,16 +46,17 @@ export function Sidebar({
           <strong>{session.organization.name}</strong>
         </div>
       </div>
-      <nav aria-label="Workspace navigation">
+      <nav aria-label={`${section.label} navigation`}>
         {section ? (
           <div className="nav-group">
-            <span className="nav-label">Pages</span>
+            <span className="nav-label">{section.sidebarLabel}</span>
             {section.tabs
+              .filter((key) => canAccessNavigationItem(key, session.permissions))
               .map((key) => NAV.find((item) => item.key === key)!)
               .map((item) => (
                 <Link
                   data-tour={`nav-${item.key}`}
-                  href={tabHref(item.key, section.key)}
+                  href={tabHref(item.key)}
                   key={item.key}
                   aria-current={tab === item.key ? "page" : undefined}
                   className={`nav-item ${tab === item.key ? "selected" : ""}`}
@@ -75,12 +75,7 @@ export function Sidebar({
                       <path d={ICON_PATHS[item.key]} />
                     </svg>
                   </span>
-                  {item.label}
-                  {!can(item.permission) && (
-                    <span className="nav-lock" aria-label="Restricted">
-                      •
-                    </span>
-                  )}
+                  {item.sidebarLabel ?? item.label}
                 </Link>
               ))}
           </div>

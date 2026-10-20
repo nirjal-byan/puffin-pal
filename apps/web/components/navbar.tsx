@@ -5,9 +5,9 @@ import { Brand } from "./brand";
 import type { Session } from "../lib/api";
 import Link from "next/link";
 import {
-  NAV_SECTIONS,
   sectionForTab,
   tabHref,
+  visibleNavigationSections,
   type Tab,
   type NavigationSection,
 } from "../lib/navigation";
@@ -37,14 +37,18 @@ export function Navbar({
       <span className="header-divider" aria-hidden="true" />
       <span className="header-workspace-name">{session.organization.name}</span>
       <nav className="header-shortcuts" aria-label="Platform navigation">
-        {NAV_SECTIONS.filter(
-          (section) => section.key !== "payroll" || session.permissions.includes("payroll:read"),
-        ).map((section) => (
+        {visibleNavigationSections(session.permissions).map((section) => (
           <Link
             key={section.key}
-            href={tabHref(section.tabs[0]!, section.key)}
+            href={tabHref(section.tabs[0]!)}
             aria-current={sectionForTab(tab, area).key === section.key ? "location" : undefined}
-            data-tour={section.key === "payroll" ? "nav-payroll" : undefined}
+            data-tour={
+              section.key === "payroll"
+                ? "nav-payroll"
+                : section.key === "cash-flow"
+                  ? "nav-cash-flow"
+                  : undefined
+            }
           >
             {section.label}
           </Link>

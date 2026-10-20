@@ -19,20 +19,23 @@ export type Tab =
 export const NAV: {
   key: Tab;
   label: string;
+  sidebarLabel?: string;
   icon: string;
   permission: Permission;
 }[] = [
   { key: "overview", label: "Overview", icon: "", permission: "profile:read" },
   { key: "clients", label: "Clients", icon: "◈", permission: "clients:read" },
-  { key: "employees", label: "Employees", icon: "♙", permission: "employees:read" },
-  { key: "attendance", label: "Attendance", icon: "◷", permission: "attendance:read" },
-  { key: "leave", label: "Leave", icon: "◇", permission: "leave:read" },
-  { key: "overtime", label: "Overtime", icon: "+", permission: "overtime:read" },
   {
     key: "invoices",
     label: "Invoices",
     icon: "▤",
     permission: "invoices:read",
+  },
+  {
+    key: "retainers",
+    label: "Retainers",
+    icon: "↻",
+    permission: "retainers:read",
   },
   {
     key: "expenses",
@@ -41,13 +44,23 @@ export const NAV: {
     permission: "expenses:read",
   },
   {
-    key: "retainers",
-    label: "Retainers",
-    icon: "↻",
-    permission: "retainers:read",
+    key: "cash-flow",
+    label: "Cash Flow",
+    sidebarLabel: "Forecast",
+    icon: "≈",
+    permission: "cash-flow:read",
   },
-  { key: "payroll", label: "Payroll", icon: "$", permission: "payroll:read" },
-  { key: "cash-flow", label: "Cash Flow", icon: "≈", permission: "cash-flow:read" },
+  {
+    key: "payroll",
+    label: "Payroll",
+    sidebarLabel: "Pay runs",
+    icon: "$",
+    permission: "payroll:read",
+  },
+  { key: "employees", label: "Employees", icon: "♙", permission: "employees:read" },
+  { key: "attendance", label: "Attendance", icon: "◷", permission: "attendance:read" },
+  { key: "leave", label: "Leave", icon: "◇", permission: "leave:read" },
+  { key: "overtime", label: "Overtime", icon: "+", permission: "overtime:read" },
   { key: "members", label: "Team", icon: "♧", permission: "members:read" },
   {
     key: "profile",
@@ -68,21 +81,38 @@ export const NAV: {
     permission: "profile:read",
   },
 ];
-// Clients are available in both Workspace and People; the URL retains that context.
-export type NavigationSection = "workspace" | "people" | "payroll" | "settings";
-export const NAV_SECTIONS: { key: NavigationSection; label: string; tabs: Tab[] }[] = [
+export type NavigationSection = "workspace" | "cash-flow" | "payroll" | "people" | "settings";
+export const NAV_SECTIONS: {
+  key: NavigationSection;
+  label: string;
+  sidebarLabel: string;
+  tabs: Tab[];
+}[] = [
   {
     key: "workspace",
     label: "Workspace",
-    tabs: ["overview", "clients", "invoices", "expenses", "retainers", "cash-flow"],
+    sidebarLabel: "Business",
+    tabs: ["overview", "clients", "invoices", "retainers", "expenses"],
   },
-  { key: "payroll", label: "Payroll", tabs: ["payroll"] },
+  {
+    key: "cash-flow",
+    label: "Cash Flow",
+    sidebarLabel: "Planning",
+    tabs: ["cash-flow"],
+  },
+  { key: "payroll", label: "Payroll", sidebarLabel: "Payroll", tabs: ["payroll"] },
   {
     key: "people",
     label: "People",
-    tabs: ["clients", "employees", "attendance", "leave", "overtime", "members"],
+    sidebarLabel: "Workforce",
+    tabs: ["employees", "attendance", "leave", "overtime", "members"],
   },
-  { key: "settings", label: "Settings", tabs: ["profile", "password", "access"] },
+  {
+    key: "settings",
+    label: "Settings",
+    sidebarLabel: "Account",
+    tabs: ["profile", "password", "access"],
+  },
 ];
 
 export function sectionForTab(tab: Tab, area?: string | null) {
@@ -90,15 +120,27 @@ export function sectionForTab(tab: Tab, area?: string | null) {
     (section) => section.key === area && section.tabs.includes(tab),
   );
   if (requested) return requested;
-  // Keep existing client links in People unless Workspace was explicitly selected.
-  if (tab === "clients") return NAV_SECTIONS.find((section) => section.key === "people")!;
   return NAV_SECTIONS.find((section) => section.tabs.includes(tab))!;
 }
 
-export function tabHref(tab: Tab, area?: NavigationSection): string {
+export function tabHref(tab: Tab): string {
   if (tab === "overview") return "/";
   if (tab === "invoices") return "/invoices";
-  return `/?section=${tab}${tab === "clients" && area === "workspace" ? "&area=workspace" : ""}`;
+  return `/?section=${tab}`;
+}
+
+export function canAccessNavigationItem(
+  tab: Tab,
+  permissions: readonly Permission[],
+): boolean {
+  const item = NAV.find((candidate) => candidate.key === tab);
+  return Boolean(item && permissions.includes(item.permission));
+}
+
+export function visibleNavigationSections(permissions: readonly Permission[]) {
+  return NAV_SECTIONS.filter((section) =>
+    section.tabs.some((tab) => canAccessNavigationItem(tab, permissions)),
+  );
 }
 
 export function resolveTab(

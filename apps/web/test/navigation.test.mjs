@@ -1,34 +1,51 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { NAV, NAV_SECTIONS, resolveTab, sectionForTab, tabHref } from "../lib/navigation.ts";
+import {
+  NAV,
+  NAV_SECTIONS,
+  resolveTab,
+  sectionForTab,
+  tabHref,
+  visibleNavigationSections,
+} from "../lib/navigation.ts";
 
-test("navigation sections include the dedicated payroll area and all destinations", () => {
+test("navigation sections follow the primary product workflow and include every destination", () => {
   assert.deepEqual(
     NAV_SECTIONS.map((section) => section.key),
-    ["workspace", "payroll", "people", "settings"],
+    ["workspace", "cash-flow", "payroll", "people", "settings"],
   );
-  const tabs = new Set(NAV_SECTIONS.flatMap((section) => section.tabs));
+  const destinations = NAV_SECTIONS.flatMap((section) => section.tabs);
+  const tabs = new Set(destinations);
+  assert.equal(destinations.length, NAV.length);
   assert.deepEqual([...tabs].sort(), NAV.map((item) => item.key).sort());
 });
 
-test("main features belong to Workspace and access belongs to Settings", () => {
-  for (const tab of ["overview", "invoices", "expenses", "retainers", "cash-flow"])
+test("features belong to a single, predictable top-level section", () => {
+  for (const tab of ["overview", "clients", "invoices", "retainers", "expenses"])
     assert.equal(sectionForTab(tab).key, "workspace");
+  assert.equal(sectionForTab("cash-flow").key, "cash-flow");
   assert.equal(sectionForTab("payroll").key, "payroll");
-  for (const tab of ["clients", "employees", "members"])
+  for (const tab of ["employees", "attendance", "leave", "overtime", "members"])
     assert.equal(sectionForTab(tab).key, "people");
   for (const tab of ["profile", "password", "access"])
     assert.equal(sectionForTab(tab).key, "settings");
 });
 
-test("client links retain their section without permitting unrelated sections", () => {
-  const url = new URL(tabHref("clients", "workspace"), "http://localhost");
+test("legacy areas cannot move a destination into an unrelated section", () => {
+  const url = new URL(tabHref("clients"), "http://localhost");
   const tab = resolveTab(url.pathname, url.searchParams.get("section"));
   assert.equal(tab, "clients");
   assert.equal(sectionForTab(tab, url.searchParams.get("area")).key, "workspace");
-  assert.equal(sectionForTab("clients", "people").key, "people");
+  assert.equal(sectionForTab("clients", "people").key, "workspace");
   assert.equal(sectionForTab("invoices", "people").key, "workspace");
   assert.equal(sectionForTab("access", "workspace").key, "settings");
+});
+
+test("top-level navigation hides sections with no permitted destination", () => {
+  assert.deepEqual(
+    visibleNavigationSections(["profile:read", "cash-flow:read"]).map((section) => section.key),
+    ["workspace", "cash-flow", "settings"],
+  );
 });
 
 test("every destination round-trips through its URL", () => {

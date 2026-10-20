@@ -694,10 +694,6 @@ small {
   color: #064dbd;
   font-weight: 600;
 }
-.nav-lock {
-  margin-left: auto;
-  color: #8a98ad;
-}
 .sidebar-bottom {
   margin-top: auto;
   padding: 24px 9px 0;
@@ -1708,6 +1704,23 @@ tr:hover td {
   }
   .workspace-layout .topbar {
     padding: 19px 24px;
+  }
+}
+@media (max-width: 1180px) and (min-width: 761px) {
+  .workspace-header {
+    gap: 12px;
+    padding-inline: 20px;
+  }
+  .workspace-header .header-divider,
+  .workspace-header .header-workspace-name {
+    display: none;
+  }
+  .header-shortcuts {
+    margin-left: 4px;
+    gap: 2px;
+  }
+  .header-shortcuts a {
+    padding-inline: 9px;
   }
 }
 @media (max-width: 760px) {
