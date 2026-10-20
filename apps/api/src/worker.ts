@@ -5,6 +5,7 @@ import { InvoiceExportProcessor } from "./background-jobs/invoice-export.process
 import { WorkerModule } from "./background-jobs/worker.module.js";
 import { RecurringInvoiceProcessor } from "./recurring-invoices/recurring-invoice.processor.js";
 import { PayrollPayslipProcessor } from "./payroll/payroll-payslip.processor.js";
+import { PayrollAutomationProcessor } from "./payroll/payroll-automation.processor.js";
 
 async function bootstrap() {
   config({ quiet: true });
@@ -13,11 +14,18 @@ async function bootstrap() {
   const processor = app.get(InvoiceExportProcessor);
   const recurring = app.get(RecurringInvoiceProcessor);
   const payroll = app.get(PayrollPayslipProcessor);
-  await Promise.all([processor.start(), recurring.start(), payroll.start()]);
+  const payrollAutomation = app.get(PayrollAutomationProcessor);
+  await Promise.all([
+    processor.start(),
+    recurring.start(),
+    payroll.start(),
+    payrollAutomation.start(),
+  ]);
   const shutdown = async () => {
     await processor.close();
     await recurring.close();
     await payroll.close();
+    await payrollAutomation.close();
     await app.close();
   };
   process.once("SIGTERM", () => void shutdown());

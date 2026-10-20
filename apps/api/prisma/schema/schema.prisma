@@ -167,6 +167,46 @@ enum PayrollAuditAction {
   PAYMENT_RECORDED
 }
 
+enum PayrollScheduleFrequency {
+  WEEKLY
+  BIWEEKLY
+  SEMIMONTHLY
+  MONTHLY
+}
+
+enum PayrollScheduleStatus {
+  ACTIVE
+  PAUSED
+}
+
+enum PayrollAutomationStatus {
+  PENDING
+  PROCESSING
+  GENERATED
+  FAILED
+  CONFLICT
+  SKIPPED
+}
+
+enum PayrollAutomationSource {
+  SCHEDULED
+  MANUAL
+}
+
+enum PayrollNotificationType {
+  DRAFT_READY
+  APPROVAL_PENDING
+  AUTOMATION_FAILED
+  PAYSLIPS_READY
+}
+
+enum PayrollScheduleAction {
+  CREATED
+  UPDATED
+  PAUSED
+  RESUMED
+}
+
 enum CashFlowForecastAuditAction {
   CONFIGURATION_UPDATED
 }
@@ -243,6 +283,10 @@ model Organization {
   payrollEntries          PayrollEntry[]
   payrollPayments         PayrollPayment[]
   payrollAuditEvents      PayrollAuditEvent[]
+  payrollSchedule         PayrollSchedule?
+  payrollOccurrences      PayrollScheduleOccurrence[]
+  payrollNotifications    PayrollNotification[]
+  payrollScheduleEvents   PayrollScheduleEvent[]
   workSchedules           WorkSchedule[]
   holidays                Holiday[]
   attendanceRecords       AttendanceRecord[]
@@ -355,6 +399,9 @@ model User {
   finalizedPayrollRuns    PayrollRun[]                    @relation("PayrollRunFinalizer")
   payrollPayments         PayrollPayment[]                @relation("PayrollPaymentRecorder")
   payrollAuditEvents      PayrollAuditEvent[]             @relation("PayrollAuditActor")
+  createdPayrollSchedules PayrollSchedule[]               @relation("PayrollScheduleCreator")
+  payrollNotifications    PayrollNotification[]           @relation("PayrollNotificationRecipient")
+  payrollScheduleEvents   PayrollScheduleEvent[]          @relation("PayrollScheduleEventActor")
   createdAttendance       AttendanceRecord[]              @relation("AttendanceCreator")
   updatedAttendance       AttendanceRecord[]              @relation("AttendanceUpdater")
   reviewedLeaveRequests   LeaveRequest[]                  @relation("LeaveReviewer")
@@ -491,40 +538,138 @@ model EmployeeAuditEvent {
 }
 
 model PayrollRun {
-  id               String               @id @default(uuid())
-  organizationId   String
-  name             String
-  periodStart      DateTime
-  periodEnd        DateTime
-  paymentDate      DateTime
-  status           PayrollRunStatus     @default(DRAFT)
-  currency         String
-  organizationName String
-  totalGross       Numeric(14, 2)       @default(0)
-  totalDeductions  Numeric(14, 2)       @default(0)
-  totalNet         Numeric(14, 2)       @default(0)
-  employeeCount    Int                  @default(0)
-  createdById      String
-  approvedById     String?
-  finalizedById    String?
-  rejectionReason  String?
-  approvedAt       DateTime?
-  finalizedAt      DateTime?
-  version          Int                  @default(1)
-  createdAt        DateTime             @default(now())
-  updatedAt        temporal.updatedAt()
+  id                 String                     @id @default(uuid())
+  organizationId     String
+  name               String
+  periodStart        DateTime
+  periodEnd          DateTime
+  paymentDate        DateTime
+  status             PayrollRunStatus           @default(DRAFT)
+  currency           String
+  organizationName   String
+  totalGross         Numeric(14, 2)             @default(0)
+  totalDeductions    Numeric(14, 2)             @default(0)
+  totalNet           Numeric(14, 2)             @default(0)
+  employeeCount      Int                        @default(0)
+  createdById        String
+  approvedById       String?
+  finalizedById      String?
+  rejectionReason    String?
+  approvedAt         DateTime?
+  finalizedAt        DateTime?
+  version            Int                        @default(1)
+  payrollScheduleId  String?
+  createdAt          DateTime                   @default(now())
+  updatedAt          temporal.updatedAt()
 
-  organization     Organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  createdBy        User                 @relation("PayrollRunCreator", fields: [organizationId, createdById], references: [organizationId, id], onDelete: Restrict)
-  approvedBy       User?                @relation("PayrollRunApprover", fields: [organizationId, approvedById], references: [organizationId, id], onDelete: Restrict)
-  finalizedBy      User?                @relation("PayrollRunFinalizer", fields: [organizationId, finalizedById], references: [organizationId, id], onDelete: Restrict)
-  entries          PayrollEntry[]
-  auditEvents      PayrollAuditEvent[]
+  organization       Organization               @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  createdBy          User                       @relation("PayrollRunCreator", fields: [organizationId, createdById], references: [organizationId, id], onDelete: Restrict)
+  approvedBy         User?                      @relation("PayrollRunApprover", fields: [organizationId, approvedById], references: [organizationId, id], onDelete: Restrict)
+  finalizedBy        User?                      @relation("PayrollRunFinalizer", fields: [organizationId, finalizedById], references: [organizationId, id], onDelete: Restrict)
+  entries            PayrollEntry[]
+  auditEvents        PayrollAuditEvent[]
+  payrollSchedule    PayrollSchedule?           @relation(fields: [organizationId, payrollScheduleId], references: [organizationId, id], onDelete: Restrict)
+  scheduleOccurrence PayrollScheduleOccurrence?
 
   @@unique([organizationId, id])
   @@index([organizationId, periodStart, periodEnd], map: "payroll_run_period_idx")
   @@index([organizationId, status], map: "payroll_run_status_idx")
+  @@unique([organizationId, payrollScheduleId, periodStart], map: "payroll_run_schedule_period_key")
   @@map("payroll_runs")
+}
+
+model PayrollSchedule {
+  id                String                      @id @default(uuid())
+  organizationId    String                      @unique
+  createdById       String
+  name              String
+  frequency         PayrollScheduleFrequency
+  timezone          String
+  startDate         DateTime
+  nextPeriodStart   DateTime
+  periodAnchorDay   Int
+  generationTime    String                      @default("09:00")
+  paymentOffsetDays Int?
+  status            PayrollScheduleStatus       @default(ACTIVE)
+  lastSuccessfulAt  DateTime?
+  nextRunAt         DateTime
+  version           Int                         @default(1)
+  createdAt         DateTime                    @default(now())
+  updatedAt         temporal.updatedAt()
+
+  organization      Organization                @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  createdBy         User                        @relation("PayrollScheduleCreator", fields: [organizationId, createdById], references: [organizationId, id], onDelete: Restrict)
+  payrollRuns       PayrollRun[]
+  occurrences       PayrollScheduleOccurrence[]
+  events            PayrollScheduleEvent[]
+
+  @@unique([organizationId, id])
+  @@index([status, nextRunAt], map: "payroll_schedule_due_idx")
+  @@map("payroll_schedules")
+}
+
+model PayrollScheduleOccurrence {
+  id             String                  @id @default(uuid())
+  organizationId String
+  scheduleId     String
+  payrollRunId   String?
+  periodStart    DateTime
+  periodEnd      DateTime
+  scheduledFor   DateTime
+  source         PayrollAutomationSource
+  status         PayrollAutomationStatus @default(PENDING)
+  attempts       Int                     @default(0)
+  failureCode    String?
+  failureMessage String?
+  createdAt      DateTime                @default(now())
+  updatedAt      temporal.updatedAt()
+
+  organization   Organization            @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  schedule       PayrollSchedule         @relation(fields: [organizationId, scheduleId], references: [organizationId, id], onDelete: Cascade)
+  payrollRun     PayrollRun?             @relation(fields: [organizationId, payrollRunId], references: [organizationId, id], onDelete: Restrict)
+
+  @@unique([organizationId, scheduleId, periodStart], map: "payroll_occurrence_period_key")
+  @@unique([organizationId, payrollRunId], map: "payroll_occurrence_run_key")
+  @@index([organizationId, scheduleId, createdAt], map: "payroll_occurrence_history_idx")
+  @@index([status, scheduledFor], map: "payroll_occurrence_due_idx")
+  @@map("payroll_schedule_occurrences")
+}
+
+model PayrollScheduleEvent {
+  id             String                @id @default(uuid())
+  organizationId String
+  scheduleId     String
+  actorId        String
+  action         PayrollScheduleAction
+  details        String?
+  createdAt      DateTime              @default(now())
+
+  organization   Organization          @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  schedule       PayrollSchedule       @relation(fields: [organizationId, scheduleId], references: [organizationId, id], onDelete: Cascade)
+  actor          User                  @relation("PayrollScheduleEventActor", fields: [organizationId, actorId], references: [organizationId, id], onDelete: Restrict)
+
+  @@index([organizationId, scheduleId, createdAt], map: "payroll_schedule_event_history_idx")
+  @@map("payroll_schedule_events")
+}
+
+model PayrollNotification {
+  id             String                  @id @default(uuid())
+  organizationId String
+  recipientId    String
+  type           PayrollNotificationType
+  dedupeKey      String
+  title          String
+  message        String
+  href           String?
+  readAt         DateTime?
+  createdAt      DateTime                @default(now())
+
+  organization   Organization            @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  recipient      User                    @relation("PayrollNotificationRecipient", fields: [organizationId, recipientId], references: [organizationId, id], onDelete: Cascade)
+
+  @@unique([organizationId, recipientId, dedupeKey], map: "payroll_notification_dedupe_key")
+  @@index([organizationId, recipientId, readAt, createdAt], map: "payroll_notification_inbox_idx")
+  @@map("payroll_notifications")
 }
 
 model PayrollEntry {

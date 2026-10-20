@@ -4,6 +4,7 @@ import type { Permission } from "@puffinpal/permissions";
 import { useCallback, useEffect, useState } from "react";
 import { AppModal } from "../../../components/app-modal";
 import { errorMessage, type WorkspaceApi } from "../../../lib/api";
+import { PayrollAutomation } from "./payroll-automation";
 
 type PayrollRun = {
   id: string;
@@ -18,6 +19,7 @@ type PayrollRun = {
   totalNet: string;
   employeeCount: number;
   version: number;
+  payrollScheduleId?: string | null;
 };
 type PayrollEntry = {
   id: string;
@@ -317,6 +319,12 @@ export default function PayrollPage({
           {error}
         </p>
       )}
+      <PayrollAutomation
+        api={api}
+        permissions={permissions}
+        onSaved={onSaved}
+        onRunsChanged={load}
+      />
       <section className="panel">
         <div className="panel-heading">
           <h3>Payroll history</h3>
@@ -346,6 +354,9 @@ export default function PayrollPage({
                   <tr key={run.id}>
                     <td>
                       <strong>{run.name}</strong>
+                      {run.payrollScheduleId && (
+                        <small className="payroll-subtitle muted">Automated draft</small>
+                      )}
                     </td>
                     <td>
                       {run.periodStart.slice(0, 10)} – {run.periodEnd.slice(0, 10)}

@@ -96,12 +96,28 @@
       "model": "PayrollEntryComponent",
       "namespace": "public"
     },
+    "payroll_notifications": {
+      "model": "PayrollNotification",
+      "namespace": "public"
+    },
     "payroll_payments": {
       "model": "PayrollPayment",
       "namespace": "public"
     },
     "payroll_runs": {
       "model": "PayrollRun",
+      "namespace": "public"
+    },
+    "payroll_schedule_events": {
+      "model": "PayrollScheduleEvent",
+      "namespace": "public"
+    },
+    "payroll_schedule_occurrences": {
+      "model": "PayrollScheduleOccurrence",
+      "namespace": "public"
+    },
+    "payroll_schedules": {
+      "model": "PayrollSchedule",
       "namespace": "public"
     },
     "recurring_invoice_items": {
@@ -605,6 +621,48 @@
               }
             ]
           },
+          "PayrollAutomationSource": {
+            "codecId": "pg/text@1",
+            "members": [
+              {
+                "name": "SCHEDULED",
+                "value": "SCHEDULED"
+              },
+              {
+                "name": "MANUAL",
+                "value": "MANUAL"
+              }
+            ]
+          },
+          "PayrollAutomationStatus": {
+            "codecId": "pg/text@1",
+            "members": [
+              {
+                "name": "PENDING",
+                "value": "PENDING"
+              },
+              {
+                "name": "PROCESSING",
+                "value": "PROCESSING"
+              },
+              {
+                "name": "GENERATED",
+                "value": "GENERATED"
+              },
+              {
+                "name": "FAILED",
+                "value": "FAILED"
+              },
+              {
+                "name": "CONFLICT",
+                "value": "CONFLICT"
+              },
+              {
+                "name": "SKIPPED",
+                "value": "SKIPPED"
+              }
+            ]
+          },
           "PayrollComponentType": {
             "codecId": "pg/text@1",
             "members": [
@@ -615,6 +673,27 @@
               {
                 "name": "DEDUCTION",
                 "value": "DEDUCTION"
+              }
+            ]
+          },
+          "PayrollNotificationType": {
+            "codecId": "pg/text@1",
+            "members": [
+              {
+                "name": "DRAFT_READY",
+                "value": "DRAFT_READY"
+              },
+              {
+                "name": "APPROVAL_PENDING",
+                "value": "APPROVAL_PENDING"
+              },
+              {
+                "name": "AUTOMATION_FAILED",
+                "value": "AUTOMATION_FAILED"
+              },
+              {
+                "name": "PAYSLIPS_READY",
+                "value": "PAYSLIPS_READY"
               }
             ]
           },
@@ -636,6 +715,61 @@
               {
                 "name": "FINALIZED",
                 "value": "FINALIZED"
+              }
+            ]
+          },
+          "PayrollScheduleAction": {
+            "codecId": "pg/text@1",
+            "members": [
+              {
+                "name": "CREATED",
+                "value": "CREATED"
+              },
+              {
+                "name": "UPDATED",
+                "value": "UPDATED"
+              },
+              {
+                "name": "PAUSED",
+                "value": "PAUSED"
+              },
+              {
+                "name": "RESUMED",
+                "value": "RESUMED"
+              }
+            ]
+          },
+          "PayrollScheduleFrequency": {
+            "codecId": "pg/text@1",
+            "members": [
+              {
+                "name": "WEEKLY",
+                "value": "WEEKLY"
+              },
+              {
+                "name": "BIWEEKLY",
+                "value": "BIWEEKLY"
+              },
+              {
+                "name": "SEMIMONTHLY",
+                "value": "SEMIMONTHLY"
+              },
+              {
+                "name": "MONTHLY",
+                "value": "MONTHLY"
+              }
+            ]
+          },
+          "PayrollScheduleStatus": {
+            "codecId": "pg/text@1",
+            "members": [
+              {
+                "name": "ACTIVE",
+                "value": "ACTIVE"
+              },
+              {
+                "name": "PAUSED",
+                "value": "PAUSED"
               }
             ]
           },
@@ -4599,6 +4733,36 @@
                   "namespace": "public"
                 }
               },
+              "payrollNotifications": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "organizationId"
+                  ]
+                },
+                "to": {
+                  "model": "PayrollNotification",
+                  "namespace": "public"
+                }
+              },
+              "payrollOccurrences": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "organizationId"
+                  ]
+                },
+                "to": {
+                  "model": "PayrollScheduleOccurrence",
+                  "namespace": "public"
+                }
+              },
               "payrollPayments": {
                 "cardinality": "1:N",
                 "on": {
@@ -4626,6 +4790,37 @@
                 },
                 "to": {
                   "model": "PayrollRun",
+                  "namespace": "public"
+                }
+              },
+              "payrollSchedule": {
+                "cardinality": "1:1",
+                "nullable": true,
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "organizationId"
+                  ]
+                },
+                "to": {
+                  "model": "PayrollSchedule",
+                  "namespace": "public"
+                }
+              },
+              "payrollScheduleEvents": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "organizationId"
+                  ]
+                },
+                "to": {
+                  "model": "PayrollScheduleEvent",
                   "namespace": "public"
                 }
               },
@@ -5946,6 +6141,158 @@
               "table": "payroll_entry_components"
             }
           },
+          "PayrollNotification": {
+            "fields": {
+              "createdAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "kind": "scalar"
+                }
+              },
+              "dedupeKey": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "href": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "message": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "organizationId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "readAt": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "kind": "scalar"
+                }
+              },
+              "recipientId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "title": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "type": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                },
+                "valueSet": {
+                  "entityKind": "enum",
+                  "entityName": "PayrollNotificationType",
+                  "namespaceId": "public",
+                  "plane": "domain"
+                }
+              }
+            },
+            "relations": {
+              "organization": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "organizationId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "Organization",
+                  "namespace": "public"
+                }
+              },
+              "recipient": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "organizationId",
+                    "recipientId"
+                  ],
+                  "targetFields": [
+                    "organizationId",
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "User",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "createdAt": {
+                  "column": "createdAt"
+                },
+                "dedupeKey": {
+                  "column": "dedupeKey"
+                },
+                "href": {
+                  "column": "href"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "message": {
+                  "column": "message"
+                },
+                "organizationId": {
+                  "column": "organizationId"
+                },
+                "readAt": {
+                  "column": "readAt"
+                },
+                "recipientId": {
+                  "column": "recipientId"
+                },
+                "title": {
+                  "column": "title"
+                },
+                "type": {
+                  "column": "type"
+                }
+              },
+              "namespaceId": "public",
+              "table": "payroll_notifications"
+            }
+          },
           "PayrollPayment": {
             "fields": {
               "amount": {
@@ -6207,6 +6554,13 @@
                   "kind": "scalar"
                 }
               },
+              "payrollScheduleId": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
               "periodEnd": {
                 "nullable": false,
                 "type": {
@@ -6393,6 +6747,42 @@
                   "model": "Organization",
                   "namespace": "public"
                 }
+              },
+              "payrollSchedule": {
+                "cardinality": "N:1",
+                "nullable": true,
+                "on": {
+                  "localFields": [
+                    "organizationId",
+                    "payrollScheduleId"
+                  ],
+                  "targetFields": [
+                    "organizationId",
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "PayrollSchedule",
+                  "namespace": "public"
+                }
+              },
+              "scheduleOccurrence": {
+                "cardinality": "1:1",
+                "nullable": true,
+                "on": {
+                  "localFields": [
+                    "organizationId",
+                    "id"
+                  ],
+                  "targetFields": [
+                    "organizationId",
+                    "payrollRunId"
+                  ]
+                },
+                "to": {
+                  "model": "PayrollScheduleOccurrence",
+                  "namespace": "public"
+                }
               }
             },
             "storage": {
@@ -6436,6 +6826,9 @@
                 "paymentDate": {
                   "column": "paymentDate"
                 },
+                "payrollScheduleId": {
+                  "column": "payrollScheduleId"
+                },
                 "periodEnd": {
                   "column": "periodEnd"
                 },
@@ -6466,6 +6859,641 @@
               },
               "namespaceId": "public",
               "table": "payroll_runs"
+            }
+          },
+          "PayrollSchedule": {
+            "fields": {
+              "createdAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "kind": "scalar"
+                }
+              },
+              "createdById": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "frequency": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                },
+                "valueSet": {
+                  "entityKind": "enum",
+                  "entityName": "PayrollScheduleFrequency",
+                  "namespaceId": "public",
+                  "plane": "domain"
+                }
+              },
+              "generationTime": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "lastSuccessfulAt": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "kind": "scalar"
+                }
+              },
+              "name": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "nextPeriodStart": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "kind": "scalar"
+                }
+              },
+              "nextRunAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "kind": "scalar"
+                }
+              },
+              "organizationId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "paymentOffsetDays": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "periodAnchorDay": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "startDate": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "kind": "scalar"
+                }
+              },
+              "status": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                },
+                "valueSet": {
+                  "entityKind": "enum",
+                  "entityName": "PayrollScheduleStatus",
+                  "namespaceId": "public",
+                  "plane": "domain"
+                }
+              },
+              "timezone": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "updatedAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "kind": "scalar"
+                }
+              },
+              "version": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "createdBy": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "organizationId",
+                    "createdById"
+                  ],
+                  "targetFields": [
+                    "organizationId",
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "User",
+                  "namespace": "public"
+                }
+              },
+              "events": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "organizationId",
+                    "id"
+                  ],
+                  "targetFields": [
+                    "organizationId",
+                    "scheduleId"
+                  ]
+                },
+                "to": {
+                  "model": "PayrollScheduleEvent",
+                  "namespace": "public"
+                }
+              },
+              "occurrences": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "organizationId",
+                    "id"
+                  ],
+                  "targetFields": [
+                    "organizationId",
+                    "scheduleId"
+                  ]
+                },
+                "to": {
+                  "model": "PayrollScheduleOccurrence",
+                  "namespace": "public"
+                }
+              },
+              "organization": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "organizationId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "Organization",
+                  "namespace": "public"
+                }
+              },
+              "payrollRuns": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "organizationId",
+                    "id"
+                  ],
+                  "targetFields": [
+                    "organizationId",
+                    "payrollScheduleId"
+                  ]
+                },
+                "to": {
+                  "model": "PayrollRun",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "createdAt": {
+                  "column": "createdAt"
+                },
+                "createdById": {
+                  "column": "createdById"
+                },
+                "frequency": {
+                  "column": "frequency"
+                },
+                "generationTime": {
+                  "column": "generationTime"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "lastSuccessfulAt": {
+                  "column": "lastSuccessfulAt"
+                },
+                "name": {
+                  "column": "name"
+                },
+                "nextPeriodStart": {
+                  "column": "nextPeriodStart"
+                },
+                "nextRunAt": {
+                  "column": "nextRunAt"
+                },
+                "organizationId": {
+                  "column": "organizationId"
+                },
+                "paymentOffsetDays": {
+                  "column": "paymentOffsetDays"
+                },
+                "periodAnchorDay": {
+                  "column": "periodAnchorDay"
+                },
+                "startDate": {
+                  "column": "startDate"
+                },
+                "status": {
+                  "column": "status"
+                },
+                "timezone": {
+                  "column": "timezone"
+                },
+                "updatedAt": {
+                  "column": "updatedAt"
+                },
+                "version": {
+                  "column": "version"
+                }
+              },
+              "namespaceId": "public",
+              "table": "payroll_schedules"
+            }
+          },
+          "PayrollScheduleEvent": {
+            "fields": {
+              "action": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                },
+                "valueSet": {
+                  "entityKind": "enum",
+                  "entityName": "PayrollScheduleAction",
+                  "namespaceId": "public",
+                  "plane": "domain"
+                }
+              },
+              "actorId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "createdAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "kind": "scalar"
+                }
+              },
+              "details": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "organizationId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "scheduleId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "actor": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "organizationId",
+                    "actorId"
+                  ],
+                  "targetFields": [
+                    "organizationId",
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "User",
+                  "namespace": "public"
+                }
+              },
+              "organization": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "organizationId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "Organization",
+                  "namespace": "public"
+                }
+              },
+              "schedule": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "organizationId",
+                    "scheduleId"
+                  ],
+                  "targetFields": [
+                    "organizationId",
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "PayrollSchedule",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "action": {
+                  "column": "action"
+                },
+                "actorId": {
+                  "column": "actorId"
+                },
+                "createdAt": {
+                  "column": "createdAt"
+                },
+                "details": {
+                  "column": "details"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "organizationId": {
+                  "column": "organizationId"
+                },
+                "scheduleId": {
+                  "column": "scheduleId"
+                }
+              },
+              "namespaceId": "public",
+              "table": "payroll_schedule_events"
+            }
+          },
+          "PayrollScheduleOccurrence": {
+            "fields": {
+              "attempts": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "createdAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "kind": "scalar"
+                }
+              },
+              "failureCode": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "failureMessage": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "organizationId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "payrollRunId": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "periodEnd": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "kind": "scalar"
+                }
+              },
+              "periodStart": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "kind": "scalar"
+                }
+              },
+              "scheduleId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "scheduledFor": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "kind": "scalar"
+                }
+              },
+              "source": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                },
+                "valueSet": {
+                  "entityKind": "enum",
+                  "entityName": "PayrollAutomationSource",
+                  "namespaceId": "public",
+                  "plane": "domain"
+                }
+              },
+              "status": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                },
+                "valueSet": {
+                  "entityKind": "enum",
+                  "entityName": "PayrollAutomationStatus",
+                  "namespaceId": "public",
+                  "plane": "domain"
+                }
+              },
+              "updatedAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "organization": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "organizationId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "Organization",
+                  "namespace": "public"
+                }
+              },
+              "payrollRun": {
+                "cardinality": "N:1",
+                "nullable": true,
+                "on": {
+                  "localFields": [
+                    "organizationId",
+                    "payrollRunId"
+                  ],
+                  "targetFields": [
+                    "organizationId",
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "PayrollRun",
+                  "namespace": "public"
+                }
+              },
+              "schedule": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "organizationId",
+                    "scheduleId"
+                  ],
+                  "targetFields": [
+                    "organizationId",
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "PayrollSchedule",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "attempts": {
+                  "column": "attempts"
+                },
+                "createdAt": {
+                  "column": "createdAt"
+                },
+                "failureCode": {
+                  "column": "failureCode"
+                },
+                "failureMessage": {
+                  "column": "failureMessage"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "organizationId": {
+                  "column": "organizationId"
+                },
+                "payrollRunId": {
+                  "column": "payrollRunId"
+                },
+                "periodEnd": {
+                  "column": "periodEnd"
+                },
+                "periodStart": {
+                  "column": "periodStart"
+                },
+                "scheduleId": {
+                  "column": "scheduleId"
+                },
+                "scheduledFor": {
+                  "column": "scheduledFor"
+                },
+                "source": {
+                  "column": "source"
+                },
+                "status": {
+                  "column": "status"
+                },
+                "updatedAt": {
+                  "column": "updatedAt"
+                }
+              },
+              "namespaceId": "public",
+              "table": "payroll_schedule_occurrences"
             }
           },
           "RecurringInvoiceItem": {
@@ -7880,6 +8908,23 @@
                   "namespace": "public"
                 }
               },
+              "createdPayrollSchedules": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "organizationId",
+                    "id"
+                  ],
+                  "targetFields": [
+                    "organizationId",
+                    "createdById"
+                  ]
+                },
+                "to": {
+                  "model": "PayrollSchedule",
+                  "namespace": "public"
+                }
+              },
               "createdSalaryStructures": {
                 "cardinality": "1:N",
                 "on": {
@@ -8016,6 +9061,23 @@
                   "namespace": "public"
                 }
               },
+              "payrollNotifications": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "organizationId",
+                    "id"
+                  ],
+                  "targetFields": [
+                    "organizationId",
+                    "recipientId"
+                  ]
+                },
+                "to": {
+                  "model": "PayrollNotification",
+                  "namespace": "public"
+                }
+              },
               "payrollPayments": {
                 "cardinality": "1:N",
                 "on": {
@@ -8030,6 +9092,23 @@
                 },
                 "to": {
                   "model": "PayrollPayment",
+                  "namespace": "public"
+                }
+              },
+              "payrollScheduleEvents": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "organizationId",
+                    "id"
+                  ],
+                  "targetFields": [
+                    "organizationId",
+                    "actorId"
+                  ]
+                },
+                "to": {
+                  "model": "PayrollScheduleEvent",
                   "namespace": "public"
                 }
               },
@@ -12722,6 +13801,159 @@
                 }
               ]
             },
+            "payroll_notifications": {
+              "checks": [
+                {
+                  "expression": "\"type\" IN ('DRAFT_READY', 'APPROVAL_PENDING', 'AUTOMATION_FAILED', 'PAYSLIPS_READY')",
+                  "name": "payroll_notifications_type_check_6de63b1b",
+                  "prefix": "payroll_notifications_type_check"
+                }
+              ],
+              "columns": {
+                "createdAt": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "dedupeKey": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "href": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "id": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "message": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "organizationId": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "readAt": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "nativeType": "timestamptz",
+                  "nullable": true
+                },
+                "recipientId": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "title": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "type": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false,
+                  "valueSet": {
+                    "entityKind": "valueSet",
+                    "entityName": "PayrollNotificationType",
+                    "namespaceId": "public",
+                    "plane": "storage"
+                  }
+                }
+              },
+              "foreignKeys": [
+                {
+                  "onDelete": "cascade",
+                  "source": {
+                    "columns": [
+                      "organizationId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "payroll_notifications"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "organizations"
+                  }
+                },
+                {
+                  "onDelete": "cascade",
+                  "source": {
+                    "columns": [
+                      "organizationId",
+                      "recipientId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "payroll_notifications"
+                  },
+                  "target": {
+                    "columns": [
+                      "organizationId",
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "users"
+                  }
+                }
+              ],
+              "indexes": [
+                {
+                  "columns": [
+                    "organizationId",
+                    "recipientId",
+                    "readAt",
+                    "createdAt"
+                  ],
+                  "name": "payroll_notification_inbox_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "organizationId"
+                  ],
+                  "name": "payroll_notifications_organizationId_idx_2e17ef41",
+                  "prefix": "payroll_notifications_organizationId_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "organizationId",
+                    "recipientId"
+                  ],
+                  "name": "payroll_notifications_organizationId_recipientId_idx_a231b775",
+                  "prefix": "payroll_notifications_organizationId_recipientId_idx",
+                  "unique": false
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": [
+                {
+                  "columns": [
+                    "organizationId",
+                    "recipientId",
+                    "dedupeKey"
+                  ],
+                  "name": "payroll_notification_dedupe_key"
+                }
+              ]
+            },
             "payroll_payments": {
               "columns": {
                 "amount": {
@@ -12963,6 +14195,11 @@
                   "nativeType": "timestamptz",
                   "nullable": false
                 },
+                "payrollScheduleId": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
                 "periodEnd": {
                   "codecId": "pg/timestamptz-temporal@1",
                   "nativeType": "timestamptz",
@@ -13121,6 +14358,25 @@
                     "namespaceId": "public",
                     "tableName": "users"
                   }
+                },
+                {
+                  "onDelete": "restrict",
+                  "source": {
+                    "columns": [
+                      "organizationId",
+                      "payrollScheduleId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "payroll_runs"
+                  },
+                  "target": {
+                    "columns": [
+                      "organizationId",
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "payroll_schedules"
+                  }
                 }
               ],
               "indexes": [
@@ -13175,6 +14431,15 @@
                   "name": "payroll_runs_organizationId_idx_2e17ef41",
                   "prefix": "payroll_runs_organizationId_idx",
                   "unique": false
+                },
+                {
+                  "columns": [
+                    "organizationId",
+                    "payrollScheduleId"
+                  ],
+                  "name": "payroll_runs_organizationId_payrollScheduleId_idx_a7849ad4",
+                  "prefix": "payroll_runs_organizationId_payrollScheduleId_idx",
+                  "unique": false
                 }
               ],
               "primaryKey": {
@@ -13183,6 +14448,599 @@
                 ]
               },
               "uniques": [
+                {
+                  "columns": [
+                    "organizationId",
+                    "id"
+                  ]
+                },
+                {
+                  "columns": [
+                    "organizationId",
+                    "payrollScheduleId",
+                    "periodStart"
+                  ],
+                  "name": "payroll_run_schedule_period_key"
+                }
+              ]
+            },
+            "payroll_schedule_events": {
+              "checks": [
+                {
+                  "expression": "\"action\" IN ('CREATED', 'UPDATED', 'PAUSED', 'RESUMED')",
+                  "name": "payroll_schedule_events_action_check_117b9500",
+                  "prefix": "payroll_schedule_events_action_check"
+                }
+              ],
+              "columns": {
+                "action": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false,
+                  "valueSet": {
+                    "entityKind": "valueSet",
+                    "entityName": "PayrollScheduleAction",
+                    "namespaceId": "public",
+                    "plane": "storage"
+                  }
+                },
+                "actorId": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "createdAt": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "details": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "id": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "organizationId": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "scheduleId": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [
+                {
+                  "onDelete": "cascade",
+                  "source": {
+                    "columns": [
+                      "organizationId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "payroll_schedule_events"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "organizations"
+                  }
+                },
+                {
+                  "onDelete": "cascade",
+                  "source": {
+                    "columns": [
+                      "organizationId",
+                      "scheduleId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "payroll_schedule_events"
+                  },
+                  "target": {
+                    "columns": [
+                      "organizationId",
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "payroll_schedules"
+                  }
+                },
+                {
+                  "onDelete": "restrict",
+                  "source": {
+                    "columns": [
+                      "organizationId",
+                      "actorId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "payroll_schedule_events"
+                  },
+                  "target": {
+                    "columns": [
+                      "organizationId",
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "users"
+                  }
+                }
+              ],
+              "indexes": [
+                {
+                  "columns": [
+                    "organizationId",
+                    "scheduleId",
+                    "createdAt"
+                  ],
+                  "name": "payroll_schedule_event_history_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "organizationId",
+                    "actorId"
+                  ],
+                  "name": "payroll_schedule_events_organizationId_actorId_idx_327c2974",
+                  "prefix": "payroll_schedule_events_organizationId_actorId_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "organizationId"
+                  ],
+                  "name": "payroll_schedule_events_organizationId_idx_2e17ef41",
+                  "prefix": "payroll_schedule_events_organizationId_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "organizationId",
+                    "scheduleId"
+                  ],
+                  "name": "payroll_schedule_events_organizationId_scheduleId_idx_a4ebe8f0",
+                  "prefix": "payroll_schedule_events_organizationId_scheduleId_idx",
+                  "unique": false
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": []
+            },
+            "payroll_schedule_occurrences": {
+              "checks": [
+                {
+                  "expression": "\"source\" IN ('SCHEDULED', 'MANUAL')",
+                  "name": "payroll_schedule_occurrences_source_check_5668e56e",
+                  "prefix": "payroll_schedule_occurrences_source_check"
+                },
+                {
+                  "expression": "\"status\" IN ('PENDING', 'PROCESSING', 'GENERATED', 'FAILED', 'CONFLICT', 'SKIPPED')",
+                  "name": "payroll_schedule_occurrences_status_check_c63f1823",
+                  "prefix": "payroll_schedule_occurrences_status_check"
+                }
+              ],
+              "columns": {
+                "attempts": {
+                  "codecId": "pg/int4@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": 0
+                  },
+                  "nativeType": "int4",
+                  "nullable": false
+                },
+                "createdAt": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "failureCode": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "failureMessage": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "id": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "organizationId": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "payrollRunId": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "periodEnd": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "periodStart": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "scheduleId": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "scheduledFor": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "source": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false,
+                  "valueSet": {
+                    "entityKind": "valueSet",
+                    "entityName": "PayrollAutomationSource",
+                    "namespaceId": "public",
+                    "plane": "storage"
+                  }
+                },
+                "status": {
+                  "codecId": "pg/text@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": "PENDING"
+                  },
+                  "nativeType": "text",
+                  "nullable": false,
+                  "valueSet": {
+                    "entityKind": "valueSet",
+                    "entityName": "PayrollAutomationStatus",
+                    "namespaceId": "public",
+                    "plane": "storage"
+                  }
+                },
+                "updatedAt": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [
+                {
+                  "onDelete": "cascade",
+                  "source": {
+                    "columns": [
+                      "organizationId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "payroll_schedule_occurrences"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "organizations"
+                  }
+                },
+                {
+                  "onDelete": "cascade",
+                  "source": {
+                    "columns": [
+                      "organizationId",
+                      "scheduleId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "payroll_schedule_occurrences"
+                  },
+                  "target": {
+                    "columns": [
+                      "organizationId",
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "payroll_schedules"
+                  }
+                },
+                {
+                  "onDelete": "restrict",
+                  "source": {
+                    "columns": [
+                      "organizationId",
+                      "payrollRunId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "payroll_schedule_occurrences"
+                  },
+                  "target": {
+                    "columns": [
+                      "organizationId",
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "payroll_runs"
+                  }
+                }
+              ],
+              "indexes": [
+                {
+                  "columns": [
+                    "status",
+                    "scheduledFor"
+                  ],
+                  "name": "payroll_occurrence_due_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "organizationId",
+                    "scheduleId",
+                    "createdAt"
+                  ],
+                  "name": "payroll_occurrence_history_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "organizationId"
+                  ],
+                  "name": "payroll_schedule_occurrences_organizationId_idx_2e17ef41",
+                  "prefix": "payroll_schedule_occurrences_organizationId_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "organizationId",
+                    "scheduleId"
+                  ],
+                  "name": "payroll_schedule_occurrences_organizationId_scheduleId_a4ebe8f0",
+                  "prefix": "payroll_schedule_occurrences_organizationId_scheduleId",
+                  "unique": false
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": [
+                {
+                  "columns": [
+                    "organizationId",
+                    "scheduleId",
+                    "periodStart"
+                  ],
+                  "name": "payroll_occurrence_period_key"
+                },
+                {
+                  "columns": [
+                    "organizationId",
+                    "payrollRunId"
+                  ],
+                  "name": "payroll_occurrence_run_key"
+                }
+              ]
+            },
+            "payroll_schedules": {
+              "checks": [
+                {
+                  "expression": "\"frequency\" IN ('WEEKLY', 'BIWEEKLY', 'SEMIMONTHLY', 'MONTHLY')",
+                  "name": "payroll_schedules_frequency_check_d1aef24d",
+                  "prefix": "payroll_schedules_frequency_check"
+                },
+                {
+                  "expression": "\"status\" IN ('ACTIVE', 'PAUSED')",
+                  "name": "payroll_schedules_status_check_c5e40ebd",
+                  "prefix": "payroll_schedules_status_check"
+                }
+              ],
+              "columns": {
+                "createdAt": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "createdById": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "frequency": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false,
+                  "valueSet": {
+                    "entityKind": "valueSet",
+                    "entityName": "PayrollScheduleFrequency",
+                    "namespaceId": "public",
+                    "plane": "storage"
+                  }
+                },
+                "generationTime": {
+                  "codecId": "pg/text@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": "09:00"
+                  },
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "id": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "lastSuccessfulAt": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "nativeType": "timestamptz",
+                  "nullable": true
+                },
+                "name": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "nextPeriodStart": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "nextRunAt": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "organizationId": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "paymentOffsetDays": {
+                  "codecId": "pg/int4@1",
+                  "nativeType": "int4",
+                  "nullable": true
+                },
+                "periodAnchorDay": {
+                  "codecId": "pg/int4@1",
+                  "nativeType": "int4",
+                  "nullable": false
+                },
+                "startDate": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "status": {
+                  "codecId": "pg/text@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": "ACTIVE"
+                  },
+                  "nativeType": "text",
+                  "nullable": false,
+                  "valueSet": {
+                    "entityKind": "valueSet",
+                    "entityName": "PayrollScheduleStatus",
+                    "namespaceId": "public",
+                    "plane": "storage"
+                  }
+                },
+                "timezone": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "updatedAt": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "version": {
+                  "codecId": "pg/int4@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": 1
+                  },
+                  "nativeType": "int4",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [
+                {
+                  "onDelete": "cascade",
+                  "source": {
+                    "columns": [
+                      "organizationId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "payroll_schedules"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "organizations"
+                  }
+                },
+                {
+                  "onDelete": "restrict",
+                  "source": {
+                    "columns": [
+                      "organizationId",
+                      "createdById"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "payroll_schedules"
+                  },
+                  "target": {
+                    "columns": [
+                      "organizationId",
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "users"
+                  }
+                }
+              ],
+              "indexes": [
+                {
+                  "columns": [
+                    "status",
+                    "nextRunAt"
+                  ],
+                  "name": "payroll_schedule_due_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "organizationId",
+                    "createdById"
+                  ],
+                  "name": "payroll_schedules_organizationId_createdById_idx_4fb80a04",
+                  "prefix": "payroll_schedules_organizationId_createdById_idx",
+                  "unique": false
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": [
+                {
+                  "columns": [
+                    "organizationId"
+                  ]
+                },
                 {
                   "columns": [
                     "organizationId",
@@ -14938,11 +16796,38 @@
                 "PAYMENT_RECORDED"
               ]
             },
+            "PayrollAutomationSource": {
+              "kind": "valueSet",
+              "values": [
+                "SCHEDULED",
+                "MANUAL"
+              ]
+            },
+            "PayrollAutomationStatus": {
+              "kind": "valueSet",
+              "values": [
+                "PENDING",
+                "PROCESSING",
+                "GENERATED",
+                "FAILED",
+                "CONFLICT",
+                "SKIPPED"
+              ]
+            },
             "PayrollComponentType": {
               "kind": "valueSet",
               "values": [
                 "EARNING",
                 "DEDUCTION"
+              ]
+            },
+            "PayrollNotificationType": {
+              "kind": "valueSet",
+              "values": [
+                "DRAFT_READY",
+                "APPROVAL_PENDING",
+                "AUTOMATION_FAILED",
+                "PAYSLIPS_READY"
               ]
             },
             "PayrollRunStatus": {
@@ -14952,6 +16837,31 @@
                 "PENDING_APPROVAL",
                 "APPROVED",
                 "FINALIZED"
+              ]
+            },
+            "PayrollScheduleAction": {
+              "kind": "valueSet",
+              "values": [
+                "CREATED",
+                "UPDATED",
+                "PAUSED",
+                "RESUMED"
+              ]
+            },
+            "PayrollScheduleFrequency": {
+              "kind": "valueSet",
+              "values": [
+                "WEEKLY",
+                "BIWEEKLY",
+                "SEMIMONTHLY",
+                "MONTHLY"
+              ]
+            },
+            "PayrollScheduleStatus": {
+              "kind": "valueSet",
+              "values": [
+                "ACTIVE",
+                "PAUSED"
               ]
             },
             "PayslipStatus": {
@@ -15026,10 +16936,10 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "85a64e52dcfe897d4040dbab381261bafcac495b00d074c690ac2289c6c017c1"
+    "storageHash": "bc9d0b30b214355decab0d622e6d088a928e6f2db82aabc41803ccfd87498d2c"
   },
   "execution": {
-    "executionHash": "5ce6b4886914ba9f3fef43a6936098e9f7b8078814f0ef13a341339977133265",
+    "executionHash": "86300751a2aab713e2e826df5adc3a227e45724d48b8ca108a98b57d69c1969d",
     "mutations": {
       "defaults": [
         {
@@ -15490,6 +17400,17 @@
             "kind": "generator"
           },
           "ref": {
+            "entry": "payroll_notifications",
+            "field": "id",
+            "namespace": "public"
+          }
+        },
+        {
+          "onCreate": {
+            "id": "uuidv4",
+            "kind": "generator"
+          },
+          "ref": {
             "entry": "payroll_payments",
             "field": "id",
             "namespace": "public"
@@ -15517,6 +17438,69 @@
           },
           "ref": {
             "entry": "payroll_runs",
+            "field": "updatedAt",
+            "namespace": "public"
+          }
+        },
+        {
+          "onCreate": {
+            "id": "uuidv4",
+            "kind": "generator"
+          },
+          "ref": {
+            "entry": "payroll_schedule_events",
+            "field": "id",
+            "namespace": "public"
+          }
+        },
+        {
+          "onCreate": {
+            "id": "uuidv4",
+            "kind": "generator"
+          },
+          "ref": {
+            "entry": "payroll_schedule_occurrences",
+            "field": "id",
+            "namespace": "public"
+          }
+        },
+        {
+          "onCreate": {
+            "id": "instantNow",
+            "kind": "generator"
+          },
+          "onUpdate": {
+            "id": "instantNow",
+            "kind": "generator"
+          },
+          "ref": {
+            "entry": "payroll_schedule_occurrences",
+            "field": "updatedAt",
+            "namespace": "public"
+          }
+        },
+        {
+          "onCreate": {
+            "id": "uuidv4",
+            "kind": "generator"
+          },
+          "ref": {
+            "entry": "payroll_schedules",
+            "field": "id",
+            "namespace": "public"
+          }
+        },
+        {
+          "onCreate": {
+            "id": "instantNow",
+            "kind": "generator"
+          },
+          "onUpdate": {
+            "id": "instantNow",
+            "kind": "generator"
+          },
+          "ref": {
+            "entry": "payroll_schedules",
             "field": "updatedAt",
             "namespace": "public"
           }

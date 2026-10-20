@@ -30,6 +30,7 @@ import {
 import { overtimePay } from "../workforce/workforce-rules.js";
 import { PayrollPayslipQueue } from "./payroll-payslip.queue.js";
 import { PayrollPayslipStorageService } from "./payroll-payslip-storage.service.js";
+import { PayrollNotificationsService } from "./payroll-notifications.service.js";
 
 type RunStatus = "DRAFT" | "PENDING_APPROVAL" | "APPROVED" | "FINALIZED";
 type OrmDatabase = Pick<Database, "orm">;
@@ -50,6 +51,7 @@ export class PayrollService {
     @Inject(REQUEST) private readonly request: AuthenticatedRequest,
     private readonly payslips: PayrollPayslipQueue,
     private readonly payslipStorage: PayrollPayslipStorageService,
+    private readonly notifications: PayrollNotificationsService,
   ) {}
   private get tenant() {
     if (!this.request.auth) throw new UnauthorizedException();
@@ -131,28 +133,50 @@ export class PayrollService {
     return { ...run, entries: detailed, auditEvents };
   }
   async create(input: CreatePayrollRunDto) {
+    return this.createDraft(input, null);
+  }
+  async createScheduledDraft(input: CreatePayrollRunDto, payrollScheduleId: string) {
+    return this.createDraft(input, payrollScheduleId);
+  }
+  private async createDraft(input: CreatePayrollRunDto, payrollScheduleId: string | null) {
     const from = this.instant(input.periodStart);
     const to = this.instant(input.periodEnd);
     if (Temporal.Instant.compare(from, to) > 0)
       throw new BadRequestException("Period end must follow start");
     if (Temporal.Instant.compare(this.instant(input.paymentDate), to) < 0)
       throw new BadRequestException("Payment date cannot be before period end");
-    const organization = await this.db.orm.public.Organization.where({ id: this.organizationId })
-      .select("currency", "name")
-      .first();
-    if (!organization) throw new NotFoundException("Organization not found");
-    const run = await this.db.orm.public.PayrollRun.create({
-      organizationId: this.organizationId,
-      name: input.name.trim(),
-      periodStart: from,
-      periodEnd: to,
-      paymentDate: this.instant(input.paymentDate),
-      currency: organization.currency,
-      organizationName: organization.name,
-      createdById: this.userId,
+    const organizationId = this.organizationId;
+    return this.db.transaction(async (tx) => {
+      await tx.execute(
+        this.db.raw.sql`SELECT pg_advisory_xact_lock(hashtext(${organizationId}))`
+          .affectedCount()
+          .build(),
+      );
+      const overlapping = (await tx.orm.public.PayrollRun.where({ organizationId }).all()).find(
+        (run) =>
+          this.day(run.periodStart) <= input.periodEnd &&
+          this.day(run.periodEnd) >= input.periodStart,
+      );
+      if (overlapping)
+        throw new ConflictException("A payroll run already overlaps this pay period");
+      const organization = await tx.orm.public.Organization.where({ id: organizationId })
+        .select("currency", "name")
+        .first();
+      if (!organization) throw new NotFoundException("Organization not found");
+      const run = await tx.orm.public.PayrollRun.create({
+        organizationId,
+        name: input.name.trim(),
+        periodStart: from,
+        periodEnd: to,
+        paymentDate: this.instant(input.paymentDate),
+        currency: organization.currency,
+        organizationName: organization.name,
+        createdById: this.userId,
+        payrollScheduleId: payrollScheduleId ?? undefined,
+      });
+      await this.audit(run.id, null, "CREATED", input.employeeIds?.join(",") ?? null, tx);
+      return run;
     });
-    await this.audit(run.id, null, "CREATED", input.employeeIds?.join(",") ?? null);
-    return run;
   }
   private audit(
     payrollRunId: string,
@@ -738,8 +762,16 @@ export class PayrollService {
       return updated;
     });
   }
-  submit(id: string, expectedVersion: number) {
-    return this.transition(id, expectedVersion, "DRAFT", "PENDING_APPROVAL");
+  async submit(id: string, expectedVersion: number) {
+    const result = await this.transition(id, expectedVersion, "DRAFT", "PENDING_APPROVAL");
+    await this.notifications.notifyManagers(
+      this.organizationId,
+      "APPROVAL_PENDING",
+      `payroll-approval:${id}:${result.version}`,
+      "Payroll approval pending",
+      "A payroll run is ready for an authorized reviewer.",
+    );
+    return result;
   }
   approve(id: string, expectedVersion: number) {
     return this.transition(id, expectedVersion, "PENDING_APPROVAL", "APPROVED");

@@ -1,0 +1,1460 @@
+[
+  {
+    "id": "table.payroll_notifications",
+    "label": "Create table \"payroll_notifications\"",
+    "summary": "Creates table \"payroll_notifications\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "payroll_notifications"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"payroll_notifications\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payroll_notifications\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"payroll_notifications\"",
+        "sql": "CREATE TABLE \"public\".\"payroll_notifications\" (\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"dedupeKey\" text NOT NULL,\n  \"href\" text,\n  \"id\" text NOT NULL,\n  \"message\" text NOT NULL,\n  \"organizationId\" text NOT NULL,\n  \"readAt\" timestamptz,\n  \"recipientId\" text NOT NULL,\n  \"title\" text NOT NULL,\n  \"type\" text NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"payroll_notifications_type_check_6de63b1b\" CHECK (\"type\" IN ('DRAFT_READY', 'APPROVAL_PENDING', 'AUTOMATION_FAILED', 'PAYSLIPS_READY'))\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"payroll_notifications\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payroll_notifications\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.payroll_schedule_events",
+    "label": "Create table \"payroll_schedule_events\"",
+    "summary": "Creates table \"payroll_schedule_events\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "payroll_schedule_events"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"payroll_schedule_events\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payroll_schedule_events\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"payroll_schedule_events\"",
+        "sql": "CREATE TABLE \"public\".\"payroll_schedule_events\" (\n  \"action\" text NOT NULL,\n  \"actorId\" text NOT NULL,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"details\" text,\n  \"id\" text NOT NULL,\n  \"organizationId\" text NOT NULL,\n  \"scheduleId\" text NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"payroll_schedule_events_action_check_117b9500\" CHECK (\"action\" IN ('CREATED', 'UPDATED', 'PAUSED', 'RESUMED'))\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"payroll_schedule_events\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payroll_schedule_events\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.payroll_schedule_occurrences",
+    "label": "Create table \"payroll_schedule_occurrences\"",
+    "summary": "Creates table \"payroll_schedule_occurrences\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "payroll_schedule_occurrences"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"payroll_schedule_occurrences\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payroll_schedule_occurrences\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"payroll_schedule_occurrences\"",
+        "sql": "CREATE TABLE \"public\".\"payroll_schedule_occurrences\" (\n  \"attempts\" int4 DEFAULT 0 NOT NULL,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"failureCode\" text,\n  \"failureMessage\" text,\n  \"id\" text NOT NULL,\n  \"organizationId\" text NOT NULL,\n  \"payrollRunId\" text,\n  \"periodEnd\" timestamptz NOT NULL,\n  \"periodStart\" timestamptz NOT NULL,\n  \"scheduleId\" text NOT NULL,\n  \"scheduledFor\" timestamptz NOT NULL,\n  \"source\" text NOT NULL,\n  \"status\" text DEFAULT 'PENDING' NOT NULL,\n  \"updatedAt\" timestamptz NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"payroll_schedule_occurrences_source_check_5668e56e\" CHECK (\"source\" IN ('SCHEDULED', 'MANUAL')),\n  CONSTRAINT \"payroll_schedule_occurrences_status_check_c63f1823\" CHECK (\"status\" IN ('PENDING', 'PROCESSING', 'GENERATED', 'FAILED', 'CONFLICT', 'SKIPPED'))\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"payroll_schedule_occurrences\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payroll_schedule_occurrences\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.payroll_schedules",
+    "label": "Create table \"payroll_schedules\"",
+    "summary": "Creates table \"payroll_schedules\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "payroll_schedules"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"payroll_schedules\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payroll_schedules\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"payroll_schedules\"",
+        "sql": "CREATE TABLE \"public\".\"payroll_schedules\" (\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"createdById\" text NOT NULL,\n  \"frequency\" text NOT NULL,\n  \"generationTime\" text DEFAULT '09:00' NOT NULL,\n  \"id\" text NOT NULL,\n  \"lastSuccessfulAt\" timestamptz,\n  \"name\" text NOT NULL,\n  \"nextPeriodStart\" timestamptz NOT NULL,\n  \"nextRunAt\" timestamptz NOT NULL,\n  \"organizationId\" text NOT NULL,\n  \"paymentOffsetDays\" int4,\n  \"periodAnchorDay\" int4 NOT NULL,\n  \"startDate\" timestamptz NOT NULL,\n  \"status\" text DEFAULT 'ACTIVE' NOT NULL,\n  \"timezone\" text NOT NULL,\n  \"updatedAt\" timestamptz NOT NULL,\n  \"version\" int4 DEFAULT 1 NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"payroll_schedules_frequency_check_d1aef24d\" CHECK (\"frequency\" IN ('WEEKLY', 'BIWEEKLY', 'SEMIMONTHLY', 'MONTHLY')),\n  CONSTRAINT \"payroll_schedules_status_check_c5e40ebd\" CHECK (\"status\" IN ('ACTIVE', 'PAUSED'))\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"payroll_schedules\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payroll_schedules\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.payroll_runs.payrollScheduleId",
+    "label": "Add column \"payrollScheduleId\" to \"payroll_runs\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "payrollScheduleId",
+        "table": "payroll_runs"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"payrollScheduleId\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "payroll_runs",
+          "payrollScheduleId"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"payrollScheduleId\"",
+        "sql": "ALTER TABLE \"public\".\"payroll_runs\" ADD COLUMN \"payrollScheduleId\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"payrollScheduleId\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "payroll_runs",
+          "payrollScheduleId"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.payroll_notifications.payroll_notification_dedupe_key",
+    "label": "Add unique constraint on \"payroll_notifications\" (organizationId, recipientId, dedupeKey)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "payroll_notification_dedupe_key",
+        "table": "payroll_notifications"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"payroll_notification_dedupe_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "payroll_notification_dedupe_key",
+          "public",
+          "\"public\".\"payroll_notifications\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"payroll_notification_dedupe_key\"",
+        "sql": "ALTER TABLE \"public\".\"payroll_notifications\" ADD CONSTRAINT \"payroll_notification_dedupe_key\" UNIQUE (\"organizationId\", \"recipientId\", \"dedupeKey\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"payroll_notification_dedupe_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "payroll_notification_dedupe_key",
+          "public",
+          "\"public\".\"payroll_notifications\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.payroll_runs.payroll_run_schedule_period_key",
+    "label": "Add unique constraint on \"payroll_runs\" (organizationId, payrollScheduleId, periodStart)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "payroll_run_schedule_period_key",
+        "table": "payroll_runs"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"payroll_run_schedule_period_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "payroll_run_schedule_period_key",
+          "public",
+          "\"public\".\"payroll_runs\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"payroll_run_schedule_period_key\"",
+        "sql": "ALTER TABLE \"public\".\"payroll_runs\" ADD CONSTRAINT \"payroll_run_schedule_period_key\" UNIQUE (\"organizationId\", \"payrollScheduleId\", \"periodStart\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"payroll_run_schedule_period_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "payroll_run_schedule_period_key",
+          "public",
+          "\"public\".\"payroll_runs\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.payroll_schedule_occurrences.payroll_occurrence_period_key",
+    "label": "Add unique constraint on \"payroll_schedule_occurrences\" (organizationId, scheduleId, periodStart)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "payroll_occurrence_period_key",
+        "table": "payroll_schedule_occurrences"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"payroll_occurrence_period_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "payroll_occurrence_period_key",
+          "public",
+          "\"public\".\"payroll_schedule_occurrences\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"payroll_occurrence_period_key\"",
+        "sql": "ALTER TABLE \"public\".\"payroll_schedule_occurrences\" ADD CONSTRAINT \"payroll_occurrence_period_key\" UNIQUE (\"organizationId\", \"scheduleId\", \"periodStart\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"payroll_occurrence_period_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "payroll_occurrence_period_key",
+          "public",
+          "\"public\".\"payroll_schedule_occurrences\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.payroll_schedule_occurrences.payroll_occurrence_run_key",
+    "label": "Add unique constraint on \"payroll_schedule_occurrences\" (organizationId, payrollRunId)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "payroll_occurrence_run_key",
+        "table": "payroll_schedule_occurrences"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"payroll_occurrence_run_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "payroll_occurrence_run_key",
+          "public",
+          "\"public\".\"payroll_schedule_occurrences\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"payroll_occurrence_run_key\"",
+        "sql": "ALTER TABLE \"public\".\"payroll_schedule_occurrences\" ADD CONSTRAINT \"payroll_occurrence_run_key\" UNIQUE (\"organizationId\", \"payrollRunId\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"payroll_occurrence_run_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "payroll_occurrence_run_key",
+          "public",
+          "\"public\".\"payroll_schedule_occurrences\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.payroll_schedules.payroll_schedules_organizationId_key",
+    "label": "Add unique constraint on \"payroll_schedules\" (organizationId)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "payroll_schedules_organizationId_key",
+        "table": "payroll_schedules"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"payroll_schedules_organizationId_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "payroll_schedules_organizationId_key",
+          "public",
+          "\"public\".\"payroll_schedules\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"payroll_schedules_organizationId_key\"",
+        "sql": "ALTER TABLE \"public\".\"payroll_schedules\" ADD CONSTRAINT \"payroll_schedules_organizationId_key\" UNIQUE (\"organizationId\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"payroll_schedules_organizationId_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "payroll_schedules_organizationId_key",
+          "public",
+          "\"public\".\"payroll_schedules\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.payroll_schedules.payroll_schedules_organizationId_id_key",
+    "label": "Add unique constraint on \"payroll_schedules\" (organizationId, id)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "payroll_schedules_organizationId_id_key",
+        "table": "payroll_schedules"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"payroll_schedules_organizationId_id_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "payroll_schedules_organizationId_id_key",
+          "public",
+          "\"public\".\"payroll_schedules\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"payroll_schedules_organizationId_id_key\"",
+        "sql": "ALTER TABLE \"public\".\"payroll_schedules\" ADD CONSTRAINT \"payroll_schedules_organizationId_id_key\" UNIQUE (\"organizationId\", \"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"payroll_schedules_organizationId_id_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "payroll_schedules_organizationId_id_key",
+          "public",
+          "\"public\".\"payroll_schedules\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.payroll_notifications.payroll_notification_inbox_idx",
+    "label": "Create index \"payroll_notification_inbox_idx\" on \"payroll_notifications\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "payroll_notification_inbox_idx",
+        "table": "payroll_notifications"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"payroll_notification_inbox_idx\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payroll_notification_inbox_idx\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"payroll_notification_inbox_idx\"",
+        "sql": "CREATE INDEX \"payroll_notification_inbox_idx\" ON \"public\".\"payroll_notifications\" (\"organizationId\", \"recipientId\", \"readAt\", \"createdAt\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"payroll_notification_inbox_idx\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payroll_notification_inbox_idx\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.payroll_notifications.payroll_notifications_organizationId_idx_2e17ef41",
+    "label": "Create index \"payroll_notifications_organizationId_idx_2e17ef41\" on \"payroll_notifications\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "payroll_notifications_organizationId_idx_2e17ef41",
+        "table": "payroll_notifications"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"payroll_notifications_organizationId_idx_2e17ef41\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payroll_notifications_organizationId_idx_2e17ef41\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"payroll_notifications_organizationId_idx_2e17ef41\"",
+        "sql": "CREATE INDEX \"payroll_notifications_organizationId_idx_2e17ef41\" ON \"public\".\"payroll_notifications\" (\"organizationId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"payroll_notifications_organizationId_idx_2e17ef41\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payroll_notifications_organizationId_idx_2e17ef41\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.payroll_notifications.payroll_notifications_organizationId_recipientId_idx_a231b775",
+    "label": "Create index \"payroll_notifications_organizationId_recipientId_idx_a231b775\" on \"payroll_notifications\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "payroll_notifications_organizationId_recipientId_idx_a231b775",
+        "table": "payroll_notifications"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"payroll_notifications_organizationId_recipientId_idx_a231b775\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payroll_notifications_organizationId_recipientId_idx_a231b775\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"payroll_notifications_organizationId_recipientId_idx_a231b775\"",
+        "sql": "CREATE INDEX \"payroll_notifications_organizationId_recipientId_idx_a231b775\" ON \"public\".\"payroll_notifications\" (\"organizationId\", \"recipientId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"payroll_notifications_organizationId_recipientId_idx_a231b775\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payroll_notifications_organizationId_recipientId_idx_a231b775\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.payroll_runs.payroll_runs_organizationId_payrollScheduleId_idx_a7849ad4",
+    "label": "Create index \"payroll_runs_organizationId_payrollScheduleId_idx_a7849ad4\" on \"payroll_runs\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "payroll_runs_organizationId_payrollScheduleId_idx_a7849ad4",
+        "table": "payroll_runs"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"payroll_runs_organizationId_payrollScheduleId_idx_a7849ad4\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payroll_runs_organizationId_payrollScheduleId_idx_a7849ad4\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"payroll_runs_organizationId_payrollScheduleId_idx_a7849ad4\"",
+        "sql": "CREATE INDEX \"payroll_runs_organizationId_payrollScheduleId_idx_a7849ad4\" ON \"public\".\"payroll_runs\" (\"organizationId\", \"payrollScheduleId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"payroll_runs_organizationId_payrollScheduleId_idx_a7849ad4\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payroll_runs_organizationId_payrollScheduleId_idx_a7849ad4\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.payroll_schedule_events.payroll_schedule_event_history_idx",
+    "label": "Create index \"payroll_schedule_event_history_idx\" on \"payroll_schedule_events\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "payroll_schedule_event_history_idx",
+        "table": "payroll_schedule_events"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"payroll_schedule_event_history_idx\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payroll_schedule_event_history_idx\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"payroll_schedule_event_history_idx\"",
+        "sql": "CREATE INDEX \"payroll_schedule_event_history_idx\" ON \"public\".\"payroll_schedule_events\" (\"organizationId\", \"scheduleId\", \"createdAt\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"payroll_schedule_event_history_idx\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payroll_schedule_event_history_idx\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.payroll_schedule_events.payroll_schedule_events_organizationId_actorId_idx_327c2974",
+    "label": "Create index \"payroll_schedule_events_organizationId_actorId_idx_327c2974\" on \"payroll_schedule_events\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "payroll_schedule_events_organizationId_actorId_idx_327c2974",
+        "table": "payroll_schedule_events"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"payroll_schedule_events_organizationId_actorId_idx_327c2974\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payroll_schedule_events_organizationId_actorId_idx_327c2974\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"payroll_schedule_events_organizationId_actorId_idx_327c2974\"",
+        "sql": "CREATE INDEX \"payroll_schedule_events_organizationId_actorId_idx_327c2974\" ON \"public\".\"payroll_schedule_events\" (\"organizationId\", \"actorId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"payroll_schedule_events_organizationId_actorId_idx_327c2974\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payroll_schedule_events_organizationId_actorId_idx_327c2974\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.payroll_schedule_events.payroll_schedule_events_organizationId_idx_2e17ef41",
+    "label": "Create index \"payroll_schedule_events_organizationId_idx_2e17ef41\" on \"payroll_schedule_events\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "payroll_schedule_events_organizationId_idx_2e17ef41",
+        "table": "payroll_schedule_events"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"payroll_schedule_events_organizationId_idx_2e17ef41\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payroll_schedule_events_organizationId_idx_2e17ef41\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"payroll_schedule_events_organizationId_idx_2e17ef41\"",
+        "sql": "CREATE INDEX \"payroll_schedule_events_organizationId_idx_2e17ef41\" ON \"public\".\"payroll_schedule_events\" (\"organizationId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"payroll_schedule_events_organizationId_idx_2e17ef41\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payroll_schedule_events_organizationId_idx_2e17ef41\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.payroll_schedule_events.payroll_schedule_events_organizationId_scheduleId_idx_a4ebe8f0",
+    "label": "Create index \"payroll_schedule_events_organizationId_scheduleId_idx_a4ebe8f0\" on \"payroll_schedule_events\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "payroll_schedule_events_organizationId_scheduleId_idx_a4ebe8f0",
+        "table": "payroll_schedule_events"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"payroll_schedule_events_organizationId_scheduleId_idx_a4ebe8f0\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payroll_schedule_events_organizationId_scheduleId_idx_a4ebe8f0\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"payroll_schedule_events_organizationId_scheduleId_idx_a4ebe8f0\"",
+        "sql": "CREATE INDEX \"payroll_schedule_events_organizationId_scheduleId_idx_a4ebe8f0\" ON \"public\".\"payroll_schedule_events\" (\"organizationId\", \"scheduleId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"payroll_schedule_events_organizationId_scheduleId_idx_a4ebe8f0\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payroll_schedule_events_organizationId_scheduleId_idx_a4ebe8f0\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.payroll_schedule_occurrences.payroll_occurrence_due_idx",
+    "label": "Create index \"payroll_occurrence_due_idx\" on \"payroll_schedule_occurrences\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "payroll_occurrence_due_idx",
+        "table": "payroll_schedule_occurrences"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"payroll_occurrence_due_idx\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payroll_occurrence_due_idx\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"payroll_occurrence_due_idx\"",
+        "sql": "CREATE INDEX \"payroll_occurrence_due_idx\" ON \"public\".\"payroll_schedule_occurrences\" (\"status\", \"scheduledFor\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"payroll_occurrence_due_idx\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payroll_occurrence_due_idx\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.payroll_schedule_occurrences.payroll_occurrence_history_idx",
+    "label": "Create index \"payroll_occurrence_history_idx\" on \"payroll_schedule_occurrences\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "payroll_occurrence_history_idx",
+        "table": "payroll_schedule_occurrences"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"payroll_occurrence_history_idx\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payroll_occurrence_history_idx\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"payroll_occurrence_history_idx\"",
+        "sql": "CREATE INDEX \"payroll_occurrence_history_idx\" ON \"public\".\"payroll_schedule_occurrences\" (\"organizationId\", \"scheduleId\", \"createdAt\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"payroll_occurrence_history_idx\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payroll_occurrence_history_idx\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.payroll_schedule_occurrences.payroll_schedule_occurrences_organizationId_idx_2e17ef41",
+    "label": "Create index \"payroll_schedule_occurrences_organizationId_idx_2e17ef41\" on \"payroll_schedule_occurrences\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "payroll_schedule_occurrences_organizationId_idx_2e17ef41",
+        "table": "payroll_schedule_occurrences"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"payroll_schedule_occurrences_organizationId_idx_2e17ef41\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payroll_schedule_occurrences_organizationId_idx_2e17ef41\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"payroll_schedule_occurrences_organizationId_idx_2e17ef41\"",
+        "sql": "CREATE INDEX \"payroll_schedule_occurrences_organizationId_idx_2e17ef41\" ON \"public\".\"payroll_schedule_occurrences\" (\"organizationId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"payroll_schedule_occurrences_organizationId_idx_2e17ef41\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payroll_schedule_occurrences_organizationId_idx_2e17ef41\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.payroll_schedule_occurrences.payroll_schedule_occurrences_organizationId_scheduleId_a4ebe8f0",
+    "label": "Create index \"payroll_schedule_occurrences_organizationId_scheduleId_a4ebe8f0\" on \"payroll_schedule_occurrences\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "payroll_schedule_occurrences_organizationId_scheduleId_a4ebe8f0",
+        "table": "payroll_schedule_occurrences"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"payroll_schedule_occurrences_organizationId_scheduleId_a4ebe8f0\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payroll_schedule_occurrences_organizationId_scheduleId_a4ebe8f0\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"payroll_schedule_occurrences_organizationId_scheduleId_a4ebe8f0\"",
+        "sql": "CREATE INDEX \"payroll_schedule_occurrences_organizationId_scheduleId_a4ebe8f0\" ON \"public\".\"payroll_schedule_occurrences\" (\"organizationId\", \"scheduleId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"payroll_schedule_occurrences_organizationId_scheduleId_a4ebe8f0\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payroll_schedule_occurrences_organizationId_scheduleId_a4ebe8f0\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.payroll_schedules.payroll_schedule_due_idx",
+    "label": "Create index \"payroll_schedule_due_idx\" on \"payroll_schedules\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "payroll_schedule_due_idx",
+        "table": "payroll_schedules"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"payroll_schedule_due_idx\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payroll_schedule_due_idx\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"payroll_schedule_due_idx\"",
+        "sql": "CREATE INDEX \"payroll_schedule_due_idx\" ON \"public\".\"payroll_schedules\" (\"status\", \"nextRunAt\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"payroll_schedule_due_idx\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payroll_schedule_due_idx\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.payroll_schedules.payroll_schedules_organizationId_createdById_idx_4fb80a04",
+    "label": "Create index \"payroll_schedules_organizationId_createdById_idx_4fb80a04\" on \"payroll_schedules\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "payroll_schedules_organizationId_createdById_idx_4fb80a04",
+        "table": "payroll_schedules"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"payroll_schedules_organizationId_createdById_idx_4fb80a04\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payroll_schedules_organizationId_createdById_idx_4fb80a04\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"payroll_schedules_organizationId_createdById_idx_4fb80a04\"",
+        "sql": "CREATE INDEX \"payroll_schedules_organizationId_createdById_idx_4fb80a04\" ON \"public\".\"payroll_schedules\" (\"organizationId\", \"createdById\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"payroll_schedules_organizationId_createdById_idx_4fb80a04\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payroll_schedules_organizationId_createdById_idx_4fb80a04\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.payroll_notifications.payroll_notifications_organizationId_fkey",
+    "label": "Add foreign key \"payroll_notifications_organizationId_fkey\" on \"payroll_notifications\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "payroll_notifications_organizationId_fkey",
+        "table": "payroll_notifications"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"payroll_notifications_organizationId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "payroll_notifications_organizationId_fkey",
+          "public",
+          "\"public\".\"payroll_notifications\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"payroll_notifications_organizationId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"payroll_notifications\"\nADD CONSTRAINT \"payroll_notifications_organizationId_fkey\"\nFOREIGN KEY (\"organizationId\")\nREFERENCES \"public\".\"organizations\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"payroll_notifications_organizationId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "payroll_notifications_organizationId_fkey",
+          "public",
+          "\"public\".\"payroll_notifications\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.payroll_notifications.payroll_notifications_organizationId_recipientId_fkey",
+    "label": "Add foreign key \"payroll_notifications_organizationId_recipientId_fkey\" on \"payroll_notifications\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "payroll_notifications_organizationId_recipientId_fkey",
+        "table": "payroll_notifications"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"payroll_notifications_organizationId_recipientId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "payroll_notifications_organizationId_recipientId_fkey",
+          "public",
+          "\"public\".\"payroll_notifications\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"payroll_notifications_organizationId_recipientId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"payroll_notifications\"\nADD CONSTRAINT \"payroll_notifications_organizationId_recipientId_fkey\"\nFOREIGN KEY (\"organizationId\", \"recipientId\")\nREFERENCES \"public\".\"users\" (\"organizationId\", \"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"payroll_notifications_organizationId_recipientId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "payroll_notifications_organizationId_recipientId_fkey",
+          "public",
+          "\"public\".\"payroll_notifications\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.payroll_schedule_events.payroll_schedule_events_organizationId_fkey",
+    "label": "Add foreign key \"payroll_schedule_events_organizationId_fkey\" on \"payroll_schedule_events\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "payroll_schedule_events_organizationId_fkey",
+        "table": "payroll_schedule_events"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"payroll_schedule_events_organizationId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "payroll_schedule_events_organizationId_fkey",
+          "public",
+          "\"public\".\"payroll_schedule_events\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"payroll_schedule_events_organizationId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"payroll_schedule_events\"\nADD CONSTRAINT \"payroll_schedule_events_organizationId_fkey\"\nFOREIGN KEY (\"organizationId\")\nREFERENCES \"public\".\"organizations\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"payroll_schedule_events_organizationId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "payroll_schedule_events_organizationId_fkey",
+          "public",
+          "\"public\".\"payroll_schedule_events\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.payroll_schedule_events.payroll_schedule_events_organizationId_scheduleId_fkey",
+    "label": "Add foreign key \"payroll_schedule_events_organizationId_scheduleId_fkey\" on \"payroll_schedule_events\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "payroll_schedule_events_organizationId_scheduleId_fkey",
+        "table": "payroll_schedule_events"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"payroll_schedule_events_organizationId_scheduleId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "payroll_schedule_events_organizationId_scheduleId_fkey",
+          "public",
+          "\"public\".\"payroll_schedule_events\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"payroll_schedule_events_organizationId_scheduleId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"payroll_schedule_events\"\nADD CONSTRAINT \"payroll_schedule_events_organizationId_scheduleId_fkey\"\nFOREIGN KEY (\"organizationId\", \"scheduleId\")\nREFERENCES \"public\".\"payroll_schedules\" (\"organizationId\", \"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"payroll_schedule_events_organizationId_scheduleId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "payroll_schedule_events_organizationId_scheduleId_fkey",
+          "public",
+          "\"public\".\"payroll_schedule_events\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.payroll_schedule_events.payroll_schedule_events_organizationId_actorId_fkey",
+    "label": "Add foreign key \"payroll_schedule_events_organizationId_actorId_fkey\" on \"payroll_schedule_events\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "payroll_schedule_events_organizationId_actorId_fkey",
+        "table": "payroll_schedule_events"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"payroll_schedule_events_organizationId_actorId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "payroll_schedule_events_organizationId_actorId_fkey",
+          "public",
+          "\"public\".\"payroll_schedule_events\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"payroll_schedule_events_organizationId_actorId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"payroll_schedule_events\"\nADD CONSTRAINT \"payroll_schedule_events_organizationId_actorId_fkey\"\nFOREIGN KEY (\"organizationId\", \"actorId\")\nREFERENCES \"public\".\"users\" (\"organizationId\", \"id\")\nON DELETE RESTRICT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"payroll_schedule_events_organizationId_actorId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "payroll_schedule_events_organizationId_actorId_fkey",
+          "public",
+          "\"public\".\"payroll_schedule_events\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.payroll_schedule_occurrences.payroll_schedule_occurrences_organizationId_fkey",
+    "label": "Add foreign key \"payroll_schedule_occurrences_organizationId_fkey\" on \"payroll_schedule_occurrences\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "payroll_schedule_occurrences_organizationId_fkey",
+        "table": "payroll_schedule_occurrences"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"payroll_schedule_occurrences_organizationId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "payroll_schedule_occurrences_organizationId_fkey",
+          "public",
+          "\"public\".\"payroll_schedule_occurrences\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"payroll_schedule_occurrences_organizationId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"payroll_schedule_occurrences\"\nADD CONSTRAINT \"payroll_schedule_occurrences_organizationId_fkey\"\nFOREIGN KEY (\"organizationId\")\nREFERENCES \"public\".\"organizations\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"payroll_schedule_occurrences_organizationId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "payroll_schedule_occurrences_organizationId_fkey",
+          "public",
+          "\"public\".\"payroll_schedule_occurrences\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.payroll_schedule_occurrences.payroll_schedule_occurrences_organizationId_scheduleId_fkey",
+    "label": "Add foreign key \"payroll_schedule_occurrences_organizationId_scheduleId_fkey\" on \"payroll_schedule_occurrences\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "payroll_schedule_occurrences_organizationId_scheduleId_fkey",
+        "table": "payroll_schedule_occurrences"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"payroll_schedule_occurrences_organizationId_scheduleId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "payroll_schedule_occurrences_organizationId_scheduleId_fkey",
+          "public",
+          "\"public\".\"payroll_schedule_occurrences\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"payroll_schedule_occurrences_organizationId_scheduleId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"payroll_schedule_occurrences\"\nADD CONSTRAINT \"payroll_schedule_occurrences_organizationId_scheduleId_fkey\"\nFOREIGN KEY (\"organizationId\", \"scheduleId\")\nREFERENCES \"public\".\"payroll_schedules\" (\"organizationId\", \"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"payroll_schedule_occurrences_organizationId_scheduleId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "payroll_schedule_occurrences_organizationId_scheduleId_fkey",
+          "public",
+          "\"public\".\"payroll_schedule_occurrences\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.payroll_schedule_occurrences.payroll_schedule_occurrences_organizationId_payrollRunId_fkey",
+    "label": "Add foreign key \"payroll_schedule_occurrences_organizationId_payrollRunId_fkey\" on \"payroll_schedule_occurrences\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "payroll_schedule_occurrences_organizationId_payrollRunId_fkey",
+        "table": "payroll_schedule_occurrences"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"payroll_schedule_occurrences_organizationId_payrollRunId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "payroll_schedule_occurrences_organizationId_payrollRunId_fkey",
+          "public",
+          "\"public\".\"payroll_schedule_occurrences\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"payroll_schedule_occurrences_organizationId_payrollRunId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"payroll_schedule_occurrences\"\nADD CONSTRAINT \"payroll_schedule_occurrences_organizationId_payrollRunId_fkey\"\nFOREIGN KEY (\"organizationId\", \"payrollRunId\")\nREFERENCES \"public\".\"payroll_runs\" (\"organizationId\", \"id\")\nON DELETE RESTRICT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"payroll_schedule_occurrences_organizationId_payrollRunId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "payroll_schedule_occurrences_organizationId_payrollRunId_fkey",
+          "public",
+          "\"public\".\"payroll_schedule_occurrences\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.payroll_schedules.payroll_schedules_organizationId_fkey",
+    "label": "Add foreign key \"payroll_schedules_organizationId_fkey\" on \"payroll_schedules\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "payroll_schedules_organizationId_fkey",
+        "table": "payroll_schedules"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"payroll_schedules_organizationId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "payroll_schedules_organizationId_fkey",
+          "public",
+          "\"public\".\"payroll_schedules\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"payroll_schedules_organizationId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"payroll_schedules\"\nADD CONSTRAINT \"payroll_schedules_organizationId_fkey\"\nFOREIGN KEY (\"organizationId\")\nREFERENCES \"public\".\"organizations\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"payroll_schedules_organizationId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "payroll_schedules_organizationId_fkey",
+          "public",
+          "\"public\".\"payroll_schedules\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.payroll_schedules.payroll_schedules_organizationId_createdById_fkey",
+    "label": "Add foreign key \"payroll_schedules_organizationId_createdById_fkey\" on \"payroll_schedules\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "payroll_schedules_organizationId_createdById_fkey",
+        "table": "payroll_schedules"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"payroll_schedules_organizationId_createdById_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "payroll_schedules_organizationId_createdById_fkey",
+          "public",
+          "\"public\".\"payroll_schedules\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"payroll_schedules_organizationId_createdById_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"payroll_schedules\"\nADD CONSTRAINT \"payroll_schedules_organizationId_createdById_fkey\"\nFOREIGN KEY (\"organizationId\", \"createdById\")\nREFERENCES \"public\".\"users\" (\"organizationId\", \"id\")\nON DELETE RESTRICT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"payroll_schedules_organizationId_createdById_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "payroll_schedules_organizationId_createdById_fkey",
+          "public",
+          "\"public\".\"payroll_schedules\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.payroll_runs.payroll_runs_organizationId_payrollScheduleId_fkey",
+    "label": "Add foreign key \"payroll_runs_organizationId_payrollScheduleId_fkey\" on \"payroll_runs\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "payroll_runs_organizationId_payrollScheduleId_fkey",
+        "table": "payroll_runs"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"payroll_runs_organizationId_payrollScheduleId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "payroll_runs_organizationId_payrollScheduleId_fkey",
+          "public",
+          "\"public\".\"payroll_runs\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"payroll_runs_organizationId_payrollScheduleId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"payroll_runs\"\nADD CONSTRAINT \"payroll_runs_organizationId_payrollScheduleId_fkey\"\nFOREIGN KEY (\"organizationId\", \"payrollScheduleId\")\nREFERENCES \"public\".\"payroll_schedules\" (\"organizationId\", \"id\")\nON DELETE RESTRICT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"payroll_runs_organizationId_payrollScheduleId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "payroll_runs_organizationId_payrollScheduleId_fkey",
+          "public",
+          "\"public\".\"payroll_runs\""
+        ]
+      }
+    ]
+  }
+]
