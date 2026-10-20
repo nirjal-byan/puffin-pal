@@ -1,0 +1,404 @@
+[
+  {
+    "id": "table.cash_flow_forecast_audit_events",
+    "label": "Create table \"cash_flow_forecast_audit_events\"",
+    "summary": "Creates table \"cash_flow_forecast_audit_events\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "cash_flow_forecast_audit_events"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"cash_flow_forecast_audit_events\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"cash_flow_forecast_audit_events\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"cash_flow_forecast_audit_events\"",
+        "sql": "CREATE TABLE \"public\".\"cash_flow_forecast_audit_events\" (\n  \"action\" text NOT NULL,\n  \"actorId\" text NOT NULL,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"details\" text NOT NULL,\n  \"id\" text NOT NULL,\n  \"organizationId\" text NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"cash_flow_forecast_audit_events_action_check_171c9c49\" CHECK (\"action\" IN ('CONFIGURATION_UPDATED'))\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"cash_flow_forecast_audit_events\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"cash_flow_forecast_audit_events\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.cash_flow_forecast_configurations",
+    "label": "Create table \"cash_flow_forecast_configurations\"",
+    "summary": "Creates table \"cash_flow_forecast_configurations\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "cash_flow_forecast_configurations"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"cash_flow_forecast_configurations\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"cash_flow_forecast_configurations\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"cash_flow_forecast_configurations\"",
+        "sql": "CREATE TABLE \"public\".\"cash_flow_forecast_configurations\" (\n  \"conservativeDelayAdjustmentDays\" int4 DEFAULT 14 NOT NULL,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"defaultHorizonDays\" int4 DEFAULT 30 NOT NULL,\n  \"expectedInvoiceCollectionDelay\" int4 DEFAULT 7 NOT NULL,\n  \"includeApprovedExpenses\" bool DEFAULT false NOT NULL,\n  \"includeApprovedPayroll\" bool DEFAULT true NOT NULL,\n  \"includeRecurringInvoices\" bool DEFAULT true NOT NULL,\n  \"includeSalaryEstimates\" bool DEFAULT false NOT NULL,\n  \"openingBalance\" numeric(14,2),\n  \"openingBalanceDate\" timestamptz,\n  \"optimisticDelayAdjustmentDays\" int4 DEFAULT 0 NOT NULL,\n  \"organizationId\" text NOT NULL,\n  \"updatedAt\" timestamptz NOT NULL,\n  \"updatedById\" text NOT NULL,\n  \"version\" int4 DEFAULT 1 NOT NULL,\n  PRIMARY KEY (\"organizationId\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"cash_flow_forecast_configurations\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"cash_flow_forecast_configurations\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.cash_flow_forecast_audit_events.cash_flow_audit_actor_idx",
+    "label": "Create index \"cash_flow_audit_actor_idx\" on \"cash_flow_forecast_audit_events\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "cash_flow_audit_actor_idx",
+        "table": "cash_flow_forecast_audit_events"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"cash_flow_audit_actor_idx\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"cash_flow_audit_actor_idx\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"cash_flow_audit_actor_idx\"",
+        "sql": "CREATE INDEX \"cash_flow_audit_actor_idx\" ON \"public\".\"cash_flow_forecast_audit_events\" (\"organizationId\", \"actorId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"cash_flow_audit_actor_idx\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"cash_flow_audit_actor_idx\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.cash_flow_forecast_audit_events.cash_flow_audit_created_idx",
+    "label": "Create index \"cash_flow_audit_created_idx\" on \"cash_flow_forecast_audit_events\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "cash_flow_audit_created_idx",
+        "table": "cash_flow_forecast_audit_events"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"cash_flow_audit_created_idx\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"cash_flow_audit_created_idx\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"cash_flow_audit_created_idx\"",
+        "sql": "CREATE INDEX \"cash_flow_audit_created_idx\" ON \"public\".\"cash_flow_forecast_audit_events\" (\"organizationId\", \"createdAt\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"cash_flow_audit_created_idx\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"cash_flow_audit_created_idx\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.cash_flow_forecast_audit_events.cash_flow_forecast_audit_events_organizationId_idx_2e17ef41",
+    "label": "Create index \"cash_flow_forecast_audit_events_organizationId_idx_2e17ef41\" on \"cash_flow_forecast_audit_events\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "cash_flow_forecast_audit_events_organizationId_idx_2e17ef41",
+        "table": "cash_flow_forecast_audit_events"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"cash_flow_forecast_audit_events_organizationId_idx_2e17ef41\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"cash_flow_forecast_audit_events_organizationId_idx_2e17ef41\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"cash_flow_forecast_audit_events_organizationId_idx_2e17ef41\"",
+        "sql": "CREATE INDEX \"cash_flow_forecast_audit_events_organizationId_idx_2e17ef41\" ON \"public\".\"cash_flow_forecast_audit_events\" (\"organizationId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"cash_flow_forecast_audit_events_organizationId_idx_2e17ef41\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"cash_flow_forecast_audit_events_organizationId_idx_2e17ef41\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.cash_flow_forecast_configurations.cash_flow_config_updater_idx",
+    "label": "Create index \"cash_flow_config_updater_idx\" on \"cash_flow_forecast_configurations\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "cash_flow_config_updater_idx",
+        "table": "cash_flow_forecast_configurations"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"cash_flow_config_updater_idx\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"cash_flow_config_updater_idx\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"cash_flow_config_updater_idx\"",
+        "sql": "CREATE INDEX \"cash_flow_config_updater_idx\" ON \"public\".\"cash_flow_forecast_configurations\" (\"organizationId\", \"updatedById\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"cash_flow_config_updater_idx\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"cash_flow_config_updater_idx\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.cash_flow_forecast_audit_events.cash_flow_audit_org_fkey",
+    "label": "Add foreign key \"cash_flow_audit_org_fkey\" on \"cash_flow_forecast_audit_events\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "cash_flow_audit_org_fkey",
+        "table": "cash_flow_forecast_audit_events"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"cash_flow_audit_org_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "cash_flow_audit_org_fkey",
+          "public",
+          "\"public\".\"cash_flow_forecast_audit_events\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"cash_flow_audit_org_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"cash_flow_forecast_audit_events\"\nADD CONSTRAINT \"cash_flow_audit_org_fkey\"\nFOREIGN KEY (\"organizationId\")\nREFERENCES \"public\".\"organizations\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"cash_flow_audit_org_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "cash_flow_audit_org_fkey",
+          "public",
+          "\"public\".\"cash_flow_forecast_audit_events\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.cash_flow_forecast_audit_events.cash_flow_audit_actor_fkey",
+    "label": "Add foreign key \"cash_flow_audit_actor_fkey\" on \"cash_flow_forecast_audit_events\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "cash_flow_audit_actor_fkey",
+        "table": "cash_flow_forecast_audit_events"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"cash_flow_audit_actor_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "cash_flow_audit_actor_fkey",
+          "public",
+          "\"public\".\"cash_flow_forecast_audit_events\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"cash_flow_audit_actor_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"cash_flow_forecast_audit_events\"\nADD CONSTRAINT \"cash_flow_audit_actor_fkey\"\nFOREIGN KEY (\"organizationId\", \"actorId\")\nREFERENCES \"public\".\"users\" (\"organizationId\", \"id\")\nON DELETE RESTRICT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"cash_flow_audit_actor_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "cash_flow_audit_actor_fkey",
+          "public",
+          "\"public\".\"cash_flow_forecast_audit_events\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.cash_flow_forecast_configurations.cash_flow_config_org_fkey",
+    "label": "Add foreign key \"cash_flow_config_org_fkey\" on \"cash_flow_forecast_configurations\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "cash_flow_config_org_fkey",
+        "table": "cash_flow_forecast_configurations"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"cash_flow_config_org_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "cash_flow_config_org_fkey",
+          "public",
+          "\"public\".\"cash_flow_forecast_configurations\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"cash_flow_config_org_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"cash_flow_forecast_configurations\"\nADD CONSTRAINT \"cash_flow_config_org_fkey\"\nFOREIGN KEY (\"organizationId\")\nREFERENCES \"public\".\"organizations\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"cash_flow_config_org_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "cash_flow_config_org_fkey",
+          "public",
+          "\"public\".\"cash_flow_forecast_configurations\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.cash_flow_forecast_configurations.cash_flow_config_updater_fkey",
+    "label": "Add foreign key \"cash_flow_config_updater_fkey\" on \"cash_flow_forecast_configurations\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "cash_flow_config_updater_fkey",
+        "table": "cash_flow_forecast_configurations"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"cash_flow_config_updater_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "cash_flow_config_updater_fkey",
+          "public",
+          "\"public\".\"cash_flow_forecast_configurations\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"cash_flow_config_updater_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"cash_flow_forecast_configurations\"\nADD CONSTRAINT \"cash_flow_config_updater_fkey\"\nFOREIGN KEY (\"organizationId\", \"updatedById\")\nREFERENCES \"public\".\"users\" (\"organizationId\", \"id\")\nON DELETE RESTRICT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"cash_flow_config_updater_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "cash_flow_config_updater_fkey",
+          "public",
+          "\"public\".\"cash_flow_forecast_configurations\""
+        ]
+      }
+    ]
+  }
+]

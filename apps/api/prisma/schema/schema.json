@@ -8,6 +8,14 @@
       "model": "AttendanceRecord",
       "namespace": "public"
     },
+    "cash_flow_forecast_audit_events": {
+      "model": "CashFlowForecastAuditEvent",
+      "namespace": "public"
+    },
+    "cash_flow_forecast_configurations": {
+      "model": "CashFlowForecastConfiguration",
+      "namespace": "public"
+    },
     "clients": {
       "model": "Client",
       "namespace": "public"
@@ -176,6 +184,15 @@
               {
                 "name": "HOLIDAY",
                 "value": "HOLIDAY"
+              }
+            ]
+          },
+          "CashFlowForecastAuditAction": {
+            "codecId": "pg/text@1",
+            "members": [
+              {
+                "name": "CONFIGURATION_UPDATED",
+                "value": "CONFIGURATION_UPDATED"
               }
             ]
           },
@@ -1035,6 +1052,318 @@
               },
               "namespaceId": "public",
               "table": "attendance_records"
+            }
+          },
+          "CashFlowForecastAuditEvent": {
+            "fields": {
+              "action": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                },
+                "valueSet": {
+                  "entityKind": "enum",
+                  "entityName": "CashFlowForecastAuditAction",
+                  "namespaceId": "public",
+                  "plane": "domain"
+                }
+              },
+              "actorId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "createdAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "kind": "scalar"
+                }
+              },
+              "details": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "organizationId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "actor": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "organizationId",
+                    "actorId"
+                  ],
+                  "targetFields": [
+                    "organizationId",
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "User",
+                  "namespace": "public"
+                }
+              },
+              "organization": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "organizationId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "Organization",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "action": {
+                  "column": "action"
+                },
+                "actorId": {
+                  "column": "actorId"
+                },
+                "createdAt": {
+                  "column": "createdAt"
+                },
+                "details": {
+                  "column": "details"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "organizationId": {
+                  "column": "organizationId"
+                }
+              },
+              "namespaceId": "public",
+              "table": "cash_flow_forecast_audit_events"
+            }
+          },
+          "CashFlowForecastConfiguration": {
+            "fields": {
+              "conservativeDelayAdjustmentDays": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "createdAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "kind": "scalar"
+                }
+              },
+              "defaultHorizonDays": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "expectedInvoiceCollectionDelay": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "includeApprovedExpenses": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/bool@1",
+                  "kind": "scalar"
+                }
+              },
+              "includeApprovedPayroll": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/bool@1",
+                  "kind": "scalar"
+                }
+              },
+              "includeRecurringInvoices": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/bool@1",
+                  "kind": "scalar"
+                }
+              },
+              "includeSalaryEstimates": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/bool@1",
+                  "kind": "scalar"
+                }
+              },
+              "openingBalance": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/numeric@1",
+                  "kind": "scalar",
+                  "typeParams": {
+                    "precision": 14,
+                    "scale": 2
+                  }
+                }
+              },
+              "openingBalanceDate": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "kind": "scalar"
+                }
+              },
+              "optimisticDelayAdjustmentDays": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "organizationId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "updatedAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "kind": "scalar"
+                }
+              },
+              "updatedById": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "version": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "organization": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "organizationId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "Organization",
+                  "namespace": "public"
+                }
+              },
+              "updatedBy": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "organizationId",
+                    "updatedById"
+                  ],
+                  "targetFields": [
+                    "organizationId",
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "User",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "conservativeDelayAdjustmentDays": {
+                  "column": "conservativeDelayAdjustmentDays"
+                },
+                "createdAt": {
+                  "column": "createdAt"
+                },
+                "defaultHorizonDays": {
+                  "column": "defaultHorizonDays"
+                },
+                "expectedInvoiceCollectionDelay": {
+                  "column": "expectedInvoiceCollectionDelay"
+                },
+                "includeApprovedExpenses": {
+                  "column": "includeApprovedExpenses"
+                },
+                "includeApprovedPayroll": {
+                  "column": "includeApprovedPayroll"
+                },
+                "includeRecurringInvoices": {
+                  "column": "includeRecurringInvoices"
+                },
+                "includeSalaryEstimates": {
+                  "column": "includeSalaryEstimates"
+                },
+                "openingBalance": {
+                  "column": "openingBalance"
+                },
+                "openingBalanceDate": {
+                  "column": "openingBalanceDate"
+                },
+                "optimisticDelayAdjustmentDays": {
+                  "column": "optimisticDelayAdjustmentDays"
+                },
+                "organizationId": {
+                  "column": "organizationId"
+                },
+                "updatedAt": {
+                  "column": "updatedAt"
+                },
+                "updatedById": {
+                  "column": "updatedById"
+                },
+                "version": {
+                  "column": "version"
+                }
+              },
+              "namespaceId": "public",
+              "table": "cash_flow_forecast_configurations"
             }
           },
           "Client": {
@@ -3981,6 +4310,37 @@
                 },
                 "to": {
                   "model": "AttendanceRecord",
+                  "namespace": "public"
+                }
+              },
+              "cashFlowAuditEvents": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "organizationId"
+                  ]
+                },
+                "to": {
+                  "model": "CashFlowForecastAuditEvent",
+                  "namespace": "public"
+                }
+              },
+              "cashFlowConfiguration": {
+                "cardinality": "1:1",
+                "nullable": true,
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "organizationId"
+                  ]
+                },
+                "to": {
+                  "model": "CashFlowForecastConfiguration",
                   "namespace": "public"
                 }
               },
@@ -7452,6 +7812,23 @@
                   "namespace": "public"
                 }
               },
+              "cashFlowAuditEvents": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "organizationId",
+                    "id"
+                  ],
+                  "targetFields": [
+                    "organizationId",
+                    "actorId"
+                  ]
+                },
+                "to": {
+                  "model": "CashFlowForecastAuditEvent",
+                  "namespace": "public"
+                }
+              },
               "createdAttendance": {
                 "cardinality": "1:N",
                 "on": {
@@ -7772,6 +8149,23 @@
                 },
                 "to": {
                   "model": "AttendanceRecord",
+                  "namespace": "public"
+                }
+              },
+              "updatedCashFlowConfig": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "organizationId",
+                    "id"
+                  ],
+                  "targetFields": [
+                    "organizationId",
+                    "updatedById"
+                  ]
+                },
+                "to": {
+                  "model": "CashFlowForecastConfiguration",
                   "namespace": "public"
                 }
               },
@@ -8437,6 +8831,308 @@
                   ]
                 }
               ]
+            },
+            "cash_flow_forecast_audit_events": {
+              "checks": [
+                {
+                  "expression": "\"action\" IN ('CONFIGURATION_UPDATED')",
+                  "name": "cash_flow_forecast_audit_events_action_check_171c9c49",
+                  "prefix": "cash_flow_forecast_audit_events_action_check"
+                }
+              ],
+              "columns": {
+                "action": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false,
+                  "valueSet": {
+                    "entityKind": "valueSet",
+                    "entityName": "CashFlowForecastAuditAction",
+                    "namespaceId": "public",
+                    "plane": "storage"
+                  }
+                },
+                "actorId": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "createdAt": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "details": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "id": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "organizationId": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [
+                {
+                  "name": "cash_flow_audit_org_fkey",
+                  "onDelete": "cascade",
+                  "source": {
+                    "columns": [
+                      "organizationId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "cash_flow_forecast_audit_events"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "organizations"
+                  }
+                },
+                {
+                  "name": "cash_flow_audit_actor_fkey",
+                  "onDelete": "restrict",
+                  "source": {
+                    "columns": [
+                      "organizationId",
+                      "actorId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "cash_flow_forecast_audit_events"
+                  },
+                  "target": {
+                    "columns": [
+                      "organizationId",
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "users"
+                  }
+                }
+              ],
+              "indexes": [
+                {
+                  "columns": [
+                    "organizationId",
+                    "actorId"
+                  ],
+                  "name": "cash_flow_audit_actor_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "organizationId",
+                    "createdAt"
+                  ],
+                  "name": "cash_flow_audit_created_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "organizationId"
+                  ],
+                  "name": "cash_flow_forecast_audit_events_organizationId_idx_2e17ef41",
+                  "prefix": "cash_flow_forecast_audit_events_organizationId_idx",
+                  "unique": false
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": []
+            },
+            "cash_flow_forecast_configurations": {
+              "columns": {
+                "conservativeDelayAdjustmentDays": {
+                  "codecId": "pg/int4@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": 14
+                  },
+                  "nativeType": "int4",
+                  "nullable": false
+                },
+                "createdAt": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "defaultHorizonDays": {
+                  "codecId": "pg/int4@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": 30
+                  },
+                  "nativeType": "int4",
+                  "nullable": false
+                },
+                "expectedInvoiceCollectionDelay": {
+                  "codecId": "pg/int4@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": 7
+                  },
+                  "nativeType": "int4",
+                  "nullable": false
+                },
+                "includeApprovedExpenses": {
+                  "codecId": "pg/bool@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": false
+                  },
+                  "nativeType": "bool",
+                  "nullable": false
+                },
+                "includeApprovedPayroll": {
+                  "codecId": "pg/bool@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": true
+                  },
+                  "nativeType": "bool",
+                  "nullable": false
+                },
+                "includeRecurringInvoices": {
+                  "codecId": "pg/bool@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": true
+                  },
+                  "nativeType": "bool",
+                  "nullable": false
+                },
+                "includeSalaryEstimates": {
+                  "codecId": "pg/bool@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": false
+                  },
+                  "nativeType": "bool",
+                  "nullable": false
+                },
+                "openingBalance": {
+                  "codecId": "pg/numeric@1",
+                  "nativeType": "numeric",
+                  "nullable": true,
+                  "typeParams": {
+                    "precision": 14,
+                    "scale": 2
+                  }
+                },
+                "openingBalanceDate": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "nativeType": "timestamptz",
+                  "nullable": true
+                },
+                "optimisticDelayAdjustmentDays": {
+                  "codecId": "pg/int4@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": 0
+                  },
+                  "nativeType": "int4",
+                  "nullable": false
+                },
+                "organizationId": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "updatedAt": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "updatedById": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "version": {
+                  "codecId": "pg/int4@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": 1
+                  },
+                  "nativeType": "int4",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [
+                {
+                  "name": "cash_flow_config_org_fkey",
+                  "onDelete": "cascade",
+                  "source": {
+                    "columns": [
+                      "organizationId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "cash_flow_forecast_configurations"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "organizations"
+                  }
+                },
+                {
+                  "name": "cash_flow_config_updater_fkey",
+                  "onDelete": "restrict",
+                  "source": {
+                    "columns": [
+                      "organizationId",
+                      "updatedById"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "cash_flow_forecast_configurations"
+                  },
+                  "target": {
+                    "columns": [
+                      "organizationId",
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "users"
+                  }
+                }
+              ],
+              "indexes": [
+                {
+                  "columns": [
+                    "organizationId",
+                    "updatedById"
+                  ],
+                  "name": "cash_flow_config_updater_idx",
+                  "unique": false
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "organizationId"
+                ]
+              },
+              "uniques": []
             },
             "clients": {
               "columns": {
@@ -14070,6 +14766,12 @@
                 "HOLIDAY"
               ]
             },
+            "CashFlowForecastAuditAction": {
+              "kind": "valueSet",
+              "values": [
+                "CONFIGURATION_UPDATED"
+              ]
+            },
             "CompensationType": {
               "kind": "valueSet",
               "values": [
@@ -14324,10 +15026,10 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "7a1e6ca649486c12b389e9af279fa96a420349ed903953cea971434206c7ace6"
+    "storageHash": "85a64e52dcfe897d4040dbab381261bafcac495b00d074c690ac2289c6c017c1"
   },
   "execution": {
-    "executionHash": "e070cc9ecb9c275475c639f95432a49dc4462d4c7fc44183572f3ff38130ccc6",
+    "executionHash": "5ce6b4886914ba9f3fef43a6936098e9f7b8078814f0ef13a341339977133265",
     "mutations": {
       "defaults": [
         {
@@ -14352,6 +15054,32 @@
           },
           "ref": {
             "entry": "attendance_records",
+            "field": "updatedAt",
+            "namespace": "public"
+          }
+        },
+        {
+          "onCreate": {
+            "id": "uuidv4",
+            "kind": "generator"
+          },
+          "ref": {
+            "entry": "cash_flow_forecast_audit_events",
+            "field": "id",
+            "namespace": "public"
+          }
+        },
+        {
+          "onCreate": {
+            "id": "instantNow",
+            "kind": "generator"
+          },
+          "onUpdate": {
+            "id": "instantNow",
+            "kind": "generator"
+          },
+          "ref": {
+            "entry": "cash_flow_forecast_configurations",
             "field": "updatedAt",
             "namespace": "public"
           }

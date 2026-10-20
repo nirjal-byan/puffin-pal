@@ -110,6 +110,15 @@ export const TOUR_STEPS: readonly TutorialStep[] = [
     description: "Manage recurring schedules, generated invoices, and paused or active retainers.",
   },
   {
+    id: "cash-flow",
+    route: "/?section=cash-flow",
+    target: "cash-flow-overview",
+    requiredPermissions: ["cash-flow:read"],
+    title: "Plan your cash position",
+    description:
+      "Compare deterministic cash scenarios from invoices, payroll, recurring billing, and enabled planning assumptions.",
+  },
+  {
     id: "employees",
     route: "/?section=employees",
     target: "nav-employees",

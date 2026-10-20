@@ -34,9 +34,9 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'7a1e6ca649486c12b389e9af279fa96a420349ed903953cea971434206c7ace6'>;
+  StorageHashBase<'85a64e52dcfe897d4040dbab381261bafcac495b00d074c690ac2289c6c017c1'>;
 export type ExecutionHash =
-  ExecutionHashBase<'e070cc9ecb9c275475c639f95432a49dc4462d4c7fc44183572f3ff38130ccc6'>;
+  ExecutionHashBase<'5ce6b4886914ba9f3fef43a6936098e9f7b8078814f0ef13a341339977133265'>;
 export type ProfileHash =
   ProfileHashBase<'3916f444a8a17ad749191acf9e08dad97d1a327b88c2f1d45d12f240296aa8b2'>;
 
@@ -267,6 +267,31 @@ export type FieldOutputTypes = {
       readonly version: CodecTypes['pg/int4@1']['output'];
       readonly workDate: CodecTypes['pg/timestamptz-temporal@1']['output'];
       readonly workedMinutes: CodecTypes['pg/int4@1']['output'] | null;
+    };
+    readonly CashFlowForecastAuditEvent: {
+      readonly action: 'CONFIGURATION_UPDATED';
+      readonly actorId: CodecTypes['pg/text@1']['output'];
+      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly details: CodecTypes['pg/text@1']['output'];
+      readonly id: CodecTypes['pg/text@1']['output'];
+      readonly organizationId: CodecTypes['pg/text@1']['output'];
+    };
+    readonly CashFlowForecastConfiguration: {
+      readonly conservativeDelayAdjustmentDays: CodecTypes['pg/int4@1']['output'];
+      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly defaultHorizonDays: CodecTypes['pg/int4@1']['output'];
+      readonly expectedInvoiceCollectionDelay: CodecTypes['pg/int4@1']['output'];
+      readonly includeApprovedExpenses: CodecTypes['pg/bool@1']['output'];
+      readonly includeApprovedPayroll: CodecTypes['pg/bool@1']['output'];
+      readonly includeRecurringInvoices: CodecTypes['pg/bool@1']['output'];
+      readonly includeSalaryEstimates: CodecTypes['pg/bool@1']['output'];
+      readonly openingBalance: Numeric<14, 2> | null;
+      readonly openingBalanceDate: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
+      readonly optimisticDelayAdjustmentDays: CodecTypes['pg/int4@1']['output'];
+      readonly organizationId: CodecTypes['pg/text@1']['output'];
+      readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly updatedById: CodecTypes['pg/text@1']['output'];
+      readonly version: CodecTypes['pg/int4@1']['output'];
     };
     readonly Client: {
       readonly companyName: CodecTypes['pg/text@1']['output'] | null;
@@ -768,6 +793,31 @@ export type FieldInputTypes = {
       readonly workDate: CodecTypes['pg/timestamptz-temporal@1']['input'];
       readonly workedMinutes: CodecTypes['pg/int4@1']['input'] | null;
     };
+    readonly CashFlowForecastAuditEvent: {
+      readonly action: 'CONFIGURATION_UPDATED';
+      readonly actorId: CodecTypes['pg/text@1']['input'];
+      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly details: CodecTypes['pg/text@1']['input'];
+      readonly id: CodecTypes['pg/text@1']['input'];
+      readonly organizationId: CodecTypes['pg/text@1']['input'];
+    };
+    readonly CashFlowForecastConfiguration: {
+      readonly conservativeDelayAdjustmentDays: CodecTypes['pg/int4@1']['input'];
+      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly defaultHorizonDays: CodecTypes['pg/int4@1']['input'];
+      readonly expectedInvoiceCollectionDelay: CodecTypes['pg/int4@1']['input'];
+      readonly includeApprovedExpenses: CodecTypes['pg/bool@1']['input'];
+      readonly includeApprovedPayroll: CodecTypes['pg/bool@1']['input'];
+      readonly includeRecurringInvoices: CodecTypes['pg/bool@1']['input'];
+      readonly includeSalaryEstimates: CodecTypes['pg/bool@1']['input'];
+      readonly openingBalance: CodecTypes['pg/numeric@1']['input'] | null;
+      readonly openingBalanceDate: CodecTypes['pg/timestamptz-temporal@1']['input'] | null;
+      readonly optimisticDelayAdjustmentDays: CodecTypes['pg/int4@1']['input'];
+      readonly organizationId: CodecTypes['pg/text@1']['input'];
+      readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly updatedById: CodecTypes['pg/text@1']['input'];
+      readonly version: CodecTypes['pg/int4@1']['input'];
+    };
     readonly Client: {
       readonly companyName: CodecTypes['pg/text@1']['input'] | null;
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
@@ -1268,6 +1318,31 @@ export type StorageColumnTypes = {
       readonly workDate: CodecTypes['pg/timestamptz-temporal@1']['output'];
       readonly workedMinutes: CodecTypes['pg/int4@1']['output'] | null;
     };
+    readonly cash_flow_forecast_audit_events: {
+      readonly action: 'CONFIGURATION_UPDATED';
+      readonly actorId: CodecTypes['pg/text@1']['output'];
+      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly details: CodecTypes['pg/text@1']['output'];
+      readonly id: CodecTypes['pg/text@1']['output'];
+      readonly organizationId: CodecTypes['pg/text@1']['output'];
+    };
+    readonly cash_flow_forecast_configurations: {
+      readonly conservativeDelayAdjustmentDays: CodecTypes['pg/int4@1']['output'];
+      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly defaultHorizonDays: CodecTypes['pg/int4@1']['output'];
+      readonly expectedInvoiceCollectionDelay: CodecTypes['pg/int4@1']['output'];
+      readonly includeApprovedExpenses: CodecTypes['pg/bool@1']['output'];
+      readonly includeApprovedPayroll: CodecTypes['pg/bool@1']['output'];
+      readonly includeRecurringInvoices: CodecTypes['pg/bool@1']['output'];
+      readonly includeSalaryEstimates: CodecTypes['pg/bool@1']['output'];
+      readonly openingBalance: Numeric<14, 2> | null;
+      readonly openingBalanceDate: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
+      readonly optimisticDelayAdjustmentDays: CodecTypes['pg/int4@1']['output'];
+      readonly organizationId: CodecTypes['pg/text@1']['output'];
+      readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly updatedById: CodecTypes['pg/text@1']['output'];
+      readonly version: CodecTypes['pg/int4@1']['output'];
+    };
     readonly clients: {
       readonly companyName: CodecTypes['pg/text@1']['output'] | null;
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
@@ -1767,6 +1842,31 @@ export type StorageColumnInputTypes = {
       readonly version: CodecTypes['pg/int4@1']['input'];
       readonly workDate: CodecTypes['pg/timestamptz-temporal@1']['input'];
       readonly workedMinutes: CodecTypes['pg/int4@1']['input'] | null;
+    };
+    readonly cash_flow_forecast_audit_events: {
+      readonly action: 'CONFIGURATION_UPDATED';
+      readonly actorId: CodecTypes['pg/text@1']['input'];
+      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly details: CodecTypes['pg/text@1']['input'];
+      readonly id: CodecTypes['pg/text@1']['input'];
+      readonly organizationId: CodecTypes['pg/text@1']['input'];
+    };
+    readonly cash_flow_forecast_configurations: {
+      readonly conservativeDelayAdjustmentDays: CodecTypes['pg/int4@1']['input'];
+      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly defaultHorizonDays: CodecTypes['pg/int4@1']['input'];
+      readonly expectedInvoiceCollectionDelay: CodecTypes['pg/int4@1']['input'];
+      readonly includeApprovedExpenses: CodecTypes['pg/bool@1']['input'];
+      readonly includeApprovedPayroll: CodecTypes['pg/bool@1']['input'];
+      readonly includeRecurringInvoices: CodecTypes['pg/bool@1']['input'];
+      readonly includeSalaryEstimates: CodecTypes['pg/bool@1']['input'];
+      readonly openingBalance: CodecTypes['pg/numeric@1']['input'] | null;
+      readonly openingBalanceDate: CodecTypes['pg/timestamptz-temporal@1']['input'] | null;
+      readonly optimisticDelayAdjustmentDays: CodecTypes['pg/int4@1']['input'];
+      readonly organizationId: CodecTypes['pg/text@1']['input'];
+      readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly updatedById: CodecTypes['pg/text@1']['input'];
+      readonly version: CodecTypes['pg/int4@1']['input'];
     };
     readonly clients: {
       readonly companyName: CodecTypes['pg/text@1']['input'] | null;
@@ -2273,6 +2373,37 @@ export namespace Models {
     updatedBy: public_User;
     readonly [RelationKeys]?: 'createdBy' | 'employee' | 'organization' | 'updatedBy';
   };
+  export type public_CashFlowForecastAuditEvent = {
+    action: 'CONFIGURATION_UPDATED';
+    actorId: CodecTypes['pg/text@1']['output'];
+    createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+    details: CodecTypes['pg/text@1']['output'];
+    id: CodecTypes['pg/text@1']['output'];
+    organizationId: CodecTypes['pg/text@1']['output'];
+    actor: public_User;
+    organization: public_Organization;
+    readonly [RelationKeys]?: 'actor' | 'organization';
+  };
+  export type public_CashFlowForecastConfiguration = {
+    conservativeDelayAdjustmentDays: CodecTypes['pg/int4@1']['output'];
+    createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+    defaultHorizonDays: CodecTypes['pg/int4@1']['output'];
+    expectedInvoiceCollectionDelay: CodecTypes['pg/int4@1']['output'];
+    includeApprovedExpenses: CodecTypes['pg/bool@1']['output'];
+    includeApprovedPayroll: CodecTypes['pg/bool@1']['output'];
+    includeRecurringInvoices: CodecTypes['pg/bool@1']['output'];
+    includeSalaryEstimates: CodecTypes['pg/bool@1']['output'];
+    openingBalance: Numeric<14, 2> | null;
+    openingBalanceDate: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
+    optimisticDelayAdjustmentDays: CodecTypes['pg/int4@1']['output'];
+    organizationId: CodecTypes['pg/text@1']['output'];
+    updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+    updatedById: CodecTypes['pg/text@1']['output'];
+    version: CodecTypes['pg/int4@1']['output'];
+    organization: public_Organization;
+    updatedBy: public_User;
+    readonly [RelationKeys]?: 'organization' | 'updatedBy';
+  };
   export type public_Client = {
     companyName: CodecTypes['pg/text@1']['output'] | null;
     createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
@@ -2572,6 +2703,8 @@ export namespace Models {
     updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
     website: CodecTypes['pg/text@1']['output'] | null;
     attendanceRecords: public_AttendanceRecord[];
+    cashFlowAuditEvents: public_CashFlowForecastAuditEvent[];
+    cashFlowConfiguration: public_CashFlowForecastConfiguration | null;
     clients: public_Client[];
     departments: public_Department[];
     employeeAuditEvents: public_EmployeeAuditEvent[];
@@ -2601,6 +2734,8 @@ export namespace Models {
     workforceAuditEvents: public_WorkforceAuditEvent[];
     readonly [RelationKeys]?:
       | 'attendanceRecords'
+      | 'cashFlowAuditEvents'
+      | 'cashFlowConfiguration'
       | 'clients'
       | 'departments'
       | 'employeeAuditEvents'
@@ -2938,6 +3073,7 @@ export namespace Models {
     phoneNumber: CodecTypes['pg/text@1']['output'] | null;
     updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
     approvedPayrollRuns: public_PayrollRun[];
+    cashFlowAuditEvents: public_CashFlowForecastAuditEvent[];
     createdAttendance: public_AttendanceRecord[];
     createdExpenses: public_Expense[];
     createdPayrollRuns: public_PayrollRun[];
@@ -2957,9 +3093,11 @@ export namespace Models {
     reviewedOvertime: public_OvertimeRequest[];
     submittedExpenses: public_Expense[];
     updatedAttendance: public_AttendanceRecord[];
+    updatedCashFlowConfig: public_CashFlowForecastConfiguration[];
     workforceAuditEvents: public_WorkforceAuditEvent[];
     readonly [RelationKeys]?:
       | 'approvedPayrollRuns'
+      | 'cashFlowAuditEvents'
       | 'createdAttendance'
       | 'createdExpenses'
       | 'createdPayrollRuns'
@@ -2979,6 +3117,7 @@ export namespace Models {
       | 'reviewedOvertime'
       | 'submittedExpenses'
       | 'updatedAttendance'
+      | 'updatedCashFlowConfig'
       | 'workforceAuditEvents';
   };
   export type public_WorkSchedule = {
@@ -3018,6 +3157,8 @@ export namespace Models {
 export declare const models: {
   public: {
     AttendanceRecord: Models.public_AttendanceRecord;
+    CashFlowForecastAuditEvent: Models.public_CashFlowForecastAuditEvent;
+    CashFlowForecastConfiguration: Models.public_CashFlowForecastConfiguration;
     Client: Models.public_Client;
     Department: Models.public_Department;
     Employee: Models.public_Employee;
@@ -3252,6 +3393,243 @@ type ContractBase = Omit<
                     readonly tableName: 'users';
                     readonly columns: readonly ['organizationId', 'id'];
                   };
+                },
+              ];
+            };
+            readonly cash_flow_forecast_audit_events: {
+              columns: {
+                readonly action: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly actorId: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly createdAt: {
+                  readonly nativeType: 'timestamptz';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                  readonly nullable: false;
+                  readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
+                };
+                readonly details: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly id: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly organizationId: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [];
+              indexes: readonly [
+                {
+                  readonly name: 'cash_flow_audit_actor_idx';
+                  readonly columns: readonly ['organizationId', 'actorId'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'cash_flow_audit_created_idx';
+                  readonly columns: readonly ['organizationId', 'createdAt'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'cash_flow_forecast_audit_events_organizationId_idx_2e17ef41';
+                  readonly prefix: 'cash_flow_forecast_audit_events_organizationId_idx';
+                  readonly columns: readonly ['organizationId'];
+                  readonly unique: false;
+                },
+              ];
+              foreignKeys: readonly [
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'cash_flow_forecast_audit_events';
+                    readonly columns: readonly ['organizationId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'organizations';
+                    readonly columns: readonly ['id'];
+                  };
+                  readonly name: 'cash_flow_audit_org_fkey';
+                },
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'cash_flow_forecast_audit_events';
+                    readonly columns: readonly ['organizationId', 'actorId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'users';
+                    readonly columns: readonly ['organizationId', 'id'];
+                  };
+                  readonly name: 'cash_flow_audit_actor_fkey';
+                },
+              ];
+            };
+            readonly cash_flow_forecast_configurations: {
+              columns: {
+                readonly conservativeDelayAdjustmentDays: {
+                  readonly nativeType: 'int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/int4@1', 14>;
+                  };
+                };
+                readonly createdAt: {
+                  readonly nativeType: 'timestamptz';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                  readonly nullable: false;
+                  readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
+                };
+                readonly defaultHorizonDays: {
+                  readonly nativeType: 'int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/int4@1', 30>;
+                  };
+                };
+                readonly expectedInvoiceCollectionDelay: {
+                  readonly nativeType: 'int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/int4@1', 7>;
+                  };
+                };
+                readonly includeApprovedExpenses: {
+                  readonly nativeType: 'bool';
+                  readonly codecId: 'pg/bool@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/bool@1', false>;
+                  };
+                };
+                readonly includeApprovedPayroll: {
+                  readonly nativeType: 'bool';
+                  readonly codecId: 'pg/bool@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/bool@1', true>;
+                  };
+                };
+                readonly includeRecurringInvoices: {
+                  readonly nativeType: 'bool';
+                  readonly codecId: 'pg/bool@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/bool@1', true>;
+                  };
+                };
+                readonly includeSalaryEstimates: {
+                  readonly nativeType: 'bool';
+                  readonly codecId: 'pg/bool@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/bool@1', false>;
+                  };
+                };
+                readonly openingBalance: {
+                  readonly nativeType: 'numeric';
+                  readonly codecId: 'pg/numeric@1';
+                  readonly nullable: true;
+                  readonly typeParams: { readonly precision: 14; readonly scale: 2 };
+                };
+                readonly openingBalanceDate: {
+                  readonly nativeType: 'timestamptz';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                  readonly nullable: true;
+                };
+                readonly optimisticDelayAdjustmentDays: {
+                  readonly nativeType: 'int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/int4@1', 0>;
+                  };
+                };
+                readonly organizationId: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly updatedAt: {
+                  readonly nativeType: 'timestamptz';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                  readonly nullable: false;
+                };
+                readonly updatedById: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly version: {
+                  readonly nativeType: 'int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/int4@1', 1>;
+                  };
+                };
+              };
+              primaryKey: { readonly columns: readonly ['organizationId'] };
+              uniques: readonly [];
+              indexes: readonly [
+                {
+                  readonly name: 'cash_flow_config_updater_idx';
+                  readonly columns: readonly ['organizationId', 'updatedById'];
+                  readonly unique: false;
+                },
+              ];
+              foreignKeys: readonly [
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'cash_flow_forecast_configurations';
+                    readonly columns: readonly ['organizationId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'organizations';
+                    readonly columns: readonly ['id'];
+                  };
+                  readonly name: 'cash_flow_config_org_fkey';
+                },
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'cash_flow_forecast_configurations';
+                    readonly columns: readonly ['organizationId', 'updatedById'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'users';
+                    readonly columns: readonly ['organizationId', 'id'];
+                  };
+                  readonly name: 'cash_flow_config_updater_fkey';
                 },
               ];
             };
@@ -7287,6 +7665,10 @@ type ContractBase = Omit<
               readonly kind: 'valueSet';
               readonly values: readonly ['PRESENT', 'ABSENT', 'HALF_DAY', 'ON_LEAVE', 'HOLIDAY'];
             };
+            readonly CashFlowForecastAuditAction: {
+              readonly kind: 'valueSet';
+              readonly values: readonly ['CONFIGURATION_UPDATED'];
+            };
             readonly CompensationType: {
               readonly kind: 'valueSet';
               readonly values: readonly ['FIXED_SALARY', 'HOURLY'];
@@ -7465,6 +7847,14 @@ type ContractBase = Omit<
     readonly attendance_records: {
       readonly namespace: 'public' & NamespaceId;
       readonly model: 'AttendanceRecord';
+    };
+    readonly cash_flow_forecast_audit_events: {
+      readonly namespace: 'public' & NamespaceId;
+      readonly model: 'CashFlowForecastAuditEvent';
+    };
+    readonly cash_flow_forecast_configurations: {
+      readonly namespace: 'public' & NamespaceId;
+      readonly model: 'CashFlowForecastConfiguration';
     };
     readonly clients: { readonly namespace: 'public' & NamespaceId; readonly model: 'Client' };
     readonly departments: {
@@ -7721,6 +8111,199 @@ type ContractBase = Omit<
                 readonly version: { readonly column: 'version' };
                 readonly workDate: { readonly column: 'workDate' };
                 readonly workedMinutes: { readonly column: 'workedMinutes' };
+              };
+            };
+          };
+          readonly CashFlowForecastAuditEvent: {
+            readonly fields: {
+              readonly action: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly actorId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly createdAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                };
+              };
+              readonly details: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly organizationId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+            };
+            readonly relations: {
+              readonly actor: {
+                readonly to: { readonly namespace: 'public' & NamespaceId; readonly model: 'User' };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['organizationId', 'actorId'];
+                  readonly targetFields: readonly ['organizationId', 'id'];
+                };
+              };
+              readonly organization: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'Organization';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['organizationId'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
+            };
+            readonly storage: {
+              readonly table: 'cash_flow_forecast_audit_events';
+              readonly namespaceId: 'public';
+              readonly fields: {
+                readonly action: { readonly column: 'action' };
+                readonly actorId: { readonly column: 'actorId' };
+                readonly createdAt: { readonly column: 'createdAt' };
+                readonly details: { readonly column: 'details' };
+                readonly id: { readonly column: 'id' };
+                readonly organizationId: { readonly column: 'organizationId' };
+              };
+            };
+          };
+          readonly CashFlowForecastConfiguration: {
+            readonly fields: {
+              readonly conservativeDelayAdjustmentDays: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly createdAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                };
+              };
+              readonly defaultHorizonDays: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly expectedInvoiceCollectionDelay: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly includeApprovedExpenses: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/bool@1' };
+              };
+              readonly includeApprovedPayroll: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/bool@1' };
+              };
+              readonly includeRecurringInvoices: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/bool@1' };
+              };
+              readonly includeSalaryEstimates: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/bool@1' };
+              };
+              readonly openingBalance: {
+                readonly nullable: true;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/numeric@1';
+                  readonly typeParams: { readonly precision: 14; readonly scale: 2 };
+                };
+              };
+              readonly openingBalanceDate: {
+                readonly nullable: true;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                };
+              };
+              readonly optimisticDelayAdjustmentDays: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly organizationId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly updatedAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                };
+              };
+              readonly updatedById: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly version: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+            };
+            readonly relations: {
+              readonly organization: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'Organization';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['organizationId'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
+              readonly updatedBy: {
+                readonly to: { readonly namespace: 'public' & NamespaceId; readonly model: 'User' };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['organizationId', 'updatedById'];
+                  readonly targetFields: readonly ['organizationId', 'id'];
+                };
+              };
+            };
+            readonly storage: {
+              readonly table: 'cash_flow_forecast_configurations';
+              readonly namespaceId: 'public';
+              readonly fields: {
+                readonly conservativeDelayAdjustmentDays: {
+                  readonly column: 'conservativeDelayAdjustmentDays';
+                };
+                readonly createdAt: { readonly column: 'createdAt' };
+                readonly defaultHorizonDays: { readonly column: 'defaultHorizonDays' };
+                readonly expectedInvoiceCollectionDelay: {
+                  readonly column: 'expectedInvoiceCollectionDelay';
+                };
+                readonly includeApprovedExpenses: { readonly column: 'includeApprovedExpenses' };
+                readonly includeApprovedPayroll: { readonly column: 'includeApprovedPayroll' };
+                readonly includeRecurringInvoices: { readonly column: 'includeRecurringInvoices' };
+                readonly includeSalaryEstimates: { readonly column: 'includeSalaryEstimates' };
+                readonly openingBalance: { readonly column: 'openingBalance' };
+                readonly openingBalanceDate: { readonly column: 'openingBalanceDate' };
+                readonly optimisticDelayAdjustmentDays: {
+                  readonly column: 'optimisticDelayAdjustmentDays';
+                };
+                readonly organizationId: { readonly column: 'organizationId' };
+                readonly updatedAt: { readonly column: 'updatedAt' };
+                readonly updatedById: { readonly column: 'updatedById' };
+                readonly version: { readonly column: 'version' };
               };
             };
           };
@@ -9510,6 +10093,29 @@ type ContractBase = Omit<
                   readonly model: 'AttendanceRecord';
                 };
                 readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['organizationId'];
+                };
+              };
+              readonly cashFlowAuditEvents: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'CashFlowForecastAuditEvent';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['organizationId'];
+                };
+              };
+              readonly cashFlowConfiguration: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'CashFlowForecastConfiguration';
+                };
+                readonly cardinality: '1:1';
+                readonly nullable: true;
                 readonly on: {
                   readonly localFields: readonly ['id'];
                   readonly targetFields: readonly ['organizationId'];
@@ -11660,6 +12266,17 @@ type ContractBase = Omit<
                   readonly targetFields: readonly ['organizationId', 'approvedById'];
                 };
               };
+              readonly cashFlowAuditEvents: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'CashFlowForecastAuditEvent';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['organizationId', 'id'];
+                  readonly targetFields: readonly ['organizationId', 'actorId'];
+                };
+              };
               readonly createdAttendance: {
                 readonly to: {
                   readonly namespace: 'public' & NamespaceId;
@@ -11864,6 +12481,17 @@ type ContractBase = Omit<
                 readonly to: {
                   readonly namespace: 'public' & NamespaceId;
                   readonly model: 'AttendanceRecord';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['organizationId', 'id'];
+                  readonly targetFields: readonly ['organizationId', 'updatedById'];
+                };
+              };
+              readonly updatedCashFlowConfig: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'CashFlowForecastConfiguration';
                 };
                 readonly cardinality: '1:N';
                 readonly on: {
@@ -12122,6 +12750,12 @@ type ContractBase = Omit<
               { readonly name: 'HALF_DAY'; readonly value: 'HALF_DAY' },
               { readonly name: 'ON_LEAVE'; readonly value: 'ON_LEAVE' },
               { readonly name: 'HOLIDAY'; readonly value: 'HOLIDAY' },
+            ];
+          };
+          readonly CashFlowForecastAuditAction: {
+            readonly codecId: 'pg/text@1';
+            readonly members: readonly [
+              { readonly name: 'CONFIGURATION_UPDATED'; readonly value: 'CONFIGURATION_UPDATED' },
             ];
           };
           readonly CompensationType: {
@@ -12414,6 +13048,23 @@ type ContractBase = Omit<
           readonly onUpdate: { readonly id: 'instantNow'; readonly kind: 'generator' };
           readonly ref: {
             readonly entry: 'attendance_records';
+            readonly field: 'updatedAt';
+            readonly namespace: 'public';
+          };
+        },
+        {
+          readonly onCreate: { readonly id: 'uuidv4'; readonly kind: 'generator' };
+          readonly ref: {
+            readonly entry: 'cash_flow_forecast_audit_events';
+            readonly field: 'id';
+            readonly namespace: 'public';
+          };
+        },
+        {
+          readonly onCreate: { readonly id: 'instantNow'; readonly kind: 'generator' };
+          readonly onUpdate: { readonly id: 'instantNow'; readonly kind: 'generator' };
+          readonly ref: {
+            readonly entry: 'cash_flow_forecast_configurations';
             readonly field: 'updatedAt';
             readonly namespace: 'public';
           };

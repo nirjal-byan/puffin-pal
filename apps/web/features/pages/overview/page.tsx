@@ -14,7 +14,7 @@ export default function OverviewPage({
 }) {
   const sections = NAV.filter(
     (item) =>
-      ["clients", "invoices", "expenses", "retainers", "members"].includes(item.key) &&
+      ["clients", "invoices", "expenses", "retainers", "cash-flow", "members"].includes(item.key) &&
       session.permissions.includes(item.permission),
   );
   return (

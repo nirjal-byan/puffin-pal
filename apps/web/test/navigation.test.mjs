@@ -2,16 +2,23 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { NAV, NAV_SECTIONS, resolveTab, sectionForTab, tabHref } from "../lib/navigation.ts";
 
-test("navigation has three sections and includes all destinations", () => {
-  assert.deepEqual(NAV_SECTIONS.map((section) => section.key), ["workspace", "people", "settings"]);
+test("navigation sections include the dedicated payroll area and all destinations", () => {
+  assert.deepEqual(
+    NAV_SECTIONS.map((section) => section.key),
+    ["workspace", "payroll", "people", "settings"],
+  );
   const tabs = new Set(NAV_SECTIONS.flatMap((section) => section.tabs));
   assert.deepEqual([...tabs].sort(), NAV.map((item) => item.key).sort());
 });
 
 test("main features belong to Workspace and access belongs to Settings", () => {
-  for (const tab of ["overview", "invoices", "expenses", "retainers"]) assert.equal(sectionForTab(tab).key, "workspace");
-  for (const tab of ["clients", "employees", "members"]) assert.equal(sectionForTab(tab).key, "people");
-  for (const tab of ["profile", "password", "access"]) assert.equal(sectionForTab(tab).key, "settings");
+  for (const tab of ["overview", "invoices", "expenses", "retainers", "cash-flow"])
+    assert.equal(sectionForTab(tab).key, "workspace");
+  assert.equal(sectionForTab("payroll").key, "payroll");
+  for (const tab of ["clients", "employees", "members"])
+    assert.equal(sectionForTab(tab).key, "people");
+  for (const tab of ["profile", "password", "access"])
+    assert.equal(sectionForTab(tab).key, "settings");
 });
 
 test("client links retain their section without permitting unrelated sections", () => {

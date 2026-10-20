@@ -167,6 +167,10 @@ enum PayrollAuditAction {
   PAYMENT_RECORDED
 }
 
+enum CashFlowForecastAuditAction {
+  CONFIGURATION_UPDATED
+}
+
 enum AttendanceStatus {
   PRESENT
   ABSENT
@@ -209,14 +213,14 @@ enum OvertimeRequestStatus {
 }
 
 model Organization {
-  id                      String                       @id @default(uuid())
+  id                      String                         @id @default(uuid())
   name                    String
-  slug                    String                       @unique
+  slug                    String                         @unique
   website                 String?
   employeeCount           String?
   logoUrl                 String?
-  currency                String                       @default("USD")
-  createdAt               DateTime                     @default(now())
+  currency                String                         @default("USD")
+  createdAt               DateTime                       @default(now())
   updatedAt               temporal.updatedAt()
 
   users                   User[]
@@ -247,8 +251,50 @@ model Organization {
   leaveLedgerEntries      LeaveLedgerEntry[]
   overtimeRequests        OvertimeRequest[]
   workforceAuditEvents    WorkforceAuditEvent[]
+  cashFlowConfiguration   CashFlowForecastConfiguration?
+  cashFlowAuditEvents     CashFlowForecastAuditEvent[]
 
   @@map("organizations")
+}
+
+model CashFlowForecastConfiguration {
+  organizationId                  String               @id
+  openingBalance                  Numeric(14, 2)?
+  openingBalanceDate              DateTime?
+  defaultHorizonDays              Int                  @default(30)
+  expectedInvoiceCollectionDelay  Int                  @default(7)
+  conservativeDelayAdjustmentDays Int                  @default(14)
+  optimisticDelayAdjustmentDays   Int                  @default(0)
+  includeRecurringInvoices        Boolean              @default(true)
+  includeApprovedPayroll          Boolean              @default(true)
+  includeSalaryEstimates          Boolean              @default(false)
+  includeApprovedExpenses         Boolean              @default(false)
+  version                         Int                  @default(1)
+  updatedById                     String
+  createdAt                       DateTime             @default(now())
+  updatedAt                       temporal.updatedAt()
+
+  organization                    Organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade, map: "cash_flow_config_org_fkey")
+  updatedBy                       User                 @relation("CashFlowConfigurationUpdater", fields: [organizationId, updatedById], references: [organizationId, id], onDelete: Restrict, map: "cash_flow_config_updater_fkey")
+
+  @@index([organizationId, updatedById], map: "cash_flow_config_updater_idx")
+  @@map("cash_flow_forecast_configurations")
+}
+
+model CashFlowForecastAuditEvent {
+  id             String                      @id @default(uuid())
+  organizationId String
+  actorId        String
+  action         CashFlowForecastAuditAction
+  details        String
+  createdAt      DateTime                    @default(now())
+
+  organization   Organization                @relation(fields: [organizationId], references: [id], onDelete: Cascade, map: "cash_flow_audit_org_fkey")
+  actor          User                        @relation("CashFlowForecastAuditActor", fields: [organizationId, actorId], references: [organizationId, id], onDelete: Restrict, map: "cash_flow_audit_actor_fkey")
+
+  @@index([organizationId, createdAt], map: "cash_flow_audit_created_idx")
+  @@index([organizationId, actorId], map: "cash_flow_audit_actor_idx")
+  @@map("cash_flow_forecast_audit_events")
 }
 
 model InvoiceExport {
@@ -278,7 +324,7 @@ model InvoiceExport {
 }
 
 model User {
-  id                      String                     @id @default(uuid())
+  id                      String                          @id @default(uuid())
   organizationId          String
   email                   String
   passwordHash            String
@@ -288,32 +334,34 @@ model User {
   lastName                String?
   phoneNumber             String?
   avatarUrl               String?
-  onboardingStatus        OnboardingStatus           @default(LEGACY)
-  onboardingStep          String                     @default("welcome")
-  createdAt               DateTime                   @default(now())
+  onboardingStatus        OnboardingStatus                @default(LEGACY)
+  onboardingStep          String                          @default("welcome")
+  createdAt               DateTime                        @default(now())
   updatedAt               temporal.updatedAt()
 
-  organization            Organization               @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organization            Organization                    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   memberships             Membership[]
-  createdExpenses         Expense[]                  @relation("ExpenseCreator")
-  submittedExpenses       Expense[]                  @relation("ExpenseSubmitter")
-  reviewedExpenses        Expense[]                  @relation("ExpenseReviewer")
-  expenseApprovalEvents   ExpenseApprovalHistory[]   @relation("ExpenseApprovalActor")
-  recurringSchedules      RecurringInvoiceSchedule[] @relation("RecurringScheduleCreator")
-  recurringScheduleEvents RecurringScheduleEvent[]   @relation("RecurringScheduleActor")
-  linkedEmployee          Employee?                  @relation("EmployeeUser")
-  createdSalaryStructures SalaryStructure[]          @relation("SalaryCreator")
-  employeeAuditEvents     EmployeeAuditEvent[]       @relation("EmployeeAuditActor")
-  createdPayrollRuns      PayrollRun[]               @relation("PayrollRunCreator")
-  approvedPayrollRuns     PayrollRun[]               @relation("PayrollRunApprover")
-  finalizedPayrollRuns    PayrollRun[]               @relation("PayrollRunFinalizer")
-  payrollPayments         PayrollPayment[]           @relation("PayrollPaymentRecorder")
-  payrollAuditEvents      PayrollAuditEvent[]        @relation("PayrollAuditActor")
-  createdAttendance       AttendanceRecord[]         @relation("AttendanceCreator")
-  updatedAttendance       AttendanceRecord[]         @relation("AttendanceUpdater")
-  reviewedLeaveRequests   LeaveRequest[]             @relation("LeaveReviewer")
-  reviewedOvertime        OvertimeRequest[]          @relation("OvertimeReviewer")
-  workforceAuditEvents    WorkforceAuditEvent[]      @relation("WorkforceAuditActor")
+  createdExpenses         Expense[]                       @relation("ExpenseCreator")
+  submittedExpenses       Expense[]                       @relation("ExpenseSubmitter")
+  reviewedExpenses        Expense[]                       @relation("ExpenseReviewer")
+  expenseApprovalEvents   ExpenseApprovalHistory[]        @relation("ExpenseApprovalActor")
+  recurringSchedules      RecurringInvoiceSchedule[]      @relation("RecurringScheduleCreator")
+  recurringScheduleEvents RecurringScheduleEvent[]        @relation("RecurringScheduleActor")
+  linkedEmployee          Employee?                       @relation("EmployeeUser")
+  createdSalaryStructures SalaryStructure[]               @relation("SalaryCreator")
+  employeeAuditEvents     EmployeeAuditEvent[]            @relation("EmployeeAuditActor")
+  createdPayrollRuns      PayrollRun[]                    @relation("PayrollRunCreator")
+  approvedPayrollRuns     PayrollRun[]                    @relation("PayrollRunApprover")
+  finalizedPayrollRuns    PayrollRun[]                    @relation("PayrollRunFinalizer")
+  payrollPayments         PayrollPayment[]                @relation("PayrollPaymentRecorder")
+  payrollAuditEvents      PayrollAuditEvent[]             @relation("PayrollAuditActor")
+  createdAttendance       AttendanceRecord[]              @relation("AttendanceCreator")
+  updatedAttendance       AttendanceRecord[]              @relation("AttendanceUpdater")
+  reviewedLeaveRequests   LeaveRequest[]                  @relation("LeaveReviewer")
+  reviewedOvertime        OvertimeRequest[]               @relation("OvertimeReviewer")
+  workforceAuditEvents    WorkforceAuditEvent[]           @relation("WorkforceAuditActor")
+  updatedCashFlowConfig   CashFlowForecastConfiguration[] @relation("CashFlowConfigurationUpdater")
+  cashFlowAuditEvents     CashFlowForecastAuditEvent[]    @relation("CashFlowForecastAuditActor")
 
   @@unique([organizationId, id])
   @@unique([organizationId, email])

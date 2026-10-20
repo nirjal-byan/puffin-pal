@@ -49,6 +49,7 @@ import PayrollPage from "../payroll/page";
 import AttendancePage from "../attendance/page";
 import LeavePage from "../leave/page";
 import OvertimePage from "../overtime/page";
+import CashFlowPage from "../cash-flow/page";
 
 export default function WorkspacePage({
   session,
@@ -151,6 +152,7 @@ export default function WorkspacePage({
       tab === "leave" ||
       tab === "overtime" ||
       tab === "payroll" ||
+      tab === "cash-flow" ||
       !allowed
     )
       return;
@@ -252,7 +254,7 @@ export default function WorkspacePage({
                 )}
                 {!creatingInvoice &&
                   !invoiceId &&
-                  !["overview", "access", "profile", "password"].includes(tab) &&
+                  !["overview", "access", "profile", "password", "cash-flow"].includes(tab) &&
                   allowed && (
                     <button
                       className="button secondary"
@@ -376,6 +378,12 @@ export default function WorkspacePage({
             <LeavePage api={api} permissions={session.permissions} onSaved={recordNotification} />
           ) : tab === "overtime" ? (
             <OvertimePage
+              api={api}
+              permissions={session.permissions}
+              onSaved={recordNotification}
+            />
+          ) : tab === "cash-flow" ? (
+            <CashFlowPage
               api={api}
               permissions={session.permissions}
               onSaved={recordNotification}

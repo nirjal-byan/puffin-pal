@@ -38,6 +38,8 @@ export const PERMISSIONS = [
   "payroll:approve",
   "payroll:finalize",
   "payroll:payments:record",
+  "cash-flow:read",
+  "cash-flow:manage",
   "attendance:read",
   "attendance:manage",
   "attendance:self",
@@ -66,6 +68,7 @@ const readPermissions: readonly Permission[] = [
   "leave:request",
   "overtime:read",
   "overtime:request",
+  "cash-flow:read",
 ];
 export const ROLE_PERMISSIONS: Readonly<Record<Role, readonly Permission[]>> = Object.freeze({
   OWNER: Object.freeze([...PERMISSIONS]),
