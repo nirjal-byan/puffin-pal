@@ -14,7 +14,9 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { AppModal } from "../../../components/app-modal";
+import { FormModal } from "../../../components/form-modal";
+import { DatePicker } from "../../../components/date-picker";
+import { Dropdown } from "../../../components/dropdown";
 import { errorMessage, type WorkspaceApi } from "../../../lib/api";
 
 type Scenario = "CONSERVATIVE" | "EXPECTED" | "OPTIMISTIC";
@@ -152,21 +154,25 @@ export default function CashFlowPage({
           </div>
           <label>
             Horizon
-            <select
-              value={customHorizon ? "custom" : horizon}
-              onChange={(event) => {
-                if (event.target.value === "custom") setCustomHorizon(true);
+            <Dropdown
+              name="forecast-horizon"
+              label="Forecast horizon"
+              searchable={false}
+              options={[
+                { value: "30", label: "30 days" },
+                { value: "60", label: "60 days" },
+                { value: "90", label: "90 days" },
+                { value: "custom", label: "Custom" },
+              ]}
+              value={customHorizon ? "custom" : String(horizon)}
+              onChange={(value) => {
+                if (value === "custom") setCustomHorizon(true);
                 else {
                   setCustomHorizon(false);
-                  setHorizon(Number(event.target.value));
+                  setHorizon(Number(value));
                 }
               }}
-            >
-              <option value={30}>30 days</option>
-              <option value={60}>60 days</option>
-              <option value={90}>90 days</option>
-              <option value="custom">Custom</option>
-            </select>
+            />
           </label>
           {customHorizon && (
             <label>
@@ -444,106 +450,149 @@ function ConfigurationModal({
     }
   }
   return (
-    <AppModal title="Cash flow settings" badge="Planning" onClose={onClose}>
+    <FormModal title="Cash flow settings" badge="Planning" onClose={onClose}>
       <form className="cash-flow-settings" onSubmit={submit}>
-        <p className="muted">
-          Set the assumptions used for your organization’s forecast. These settings never modify
-          invoices, expenses, or payroll.
-        </p>
+        <div className="cash-flow-settings-intro">
+          <span aria-hidden="true">↗</span>
+          <div>
+            <strong>Forecast assumptions</strong>
+            <p>
+              Adjust how future cash movement is estimated. Your financial records remain unchanged.
+            </p>
+          </div>
+        </div>
         {failure && (
           <p className="alert" role="alert">
             {failure}
           </p>
         )}
-        <div className="form-grid two-column">
-          <label>
-            Opening balance
-            <input
-              value={form.openingBalance}
-              onChange={(e) => update("openingBalance", e.target.value)}
-              inputMode="decimal"
-              placeholder="Optional"
-            />
-          </label>
-          <label>
-            Balance as of
-            <input
-              type="date"
-              value={form.openingBalanceDate}
-              onChange={(e) => update("openingBalanceDate", e.target.value)}
-            />
-          </label>
-          <label>
-            Expected invoice delay (days)
-            <input
-              type="number"
-              min="0"
-              max="365"
-              value={form.expectedInvoiceCollectionDelay}
-              onChange={(e) => update("expectedInvoiceCollectionDelay", Number(e.target.value))}
-            />
-          </label>
-          <label>
-            Default horizon
-            <select
-              value={form.defaultHorizonDays}
-              onChange={(e) => update("defaultHorizonDays", Number(e.target.value))}
-            >
-              <option value={30}>30 days</option>
-              <option value={60}>60 days</option>
-              <option value={90}>90 days</option>
-              <option value={180}>6 months</option>
-              <option value={365}>1 year</option>
-            </select>
-          </label>
-          <label>
-            Conservative extra delay
-            <input
-              type="number"
-              min="0"
-              max="365"
-              value={form.conservativeDelayAdjustmentDays}
-              onChange={(e) => update("conservativeDelayAdjustmentDays", Number(e.target.value))}
-            />
-          </label>
-          <label>
-            Optimistic delay
-            <input
-              type="number"
-              min="0"
-              max="365"
-              value={form.optimisticDelayAdjustmentDays}
-              onChange={(e) => update("optimisticDelayAdjustmentDays", Number(e.target.value))}
-            />
-          </label>
-        </div>
-        <fieldset className="cash-flow-options">
-          <legend>Include in forecast</legend>
-          {(
-            [
-              ["includeRecurringInvoices", "Recurring invoice projections"],
-              ["includeApprovedPayroll", "Approved payroll before finalization"],
-              ["includeSalaryEstimates", "Future salary estimates"],
-              ["includeApprovedExpenses", "Approved future-dated expenses"],
-            ] as const
-          ).map(([key, label]) => (
-            <label key={key}>
+        <section className="cash-flow-settings-section">
+          <div className="cash-flow-settings-heading">
+            <div>
+              <strong>Starting position</strong>
+              <span>Optional balance used as the forecast baseline.</span>
+            </div>
+          </div>
+          <div className="cash-flow-settings-grid">
+            <label>
+              <span>Opening balance</span>
               <input
-                type="checkbox"
-                checked={form[key]}
-                onChange={(e) => update(key, e.target.checked)}
+                value={form.openingBalance}
+                onChange={(e) => update("openingBalance", e.target.value)}
+                inputMode="decimal"
+                placeholder="0.00"
               />
-              <span>
-                <strong>{label}</strong>
-                <small>
-                  {key === "includeApprovedExpenses"
-                    ? "Uses expense dates as a planning assumption."
-                    : "Uses existing organization records only."}
-                </small>
-              </span>
+              <small>Leave blank to forecast movement without a running balance.</small>
             </label>
-          ))}
-        </fieldset>
+            <label>
+              <span>Balance as of</span>
+              <DatePicker
+                value={form.openingBalanceDate}
+                onChange={(value) => update("openingBalanceDate", value)}
+                ariaLabel="Opening balance date"
+              />
+              <small>The date that the opening balance applies to.</small>
+            </label>
+          </div>
+        </section>
+        <section className="cash-flow-settings-section">
+          <div className="cash-flow-settings-heading">
+            <div>
+              <strong>Timing assumptions</strong>
+              <span>Control when projected money is expected to move.</span>
+            </div>
+          </div>
+          <div className="cash-flow-settings-grid cash-flow-timing-grid">
+            <label>
+              <span>Expected invoice delay</span>
+              <input
+                type="number"
+                min="0"
+                max="365"
+                value={form.expectedInvoiceCollectionDelay}
+                onChange={(e) => update("expectedInvoiceCollectionDelay", Number(e.target.value))}
+              />
+              <small>Days after an invoice due date.</small>
+            </label>
+            <label>
+              <span>Default horizon</span>
+              <Dropdown
+                name="default-horizon"
+                label="Default horizon"
+                searchable={false}
+                value={String(form.defaultHorizonDays)}
+                onChange={(value) => update("defaultHorizonDays", Number(value))}
+                options={[
+                  { value: "30", label: "30 days" },
+                  { value: "60", label: "60 days" },
+                  { value: "90", label: "90 days" },
+                  { value: "180", label: "6 months" },
+                  { value: "365", label: "1 year" },
+                ]}
+              />
+              <small>The period shown when Cash Flow opens.</small>
+            </label>
+            <label>
+              <span>Conservative extra delay</span>
+              <input
+                type="number"
+                min="0"
+                max="365"
+                value={form.conservativeDelayAdjustmentDays}
+                onChange={(e) => update("conservativeDelayAdjustmentDays", Number(e.target.value))}
+              />
+              <small>Additional days used in the conservative scenario.</small>
+            </label>
+            <label>
+              <span>Optimistic delay reduction</span>
+              <input
+                type="number"
+                min="0"
+                max="365"
+                value={form.optimisticDelayAdjustmentDays}
+                onChange={(e) => update("optimisticDelayAdjustmentDays", Number(e.target.value))}
+              />
+              <small>Days removed from expected collection timing.</small>
+            </label>
+          </div>
+        </section>
+        <section className="cash-flow-settings-section cash-flow-options">
+          <div className="cash-flow-settings-heading">
+            <div>
+              <strong>Forecast sources</strong>
+              <span>Choose which existing records contribute projections.</span>
+            </div>
+          </div>
+          <div className="cash-flow-option-grid">
+            {(
+              [
+                ["includeRecurringInvoices", "Recurring invoice projections"],
+                ["includeApprovedPayroll", "Approved payroll before finalization"],
+                ["includeSalaryEstimates", "Future salary estimates"],
+                ["includeApprovedExpenses", "Approved future-dated expenses"],
+              ] as const
+            ).map(([key, label]) => (
+              <label key={key}>
+                <input
+                  type="checkbox"
+                  checked={form[key]}
+                  onChange={(e) => update(key, e.target.checked)}
+                />
+                <span className="cash-flow-switch" aria-hidden="true">
+                  <span />
+                </span>
+                <span className="cash-flow-option-copy">
+                  <strong>{label}</strong>
+                  <small>
+                    {key === "includeApprovedExpenses"
+                      ? "Uses expense dates as a planning assumption."
+                      : "Uses existing organization records only."}
+                  </small>
+                </span>
+              </label>
+            ))}
+          </div>
+        </section>
         <div className="modal-form-actions">
           <button type="button" className="button secondary" onClick={onClose}>
             Cancel
@@ -553,6 +602,6 @@ function ConfigurationModal({
           </button>
         </div>
       </form>
-    </AppModal>
+    </FormModal>
   );
 }

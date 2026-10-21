@@ -2,6 +2,7 @@
 
 import type { Permission } from "@puffinpal/permissions";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { DatePicker } from "../../../components/date-picker";
 import { errorMessage, type WorkspaceApi } from "../../../lib/api";
 import {
   createSalaryStructure,
@@ -310,11 +311,11 @@ export default function EmployeesPage({ api, currency, permissions, onSaved }: E
         >
           <label>
             Termination date
-            <input
-              type="date"
+            <DatePicker
               min={selectedEmployee.hireDate.slice(0, 10)}
               value={terminationDate}
-              onChange={(event) => setTerminationDate(event.target.value)}
+              onChange={setTerminationDate}
+              ariaLabel="Employment termination date"
             />
           </label>
         </ConfirmationModal>

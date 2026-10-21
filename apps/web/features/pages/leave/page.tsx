@@ -1,8 +1,9 @@
 "use client";
 import type { Permission } from "@puffinpal/permissions";
 import { useCallback, useEffect, useState } from "react";
-import { AppModal } from "../../../components/app-modal";
+import { FormModal } from "../../../components/form-modal";
 import { DatePicker } from "../../../components/date-picker";
+import { Dropdown } from "../../../components/dropdown";
 import { errorMessage, type WorkspaceApi } from "../../../lib/api";
 import { loadEmployees, loadLeave } from "../../workforce/api";
 import type { EmployeeOption, LeaveBalance, LeaveRequest, LeaveType } from "../../workforce/types";
@@ -246,7 +247,7 @@ export default function LeavePage({
         )}
       </section>
       {open === "request" && (
-        <AppModal title="Request leave" badge="Time off" onClose={() => setOpen(null)}>
+        <FormModal title="Request leave" badge="Time off" onClose={() => setOpen(null)}>
           <div className="workforce-form">
             <div className="workforce-form-intro">
               <span className="workforce-form-icon" aria-hidden="true">
@@ -265,33 +266,30 @@ export default function LeavePage({
               <div className="workforce-form-grid">
                 <label>
                   Employee
-                  <select
+                  <Dropdown
+                    name="leave-employee"
+                    label="Employee"
+                    placeholder="Select employee"
                     value={form.employeeId}
-                    onChange={(event) => setForm({ ...form, employeeId: event.target.value })}
-                  >
-                    <option value="">Select employee</option>
-                    {employees.map((employee) => (
-                      <option key={employee.id} value={employee.id}>
-                        {employee.firstName} {employee.lastName}
-                      </option>
-                    ))}
-                  </select>
+                    onChange={(employeeId) => setForm({ ...form, employeeId })}
+                    options={employees.map((employee) => ({
+                      value: employee.id,
+                      label: `${employee.firstName} ${employee.lastName}`,
+                    }))}
+                  />
                 </label>
                 <label>
                   Leave type
-                  <select
+                  <Dropdown
+                    name="leave-type"
+                    label="Leave type"
+                    placeholder="Select type"
                     value={form.leaveTypeId}
-                    onChange={(event) => setForm({ ...form, leaveTypeId: event.target.value })}
-                  >
-                    <option value="">Select type</option>
-                    {types
+                    onChange={(leaveTypeId) => setForm({ ...form, leaveTypeId })}
+                    options={types
                       .filter((type) => type.isActive)
-                      .map((type) => (
-                        <option key={type.id} value={type.id}>
-                          {type.name}
-                        </option>
-                      ))}
-                  </select>
+                      .map((type) => ({ value: type.id, label: type.name }))}
+                  />
                 </label>
                 <label>
                   Start date
@@ -312,13 +310,17 @@ export default function LeavePage({
                 </label>
                 <label>
                   Duration
-                  <select
+                  <Dropdown
+                    name="leave-duration"
+                    label="Leave duration"
+                    searchable={false}
                     value={form.dayPortion}
-                    onChange={(event) => setForm({ ...form, dayPortion: event.target.value })}
-                  >
-                    <option value="FULL_DAY">Full days</option>
-                    <option value="HALF_DAY">Half day</option>
-                  </select>
+                    onChange={(dayPortion) => setForm({ ...form, dayPortion })}
+                    options={[
+                      { value: "FULL_DAY", label: "Full days" },
+                      { value: "HALF_DAY", label: "Half day" },
+                    ]}
+                  />
                 </label>
               </div>
               <label>
@@ -344,10 +346,10 @@ export default function LeavePage({
               </button>
             </div>
           </div>
-        </AppModal>
+        </FormModal>
       )}
       {open === "type" && (
-        <AppModal title="Create leave type" badge="Policy" onClose={() => setOpen(null)}>
+        <FormModal title="Create leave type" badge="Policy" onClose={() => setOpen(null)}>
           <div className="workforce-form">
             <div className="workforce-form-intro">
               <span className="workforce-form-icon" aria-hidden="true">
@@ -419,7 +421,7 @@ export default function LeavePage({
               </button>
             </div>
           </div>
-        </AppModal>
+        </FormModal>
       )}
     </>
   );

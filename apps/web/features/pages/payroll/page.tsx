@@ -3,6 +3,8 @@
 import type { Permission } from "@puffinpal/permissions";
 import { useCallback, useEffect, useState } from "react";
 import { AppModal } from "../../../components/app-modal";
+import { DatePicker } from "../../../components/date-picker";
+import { FormModal } from "../../../components/form-modal";
 import { errorMessage, type WorkspaceApi } from "../../../lib/api";
 import { PayrollAutomation } from "./payroll-automation";
 
@@ -381,7 +383,7 @@ export default function PayrollPage({
         )}
       </section>
       {creating && (
-        <AppModal title="New pay run" onClose={() => setCreating(false)}>
+        <FormModal title="New pay run" onClose={() => setCreating(false)}>
           <div className="payroll-form">
             <label>
               Name
@@ -394,27 +396,29 @@ export default function PayrollPage({
             <div className="payroll-date-grid">
               <label>
                 Period start
-                <input
-                  type="date"
+                <DatePicker
                   value={form.periodStart}
-                  onChange={(event) => setForm({ ...form, periodStart: event.target.value })}
+                  onChange={(periodStart) => setForm({ ...form, periodStart })}
+                  ariaLabel="Payroll period start"
                 />
               </label>
               <label>
                 Period end
-                <input
-                  type="date"
+                <DatePicker
                   value={form.periodEnd}
-                  onChange={(event) => setForm({ ...form, periodEnd: event.target.value })}
+                  onChange={(periodEnd) => setForm({ ...form, periodEnd })}
+                  min={form.periodStart || undefined}
+                  ariaLabel="Payroll period end"
                 />
               </label>
             </div>
             <label>
               Payment date
-              <input
-                type="date"
+              <DatePicker
                 value={form.paymentDate}
-                onChange={(event) => setForm({ ...form, paymentDate: event.target.value })}
+                onChange={(paymentDate) => setForm({ ...form, paymentDate })}
+                min={form.periodEnd || undefined}
+                ariaLabel="Payroll payment date"
               />
             </label>
             <fieldset className="payroll-employees">
@@ -456,7 +460,7 @@ export default function PayrollPage({
               </button>
             </div>
           </div>
-        </AppModal>
+        </FormModal>
       )}
       {selected && (
         <AppModal

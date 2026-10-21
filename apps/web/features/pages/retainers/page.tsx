@@ -1,8 +1,9 @@
 "use client";
 import { useCallback, useEffect, useState } from "react";
 import type { Permission } from "@puffinpal/permissions";
-import { AppModal } from "../../../components/app-modal";
+import { FormModal } from "../../../components/form-modal";
 import { DatePicker } from "../../../components/date-picker";
+import { Dropdown } from "../../../components/dropdown";
 import { errorMessage, type Client, type WorkspaceApi } from "../../../lib/api";
 import { loadRecurringSchedule, loadRecurringWorkspace } from "../../recurring-invoices/api";
 import {
@@ -258,7 +259,7 @@ export default function RetainersPage({
         )}
       </section>
       {editing && (
-        <AppModal
+        <FormModal
           title={editing === "new" ? "Create recurring invoice" : "Edit recurring invoice"}
           badge="Schedule"
           wide
@@ -290,42 +291,41 @@ export default function RetainersPage({
                 </label>
                 <label>
                   Client
-                  <select
-                    required
+                  <Dropdown
+                    name="recurring-client"
+                    label="Client"
+                    placeholder="Select client"
                     value={form.clientId}
-                    onChange={(e) => setForm({ ...form, clientId: e.target.value })}
-                  >
-                    <option value="">Select client</option>
-                    {clients.map((client) => (
-                      <option key={client.id} value={client.id}>
-                        {client.name}
-                      </option>
-                    ))}
-                  </select>
+                    onChange={(clientId) => setForm({ ...form, clientId })}
+                    options={clients.map((client) => ({ value: client.id, label: client.name }))}
+                  />
                   <small>Required</small>
                 </label>
                 <label>
                   Billing frequency
-                  <select
+                  <Dropdown
+                    name="recurring-frequency"
+                    label="Billing frequency"
+                    searchable={false}
                     value={`${form.frequency}:${form.interval}`}
-                    onChange={(e) => {
-                      const [frequency = "MONTHLY", interval = "1"] = e.target.value.split(":");
+                    onChange={(value) => {
+                      const [frequency = "MONTHLY", interval = "1"] = value.split(":");
                       setForm({ ...form, frequency, interval: Number(interval) });
                     }}
-                  >
-                    {!BILLING_FREQUENCIES.some(
-                      (option) => option.value === `${form.frequency}:${form.interval}`,
-                    ) && (
-                      <option value={`${form.frequency}:${form.interval}`}>
-                        {frequencyLabel(form.frequency, form.interval)}
-                      </option>
-                    )}
-                    {BILLING_FREQUENCIES.map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
+                    options={
+                      BILLING_FREQUENCIES.some(
+                        (option) => option.value === `${form.frequency}:${form.interval}`,
+                      )
+                        ? [...BILLING_FREQUENCIES]
+                        : [
+                            {
+                              value: `${form.frequency}:${form.interval}`,
+                              label: frequencyLabel(form.frequency, form.interval),
+                            },
+                            ...BILLING_FREQUENCIES,
+                          ]
+                    }
+                  />
                 </label>
                 <label>
                   Start date
@@ -347,23 +347,25 @@ export default function RetainersPage({
                 </label>
                 <label>
                   Payment terms
-                  <select
-                    value={form.dueDateOffsetDays}
-                    onChange={(e) =>
-                      setForm({ ...form, dueDateOffsetDays: Number(e.target.value) })
-                    }
-                  >
-                    {!PAYMENT_TERMS.some((option) => option.value === form.dueDateOffsetDays) && (
-                      <option value={form.dueDateOffsetDays}>
-                        Due {form.dueDateOffsetDays} days after issue
-                      </option>
-                    )}
-                    {PAYMENT_TERMS.map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
+                  <Dropdown
+                    name="recurring-payment-terms"
+                    label="Payment terms"
+                    searchable={false}
+                    value={String(form.dueDateOffsetDays)}
+                    onChange={(value) => setForm({ ...form, dueDateOffsetDays: Number(value) })}
+                    options={(PAYMENT_TERMS.some(
+                      (option) => option.value === form.dueDateOffsetDays,
+                    )
+                      ? PAYMENT_TERMS
+                      : [
+                          {
+                            value: form.dueDateOffsetDays,
+                            label: `Due ${form.dueDateOffsetDays} days after issue`,
+                          },
+                          ...PAYMENT_TERMS,
+                        ]
+                    ).map((option) => ({ ...option, value: String(option.value) }))}
+                  />
                 </label>
               </div>
               <label>
@@ -516,7 +518,7 @@ export default function RetainersPage({
               </button>
             </div>
           </form>
-        </AppModal>
+        </FormModal>
       )}
     </>
   );

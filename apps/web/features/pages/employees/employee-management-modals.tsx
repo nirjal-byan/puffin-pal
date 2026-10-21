@@ -1,6 +1,9 @@
 import { useState } from "react";
 import type { ReactNode } from "react";
 import { AppModal } from "../../../components/app-modal";
+import { DatePicker } from "../../../components/date-picker";
+import { Dropdown } from "../../../components/dropdown";
+import { FormModal } from "../../../components/form-modal";
 import type { Department, Employee, SalaryFormValues, SalaryStructure } from "./types";
 
 export function DepartmentModal({
@@ -229,7 +232,7 @@ export function SalaryFormModal({
   onClose: () => void;
 }) {
   return (
-    <AppModal title="Add salary structure" badge="Confidential" onClose={onClose}>
+    <FormModal title="Add salary structure" badge="Confidential" onClose={onClose}>
       <form
         className="employee-form"
         onSubmit={(event) => {
@@ -240,18 +243,22 @@ export function SalaryFormModal({
         <div className="form-grid">
           <label>
             Compensation
-            <select
+            <Dropdown
+              name="salary-compensation-type"
+              label="Compensation type"
+              searchable={false}
               value={values.compensationType}
-              onChange={(event) =>
+              onChange={(compensationType) =>
                 onChange({
                   ...values,
-                  compensationType: event.target.value as SalaryFormValues["compensationType"],
+                  compensationType: compensationType as SalaryFormValues["compensationType"],
                 })
               }
-            >
-              <option value="FIXED_SALARY">Fixed salary</option>
-              <option value="HOURLY">Hourly</option>
-            </select>
+              options={[
+                { value: "FIXED_SALARY", label: "Fixed salary" },
+                { value: "HOURLY", label: "Hourly" },
+              ]}
+            />
           </label>
           <label>
             Base amount ({currency})
@@ -264,35 +271,39 @@ export function SalaryFormModal({
           </label>
           <label>
             Pay frequency
-            <select
+            <Dropdown
+              name="salary-pay-frequency"
+              label="Pay frequency"
+              searchable={false}
               value={values.payFrequency}
-              onChange={(event) =>
+              onChange={(payFrequency) =>
                 onChange({
                   ...values,
-                  payFrequency: event.target.value as SalaryFormValues["payFrequency"],
+                  payFrequency: payFrequency as SalaryFormValues["payFrequency"],
                 })
               }
-            >
-              <option value="MONTHLY">Monthly</option>
-              <option value="BIWEEKLY">Biweekly</option>
-              <option value="WEEKLY">Weekly</option>
-            </select>
+              options={[
+                { value: "MONTHLY", label: "Monthly" },
+                { value: "BIWEEKLY", label: "Biweekly" },
+                { value: "WEEKLY", label: "Weekly" },
+              ]}
+            />
           </label>
           <label>
             Effective from
-            <input
-              type="date"
-              required
+            <DatePicker
               value={values.effectiveFrom}
-              onChange={(event) => onChange({ ...values, effectiveFrom: event.target.value })}
+              onChange={(effectiveFrom) => onChange({ ...values, effectiveFrom })}
+              ariaLabel="Salary effective from date"
             />
           </label>
           <label>
             Effective to <small>optional</small>
-            <input
-              type="date"
+            <DatePicker
               value={values.effectiveTo}
-              onChange={(event) => onChange({ ...values, effectiveTo: event.target.value })}
+              onChange={(effectiveTo) => onChange({ ...values, effectiveTo })}
+              min={values.effectiveFrom || undefined}
+              ariaLabel="Salary effective to date"
             />
           </label>
         </div>
@@ -321,22 +332,26 @@ export function SalaryFormModal({
                   })
                 }
               />
-              <select
+              <Dropdown
+                name={`salary-component-${index}-type`}
+                label={`Component ${index + 1} type`}
+                searchable={false}
                 value={component.type}
-                onChange={(event) =>
+                onChange={(type) =>
                   onChange({
                     ...values,
                     components: values.components.map((item, itemIndex) =>
                       itemIndex === index
-                        ? { ...item, type: event.target.value as "EARNING" | "DEDUCTION" }
+                        ? { ...item, type: type as "EARNING" | "DEDUCTION" }
                         : item,
                     ),
                   })
                 }
-              >
-                <option value="EARNING">Earning</option>
-                <option value="DEDUCTION">Deduction</option>
-              </select>
+                options={[
+                  { value: "EARNING", label: "Earning" },
+                  { value: "DEDUCTION", label: "Deduction" },
+                ]}
+              />
               <input
                 required
                 inputMode="decimal"
@@ -387,6 +402,6 @@ export function SalaryFormModal({
           </button>
         </div>
       </form>
-    </AppModal>
+    </FormModal>
   );
 }

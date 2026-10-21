@@ -1,8 +1,9 @@
 "use client";
 import type { Permission } from "@puffinpal/permissions";
 import { useCallback, useEffect, useState } from "react";
-import { AppModal } from "../../../components/app-modal";
+import { FormModal } from "../../../components/form-modal";
 import { DatePicker } from "../../../components/date-picker";
+import { Dropdown } from "../../../components/dropdown";
 import { errorMessage, type WorkspaceApi } from "../../../lib/api";
 import { loadEmployees, loadOvertime } from "../../workforce/api";
 import type { EmployeeOption, OvertimeRequest } from "../../workforce/types";
@@ -198,7 +199,7 @@ export default function OvertimePage({
         )}
       </section>
       {open && (
-        <AppModal title="Request overtime" badge="Overtime" onClose={() => setOpen(false)}>
+        <FormModal title="Request overtime" badge="Overtime" onClose={() => setOpen(false)}>
           <div className="workforce-form">
             <div className="workforce-form-intro">
               <span className="workforce-form-icon" aria-hidden="true">
@@ -216,17 +217,17 @@ export default function OvertimePage({
               </div>
               <label>
                 Employee
-                <select
+                <Dropdown
+                  name="overtime-employee"
+                  label="Employee"
+                  placeholder="Select employee"
                   value={form.employeeId}
-                  onChange={(event) => setForm({ ...form, employeeId: event.target.value })}
-                >
-                  <option value="">Select employee</option>
-                  {employees.map((employee) => (
-                    <option key={employee.id} value={employee.id}>
-                      {employee.firstName} {employee.lastName}
-                    </option>
-                  ))}
-                </select>
+                  onChange={(employeeId) => setForm({ ...form, employeeId })}
+                  options={employees.map((employee) => ({
+                    value: employee.id,
+                    label: `${employee.firstName} ${employee.lastName}`,
+                  }))}
+                />
               </label>
               <div className="workforce-form-grid">
                 <label>
@@ -299,7 +300,7 @@ export default function OvertimePage({
               </button>
             </div>
           </div>
-        </AppModal>
+        </FormModal>
       )}
     </>
   );

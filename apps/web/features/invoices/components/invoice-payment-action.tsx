@@ -1,6 +1,9 @@
 "use client";
-import { useEffect, useRef, useState, type FormEvent } from "react";
+import { useRef, useState, type FormEvent } from "react";
 import type { Permission } from "@puffinpal/permissions";
+import { DatePicker } from "../../../components/date-picker";
+import { Dropdown } from "../../../components/dropdown";
+import { FormModal, FormModalIntro, FormModalSection } from "../../../components/form-modal";
 import { ApiError, errorMessage, type WorkspaceApi } from "../../../lib/api";
 import { recordInvoicePayment } from "../api/invoices";
 import { canRecordPayment, PAYMENT_METHODS, validatePayment } from "../schemas/payment.schema";
@@ -19,7 +22,6 @@ export function InvoicePaymentAction({
   onRecorded: (invoice: InvoiceDetail) => void;
   onReload: () => void;
 }) {
-  const dialog = useRef<HTMLDialogElement>(null);
   const pending = useRef(false);
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -27,10 +29,8 @@ export function InvoicePaymentAction({
   const [reloadRequired, setReloadRequired] = useState(false);
   const [reviewed, setReviewed] = useState(invoice);
   const [success, setSuccess] = useState("");
-  useEffect(() => {
-    if (open) dialog.current?.showModal();
-    else dialog.current?.close();
-  }, [open]);
+  const [paymentDate, setPaymentDate] = useState(new Date().toISOString().slice(0, 10));
+  const [method, setMethod] = useState("BANK_TRANSFER");
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (pending.current || reloadRequired) return;
@@ -86,6 +86,8 @@ export function InvoicePaymentAction({
             setFailure("");
             setSuccess("");
             setReloadRequired(false);
+            setPaymentDate(new Date().toISOString().slice(0, 10));
+            setMethod("BANK_TRANSFER");
             setOpen(true);
           }}
         >
@@ -97,73 +99,79 @@ export function InvoicePaymentAction({
           {success}
         </p>
       )}
-      <dialog
-        ref={dialog}
-        className="invoice-delete-dialog invoice-payment-dialog"
-        aria-label="Record payment"
-        onCancel={(event) => {
-          event.preventDefault();
-          if (!pending.current) setOpen(false);
-        }}
-        onClose={() => setOpen(false)}
-      >
-        <h2>Record payment</h2>
-        <p className="invoice-number">{reviewed.invoiceNumber}</p>
-        <p>
-          Outstanding: {reviewed.currency} {reviewed.outstandingBalance}
-        </p>
-        <p className="muted">
-          Record money already received. Payments cannot be edited or removed.
-        </p>
-        {failure && (
-          <p className="alert" role="alert">
-            {failure}
-          </p>
-        )}
-        {open && (
+      {open && (
+        <FormModal
+          title="Record payment"
+          badge={reviewed.invoiceNumber}
+          onClose={() => {
+            if (!pending.current) setOpen(false);
+          }}
+        >
           <form key={`${reviewed.id}-${reviewed.version}`} onSubmit={submit}>
-            <fieldset className="form-fields" disabled={busy || reloadRequired}>
-              <label>
-                Amount ({reviewed.currency})
-                <input
-                  autoFocus
-                  name="amount"
-                  inputMode="decimal"
-                  required
-                  maxLength={13}
-                  defaultValue={reviewed.outstandingBalance}
-                />
-              </label>
-              <label>
-                Payment date (UTC)
-                <input
-                  name="paymentDate"
-                  type="date"
-                  required
-                  max={new Date().toISOString().slice(0, 10)}
-                  defaultValue={new Date().toISOString().slice(0, 10)}
-                />
-              </label>
-              <label>
-                Payment method
-                <select name="method" defaultValue="BANK_TRANSFER" required>
-                  {PAYMENT_METHODS.map((method) => (
-                    <option key={method.value} value={method.value}>
-                      {method.label}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <label>
-                Reference (optional)
-                <input name="reference" maxLength={120} />
-              </label>
-              <label className="invoice-field">
-                Notes (optional)
-                <textarea name="notes" maxLength={2000} rows={3} />
-              </label>
-            </fieldset>
-            <div className="invoice-actions">
+            <FormModalIntro icon="$" title="Payment details">
+              Record money received for this invoice. Payments become part of its permanent history.
+            </FormModalIntro>
+            <FormModalSection
+              title="Amount and payment method"
+              description={`${reviewed.currency} ${reviewed.outstandingBalance} outstanding`}
+            >
+              <fieldset
+                className="form-fields standard-form-grid"
+                disabled={busy || reloadRequired}
+              >
+                <label>
+                  Amount ({reviewed.currency})
+                  <input
+                    autoFocus
+                    name="amount"
+                    inputMode="decimal"
+                    required
+                    maxLength={13}
+                    defaultValue={reviewed.outstandingBalance}
+                  />
+                </label>
+                <label>
+                  Payment date (UTC)
+                  <DatePicker
+                    name="paymentDate"
+                    ariaLabel="Payment date"
+                    value={paymentDate}
+                    onChange={setPaymentDate}
+                    max={new Date().toISOString().slice(0, 10)}
+                    disabled={busy || reloadRequired}
+                  />
+                </label>
+                <label>
+                  Payment method
+                  <Dropdown
+                    name="method"
+                    label="Payment method"
+                    value={method}
+                    onChange={setMethod}
+                    searchable={false}
+                    disabled={busy || reloadRequired}
+                    options={PAYMENT_METHODS.map((option) => ({
+                      value: option.value,
+                      label: option.label,
+                    }))}
+                  />
+                </label>
+                <label>
+                  Reference <span className="muted">Optional</span>
+                  <input name="reference" maxLength={120} />
+                </label>
+                <label className="invoice-field standard-form-grid-wide">
+                  Notes <span className="muted">Optional</span>
+                  <textarea name="notes" maxLength={2000} rows={3} />
+                </label>
+              </fieldset>
+            </FormModalSection>
+            {failure && (
+              <p className="alert" role="alert">
+                {failure}
+              </p>
+            )}
+            <div className="standard-form-modal-actions">
               <button
                 type="button"
                 className="button secondary"
@@ -190,8 +198,8 @@ export function InvoicePaymentAction({
               )}
             </div>
           </form>
-        )}
-      </dialog>
+        </FormModal>
+      )}
     </div>
   );
 }

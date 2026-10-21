@@ -1,4 +1,5 @@
 import type { Department, Employee } from "./types";
+import { Dropdown } from "../../../components/dropdown";
 
 interface EmployeeDirectoryProps {
   employees: Employee[];
@@ -45,28 +46,33 @@ export function EmployeeDirectory({
             value={search}
             onChange={(event) => onSearchChange(event.target.value)}
           />
-          <select
-            aria-label="Filter by status"
+          <Dropdown
+            name="employee-status-filter"
+            label="Filter by status"
+            searchable={false}
             value={status}
-            onChange={(event) => onStatusChange(event.target.value)}
-          >
-            <option value="">All statuses</option>
-            {["ACTIVE", "ON_LEAVE", "INACTIVE", "TERMINATED"].map((value) => (
-              <option key={value}>{value.replaceAll("_", " ")}</option>
-            ))}
-          </select>
-          <select
-            aria-label="Filter by department"
+            onChange={onStatusChange}
+            options={[
+              { value: "", label: "All statuses" },
+              ...["ACTIVE", "ON_LEAVE", "INACTIVE", "TERMINATED"].map((value) => ({
+                value,
+                label: value.replaceAll("_", " "),
+              })),
+            ]}
+          />
+          <Dropdown
+            name="employee-department-filter"
+            label="Filter by department"
             value={departmentId}
-            onChange={(event) => onDepartmentChange(event.target.value)}
-          >
-            <option value="">All departments</option>
-            {departments.map((department) => (
-              <option key={department.id} value={department.id}>
-                {department.name}
-              </option>
-            ))}
-          </select>
+            onChange={onDepartmentChange}
+            options={[
+              { value: "", label: "All departments" },
+              ...departments.map((department) => ({
+                value: department.id,
+                label: department.name,
+              })),
+            ]}
+          />
         </div>
         <div className="row-actions">
           {canManage && (

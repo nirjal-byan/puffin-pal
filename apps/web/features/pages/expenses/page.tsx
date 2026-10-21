@@ -6,6 +6,7 @@ import { validateExpense, validateReceiptFile } from "../../expenses/schemas/exp
 import { AppModal } from "../../../components/app-modal";
 import { DatePicker } from "../../../components/date-picker";
 import { Dropdown } from "../../../components/dropdown";
+import { FormModal } from "../../../components/form-modal";
 import { EXPENSE_CATEGORIES, type Expense, type ExpensePage } from "../../expenses/types";
 import { currentDate, expensePeriodRange, formatExpenseMoney } from "../../expenses/utils";
 
@@ -244,58 +245,72 @@ export default function ExpensesPage({
           </label>
           <label>
             Category
-            <select
+            <Dropdown
+              name="categoryFilter"
+              label="Category"
               value={filters.category}
-              onChange={(e) => setFilters({ ...filters, category: e.target.value })}
-            >
-              <option value="">All categories</option>
-              {EXPENSE_CATEGORIES.map((value) => (
-                <option key={value}>{value}</option>
-              ))}
-            </select>
+              onChange={(category) => setFilters({ ...filters, category })}
+              searchable={false}
+              options={[
+                { value: "", label: "All categories" },
+                ...EXPENSE_CATEGORIES.map((value) => ({ value, label: value })),
+              ]}
+            />
           </label>
           <label>
             Status
-            <select
+            <Dropdown
+              name="statusFilter"
+              label="Status"
               value={filters.approvalStatus}
-              onChange={(e) => setFilters({ ...filters, approvalStatus: e.target.value })}
-            >
-              <option value="">All statuses</option>
-              <option value="DRAFT">Draft</option>
-              <option value="PENDING_APPROVAL">Pending approval</option>
-              <option value="APPROVED">Approved</option>
-              <option value="REJECTED">Rejected</option>
-            </select>
+              onChange={(approvalStatus) => setFilters({ ...filters, approvalStatus })}
+              searchable={false}
+              options={[
+                { value: "", label: "All statuses" },
+                { value: "DRAFT", label: "Draft" },
+                { value: "PENDING_APPROVAL", label: "Pending approval" },
+                { value: "APPROVED", label: "Approved" },
+                { value: "REJECTED", label: "Rejected" },
+              ]}
+            />
           </label>
           <label>
             Period
-            <select
+            <Dropdown
+              name="periodFilter"
+              label="Period"
               value={filters.period}
-              onChange={(e) => setFilters({ ...filters, period: e.target.value })}
-            >
-              <option value="">All time</option>
-              <option value="last7">Last 7 days</option>
-              <option value="last30">Last 30 days</option>
-              <option value="thisMonth">This month</option>
-              <option value="lastMonth">Last month</option>
-              <option value="thisYear">This year</option>
-            </select>
+              onChange={(period) => setFilters({ ...filters, period })}
+              searchable={false}
+              options={[
+                { value: "", label: "All time" },
+                { value: "last7", label: "Last 7 days" },
+                { value: "last30", label: "Last 30 days" },
+                { value: "thisMonth", label: "This month" },
+                { value: "lastMonth", label: "Last month" },
+                { value: "thisYear", label: "This year" },
+              ]}
+            />
           </label>
           <label>
             Sort
-            <select
+            <Dropdown
+              name="sortFilter"
+              label="Sort"
               value={`${filters.sort}:${filters.order}`}
-              onChange={(e) => {
-                const [sort, order] = e.target.value.split(":");
+              onChange={(value) => {
+                const [sort, order] = value.split(":");
                 setFilters({ ...filters, sort: sort!, order: order! });
               }}
-            >
-              <option value="date:desc">Newest expense</option>
-              <option value="date:asc">Oldest expense</option>
-              <option value="amount:desc">Highest amount</option>
-              <option value="amount:asc">Lowest amount</option>
-              <option value="title:asc">Title A–Z</option>
-            </select>
+              searchable={false}
+              options={[
+                { value: "date:desc", label: "Newest expense" },
+                { value: "date:asc", label: "Oldest expense" },
+                { value: "amount:desc", label: "Highest amount" },
+                { value: "amount:asc", label: "Lowest amount" },
+                { value: "title:asc", label: "Title A–Z" },
+              ]}
+            />
           </label>
           <button className="button secondary" type="submit">
             Apply filters
@@ -315,7 +330,7 @@ export default function ExpensesPage({
         </form>
       </section>
       {(creating || editing) && (
-        <AppModal
+        <FormModal
           title={editing ? "Edit expense" : "Create expense"}
           onClose={() => {
             if (!busy) {
@@ -336,7 +351,7 @@ export default function ExpensesPage({
               canUpdate && editing?.receiptName ? () => void removeReceipt(editing) : undefined
             }
           />
-        </AppModal>
+        </FormModal>
       )}
       {failure && (
         <p className="alert" role="alert">

@@ -1,5 +1,6 @@
-import { AppModal } from "../../../components/app-modal";
+import { FormModal } from "../../../components/form-modal";
 import { DatePicker } from "../../../components/date-picker";
+import { Dropdown } from "../../../components/dropdown";
 import type { Department, Employee, EmployeeFormValues, MemberSummary } from "./types";
 
 interface EmployeeFormModalProps {
@@ -29,7 +30,7 @@ export function EmployeeFormModal({
     onChange({ ...values, [key]: value });
 
   return (
-    <AppModal
+    <FormModal
       title={employee ? "Edit employee" : "Add employee"}
       badge="Employee"
       wide
@@ -120,36 +121,33 @@ export function EmployeeFormModal({
           <div className="workforce-form-grid workforce-form-grid-3">
             <label>
               Employment type
-              <select
+              <Dropdown
+                name="employee-employment-type"
+                label="Employment type"
+                searchable={false}
                 value={values.employmentType}
-                onChange={(event) =>
-                  update(
-                    "employmentType",
-                    event.target.value as EmployeeFormValues["employmentType"],
-                  )
+                onChange={(employmentType) =>
+                  update("employmentType", employmentType as EmployeeFormValues["employmentType"])
                 }
-              >
-                {["FULL_TIME", "PART_TIME", "CONTRACT", "INTERN"].map((value) => (
-                  <option key={value} value={value}>
-                    {value.replaceAll("_", " ")}
-                  </option>
-                ))}
-              </select>
+                options={["FULL_TIME", "PART_TIME", "CONTRACT", "INTERN"].map((value) => ({
+                  value,
+                  label: value.replaceAll("_", " "),
+                }))}
+              />
             </label>
             <label>
               Status
-              <select
+              <Dropdown
+                name="employee-status"
+                label="Employee status"
+                searchable={false}
                 value={values.status}
-                onChange={(event) =>
-                  update("status", event.target.value as EmployeeFormValues["status"])
-                }
-              >
-                {["ACTIVE", "ON_LEAVE", "INACTIVE"].map((value) => (
-                  <option key={value} value={value}>
-                    {value.replaceAll("_", " ")}
-                  </option>
-                ))}
-              </select>
+                onChange={(status) => update("status", status as EmployeeFormValues["status"])}
+                options={["ACTIVE", "ON_LEAVE", "INACTIVE"].map((value) => ({
+                  value,
+                  label: value.replaceAll("_", " "),
+                }))}
+              />
             </label>
             <label>
               Hire date
@@ -161,47 +159,54 @@ export function EmployeeFormModal({
             </label>
             <label>
               Department
-              <select
+              <Dropdown
+                name="employee-department"
+                label="Department"
                 value={values.departmentId}
-                onChange={(event) => update("departmentId", event.target.value)}
-              >
-                <option value="">No department</option>
-                {departments.map((department) => (
-                  <option key={department.id} value={department.id}>
-                    {department.name}
-                  </option>
-                ))}
-              </select>
+                onChange={(departmentId) => update("departmentId", departmentId)}
+                options={[
+                  { value: "", label: "No department" },
+                  ...departments.map((department) => ({
+                    value: department.id,
+                    label: department.name,
+                  })),
+                ]}
+              />
             </label>
             <label>
               Manager
-              <select
+              <Dropdown
+                name="employee-manager"
+                label="Manager"
                 value={values.managerId}
-                onChange={(event) => update("managerId", event.target.value)}
-              >
-                <option value="">No manager</option>
-                {employees
-                  .filter((candidate) => candidate.id !== employee?.id)
-                  .map((candidate) => (
-                    <option key={candidate.id} value={candidate.id}>
-                      {candidate.firstName} {candidate.lastName}
-                    </option>
-                  ))}
-              </select>
+                onChange={(managerId) => update("managerId", managerId)}
+                options={[
+                  { value: "", label: "No manager" },
+                  ...employees
+                    .filter((candidate) => candidate.id !== employee?.id)
+                    .map((candidate) => ({
+                      value: candidate.id,
+                      label: `${candidate.firstName} ${candidate.lastName}`,
+                    })),
+                ]}
+              />
             </label>
             <label>
               Linked account
-              <select
+              <Dropdown
+                name="employee-linked-account"
+                label="Linked account"
                 value={values.linkedUserId}
-                onChange={(event) => update("linkedUserId", event.target.value)}
-              >
-                <option value="">No account</option>
-                {members.map((member) => (
-                  <option key={member.user.id} value={member.user.id}>
-                    {member.user.fullName} · {member.user.email}
-                  </option>
-                ))}
-              </select>
+                onChange={(linkedUserId) => update("linkedUserId", linkedUserId)}
+                options={[
+                  { value: "", label: "No account" },
+                  ...members.map((member) => ({
+                    value: member.user.id,
+                    label: member.user.fullName,
+                    detail: member.user.email,
+                  })),
+                ]}
+              />
             </label>
           </div>
         </section>
@@ -214,6 +219,6 @@ export function EmployeeFormModal({
           </button>
         </div>
       </form>
-    </AppModal>
+    </FormModal>
   );
 }

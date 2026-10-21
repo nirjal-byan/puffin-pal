@@ -2710,6 +2710,10 @@ tr:hover td {
   overflow: hidden;
   animation: country-picker-enter 160ms ease-out;
 }
+.country-picker-panel-dialog {
+  position: absolute;
+  z-index: 20;
+}
 .country-picker-search {
   display: flex;
   align-items: center;
@@ -2831,6 +2835,14 @@ tr:hover td {
 .registration-dropdown-trigger svg {
   flex-shrink: 0;
   transition: transform 180ms ease;
+}
+.workspace-layout[data-theme="dark"] .registration-dropdown-trigger {
+  border-color: var(--border);
+  background: #142019;
+  color: var(--foreground);
+}
+.workspace-layout[data-theme="dark"] .registration-dropdown-trigger:hover {
+  background: #1d2c23;
 }
 .dropdown-placeholder {
   color: #8290a5;
@@ -3170,6 +3182,11 @@ tr:hover td {
   min-height: 34px;
   min-width: 112px;
 }
+.cash-flow-controls .registration-dropdown-trigger {
+  min-width: 112px;
+  min-height: 34px;
+  padding: 7px 10px;
+}
 .cash-flow-kpis {
   grid-template-columns: repeat(5, minmax(0, 1fr));
 }
@@ -3243,48 +3260,182 @@ tr:hover td {
 }
 .cash-flow-settings {
   display: grid;
-  gap: 18px;
-  padding: 18px;
+  gap: 13px;
+  padding: 14px 16px 16px;
+}
+.app-modal:has(.cash-flow-settings) {
+  width: min(860px, calc(100vw - 32px));
 }
 .cash-flow-settings label {
   display: grid;
-  gap: 6px;
+  gap: 7px;
   font-size: 12px;
   font-weight: 600;
 }
-.cash-flow-options {
-  display: grid;
-  gap: 7px;
-  padding: 12px;
-  border: 1px solid var(--border);
-  border-radius: 12px;
+.cash-flow-settings-intro {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 14px;
+  border: 1px solid color-mix(in srgb, var(--brand-blue) 20%, var(--border));
+  border-radius: 11px;
+  background: color-mix(in srgb, var(--brand-blue) 5%, var(--background));
 }
-.cash-flow-options legend {
-  padding: 0 6px;
-  font-size: 12px;
+.cash-flow-settings-intro > span {
+  display: grid;
+  flex: 0 0 34px;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border-radius: 9px;
+  background: color-mix(in srgb, var(--brand-blue) 11%, transparent);
+  color: var(--brand-blue);
+  font-size: 17px;
   font-weight: 700;
 }
-.cash-flow-options label {
-  grid-template-columns: 18px 1fr;
-  align-items: start;
-  padding: 8px;
-  border-radius: 8px;
+.cash-flow-settings-intro p,
+.cash-flow-settings-intro strong {
+  margin: 0;
 }
-.cash-flow-options label:hover {
-  background: color-mix(in srgb, var(--border) 28%, transparent);
+.cash-flow-settings-intro p {
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.45;
 }
-.cash-flow-options input {
-  width: 16px;
-  height: 16px;
-  accent-color: var(--primary);
+.cash-flow-settings-section {
+  display: grid;
+  gap: 11px;
+  padding: 13px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--background) 38%, transparent);
 }
-.cash-flow-options span {
+.cash-flow-settings-heading {
+  display: flex;
+  justify-content: space-between;
+  padding-bottom: 9px;
+  border-bottom: 1px solid var(--border);
+}
+.cash-flow-settings-heading div {
+  display: grid;
+  gap: 3px;
+}
+.cash-flow-settings-heading strong {
+  font-size: 13px;
+}
+.cash-flow-settings-heading span,
+.cash-flow-settings label > small {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 400;
+  line-height: 1.4;
+}
+.cash-flow-settings-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+.cash-flow-settings-grid > label {
+  grid-template-rows: auto 40px auto;
+  align-content: start;
+}
+.cash-flow-settings-grid > label > input,
+.cash-flow-settings-grid > label > .date-picker,
+.cash-flow-settings-grid > label > .registration-dropdown-trigger {
+  height: 40px;
+  min-height: 40px;
+}
+.cash-flow-settings-grid .date-picker-trigger {
+  height: 40px;
+}
+.cash-flow-timing-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+.cash-flow-options {
+  background: color-mix(in srgb, var(--brand-blue) 2%, var(--background));
+}
+.cash-flow-option-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+.cash-flow-option-grid label {
+  position: relative;
+  grid-template-columns: 34px minmax(0, 1fr);
+  align-items: center;
+  min-height: 58px;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--background);
+  cursor: pointer;
+  transition:
+    border-color 160ms ease,
+    background-color 160ms ease;
+}
+.cash-flow-option-grid label:hover {
+  border-color: color-mix(in srgb, var(--brand-blue) 30%, var(--border));
+}
+.cash-flow-option-grid input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+.cash-flow-switch {
+  position: relative;
+  width: 32px;
+  height: 19px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--muted) 28%, transparent);
+  transition: background-color 160ms ease;
+}
+.cash-flow-switch > span {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 3px #0003;
+  transition: transform 160ms ease;
+}
+.cash-flow-option-grid input:checked + .cash-flow-switch {
+  background: var(--brand-blue);
+}
+.cash-flow-option-grid input:checked + .cash-flow-switch > span {
+  transform: translateX(13px);
+}
+.cash-flow-option-grid input:focus-visible + .cash-flow-switch {
+  outline: 3px solid color-mix(in srgb, var(--brand-blue) 18%, transparent);
+  outline-offset: 2px;
+}
+.cash-flow-option-copy {
   display: grid;
   gap: 2px;
 }
-.cash-flow-options small {
+.cash-flow-option-copy small {
   color: var(--muted);
   font-weight: 400;
+  line-height: 1.35;
+}
+@media (max-width: 620px) {
+  .cash-flow-settings-grid,
+  .cash-flow-option-grid {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 800px) {
+  .cash-flow-timing-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 620px) {
+  .cash-flow-timing-grid {
+    grid-template-columns: 1fr;
+  }
 }
 .workspace-layout[data-theme="dark"] .cash-flow-risk {
   background: #47271d;
@@ -3552,6 +3703,14 @@ tr:hover td {
   background: #fff;
   box-shadow: 0 16px 40px #10221824;
   animation: app-modal-in 140ms ease-out both;
+}
+.date-picker-popover-floating {
+  position: fixed;
+  z-index: 1000;
+}
+.date-picker-popover-dialog {
+  position: absolute;
+  z-index: 20;
 }
 .date-picker-header,
 .date-picker-header > div,
@@ -4317,6 +4476,121 @@ tr:hover td {
 .app-modal-body > .form-panel {
   max-width: none;
   padding: 0;
+}
+.app-modal:has(.standard-form-modal) {
+  width: min(760px, calc(100vw - 32px));
+  overflow: visible;
+}
+.app-modal:has(.standard-form-modal) .app-modal-body {
+  padding: 0;
+}
+.standard-form-modal {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  max-height: calc(100dvh - 95px);
+}
+.standard-form-modal-content {
+  display: grid;
+  gap: 16px;
+  padding: 18px 20px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.standard-form-modal-content > form {
+  display: grid;
+  gap: 16px;
+}
+.standard-form-intro {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 14px;
+  border: 1px solid color-mix(in srgb, var(--brand-blue) 20%, var(--border));
+  border-radius: 11px;
+  background: color-mix(in srgb, var(--brand-blue) 5%, var(--background));
+}
+.standard-form-intro > span {
+  display: grid;
+  flex: 0 0 34px;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border-radius: 9px;
+  background: color-mix(in srgb, var(--brand-blue) 11%, transparent);
+  color: var(--brand-blue);
+  font-size: 17px;
+  font-weight: 700;
+}
+.standard-form-intro strong,
+.standard-form-intro p {
+  margin: 0;
+}
+.standard-form-intro p {
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: 12px;
+}
+.standard-form-section {
+  display: grid;
+  gap: 14px;
+  padding: 15px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+.standard-form-section > header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 11px;
+  border-bottom: 1px solid var(--border);
+}
+.standard-form-section > header strong {
+  font-size: 13px;
+}
+.standard-form-section > header span {
+  color: var(--muted);
+  font-size: 11px;
+}
+.standard-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+.standard-form-grid > label {
+  display: grid;
+  align-content: start;
+  gap: 7px;
+  color: var(--foreground);
+  font-size: 12px;
+  font-weight: 600;
+}
+.standard-form-grid input,
+.standard-form-grid .registration-dropdown-trigger,
+.standard-form-grid .date-picker-trigger {
+  min-height: 42px;
+}
+.standard-form-grid-wide {
+  grid-column: 1 / -1;
+}
+.standard-form-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 9px;
+  padding: 12px 20px;
+  border-top: 1px solid var(--border);
+  background: inherit;
+}
+@media (max-width: 620px) {
+  .standard-form-grid {
+    grid-template-columns: 1fr;
+  }
+  .standard-form-modal-content {
+    padding: 14px;
+  }
+  .standard-form-modal-actions {
+    padding: 11px 14px;
+  }
 }
 .app-modal-wide .modal-invoice-actions {
   justify-content: flex-end;
@@ -5331,6 +5605,12 @@ body:has(.workspace-layout[data-theme="dark"]) .country-picker-option.highlighte
   gap: 6px;
   font-weight: 600;
 }
+.payroll-form .registration-dropdown-trigger,
+.cash-flow-settings .registration-dropdown-trigger {
+  min-height: 40px;
+  padding: 9px 12px;
+  border-radius: 8px;
+}
 .payroll-employees {
   display: grid;
   gap: 8px;
@@ -5673,6 +5953,17 @@ body:has(.workspace-layout[data-theme="dark"]) .country-picker-option.highlighte
 .employee-form input,
 .employee-form select {
   min-height: 44px;
+}
+.workforce-form .registration-dropdown-trigger,
+.employee-form .registration-dropdown-trigger {
+  min-height: 44px;
+  padding: 10px 12px;
+  border-color: var(--border);
+  border-radius: 9px;
+}
+.employee-filters .registration-dropdown-trigger {
+  min-height: 40px;
+  padding: 9px 11px;
 }
 
 .workforce-form select,

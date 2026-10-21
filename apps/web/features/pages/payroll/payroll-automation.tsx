@@ -3,6 +3,9 @@
 import type { Permission } from "@puffinpal/permissions";
 import { useCallback, useEffect, useState } from "react";
 import { AppModal } from "../../../components/app-modal";
+import { DatePicker } from "../../../components/date-picker";
+import { Dropdown } from "../../../components/dropdown";
+import { FormModal, FormModalIntro, FormModalSection } from "../../../components/form-modal";
 import { errorMessage, type WorkspaceApi } from "../../../lib/api";
 
 type Schedule = {
@@ -317,47 +320,54 @@ export function PayrollAutomation({
         </div>
       )}
       {editing && (
-        <AppModal
+        <FormModal
           title={schedule ? "Edit payroll schedule" : "Set up payroll automation"}
           badge="Drafts only"
           onClose={() => setEditing(false)}
+          onSubmit={save}
+          submitLabel="Save schedule"
+          submitting={busy}
+          submitDisabled={!form.name.trim() || !form.timezone.trim()}
         >
-          <div className="payroll-form payroll-schedule-form">
-            <p className="muted">
-              PuffinPal creates a draft at the end of each period in the selected timezone.
-            </p>
-            <label>
-              Schedule name
-              <input
-                value={form.name}
-                onChange={(event) => setForm({ ...form, name: event.target.value })}
-              />
-            </label>
-            <div className="payroll-date-grid">
+          <FormModalIntro icon="↻" title="Prepare payroll automatically">
+            Choose the payroll cadence, period start, and local draft creation time. Generated runs
+            always remain drafts for review.
+          </FormModalIntro>
+          <FormModalSection title="Schedule details" description="Required payroll settings">
+            <div className="standard-form-grid">
+              <label>
+                Schedule name
+                <input
+                  value={form.name}
+                  onChange={(event) => setForm({ ...form, name: event.target.value })}
+                />
+              </label>
               <label>
                 Frequency
-                <select
+                <Dropdown
+                  name="payroll-frequency"
+                  label="Payroll frequency"
+                  searchable={false}
                   value={form.frequency}
-                  onChange={(event) =>
-                    setForm({ ...form, frequency: event.target.value as Schedule["frequency"] })
+                  onChange={(frequency) =>
+                    setForm({ ...form, frequency: frequency as Schedule["frequency"] })
                   }
-                >
-                  <option value="WEEKLY">Every week</option>
-                  <option value="BIWEEKLY">Every two weeks</option>
-                  <option value="SEMIMONTHLY">Twice a month</option>
-                  <option value="MONTHLY">Every month</option>
-                </select>
+                  options={[
+                    { value: "WEEKLY", label: "Every week" },
+                    { value: "BIWEEKLY", label: "Every two weeks" },
+                    { value: "SEMIMONTHLY", label: "Twice a month" },
+                    { value: "MONTHLY", label: "Every month" },
+                  ]}
+                />
               </label>
               <label>
                 First period starts
-                <input
-                  type="date"
+                <DatePicker
                   value={form.startDate}
-                  onChange={(event) => setForm({ ...form, startDate: event.target.value })}
+                  onChange={(startDate) => setForm({ ...form, startDate })}
+                  ariaLabel="First payroll period start date"
                 />
               </label>
-            </div>
-            <div className="payroll-date-grid">
               <label>
                 Timezone
                 <input
@@ -368,47 +378,54 @@ export function PayrollAutomation({
               </label>
               <label>
                 Create draft at
-                <input
-                  type="time"
+                <Dropdown
+                  name="payroll-generation-time"
+                  label="Draft creation time"
+                  searchable={false}
                   value={form.generationTime}
-                  onChange={(event) => setForm({ ...form, generationTime: event.target.value })}
+                  onChange={(generationTime) => setForm({ ...form, generationTime })}
+                  options={Array.from({ length: 48 }, (_, index) => {
+                    const hour = Math.floor(index / 2);
+                    const minute = index % 2 ? "30" : "00";
+                    const value = `${String(hour).padStart(2, "0")}:${minute}`;
+                    const label = new Date(2000, 0, 1, hour, Number(minute)).toLocaleTimeString(
+                      [],
+                      {
+                        hour: "numeric",
+                        minute: "2-digit",
+                      },
+                    );
+                    return { value, label };
+                  })}
+                />
+              </label>
+              <label>
+                Intended payment timing
+                <Dropdown
+                  name="payroll-payment-timing"
+                  label="Intended payment timing"
+                  searchable={false}
+                  value={form.paymentOffsetDays}
+                  onChange={(paymentOffsetDays) => setForm({ ...form, paymentOffsetDays })}
+                  options={[
+                    { value: "", label: "No intended date" },
+                    { value: "0", label: "On the period end date" },
+                    { value: "1", label: "1 day after period end" },
+                    { value: "3", label: "3 days after period end" },
+                    { value: "5", label: "5 days after period end" },
+                    { value: "7", label: "7 days after period end" },
+                  ]}
                 />
               </label>
             </div>
-            <label>
-              Intended payment timing
-              <select
-                value={form.paymentOffsetDays}
-                onChange={(event) => setForm({ ...form, paymentOffsetDays: event.target.value })}
-              >
-                <option value="">No intended date</option>
-                <option value="0">On the period end date</option>
-                <option value="1">1 day after period end</option>
-                <option value="3">3 days after period end</option>
-                <option value="5">5 days after period end</option>
-                <option value="7">7 days after period end</option>
-              </select>
-            </label>
             {form.frequency === "SEMIMONTHLY" && (
               <p className="field-hint">
                 Semimonthly periods run from the 1st–15th and 16th–month end. Choose the 1st or 16th
                 as the start date.
               </p>
             )}
-            <div className="form-actions">
-              <button className="button secondary" onClick={() => setEditing(false)}>
-                Cancel
-              </button>
-              <button
-                className="button primary"
-                disabled={busy || !form.name.trim() || !form.timezone.trim()}
-                onClick={() => void save()}
-              >
-                Save schedule
-              </button>
-            </div>
-          </div>
-        </AppModal>
+          </FormModalSection>
+        </FormModal>
       )}
       {confirming && (
         <AppModal

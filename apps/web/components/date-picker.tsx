@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useId, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 
 const WEEKDAYS = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
 
@@ -34,6 +35,7 @@ export function DatePicker({
   onChange,
   name,
   min,
+  max,
   disabled,
   ariaLabel,
   invalid,
@@ -44,6 +46,7 @@ export function DatePicker({
   onChange: (value: string) => void;
   name?: string;
   min?: string;
+  max?: string;
   disabled?: boolean;
   ariaLabel: string;
   invalid?: boolean;
@@ -52,23 +55,64 @@ export function DatePicker({
 }) {
   const selected = parseDate(value);
   const minimum = min ? parseDate(min) : undefined;
-  const [open, setOpen] = useState(false);
+  const maximum = max ? parseDate(max) : undefined;
+  const [position, setPosition] = useState<{
+    top: number;
+    left: number;
+    dialog: HTMLDialogElement | null;
+  } | null>(null);
   const [visibleMonth, setVisibleMonth] = useState(() => selected ?? minimum ?? new Date());
   const rootRef = useRef<HTMLDivElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
   const calendarId = useId();
 
   useEffect(() => {
     function close(event: PointerEvent) {
-      if (!rootRef.current?.contains(event.target as Node)) setOpen(false);
+      if (
+        !rootRef.current?.contains(event.target as Node) &&
+        !panelRef.current?.contains(event.target as Node)
+      )
+        setPosition(null);
+    }
+    function dismiss() {
+      setPosition(null);
     }
     document.addEventListener("pointerdown", close);
-    return () => document.removeEventListener("pointerdown", close);
+    window.addEventListener("resize", dismiss);
+    window.addEventListener("scroll", dismiss, true);
+    return () => {
+      document.removeEventListener("pointerdown", close);
+      window.removeEventListener("resize", dismiss);
+      window.removeEventListener("scroll", dismiss, true);
+    };
   }, []);
 
   function toggle() {
     if (disabled) return;
-    if (!open) setVisibleMonth(selected ?? minimum ?? new Date());
-    setOpen((current) => !current);
+    if (position) {
+      setPosition(null);
+      return;
+    }
+    setVisibleMonth(selected ?? minimum ?? new Date());
+    const trigger = rootRef.current!.querySelector("button")!;
+    const rect = trigger.getBoundingClientRect();
+    const dialog = trigger.closest("dialog");
+    const dialogRect = dialog?.getBoundingClientRect();
+    const top = 8;
+    const bottom = window.innerHeight - 8;
+    const left = 8;
+    const right = window.innerWidth - 8;
+    const width = 252;
+    const estimatedHeight = 286;
+    const openBelow = bottom - rect.bottom >= estimatedHeight || rect.top - top < estimatedHeight;
+    const screenLeft = Math.max(left + 12, Math.min(rect.left, right - width - 12));
+    const preferredTop = openBelow ? rect.bottom + 8 : rect.top - estimatedHeight - 8;
+    const screenTop = Math.max(top, Math.min(preferredTop, bottom - estimatedHeight));
+    setPosition({
+      left: dialogRect ? screenLeft - dialogRect.left : screenLeft,
+      top: dialogRect ? screenTop - dialogRect.top : screenTop,
+      dialog,
+    });
   }
 
   return (
@@ -76,7 +120,7 @@ export function DatePicker({
       className="date-picker"
       ref={rootRef}
       onKeyDown={(event) => {
-        if (event.key === "Escape") setOpen(false);
+        if (event.key === "Escape") setPosition(null);
       }}
     >
       <button
@@ -85,7 +129,7 @@ export function DatePicker({
         onClick={toggle}
         disabled={disabled}
         aria-label={ariaLabel}
-        aria-expanded={open}
+        aria-expanded={Boolean(position)}
         aria-controls={calendarId}
         aria-invalid={invalid}
         aria-describedby={describedBy}
@@ -112,97 +156,104 @@ export function DatePicker({
         </svg>
       </button>
       <input type="hidden" name={name} value={value} />
-      {open && (
-        <div
-          className="date-picker-popover"
-          id={calendarId}
-          role="dialog"
-          aria-label={`${ariaLabel} calendar`}
-        >
-          <div className="date-picker-header">
-            <strong>
-              {visibleMonth.toLocaleDateString(undefined, { month: "long", year: "numeric" })}
-            </strong>
-            <div>
-              <button
-                type="button"
-                aria-label="Previous month"
-                onClick={() =>
-                  setVisibleMonth(
-                    new Date(visibleMonth.getFullYear(), visibleMonth.getMonth() - 1, 1),
-                  )
-                }
-              >
-                ‹
-              </button>
-              <button
-                type="button"
-                aria-label="Next month"
-                onClick={() =>
-                  setVisibleMonth(
-                    new Date(visibleMonth.getFullYear(), visibleMonth.getMonth() + 1, 1),
-                  )
-                }
-              >
-                ›
-              </button>
-            </div>
-          </div>
-          <div className="date-picker-weekdays" aria-hidden="true">
-            {WEEKDAYS.map((day) => (
-              <span key={day}>{day}</span>
-            ))}
-          </div>
-          <div className="date-picker-days">
-            {monthDays(visibleMonth).map((date) => {
-              const dateValue = toValue(date);
-              const outside = date.getMonth() !== visibleMonth.getMonth();
-              const isSelected = dateValue === value;
-              const unavailable = Boolean(minimum && date < minimum);
-              if (outside) {
-                return <span className="date-picker-empty" key={dateValue} aria-hidden="true" />;
-              }
-              return (
+      {position &&
+        createPortal(
+          <div
+            ref={panelRef}
+            className={`date-picker-popover date-picker-popover-floating${position.dialog ? " date-picker-popover-dialog" : ""}`}
+            id={calendarId}
+            role="dialog"
+            aria-label={`${ariaLabel} calendar`}
+            style={{ top: position.top, left: position.left }}
+          >
+            <div className="date-picker-header">
+              <strong>
+                {visibleMonth.toLocaleDateString(undefined, { month: "long", year: "numeric" })}
+              </strong>
+              <div>
                 <button
                   type="button"
-                  key={dateValue}
-                  className={isSelected ? "selected" : undefined}
-                  disabled={unavailable}
-                  aria-pressed={isSelected}
-                  onClick={() => {
-                    onChange(dateValue);
-                    setOpen(false);
-                  }}
+                  aria-label="Previous month"
+                  onClick={() =>
+                    setVisibleMonth(
+                      new Date(visibleMonth.getFullYear(), visibleMonth.getMonth() - 1, 1),
+                    )
+                  }
                 >
-                  {date.getDate()}
+                  ‹
                 </button>
-              );
-            })}
-          </div>
-          <div className="date-picker-footer">
-            <button
-              type="button"
-              onClick={() => {
-                onChange("");
-                setOpen(false);
-              }}
-            >
-              Clear
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                const today = new Date();
-                const next = minimum && today < minimum ? minimum : today;
-                onChange(toValue(next));
-                setOpen(false);
-              }}
-            >
-              Today
-            </button>
-          </div>
-        </div>
-      )}
+                <button
+                  type="button"
+                  aria-label="Next month"
+                  onClick={() =>
+                    setVisibleMonth(
+                      new Date(visibleMonth.getFullYear(), visibleMonth.getMonth() + 1, 1),
+                    )
+                  }
+                >
+                  ›
+                </button>
+              </div>
+            </div>
+            <div className="date-picker-weekdays" aria-hidden="true">
+              {WEEKDAYS.map((day) => (
+                <span key={day}>{day}</span>
+              ))}
+            </div>
+            <div className="date-picker-days">
+              {monthDays(visibleMonth).map((date) => {
+                const dateValue = toValue(date);
+                const outside = date.getMonth() !== visibleMonth.getMonth();
+                const isSelected = dateValue === value;
+                const unavailable = Boolean(
+                  (minimum && date < minimum) || (maximum && date > maximum),
+                );
+                if (outside) {
+                  return <span className="date-picker-empty" key={dateValue} aria-hidden="true" />;
+                }
+                return (
+                  <button
+                    type="button"
+                    key={dateValue}
+                    className={isSelected ? "selected" : undefined}
+                    disabled={unavailable}
+                    aria-pressed={isSelected}
+                    onClick={() => {
+                      onChange(dateValue);
+                      setPosition(null);
+                    }}
+                  >
+                    {date.getDate()}
+                  </button>
+                );
+              })}
+            </div>
+            <div className="date-picker-footer">
+              <button
+                type="button"
+                onClick={() => {
+                  onChange("");
+                  setPosition(null);
+                }}
+              >
+                Clear
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  const today = new Date();
+                  const afterMinimum = minimum && today < minimum ? minimum : today;
+                  const next = maximum && afterMinimum > maximum ? maximum : afterMinimum;
+                  onChange(toValue(next));
+                  setPosition(null);
+                }}
+              >
+                Today
+              </button>
+            </div>
+          </div>,
+          position.dialog ?? document.body,
+        )}
     </div>
   );
 }

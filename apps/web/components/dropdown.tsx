@@ -18,6 +18,9 @@ export function Dropdown({
   searchPlaceholder = "Search options",
   compact = false,
   searchable = true,
+  disabled = false,
+  invalid = false,
+  describedBy,
 }: {
   options: DropdownOption[];
   value: string;
@@ -28,6 +31,9 @@ export function Dropdown({
   searchPlaceholder?: string;
   compact?: boolean;
   searchable?: boolean;
+  disabled?: boolean;
+  invalid?: boolean;
+  describedBy?: string;
 }) {
   const id = useId();
   const [position, setPosition] = useState<{
@@ -35,6 +41,7 @@ export function Dropdown({
     left: number;
     width: number;
     height: number;
+    dialog: HTMLDialogElement | null;
   } | null>(null);
   const [query, setQuery] = useState("");
   const [active, setActive] = useState(0);
@@ -56,17 +63,26 @@ export function Dropdown({
     onChange(next);
   }
   function open() {
+    if (disabled) return;
     if (position) {
       close();
       return;
     }
     const rect = triggerRef.current!.getBoundingClientRect();
-    const width = Math.min(320, window.innerWidth - 32);
-    const below = window.innerHeight - rect.bottom - 16;
-    const above = rect.top - 16;
+    const dialog = triggerRef.current!.closest("dialog");
+    const dialogRect = dialog?.getBoundingClientRect();
+    const boundaryTop = 8;
+    const boundaryBottom = window.innerHeight - 8;
+    const boundaryLeft = 8;
+    const boundaryRight = window.innerWidth - 8;
+    const width = Math.min(Math.max(rect.width, 240), boundaryRight - boundaryLeft - 24);
+    const below = boundaryBottom - rect.bottom - 12;
+    const above = rect.top - boundaryTop - 12;
     const openBelow = below >= 280 || below >= above;
     const desiredHeight = Math.min(320, options.length * 40 + (searchable ? 64 : 14));
     const height = Math.min(desiredHeight, openBelow ? below : above);
+    const screenLeft = Math.max(boundaryLeft + 12, Math.min(rect.left, boundaryRight - width - 12));
+    const screenTop = openBelow ? rect.bottom + 8 : rect.top - height - 8;
     setQuery("");
     setActive(
       Math.max(
@@ -75,10 +91,11 @@ export function Dropdown({
       ),
     );
     setPosition({
-      left: Math.max(16, Math.min(rect.left, window.innerWidth - width - 16)),
-      top: openBelow ? rect.bottom + 8 : rect.top - height - 8,
+      left: dialogRect ? screenLeft - dialogRect.left : screenLeft,
+      top: dialogRect ? screenTop - dialogRect.top : screenTop,
       width,
       height,
+      dialog,
     });
   }
   useEffect(() => {
@@ -141,6 +158,9 @@ export function Dropdown({
         aria-haspopup="listbox"
         aria-expanded={Boolean(position)}
         aria-controls={position ? `${id}-options` : undefined}
+        aria-invalid={invalid || undefined}
+        aria-describedby={describedBy}
+        disabled={disabled}
         onClick={open}
         onKeyDown={(event) => {
           if (event.key === "ArrowDown") {
@@ -170,12 +190,12 @@ export function Dropdown({
           <path d="m3 4.5 3 3 3-3" />
         </svg>
       </button>
-      <input type="hidden" name={name} value={value} />
+      <input type="hidden" name={name} value={value} disabled={disabled} />
       {position &&
         createPortal(
           <div
             ref={panelRef}
-            className="country-picker-panel"
+            className={`country-picker-panel${position.dialog ? " country-picker-panel-dialog" : ""}`}
             style={{
               top: position.top,
               left: position.left,
@@ -265,7 +285,7 @@ export function Dropdown({
               </p>
             )}
           </div>,
-          document.body,
+          position.dialog ?? document.body,
         )}
     </>
   );
