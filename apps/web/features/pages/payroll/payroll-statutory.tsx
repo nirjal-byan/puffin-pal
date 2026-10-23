@@ -197,10 +197,9 @@ export function PayrollStatutory({
     <section className="panel payroll-statutory">
       <div className="panel-heading">
         <div>
+          <span className="eyebrow">Compliance</span>
           <h3>Tax and statutory deductions</h3>
-          <p className="muted">
-            Organization rules must be verified by a payroll or tax professional.
-          </p>
+          <p className="muted">Configure calculations and review finalized payroll totals.</p>
         </div>
         <button className="button secondary" onClick={() => setOpen(true)}>
           {jurisdictions.length ? "New rule version" : "Configure"}
@@ -219,23 +218,33 @@ export function PayrollStatutory({
           </div>
           <div>
             <small>Tax withheld</small>
-            <strong>{report.taxWithholding}</strong>
+            <strong>
+              {jurisdictions[0]?.currency ?? ""} {report.taxWithholding}
+            </strong>
           </div>
           <div>
             <small>Employee contributions</small>
-            <strong>{report.employeeContributions}</strong>
+            <strong>
+              {jurisdictions[0]?.currency ?? ""} {report.employeeContributions}
+            </strong>
           </div>
           <div>
             <small>Employer contributions</small>
-            <strong>{report.employerContributions}</strong>
+            <strong>
+              {jurisdictions[0]?.currency ?? ""} {report.employerContributions}
+            </strong>
           </div>
           <div>
             <small>Net pay</small>
-            <strong>{report.netPay}</strong>
+            <strong>
+              {jurisdictions[0]?.currency ?? ""} {report.netPay}
+            </strong>
           </div>
           <div>
             <small>Total employer cost</small>
-            <strong>{report.totalEmployerCost}</strong>
+            <strong>
+              {jurisdictions[0]?.currency ?? ""} {report.totalEmployerCost}
+            </strong>
           </div>
           <p className="muted standard-form-grid-wide">{report.disclaimer}</p>
         </div>

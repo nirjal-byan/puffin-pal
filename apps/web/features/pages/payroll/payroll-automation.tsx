@@ -174,11 +174,12 @@ export function PayrollAutomation({
     }
   }
   return (
-    <section className="payroll-automation">
-      <div className="payroll-automation-heading">
+    <section className="panel payroll-automation">
+      <div className="panel-heading payroll-automation-heading">
         <div>
           <span className="eyebrow">Automation</span>
           <h3>Payroll schedule</h3>
+          <p className="muted">Prepare draft pay runs on a predictable schedule.</p>
         </div>
         {canManage && (
           <div className="form-actions">
@@ -216,7 +217,7 @@ export function PayrollAutomation({
       )}
       {schedule ? (
         <div className="payroll-automation-grid">
-          <article className="panel payroll-schedule-card">
+          <article className="payroll-schedule-card">
             <div>
               <span className={`status-dot ${schedule.status.toLowerCase()}`} />
               <strong>{schedule.name}</strong>
@@ -248,7 +249,7 @@ export function PayrollAutomation({
               always require authorized action.
             </p>
           </article>
-          <article className="panel payroll-reminders">
+          <article className="payroll-reminders">
             <div className="panel-heading">
               <h3>Reminders</h3>
               <span className="muted">
@@ -276,13 +277,18 @@ export function PayrollAutomation({
           </article>
         </div>
       ) : (
-        <div className="panel payroll-automation-empty">
-          <strong>Prepare payroll on schedule</strong>
-          <p>Choose a cadence and PuffinPal will prepare calculated drafts for review.</p>
+        <div className="payroll-automation-empty">
+          <span className="payroll-feature-icon" aria-hidden="true">
+            ↻
+          </span>
+          <div>
+            <strong>Automation is not configured</strong>
+            <p>Choose a cadence and PuffinPal will prepare calculated drafts for review.</p>
+          </div>
         </div>
       )}
       {schedule && history.length > 0 && (
-        <div className="panel payroll-automation-history">
+        <div className="payroll-automation-history">
           <div className="panel-heading">
             <h3>Automation history</h3>
             <span className="muted">Latest 20 attempts</span>

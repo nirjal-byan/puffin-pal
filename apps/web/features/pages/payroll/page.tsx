@@ -6,7 +6,6 @@ import { AppModal } from "../../../components/app-modal";
 import { DatePicker } from "../../../components/date-picker";
 import { FormModal } from "../../../components/form-modal";
 import { errorMessage, type WorkspaceApi } from "../../../lib/api";
-import { PayrollAutomation } from "./payroll-automation";
 import { PayrollStatutory } from "./payroll-statutory";
 
 type PayrollRun = {
@@ -350,13 +349,6 @@ export default function PayrollPage({
           {error}
         </p>
       )}
-      <PayrollAutomation
-        api={api}
-        permissions={permissions}
-        onSaved={onSaved}
-        onRunsChanged={load}
-      />
-      {can("payroll:manage") && <PayrollStatutory api={api} />}
       <section className="panel">
         <div className="panel-heading">
           <h3>Payroll history</h3>

@@ -25,6 +25,7 @@ test("features belong to a single, predictable top-level section", () => {
     assert.equal(sectionForTab(tab).key, "workspace");
   assert.equal(sectionForTab("cash-flow").key, "cash-flow");
   assert.equal(sectionForTab("payroll").key, "payroll");
+  assert.equal(sectionForTab("payroll-automation").key, "payroll");
   for (const tab of ["employees", "attendance", "leave", "overtime", "members"])
     assert.equal(sectionForTab(tab).key, "people");
   for (const tab of ["profile", "password", "access"])

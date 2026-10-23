@@ -5664,12 +5664,12 @@ body:has(.workspace-layout[data-theme="dark"]) .country-picker-option.highlighte
 }
 .payroll-automation {
   display: grid;
-  gap: 14px;
+  gap: 0;
   margin-bottom: 18px;
 }
 .payroll-automation-heading {
   display: flex;
-  align-items: end;
+  align-items: center;
   justify-content: space-between;
   gap: 16px;
 }
@@ -5677,14 +5677,49 @@ body:has(.workspace-layout[data-theme="dark"]) .country-picker-option.highlighte
   margin-top: 3px;
   font-size: 18px;
 }
+.payroll-automation-heading p,
+.payroll-statutory .panel-heading p {
+  margin: 4px 0 0;
+}
 .payroll-automation-grid {
   display: grid;
   grid-template-columns: minmax(0, 1.3fr) minmax(280px, 0.7fr);
   gap: 14px;
+  padding: 16px;
 }
 .payroll-schedule-card,
 .payroll-automation-empty {
   padding: 20px;
+}
+.payroll-schedule-card,
+.payroll-reminders,
+.payroll-automation-history {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.payroll-automation-empty {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-height: 92px;
+  background: #fbfcfb;
+}
+.payroll-automation-empty p {
+  margin: 5px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+.payroll-feature-icon {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  flex: 0 0 38px;
+  place-items: center;
+  border-radius: 10px;
+  background: #eaf4ef;
+  color: #287957;
+  font-size: 18px;
 }
 .payroll-schedule-card > div:first-child {
   display: flex;
@@ -5748,7 +5783,53 @@ body:has(.workspace-layout[data-theme="dark"]) .country-picker-option.highlighte
   padding: 16px;
 }
 .payroll-automation-history {
+  margin: 0 16px 16px;
   overflow: hidden;
+}
+.payroll-statutory {
+  margin-bottom: 18px;
+}
+.payroll-settings-page {
+  display: grid;
+  gap: 18px;
+}
+.payroll-settings-page .payroll-automation,
+.payroll-settings-page .payroll-statutory {
+  margin-bottom: 0;
+}
+.statutory-report.payroll-summary {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 0;
+  margin: 0;
+  padding: 16px 20px 14px;
+  background: #fbfcfb;
+}
+.statutory-report.payroll-summary > div {
+  gap: 6px;
+  min-width: 0;
+  padding: 4px 14px;
+  border: 0;
+  border-right: 1px solid var(--border);
+  border-radius: 0;
+}
+.statutory-report.payroll-summary > div:first-child {
+  padding-left: 0;
+}
+.statutory-report.payroll-summary > div:nth-child(6) {
+  padding-right: 0;
+  border-right: 0;
+}
+.statutory-report.payroll-summary strong {
+  overflow: hidden;
+  font-size: 16px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.statutory-report > p {
+  margin: 14px 0 0;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+  font-size: 11px;
 }
 .payroll-schedule-form {
   max-width: 680px;
@@ -5770,6 +5851,10 @@ body:has(.workspace-layout[data-theme="dark"]) .country-picker-option.highlighte
 .workspace-layout[data-theme="dark"] .payroll-reminders > button.is-read {
   background: transparent;
 }
+.workspace-layout[data-theme="dark"] .payroll-automation-empty,
+.workspace-layout[data-theme="dark"] .statutory-report.payroll-summary {
+  background: #16221c;
+}
 @media (max-width: 700px) {
   .payroll-toolbar {
     align-items: stretch;
@@ -5789,6 +5874,14 @@ body:has(.workspace-layout[data-theme="dark"]) .country-picker-option.highlighte
   .payroll-automation-grid,
   .payroll-schedule-card dl {
     grid-template-columns: 1fr;
+  }
+  .statutory-report.payroll-summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .statutory-report.payroll-summary > div {
+    padding: 10px 8px;
+    border-right: 0;
+    border-bottom: 1px solid var(--border);
   }
 }
 .workforce-metrics {

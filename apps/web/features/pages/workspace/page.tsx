@@ -46,6 +46,7 @@ import ExpensesPage from "../expenses/page";
 import RetainersPage from "../retainers/page";
 import EmployeesPage from "../employees/page";
 import PayrollPage from "../payroll/page";
+import PayrollAutomationPage from "../payroll/automation-page";
 import AttendancePage from "../attendance/page";
 import LeavePage from "../leave/page";
 import OvertimePage from "../overtime/page";
@@ -154,6 +155,7 @@ export default function WorkspacePage({
       tab === "leave" ||
       tab === "overtime" ||
       tab === "payroll" ||
+      tab === "payroll-automation" ||
       tab === "cash-flow" ||
       !allowed
     )
@@ -256,7 +258,15 @@ export default function WorkspacePage({
                 )}
                 {!creatingInvoice &&
                   !invoiceId &&
-                  !["overview", "access", "profile", "password", "cash-flow"].includes(tab) &&
+                  ![
+                    "overview",
+                    "access",
+                    "profile",
+                    "password",
+                    "cash-flow",
+                    "payroll",
+                    "payroll-automation",
+                  ].includes(tab) &&
                   allowed && (
                     <button
                       className="button secondary"
@@ -376,6 +386,12 @@ export default function WorkspacePage({
             />
           ) : tab === "payroll" ? (
             <PayrollPage api={api} permissions={session.permissions} onSaved={recordNotification} />
+          ) : tab === "payroll-automation" ? (
+            <PayrollAutomationPage
+              api={api}
+              permissions={session.permissions}
+              onSaved={recordNotification}
+            />
           ) : tab === "attendance" ? (
             <AttendancePage
               api={api}

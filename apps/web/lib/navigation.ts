@@ -13,6 +13,7 @@ export type Tab =
   | "expenses"
   | "retainers"
   | "payroll"
+  | "payroll-automation"
   | "cash-flow"
   | "access"
   | "profile"
@@ -56,6 +57,13 @@ export const NAV: {
     label: "Payroll",
     sidebarLabel: "Pay runs",
     icon: "$",
+    permission: "payroll:read",
+  },
+  {
+    key: "payroll-automation",
+    label: "Payroll automation",
+    sidebarLabel: "Automation",
+    icon: "↻",
     permission: "payroll:read",
   },
   { key: "employees", label: "Employees", icon: "♙", permission: "employees:read" },
@@ -108,7 +116,12 @@ export const NAV_SECTIONS: {
     sidebarLabel: "Planning",
     tabs: ["cash-flow"],
   },
-  { key: "payroll", label: "Payroll", sidebarLabel: "Payroll", tabs: ["payroll"] },
+  {
+    key: "payroll",
+    label: "Payroll",
+    sidebarLabel: "Payroll",
+    tabs: ["payroll", "payroll-automation"],
+  },
   {
     key: "people",
     label: "People",
@@ -166,6 +179,7 @@ export const ICON_PATHS: Record<Tab, string> = {
   expenses: "M3 14l5-5 3 3 6-8 M12 4h5v5",
   retainers: "M16 7a6 6 0 0 0-10-2L3 8 M3 3v5h5 M4 13a6 6 0 0 0 10 2l3-3 M17 17v-5h-5",
   payroll: "M10 2v16 M14 5H8a3 3 0 0 0 0 6h4a3 3 0 0 1 0 6H6",
+  "payroll-automation": "M16 7a6 6 0 0 0-10-2L3 8 M3 3v5h5 M4 13a6 6 0 0 0 10 2l3-3 M17 17v-5h-5",
   "cash-flow": "M2 14l4-4 4 3 7-8 M13 5h4v4",
   members:
     "M7 9a3 3 0 1 0 0-6a3 3 0 1 0 0 6 M2 17v-2a5 5 0 0 1 10 0v2 M14 4a3 3 0 0 1 0 6 M15 12a4 4 0 0 1 3 4v1",
@@ -192,6 +206,7 @@ export const DESCRIPTION: Record<Tab, string> = {
   expenses: "Keep an eye on your business spending.",
   retainers: "Your recurring client relationships.",
   payroll: "Calculate, approve, and pay your team with an auditable workflow.",
+  "payroll-automation": "Schedule payroll drafts and manage statutory calculation rules.",
   "cash-flow": "Plan expected cash movement from your existing financial records.",
   access: "Your account and permissions in this organization.",
 };
