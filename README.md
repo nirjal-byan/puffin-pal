@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="apps/web/public/puffinpal-logo-transparent.png" alt="PuffinPal" width="300" />
+</p>
+
 # PuffinPal
 
 PuffinPal is a multi-tenant business workspace for invoicing, expenses, recurring billing, employees, attendance, leave, payroll, and cash-flow forecasting.
@@ -29,35 +33,6 @@ flowchart LR
 The API handles authorization and business rules. PostgreSQL stores application data, Redis supports queues and rate limits, and SeaweedFS stores private receipts, invoices, exports, and payslips. BullMQ workers process scheduled and document-heavy jobs.
 
 ## Tools
-
-```mermaid
-flowchart TB
-    subgraph Frontend
-        Next[Next.js 16]
-        React[React 19]
-        Charts[Recharts]
-    end
-
-    subgraph Backend
-        Nest[NestJS 11]
-        Prisma[Prisma contract and migrations]
-        Queue[BullMQ]
-        PDF[PDFKit]
-    end
-
-    subgraph Data
-        Postgres[(PostgreSQL)]
-        Redis[(Redis)]
-        S3[(SeaweedFS / S3)]
-    end
-
-    subgraph Development
-        PNPM[pnpm workspaces]
-        Turbo[Turborepo]
-        Docker[Docker Compose]
-        Caddy[Caddy]
-    end
-```
 
 | Tool                     | Purpose                                                  |
 | ------------------------ | -------------------------------------------------------- |
