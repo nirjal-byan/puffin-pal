@@ -19,9 +19,11 @@ import type {
   PayrollRunQueryDto,
   RecordPayrollPaymentDto,
   ImportOvertimeDto,
+  ImportUnpaidLeaveDto,
 } from "./payroll.dto.js";
 import {
   calculateFixedPayroll,
+  calculateUnpaidLeaveDeduction,
   centsToMoney,
   moneyToCents,
   payrollAmount,
@@ -436,12 +438,15 @@ export class PayrollService {
       organizationId: this.organizationId,
       payrollRunId: runId,
     }).all();
-    const [attendance, leave, leaveTypes, overtime, imported] = await Promise.all([
+    const [attendance, leave, leaveTypes, overtime, imported, organization] = await Promise.all([
       this.db.orm.public.AttendanceRecord.where({ organizationId: this.organizationId }).all(),
       this.db.orm.public.LeaveRequest.where({ organizationId: this.organizationId }).all(),
       this.db.orm.public.LeaveType.where({ organizationId: this.organizationId }).all(),
       this.db.orm.public.OvertimeRequest.where({ organizationId: this.organizationId }).all(),
       this.db.orm.public.PayrollEntryComponent.where({ organizationId: this.organizationId }).all(),
+      this.db.orm.public.Organization.where({ id: this.organizationId })
+        .select("unpaidLeaveDeductionsEnabled")
+        .first(),
     ]);
     const from = this.day(run.periodStart);
     const to = this.day(run.periodEnd);
@@ -492,6 +497,20 @@ export class PayrollService {
               !leaveTypes.find((type) => type.id === row.leaveTypeId)?.isPaid,
           )
           .reduce((sum, row) => sum + row.requestedUnits, 0),
+        unpaidLeaveDeductionsEnabled: organization?.unpaidLeaveDeductionsEnabled ?? false,
+        approvedUnpaidLeave: employeeLeave
+          .filter(
+            (row) =>
+              row.status === "APPROVED" &&
+              !leaveTypes.find((type) => type.id === row.leaveTypeId)?.isPaid,
+          )
+          .map((row) => ({
+            id: row.id,
+            startDate: this.day(row.startDate),
+            endDate: this.day(row.endDate),
+            minutes: row.requestedMinutes,
+            imported: imported.some((component) => component.sourceLeaveRequestId === row.id),
+          })),
         unresolvedLeaveRequests: employeeLeave.filter((row) => row.status === "PENDING_APPROVAL")
           .length,
         unresolvedOvertimeRequests: employeeOvertime.filter(
@@ -602,6 +621,142 @@ export class PayrollService {
         entityId: overtime.id,
         action: "IMPORTED_TO_PAYROLL",
         details: JSON.stringify({ payrollRunId: runId, payrollEntryId: entryId, amount }),
+      });
+      return updated;
+    });
+  }
+
+  async importUnpaidLeave(runId: string, entryId: string, input: ImportUnpaidLeaveDto) {
+    const organizationId = this.organizationId;
+    return this.db.transaction(async (tx) => {
+      await tx.execute(
+        this.db.raw
+          .sql`SELECT id FROM payroll_runs WHERE id = ${runId} AND "organizationId" = ${organizationId} FOR UPDATE`
+          .affectedCount()
+          .build(),
+      );
+      const [run, entry, leave, organization] = await Promise.all([
+        tx.orm.public.PayrollRun.where({ organizationId, id: runId }).first(),
+        tx.orm.public.PayrollEntry.where({
+          organizationId,
+          id: entryId,
+          payrollRunId: runId,
+        }).first(),
+        tx.orm.public.LeaveRequest.where({ organizationId, id: input.leaveRequestId }).first(),
+        tx.orm.public.Organization.where({ id: organizationId })
+          .select("unpaidLeaveDeductionsEnabled")
+          .first(),
+      ]);
+      if (!run || !entry || !leave)
+        throw new NotFoundException("Payroll entry or leave request not found");
+      if (!organization?.unpaidLeaveDeductionsEnabled)
+        throw new ConflictException("Unpaid-leave deductions are disabled for this organization");
+      if (run.status !== "DRAFT" || run.version !== input.expectedVersion)
+        throw new ConflictException("Only the current draft payroll can import unpaid leave");
+      const leaveType = await tx.orm.public.LeaveType.where({
+        organizationId,
+        id: leave.leaveTypeId,
+      }).first();
+      if (
+        !leaveType ||
+        leaveType.isPaid ||
+        leave.status !== "APPROVED" ||
+        leave.employeeId !== entry.employeeId
+      )
+        throw new ConflictException("Leave is not eligible for an unpaid deduction");
+      if (
+        this.day(leave.startDate) < this.day(run.periodStart) ||
+        this.day(leave.endDate) > this.day(run.periodEnd)
+      )
+        throw new ConflictException("Leave must fall completely inside this payroll period");
+
+      const schedules = await tx.orm.public.WorkSchedule.where({
+        organizationId,
+        employeeId: entry.employeeId,
+      }).all();
+      let scheduledMinutes = 0;
+      for (
+        let date = Temporal.PlainDate.from(this.day(run.periodStart));
+        Temporal.PlainDate.compare(date, Temporal.PlainDate.from(this.day(run.periodEnd))) <= 0;
+        date = date.add({ days: 1 })
+      ) {
+        const schedule = schedules
+          .filter(
+            (row) =>
+              this.day(row.effectiveFrom) <= date.toString() &&
+              (!row.effectiveTo || this.day(row.effectiveTo) >= date.toString()),
+          )
+          .sort((a, b) => this.day(b.effectiveFrom).localeCompare(this.day(a.effectiveFrom)))[0];
+        const workdays = schedule ? (JSON.parse(schedule.workdays) as number[]) : [1, 2, 3, 4, 5];
+        if (workdays.includes(date.dayOfWeek))
+          scheduledMinutes += schedule?.expectedDailyMinutes ?? 480;
+      }
+      if (!scheduledMinutes)
+        throw new BadRequestException("Payroll period has no scheduled work time");
+      const leaveMinutes = leave.requestedMinutes ?? leave.requestedUnits * 240;
+      const amount = calculateUnpaidLeaveDeduction(
+        String(entry.grossPay),
+        leaveMinutes,
+        scheduledMinutes,
+        String(entry.netPay),
+      );
+      if (moneyToCents(amount) <= 0n)
+        throw new BadRequestException("Unpaid leave produces no deduction");
+      try {
+        await tx.orm.public.PayrollEntryComponent.create({
+          organizationId,
+          payrollEntryId: entryId,
+          name: "Approved unpaid leave",
+          type: "DEDUCTION",
+          amount: payrollAmount(amount),
+          sourceLeaveRequestId: leave.id,
+          sourceMinutes: leaveMinutes,
+          isAdjustment: true,
+          sortOrder: 9100,
+        });
+      } catch (error) {
+        if (String(error).toLowerCase().includes("unique"))
+          throw new ConflictException("This leave request was already imported into payroll");
+        throw error;
+      }
+      const components = await tx.orm.public.PayrollEntryComponent.where({
+        organizationId,
+        payrollEntryId: entryId,
+      }).all();
+      const amounts = calculateFixedPayroll(entry.baseAmount, components);
+      await tx.orm.public.PayrollEntry.where({ organizationId, id: entryId }).update({
+        grossPay: payrollAmount(amounts.grossPay),
+        totalDeductions: payrollAmount(amounts.totalDeductions),
+        netPay: payrollAmount(amounts.netPay),
+        version: entry.version + 1,
+      });
+      const totals = await this.recomputeRun(tx, runId);
+      const [updated] = await tx.orm.public.PayrollRun.where({
+        organizationId,
+        id: runId,
+        version: input.expectedVersion,
+      }).updateAll({ ...totals, version: input.expectedVersion + 1 });
+      if (!updated) throw new ConflictException("Payroll changed. Reload and try again.");
+      await this.audit(
+        runId,
+        entryId,
+        "ADJUSTED",
+        `UNPAID_LEAVE:${leave.id}:${leaveMinutes}:${amount}`,
+        tx,
+      );
+      await tx.orm.public.WorkforceAuditEvent.create({
+        organizationId,
+        employeeId: entry.employeeId,
+        actorId: this.userId,
+        entityType: "LEAVE",
+        entityId: leave.id,
+        action: "IMPORTED_TO_PAYROLL",
+        details: JSON.stringify({
+          payrollRunId: runId,
+          payrollEntryId: entryId,
+          leaveMinutes,
+          amount,
+        }),
       });
       return updated;
     });

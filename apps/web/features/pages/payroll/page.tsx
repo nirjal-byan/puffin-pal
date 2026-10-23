@@ -51,6 +51,14 @@ type WorkforceReview = {
   unresolvedLeaveRequests: number;
   unresolvedOvertimeRequests: number;
   approvedOvertime: Array<{ id: string; minutes?: number; rate?: string; imported: boolean }>;
+  unpaidLeaveDeductionsEnabled: boolean;
+  approvedUnpaidLeave: Array<{
+    id: string;
+    startDate: string;
+    endDate: string;
+    minutes?: number;
+    imported: boolean;
+  }>;
 };
 type EmployeeOption = {
   id: string;
@@ -153,6 +161,26 @@ export default function PayrollPage({
       );
       await open(updated);
       onSaved("Approved overtime imported.");
+    } catch (failure) {
+      setError(errorMessage(failure));
+    } finally {
+      setBusy(false);
+    }
+  }
+  async function importUnpaidLeave(entry: PayrollEntry, leaveRequestId: string) {
+    if (!selected) return;
+    setBusy(true);
+    setError("");
+    try {
+      const updated = await api<PayrollRun>(
+        `/payroll/runs/${selected.id}/entries/${entry.id}/unpaid-leave`,
+        {
+          method: "POST",
+          body: { expectedVersion: selected.version, leaveRequestId },
+        },
+      );
+      await open(updated);
+      onSaved("Unpaid-leave deduction imported for review.");
     } catch (failure) {
       setError(errorMessage(failure));
     } finally {
@@ -582,6 +610,27 @@ export default function PayrollPage({
                                 : "Overtime rate required"}
                             </button>
                           ))}
+                      {selected.status === "DRAFT" &&
+                        entry &&
+                        review.unpaidLeaveDeductionsEnabled &&
+                        review.approvedUnpaidLeave
+                          .filter((item) => !item.imported)
+                          .map((item) => (
+                            <button
+                              key={item.id}
+                              className="text-button"
+                              disabled={busy}
+                              onClick={() => void importUnpaidLeave(entry, item.id)}
+                            >
+                              Import {(item.minutes ?? 0) / 60} unpaid leave hours
+                            </button>
+                          ))}
+                      {review.approvedUnpaidLeave.some((item) => !item.imported) &&
+                        !review.unpaidLeaveDeductionsEnabled && (
+                          <small>
+                            Unpaid leave found · deductions are disabled in Workforce settings
+                          </small>
+                        )}
                     </article>
                   );
                 })}

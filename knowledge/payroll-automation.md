@@ -34,6 +34,8 @@ Draft-ready, approval-pending, and automation-failed notifications are stored pe
 
 Approved overtime is intentionally not imported automatically. Review it through the existing workforce review before submitting the draft.
 
+Approved unpaid leave follows the same explicit-review principle. Automated drafts only identify eligible deductions; an authorized payroll user imports each deduction manually. See [advanced-workforce-management.md](advanced-workforce-management.md).
+
 ## Cash-flow behavior
 
 Cash-flow forecasts include finalized payroll and, when configured, approved payroll. Draft runs are excluded, so an automated draft does not add a second payroll outflow. Existing salary projections continue to cover periods without approved or finalized payroll.

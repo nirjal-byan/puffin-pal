@@ -33,7 +33,7 @@
     "test:invoice-exports": "pnpm run build && node --test test/invoice-export.test.mjs && node scripts/test-auth-e2e.mjs test/invoice-exports.e2e.test.mjs",
     "test:dashboard": "pnpm run build && node --test test/financial-dashboard.test.mjs",
     "test:recurring-invoices": "pnpm run build && node --test test/recurring-schedule.test.mjs",
-    "test:payroll": "pnpm run build && node --test test/payroll-calculations.test.mjs test/payroll-pdf.test.mjs test/payroll-schedule.test.mjs",
+    "test:payroll": "pnpm run build && node --test test/payroll-calculations.test.mjs test/payroll-pdf.test.mjs test/payroll-schedule.test.mjs test/advanced-workforce.test.mjs",
     "test:cash-flow": "pnpm --filter @puffinpal/permissions build && pnpm run build && node --test test/cash-flow-forecast.test.mjs && node scripts/test-auth-e2e.mjs test/cash-flow.e2e.test.mjs"
   },
   "dependencies": {

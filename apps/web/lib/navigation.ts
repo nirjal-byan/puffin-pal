@@ -5,6 +5,7 @@ export type Tab =
   | "clients"
   | "members"
   | "employees"
+  | "workforce"
   | "attendance"
   | "leave"
   | "overtime"
@@ -58,6 +59,13 @@ export const NAV: {
     permission: "payroll:read",
   },
   { key: "employees", label: "Employees", icon: "♙", permission: "employees:read" },
+  {
+    key: "workforce",
+    label: "Workforce",
+    sidebarLabel: "Calendar & policies",
+    icon: "▦",
+    permission: "workforce:calendar:read",
+  },
   { key: "attendance", label: "Attendance", icon: "◷", permission: "attendance:read" },
   { key: "leave", label: "Leave", icon: "◇", permission: "leave:read" },
   { key: "overtime", label: "Overtime", icon: "+", permission: "overtime:read" },
@@ -105,7 +113,7 @@ export const NAV_SECTIONS: {
     key: "people",
     label: "People",
     sidebarLabel: "Workforce",
-    tabs: ["employees", "attendance", "leave", "overtime", "members"],
+    tabs: ["employees", "workforce", "attendance", "leave", "overtime", "members"],
   },
   {
     key: "settings",
@@ -129,10 +137,7 @@ export function tabHref(tab: Tab): string {
   return `/?section=${tab}`;
 }
 
-export function canAccessNavigationItem(
-  tab: Tab,
-  permissions: readonly Permission[],
-): boolean {
+export function canAccessNavigationItem(tab: Tab, permissions: readonly Permission[]): boolean {
   const item = NAV.find((candidate) => candidate.key === tab);
   return Boolean(item && permissions.includes(item.permission));
 }
@@ -165,6 +170,7 @@ export const ICON_PATHS: Record<Tab, string> = {
   members:
     "M7 9a3 3 0 1 0 0-6a3 3 0 1 0 0 6 M2 17v-2a5 5 0 0 1 10 0v2 M14 4a3 3 0 0 1 0 6 M15 12a4 4 0 0 1 3 4v1",
   employees: "M10 10a4 4 0 1 0 0-8a4 4 0 1 0 0 8 M3 18v-1a7 7 0 0 1 14 0v1 M15 3h3 M16.5 1.5v3",
+  workforce: "M3 4h14v13H3z M6 2v4 M14 2v4 M3 8h14 M6 11h2 M10 11h2 M14 11h1 M6 14h2 M10 14h2",
   attendance: "M10 3a7 7 0 1 0 0 14a7 7 0 1 0 0-14 M10 6v4l3 2",
   leave: "M4 4h12v14H4z M7 2v4 M13 2v4 M4 8h12 M7 12h2 M11 12h2",
   overtime: "M10 3a7 7 0 1 0 0 14a7 7 0 1 0 0-14 M10 6v4h4",
@@ -178,6 +184,7 @@ export const DESCRIPTION: Record<Tab, string> = {
   clients: "The people and businesses you work with.",
   members: "The right people. The right permissions.",
   employees: "Your employee directory and compensation history.",
+  workforce: "Schedules, holidays, policies, and your shared workforce calendar.",
   attendance: "Track workdays, hours, and trusted check-ins.",
   leave: "Manage leave requests, approvals, and balances.",
   overtime: "Review requested and approved overtime.",

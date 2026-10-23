@@ -2,6 +2,8 @@
 
 PuffinPal’s workforce module records daily attendance, effective-dated work schedules, configurable holidays, leave requests and balances, and approved overtime. Every query derives the organization from the authenticated JWT context.
 
+Task 17 policy accruals, corrections, calendar behavior, timezone precedence, and payroll links are documented in [advanced-workforce-management.md](advanced-workforce-management.md).
+
 ## Attendance
 
 One canonical record exists per employee and local work date. Managers can record `PRESENT`, `ABSENT`, `HALF_DAY`, `ON_LEAVE`, or `HOLIDAY`. Lateness is a separate flag. Self check-in and check-out use server instants; an employee must be linked to the authenticated user. Worked duration is stored in integer minutes. Missing records remain warnings and are never converted into absences.

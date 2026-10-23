@@ -4,6 +4,10 @@
   "target": "postgres",
   "profileHash": "3916f444a8a17ad749191acf9e08dad97d1a327b88c2f1d45d12f240296aa8b2",
   "roots": {
+    "attendance_correction_requests": {
+      "model": "AttendanceCorrectionRequest",
+      "namespace": "public"
+    },
     "attendance_records": {
       "model": "AttendanceRecord",
       "namespace": "public"
@@ -54,6 +58,10 @@
     },
     "invoices": {
       "model": "Invoice",
+      "namespace": "public"
+    },
+    "leave_accrual_policies": {
+      "model": "LeaveAccrualPolicy",
       "namespace": "public"
     },
     "leave_ledger_entries": {
@@ -165,6 +173,27 @@
     "namespaces": {
       "public": {
         "enum": {
+          "AttendanceCorrectionStatus": {
+            "codecId": "pg/text@1",
+            "members": [
+              {
+                "name": "PENDING",
+                "value": "PENDING"
+              },
+              {
+                "name": "APPROVED",
+                "value": "APPROVED"
+              },
+              {
+                "name": "REJECTED",
+                "value": "REJECTED"
+              },
+              {
+                "name": "CANCELLED",
+                "value": "CANCELLED"
+              }
+            ]
+          },
           "AttendanceSource": {
             "codecId": "pg/text@1",
             "members": [
@@ -425,6 +454,40 @@
               }
             ]
           },
+          "LeaveAccrualFrequency": {
+            "codecId": "pg/text@1",
+            "members": [
+              {
+                "name": "ANNUAL",
+                "value": "ANNUAL"
+              },
+              {
+                "name": "MONTHLY",
+                "value": "MONTHLY"
+              },
+              {
+                "name": "SERVICE_MONTHLY",
+                "value": "SERVICE_MONTHLY"
+              }
+            ]
+          },
+          "LeaveCarryForwardMode": {
+            "codecId": "pg/text@1",
+            "members": [
+              {
+                "name": "NONE",
+                "value": "NONE"
+              },
+              {
+                "name": "FULL",
+                "value": "FULL"
+              },
+              {
+                "name": "CAPPED",
+                "value": "CAPPED"
+              }
+            ]
+          },
           "LeaveDayPortion": {
             "codecId": "pg/text@1",
             "members": [
@@ -444,6 +507,18 @@
               {
                 "name": "ALLOCATION",
                 "value": "ALLOCATION"
+              },
+              {
+                "name": "ACCRUAL",
+                "value": "ACCRUAL"
+              },
+              {
+                "name": "CARRY_FORWARD",
+                "value": "CARRY_FORWARD"
+              },
+              {
+                "name": "EXPIRATION",
+                "value": "EXPIRATION"
               },
               {
                 "name": "DEDUCTION",
@@ -934,6 +1009,308 @@
           }
         },
         "models": {
+          "AttendanceCorrectionRequest": {
+            "fields": {
+              "attendanceRecordId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "beforeSnapshot": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "createdAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "kind": "scalar"
+                }
+              },
+              "employeeId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "organizationId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "payrollImpact": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/bool@1",
+                  "kind": "scalar"
+                }
+              },
+              "proposedCheckInAt": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "kind": "scalar"
+                }
+              },
+              "proposedCheckOutAt": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "kind": "scalar"
+                }
+              },
+              "proposedStatus": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                },
+                "valueSet": {
+                  "entityKind": "enum",
+                  "entityName": "AttendanceStatus",
+                  "namespaceId": "public",
+                  "plane": "domain"
+                }
+              },
+              "proposedWorkedMinutes": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "reason": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "requestedById": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "reviewReason": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "reviewedAt": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "kind": "scalar"
+                }
+              },
+              "reviewedById": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "status": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                },
+                "valueSet": {
+                  "entityKind": "enum",
+                  "entityName": "AttendanceCorrectionStatus",
+                  "namespaceId": "public",
+                  "plane": "domain"
+                }
+              },
+              "updatedAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "kind": "scalar"
+                }
+              },
+              "version": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "attendanceRecord": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "organizationId",
+                    "attendanceRecordId"
+                  ],
+                  "targetFields": [
+                    "organizationId",
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "AttendanceRecord",
+                  "namespace": "public"
+                }
+              },
+              "employee": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "organizationId",
+                    "employeeId"
+                  ],
+                  "targetFields": [
+                    "organizationId",
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "Employee",
+                  "namespace": "public"
+                }
+              },
+              "organization": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "organizationId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "Organization",
+                  "namespace": "public"
+                }
+              },
+              "requestedBy": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "organizationId",
+                    "requestedById"
+                  ],
+                  "targetFields": [
+                    "organizationId",
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "User",
+                  "namespace": "public"
+                }
+              },
+              "reviewedBy": {
+                "cardinality": "N:1",
+                "nullable": true,
+                "on": {
+                  "localFields": [
+                    "organizationId",
+                    "reviewedById"
+                  ],
+                  "targetFields": [
+                    "organizationId",
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "User",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "attendanceRecordId": {
+                  "column": "attendanceRecordId"
+                },
+                "beforeSnapshot": {
+                  "column": "beforeSnapshot"
+                },
+                "createdAt": {
+                  "column": "createdAt"
+                },
+                "employeeId": {
+                  "column": "employeeId"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "organizationId": {
+                  "column": "organizationId"
+                },
+                "payrollImpact": {
+                  "column": "payrollImpact"
+                },
+                "proposedCheckInAt": {
+                  "column": "proposedCheckInAt"
+                },
+                "proposedCheckOutAt": {
+                  "column": "proposedCheckOutAt"
+                },
+                "proposedStatus": {
+                  "column": "proposedStatus"
+                },
+                "proposedWorkedMinutes": {
+                  "column": "proposedWorkedMinutes"
+                },
+                "reason": {
+                  "column": "reason"
+                },
+                "requestedById": {
+                  "column": "requestedById"
+                },
+                "reviewReason": {
+                  "column": "reviewReason"
+                },
+                "reviewedAt": {
+                  "column": "reviewedAt"
+                },
+                "reviewedById": {
+                  "column": "reviewedById"
+                },
+                "status": {
+                  "column": "status"
+                },
+                "updatedAt": {
+                  "column": "updatedAt"
+                },
+                "version": {
+                  "column": "version"
+                }
+              },
+              "namespaceId": "public",
+              "table": "attendance_correction_requests"
+            }
+          },
           "AttendanceRecord": {
             "fields": {
               "checkInAt": {
@@ -1062,6 +1439,23 @@
               }
             },
             "relations": {
+              "corrections": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "organizationId",
+                    "id"
+                  ],
+                  "targetFields": [
+                    "organizationId",
+                    "attendanceRecordId"
+                  ]
+                },
+                "to": {
+                  "model": "AttendanceCorrectionRequest",
+                  "namespace": "public"
+                }
+              },
               "createdBy": {
                 "cardinality": "N:1",
                 "nullable": false,
@@ -1910,6 +2304,23 @@
                 },
                 "to": {
                   "model": "AttendanceRecord",
+                  "namespace": "public"
+                }
+              },
+              "attendanceCorrections": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "organizationId",
+                    "id"
+                  ],
+                  "targetFields": [
+                    "organizationId",
+                    "employeeId"
+                  ]
+                },
+                "to": {
+                  "model": "AttendanceCorrectionRequest",
                   "namespace": "public"
                 }
               },
@@ -2884,6 +3295,13 @@
                   "kind": "scalar"
                 }
               },
+              "durationMinutes": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
               "id": {
                 "nullable": false,
                 "type": {
@@ -2918,6 +3336,13 @@
                   "codecId": "pg/timestamptz-temporal@1",
                   "kind": "scalar"
                 }
+              },
+              "version": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
               }
             },
             "relations": {
@@ -2946,6 +3371,9 @@
                 "date": {
                   "column": "date"
                 },
+                "durationMinutes": {
+                  "column": "durationMinutes"
+                },
                 "id": {
                   "column": "id"
                 },
@@ -2960,6 +3388,9 @@
                 },
                 "updatedAt": {
                   "column": "updatedAt"
+                },
+                "version": {
+                  "column": "version"
                 }
               },
               "namespaceId": "public",
@@ -3632,9 +4063,261 @@
               "table": "invoice_items"
             }
           },
+          "LeaveAccrualPolicy": {
+            "fields": {
+              "carryForwardCapMinutes": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "carryForwardMode": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                },
+                "valueSet": {
+                  "entityKind": "enum",
+                  "entityName": "LeaveCarryForwardMode",
+                  "namespaceId": "public",
+                  "plane": "domain"
+                }
+              },
+              "createdAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "kind": "scalar"
+                }
+              },
+              "effectiveFrom": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "kind": "scalar"
+                }
+              },
+              "effectiveTo": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "kind": "scalar"
+                }
+              },
+              "entitlementMinutes": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "expiresAfterMonths": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "frequency": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                },
+                "valueSet": {
+                  "entityKind": "enum",
+                  "entityName": "LeaveAccrualFrequency",
+                  "namespaceId": "public",
+                  "plane": "domain"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "isActive": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/bool@1",
+                  "kind": "scalar"
+                }
+              },
+              "leaveTypeId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "maximumBalanceMinutes": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "name": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "organizationId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "prorateNewJoiners": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/bool@1",
+                  "kind": "scalar"
+                }
+              },
+              "updatedAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "kind": "scalar"
+                }
+              },
+              "version": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "leaveType": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "organizationId",
+                    "leaveTypeId"
+                  ],
+                  "targetFields": [
+                    "organizationId",
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "LeaveType",
+                  "namespace": "public"
+                }
+              },
+              "ledgerEntries": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "organizationId",
+                    "id"
+                  ],
+                  "targetFields": [
+                    "organizationId",
+                    "policyId"
+                  ]
+                },
+                "to": {
+                  "model": "LeaveLedgerEntry",
+                  "namespace": "public"
+                }
+              },
+              "organization": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "organizationId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "Organization",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "carryForwardCapMinutes": {
+                  "column": "carryForwardCapMinutes"
+                },
+                "carryForwardMode": {
+                  "column": "carryForwardMode"
+                },
+                "createdAt": {
+                  "column": "createdAt"
+                },
+                "effectiveFrom": {
+                  "column": "effectiveFrom"
+                },
+                "effectiveTo": {
+                  "column": "effectiveTo"
+                },
+                "entitlementMinutes": {
+                  "column": "entitlementMinutes"
+                },
+                "expiresAfterMonths": {
+                  "column": "expiresAfterMonths"
+                },
+                "frequency": {
+                  "column": "frequency"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "isActive": {
+                  "column": "isActive"
+                },
+                "leaveTypeId": {
+                  "column": "leaveTypeId"
+                },
+                "maximumBalanceMinutes": {
+                  "column": "maximumBalanceMinutes"
+                },
+                "name": {
+                  "column": "name"
+                },
+                "organizationId": {
+                  "column": "organizationId"
+                },
+                "prorateNewJoiners": {
+                  "column": "prorateNewJoiners"
+                },
+                "updatedAt": {
+                  "column": "updatedAt"
+                },
+                "version": {
+                  "column": "version"
+                }
+              },
+              "namespaceId": "public",
+              "table": "leave_accrual_policies"
+            }
+          },
           "LeaveLedgerEntry": {
             "fields": {
               "createdAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "kind": "scalar"
+                }
+              },
+              "effectiveDate": {
                 "nullable": false,
                 "type": {
                   "codecId": "pg/timestamptz-temporal@1",
@@ -3648,8 +4331,22 @@
                   "kind": "scalar"
                 }
               },
+              "expiresAt": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "kind": "scalar"
+                }
+              },
               "id": {
                 "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "idempotencyKey": {
+                "nullable": true,
                 "type": {
                   "codecId": "pg/text@1",
                   "kind": "scalar"
@@ -3682,6 +4379,13 @@
                   "kind": "scalar"
                 }
               },
+              "minutes": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
               "notes": {
                 "nullable": true,
                 "type": {
@@ -3691,6 +4395,13 @@
               },
               "organizationId": {
                 "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "policyId": {
+                "nullable": true,
                 "type": {
                   "codecId": "pg/text@1",
                   "kind": "scalar"
@@ -3774,6 +4485,24 @@
                   "model": "Organization",
                   "namespace": "public"
                 }
+              },
+              "policy": {
+                "cardinality": "N:1",
+                "nullable": true,
+                "on": {
+                  "localFields": [
+                    "organizationId",
+                    "policyId"
+                  ],
+                  "targetFields": [
+                    "organizationId",
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "LeaveAccrualPolicy",
+                  "namespace": "public"
+                }
               }
             },
             "storage": {
@@ -3781,11 +4510,20 @@
                 "createdAt": {
                   "column": "createdAt"
                 },
+                "effectiveDate": {
+                  "column": "effectiveDate"
+                },
                 "employeeId": {
                   "column": "employeeId"
                 },
+                "expiresAt": {
+                  "column": "expiresAt"
+                },
                 "id": {
                   "column": "id"
+                },
+                "idempotencyKey": {
+                  "column": "idempotencyKey"
                 },
                 "kind": {
                   "column": "kind"
@@ -3796,11 +4534,17 @@
                 "leaveTypeId": {
                   "column": "leaveTypeId"
                 },
+                "minutes": {
+                  "column": "minutes"
+                },
                 "notes": {
                   "column": "notes"
                 },
                 "organizationId": {
                   "column": "organizationId"
+                },
+                "policyId": {
+                  "column": "policyId"
                 },
                 "units": {
                   "column": "units"
@@ -3878,6 +4622,13 @@
                 "nullable": true,
                 "type": {
                   "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "requestedMinutes": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/int4@1",
                   "kind": "scalar"
                 }
               },
@@ -4014,6 +4765,23 @@
                   "namespace": "public"
                 }
               },
+              "payrollComponents": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "organizationId",
+                    "id"
+                  ],
+                  "targetFields": [
+                    "organizationId",
+                    "sourceLeaveRequestId"
+                  ]
+                },
+                "to": {
+                  "model": "PayrollEntryComponent",
+                  "namespace": "public"
+                }
+              },
               "reviewedBy": {
                 "cardinality": "N:1",
                 "nullable": true,
@@ -4061,6 +4829,9 @@
                 },
                 "rejectionReason": {
                   "column": "rejectionReason"
+                },
+                "requestedMinutes": {
+                  "column": "requestedMinutes"
                 },
                 "requestedUnits": {
                   "column": "requestedUnits"
@@ -4172,6 +4943,23 @@
               }
             },
             "relations": {
+              "accrualPolicies": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "organizationId",
+                    "id"
+                  ],
+                  "targetFields": [
+                    "organizationId",
+                    "leaveTypeId"
+                  ]
+                },
+                "to": {
+                  "model": "LeaveAccrualPolicy",
+                  "namespace": "public"
+                }
+              },
               "ledgerEntries": {
                 "cardinality": "1:N",
                 "on": {
@@ -4416,6 +5204,20 @@
                   "kind": "scalar"
                 }
               },
+              "timezone": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "unpaidLeaveDeductionsEnabled": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/bool@1",
+                  "kind": "scalar"
+                }
+              },
               "updatedAt": {
                 "nullable": false,
                 "type": {
@@ -4432,6 +5234,21 @@
               }
             },
             "relations": {
+              "attendanceCorrections": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "organizationId"
+                  ]
+                },
+                "to": {
+                  "model": "AttendanceCorrectionRequest",
+                  "namespace": "public"
+                }
+              },
               "attendanceRecords": {
                 "cardinality": "1:N",
                 "on": {
@@ -4610,6 +5427,21 @@
                 },
                 "to": {
                   "model": "Invoice",
+                  "namespace": "public"
+                }
+              },
+              "leaveAccrualPolicies": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "organizationId"
+                  ]
+                },
+                "to": {
+                  "model": "LeaveAccrualPolicy",
                   "namespace": "public"
                 }
               },
@@ -4967,6 +5799,12 @@
                 },
                 "slug": {
                   "column": "slug"
+                },
+                "timezone": {
+                  "column": "timezone"
+                },
+                "unpaidLeaveDeductionsEnabled": {
+                  "column": "unpaidLeaveDeductionsEnabled"
                 },
                 "updatedAt": {
                   "column": "updatedAt"
@@ -6022,6 +6860,13 @@
                   "kind": "scalar"
                 }
               },
+              "sourceLeaveRequestId": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
               "sourceMinutes": {
                 "nullable": true,
                 "type": {
@@ -6076,6 +6921,24 @@
                   "namespace": "public"
                 }
               },
+              "sourceLeaveRequest": {
+                "cardinality": "N:1",
+                "nullable": true,
+                "on": {
+                  "localFields": [
+                    "organizationId",
+                    "sourceLeaveRequestId"
+                  ],
+                  "targetFields": [
+                    "organizationId",
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "LeaveRequest",
+                  "namespace": "public"
+                }
+              },
               "sourceOvertimeRequest": {
                 "cardinality": "N:1",
                 "nullable": true,
@@ -6123,6 +6986,9 @@
                 },
                 "sortOrder": {
                   "column": "sortOrder"
+                },
+                "sourceLeaveRequestId": {
+                  "column": "sourceLeaveRequestId"
                 },
                 "sourceMinutes": {
                   "column": "sourceMinutes"
@@ -9146,6 +10012,40 @@
                   "namespace": "public"
                 }
               },
+              "requestedAttendanceCorrections": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "organizationId",
+                    "id"
+                  ],
+                  "targetFields": [
+                    "organizationId",
+                    "requestedById"
+                  ]
+                },
+                "to": {
+                  "model": "AttendanceCorrectionRequest",
+                  "namespace": "public"
+                }
+              },
+              "reviewedAttendanceCorrections": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "organizationId",
+                    "id"
+                  ],
+                  "targetFields": [
+                    "organizationId",
+                    "reviewedById"
+                  ]
+                },
+                "to": {
+                  "model": "AttendanceCorrectionRequest",
+                  "namespace": "public"
+                }
+              },
               "reviewedExpenses": {
                 "cardinality": "1:N",
                 "on": {
@@ -9317,6 +10217,13 @@
           },
           "WorkSchedule": {
             "fields": {
+              "breakMinutes": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
               "createdAt": {
                 "nullable": false,
                 "type": {
@@ -9359,6 +10266,20 @@
                   "kind": "scalar"
                 }
               },
+              "isActive": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/bool@1",
+                  "kind": "scalar"
+                }
+              },
+              "name": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
               "organizationId": {
                 "nullable": false,
                 "type": {
@@ -9391,6 +10312,13 @@
                 "nullable": false,
                 "type": {
                   "codecId": "pg/timestamptz-temporal@1",
+                  "kind": "scalar"
+                }
+              },
+              "version": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
                   "kind": "scalar"
                 }
               },
@@ -9440,6 +10368,9 @@
             },
             "storage": {
               "fields": {
+                "breakMinutes": {
+                  "column": "breakMinutes"
+                },
                 "createdAt": {
                   "column": "createdAt"
                 },
@@ -9458,6 +10389,12 @@
                 "id": {
                   "column": "id"
                 },
+                "isActive": {
+                  "column": "isActive"
+                },
+                "name": {
+                  "column": "name"
+                },
                 "organizationId": {
                   "column": "organizationId"
                 },
@@ -9472,6 +10409,9 @@
                 },
                 "updatedAt": {
                   "column": "updatedAt"
+                },
+                "version": {
+                  "column": "version"
                 },
                 "workdays": {
                   "column": "workdays"
@@ -9512,7 +10452,7 @@
                 }
               },
               "employeeId": {
-                "nullable": false,
+                "nullable": true,
                 "type": {
                   "codecId": "pg/text@1",
                   "kind": "scalar"
@@ -9568,7 +10508,7 @@
               },
               "employee": {
                 "cardinality": "N:1",
-                "nullable": false,
+                "nullable": true,
                 "on": {
                   "localFields": [
                     "organizationId",
@@ -9644,6 +10584,322 @@
       "public": {
         "entries": {
           "table": {
+            "attendance_correction_requests": {
+              "checks": [
+                {
+                  "expression": "\"proposedStatus\" IN ('PRESENT', 'ABSENT', 'HALF_DAY', 'ON_LEAVE', 'HOLIDAY')",
+                  "name": "attendance_correction_requests_proposedStatus_check_fe4a56e7",
+                  "prefix": "attendance_correction_requests_proposedStatus_check"
+                },
+                {
+                  "expression": "\"status\" IN ('PENDING', 'APPROVED', 'REJECTED', 'CANCELLED')",
+                  "name": "attendance_correction_requests_status_check_57fe5f48",
+                  "prefix": "attendance_correction_requests_status_check"
+                }
+              ],
+              "columns": {
+                "attendanceRecordId": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "beforeSnapshot": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "createdAt": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "employeeId": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "id": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "organizationId": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "payrollImpact": {
+                  "codecId": "pg/bool@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": false
+                  },
+                  "nativeType": "bool",
+                  "nullable": false
+                },
+                "proposedCheckInAt": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "nativeType": "timestamptz",
+                  "nullable": true
+                },
+                "proposedCheckOutAt": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "nativeType": "timestamptz",
+                  "nullable": true
+                },
+                "proposedStatus": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false,
+                  "valueSet": {
+                    "entityKind": "valueSet",
+                    "entityName": "AttendanceStatus",
+                    "namespaceId": "public",
+                    "plane": "storage"
+                  }
+                },
+                "proposedWorkedMinutes": {
+                  "codecId": "pg/int4@1",
+                  "nativeType": "int4",
+                  "nullable": true
+                },
+                "reason": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "requestedById": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "reviewReason": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "reviewedAt": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "nativeType": "timestamptz",
+                  "nullable": true
+                },
+                "reviewedById": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "status": {
+                  "codecId": "pg/text@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": "PENDING"
+                  },
+                  "nativeType": "text",
+                  "nullable": false,
+                  "valueSet": {
+                    "entityKind": "valueSet",
+                    "entityName": "AttendanceCorrectionStatus",
+                    "namespaceId": "public",
+                    "plane": "storage"
+                  }
+                },
+                "updatedAt": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "version": {
+                  "codecId": "pg/int4@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": 1
+                  },
+                  "nativeType": "int4",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [
+                {
+                  "name": "attendance_correction_org_fkey",
+                  "onDelete": "cascade",
+                  "source": {
+                    "columns": [
+                      "organizationId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "attendance_correction_requests"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "organizations"
+                  }
+                },
+                {
+                  "name": "attendance_correction_record_fkey",
+                  "onDelete": "restrict",
+                  "source": {
+                    "columns": [
+                      "organizationId",
+                      "attendanceRecordId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "attendance_correction_requests"
+                  },
+                  "target": {
+                    "columns": [
+                      "organizationId",
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "attendance_records"
+                  }
+                },
+                {
+                  "name": "attendance_correction_employee_fkey",
+                  "onDelete": "restrict",
+                  "source": {
+                    "columns": [
+                      "organizationId",
+                      "employeeId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "attendance_correction_requests"
+                  },
+                  "target": {
+                    "columns": [
+                      "organizationId",
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "employees"
+                  }
+                },
+                {
+                  "name": "attendance_correction_requester_fkey",
+                  "onDelete": "restrict",
+                  "source": {
+                    "columns": [
+                      "organizationId",
+                      "requestedById"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "attendance_correction_requests"
+                  },
+                  "target": {
+                    "columns": [
+                      "organizationId",
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "users"
+                  }
+                },
+                {
+                  "name": "attendance_correction_reviewer_fkey",
+                  "onDelete": "restrict",
+                  "source": {
+                    "columns": [
+                      "organizationId",
+                      "reviewedById"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "attendance_correction_requests"
+                  },
+                  "target": {
+                    "columns": [
+                      "organizationId",
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "users"
+                  }
+                }
+              ],
+              "indexes": [
+                {
+                  "columns": [
+                    "organizationId",
+                    "employeeId",
+                    "status"
+                  ],
+                  "name": "attendance_correction_employee_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "organizationId",
+                    "attendanceRecordId",
+                    "status"
+                  ],
+                  "name": "attendance_correction_record_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "organizationId",
+                    "attendanceRecordId"
+                  ],
+                  "name": "attendance_correction_requests_organizationId_attendan_e3e17a38",
+                  "prefix": "attendance_correction_requests_organizationId_attendan",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "organizationId",
+                    "employeeId"
+                  ],
+                  "name": "attendance_correction_requests_organizationId_employee_f6f89764",
+                  "prefix": "attendance_correction_requests_organizationId_employee",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "organizationId"
+                  ],
+                  "name": "attendance_correction_requests_organizationId_idx_2e17ef41",
+                  "prefix": "attendance_correction_requests_organizationId_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "organizationId",
+                    "requestedById"
+                  ],
+                  "name": "attendance_correction_requests_organizationId_requeste_5a2c1783",
+                  "prefix": "attendance_correction_requests_organizationId_requeste",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "organizationId",
+                    "reviewedById"
+                  ],
+                  "name": "attendance_correction_requests_organizationId_reviewed_82814071",
+                  "prefix": "attendance_correction_requests_organizationId_reviewed",
+                  "unique": false
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": [
+                {
+                  "columns": [
+                    "organizationId",
+                    "id"
+                  ]
+                }
+              ]
+            },
             "attendance_records": {
               "checks": [
                 {
@@ -11335,6 +12591,11 @@
                   "nativeType": "timestamptz",
                   "nullable": false
                 },
+                "durationMinutes": {
+                  "codecId": "pg/int4@1",
+                  "nativeType": "int4",
+                  "nullable": true
+                },
                 "id": {
                   "codecId": "pg/text@1",
                   "nativeType": "text",
@@ -11362,6 +12623,15 @@
                 "updatedAt": {
                   "codecId": "pg/timestamptz-temporal@1",
                   "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "version": {
+                  "codecId": "pg/int4@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": 1
+                  },
+                  "nativeType": "int4",
                   "nullable": false
                 }
               },
@@ -11960,11 +13230,231 @@
                 }
               ]
             },
+            "leave_accrual_policies": {
+              "checks": [
+                {
+                  "expression": "\"carryForwardMode\" IN ('NONE', 'FULL', 'CAPPED')",
+                  "name": "leave_accrual_policies_carryForwardMode_check_bd1fde0a",
+                  "prefix": "leave_accrual_policies_carryForwardMode_check"
+                },
+                {
+                  "expression": "\"frequency\" IN ('ANNUAL', 'MONTHLY', 'SERVICE_MONTHLY')",
+                  "name": "leave_accrual_policies_frequency_check_a515430c",
+                  "prefix": "leave_accrual_policies_frequency_check"
+                }
+              ],
+              "columns": {
+                "carryForwardCapMinutes": {
+                  "codecId": "pg/int4@1",
+                  "nativeType": "int4",
+                  "nullable": true
+                },
+                "carryForwardMode": {
+                  "codecId": "pg/text@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": "NONE"
+                  },
+                  "nativeType": "text",
+                  "nullable": false,
+                  "valueSet": {
+                    "entityKind": "valueSet",
+                    "entityName": "LeaveCarryForwardMode",
+                    "namespaceId": "public",
+                    "plane": "storage"
+                  }
+                },
+                "createdAt": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "effectiveFrom": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "effectiveTo": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "nativeType": "timestamptz",
+                  "nullable": true
+                },
+                "entitlementMinutes": {
+                  "codecId": "pg/int4@1",
+                  "nativeType": "int4",
+                  "nullable": false
+                },
+                "expiresAfterMonths": {
+                  "codecId": "pg/int4@1",
+                  "nativeType": "int4",
+                  "nullable": true
+                },
+                "frequency": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false,
+                  "valueSet": {
+                    "entityKind": "valueSet",
+                    "entityName": "LeaveAccrualFrequency",
+                    "namespaceId": "public",
+                    "plane": "storage"
+                  }
+                },
+                "id": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "isActive": {
+                  "codecId": "pg/bool@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": true
+                  },
+                  "nativeType": "bool",
+                  "nullable": false
+                },
+                "leaveTypeId": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "maximumBalanceMinutes": {
+                  "codecId": "pg/int4@1",
+                  "nativeType": "int4",
+                  "nullable": true
+                },
+                "name": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "organizationId": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "prorateNewJoiners": {
+                  "codecId": "pg/bool@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": false
+                  },
+                  "nativeType": "bool",
+                  "nullable": false
+                },
+                "updatedAt": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "version": {
+                  "codecId": "pg/int4@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": 1
+                  },
+                  "nativeType": "int4",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [
+                {
+                  "onDelete": "cascade",
+                  "source": {
+                    "columns": [
+                      "organizationId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "leave_accrual_policies"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "organizations"
+                  }
+                },
+                {
+                  "onDelete": "restrict",
+                  "source": {
+                    "columns": [
+                      "organizationId",
+                      "leaveTypeId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "leave_accrual_policies"
+                  },
+                  "target": {
+                    "columns": [
+                      "organizationId",
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "leave_types"
+                  }
+                }
+              ],
+              "indexes": [
+                {
+                  "columns": [
+                    "organizationId"
+                  ],
+                  "name": "leave_accrual_policies_organizationId_idx_2e17ef41",
+                  "prefix": "leave_accrual_policies_organizationId_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "organizationId",
+                    "leaveTypeId"
+                  ],
+                  "name": "leave_accrual_policies_organizationId_leaveTypeId_idx_bffb852c",
+                  "prefix": "leave_accrual_policies_organizationId_leaveTypeId_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "organizationId",
+                    "isActive",
+                    "effectiveFrom"
+                  ],
+                  "name": "leave_policy_effective_idx",
+                  "unique": false
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": [
+                {
+                  "columns": [
+                    "organizationId",
+                    "id"
+                  ]
+                },
+                {
+                  "columns": [
+                    "organizationId",
+                    "leaveTypeId",
+                    "name"
+                  ],
+                  "name": "leave_policy_type_name_key"
+                }
+              ]
+            },
             "leave_ledger_entries": {
               "checks": [
                 {
-                  "expression": "\"kind\" IN ('ALLOCATION', 'DEDUCTION', 'RESTORATION', 'ADJUSTMENT')",
-                  "name": "leave_ledger_entries_kind_check_1749ad13",
+                  "expression": "\"kind\" IN ('ALLOCATION', 'ACCRUAL', 'CARRY_FORWARD', 'EXPIRATION', 'DEDUCTION', 'RESTORATION', 'ADJUSTMENT')",
+                  "name": "leave_ledger_entries_kind_check_9b0ff313",
                   "prefix": "leave_ledger_entries_kind_check"
                 }
               ],
@@ -11978,15 +13468,34 @@
                   "nativeType": "timestamptz",
                   "nullable": false
                 },
+                "effectiveDate": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
                 "employeeId": {
                   "codecId": "pg/text@1",
                   "nativeType": "text",
                   "nullable": false
                 },
+                "expiresAt": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "nativeType": "timestamptz",
+                  "nullable": true
+                },
                 "id": {
                   "codecId": "pg/text@1",
                   "nativeType": "text",
                   "nullable": false
+                },
+                "idempotencyKey": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
                 },
                 "kind": {
                   "codecId": "pg/text@1",
@@ -12009,6 +13518,11 @@
                   "nativeType": "text",
                   "nullable": false
                 },
+                "minutes": {
+                  "codecId": "pg/int4@1",
+                  "nativeType": "int4",
+                  "nullable": true
+                },
                 "notes": {
                   "codecId": "pg/text@1",
                   "nativeType": "text",
@@ -12018,6 +13532,11 @@
                   "codecId": "pg/text@1",
                   "nativeType": "text",
                   "nullable": false
+                },
+                "policyId": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
                 },
                 "units": {
                   "codecId": "pg/int4@1",
@@ -12099,9 +13618,36 @@
                     "namespaceId": "public",
                     "tableName": "leave_requests"
                   }
+                },
+                {
+                  "onDelete": "restrict",
+                  "source": {
+                    "columns": [
+                      "organizationId",
+                      "policyId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "leave_ledger_entries"
+                  },
+                  "target": {
+                    "columns": [
+                      "organizationId",
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "leave_accrual_policies"
+                  }
                 }
               ],
               "indexes": [
+                {
+                  "columns": [
+                    "organizationId",
+                    "effectiveDate"
+                  ],
+                  "name": "leave_ledger_effective_idx",
+                  "unique": false
+                },
                 {
                   "columns": [
                     "organizationId",
@@ -12145,6 +13691,15 @@
                   "name": "leave_ledger_entries_organizationId_leaveTypeId_idx_bffb852c",
                   "prefix": "leave_ledger_entries_organizationId_leaveTypeId_idx",
                   "unique": false
+                },
+                {
+                  "columns": [
+                    "organizationId",
+                    "policyId"
+                  ],
+                  "name": "leave_ledger_entries_organizationId_policyId_idx_977575fb",
+                  "prefix": "leave_ledger_entries_organizationId_policyId_idx",
+                  "unique": false
                 }
               ],
               "primaryKey": {
@@ -12153,6 +13708,13 @@
                 ]
               },
               "uniques": [
+                {
+                  "columns": [
+                    "organizationId",
+                    "idempotencyKey"
+                  ],
+                  "name": "leave_ledger_idempotency_key"
+                },
                 {
                   "columns": [
                     "organizationId",
@@ -12234,6 +13796,11 @@
                 "rejectionReason": {
                   "codecId": "pg/text@1",
                   "nativeType": "text",
+                  "nullable": true
+                },
+                "requestedMinutes": {
+                  "codecId": "pg/int4@1",
+                  "nativeType": "int4",
                   "nullable": true
                 },
                 "requestedUnits": {
@@ -12718,6 +14285,24 @@
                 "slug": {
                   "codecId": "pg/text@1",
                   "nativeType": "text",
+                  "nullable": false
+                },
+                "timezone": {
+                  "codecId": "pg/text@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": "UTC"
+                  },
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "unpaidLeaveDeductionsEnabled": {
+                  "codecId": "pg/bool@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": false
+                  },
+                  "nativeType": "bool",
                   "nullable": false
                 },
                 "updatedAt": {
@@ -13708,6 +15293,11 @@
                   "nativeType": "int4",
                   "nullable": false
                 },
+                "sourceLeaveRequestId": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
                 "sourceMinutes": {
                   "codecId": "pg/int4@1",
                   "nativeType": "int4",
@@ -13774,6 +15364,26 @@
                     "namespaceId": "public",
                     "tableName": "overtime_requests"
                   }
+                },
+                {
+                  "name": "payroll_component_leave_fkey",
+                  "onDelete": "restrict",
+                  "source": {
+                    "columns": [
+                      "organizationId",
+                      "sourceLeaveRequestId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "payroll_entry_components"
+                  },
+                  "target": {
+                    "columns": [
+                      "organizationId",
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "leave_requests"
+                  }
                 }
               ],
               "indexes": [
@@ -13792,6 +15402,13 @@
                 ]
               },
               "uniques": [
+                {
+                  "columns": [
+                    "organizationId",
+                    "sourceLeaveRequestId"
+                  ],
+                  "name": "payroll_component_leave_key"
+                },
                 {
                   "columns": [
                     "organizationId",
@@ -16298,6 +17915,15 @@
             },
             "work_schedules": {
               "columns": {
+                "breakMinutes": {
+                  "codecId": "pg/int4@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": 0
+                  },
+                  "nativeType": "int4",
+                  "nullable": false
+                },
                 "createdAt": {
                   "codecId": "pg/timestamptz-temporal@1",
                   "default": {
@@ -16332,6 +17958,24 @@
                   "nativeType": "text",
                   "nullable": false
                 },
+                "isActive": {
+                  "codecId": "pg/bool@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": true
+                  },
+                  "nativeType": "bool",
+                  "nullable": false
+                },
+                "name": {
+                  "codecId": "pg/text@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": "Standard schedule"
+                  },
+                  "nativeType": "text",
+                  "nullable": false
+                },
                 "organizationId": {
                   "codecId": "pg/text@1",
                   "nativeType": "text",
@@ -16355,6 +17999,15 @@
                 "updatedAt": {
                   "codecId": "pg/timestamptz-temporal@1",
                   "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "version": {
+                  "codecId": "pg/int4@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": 1
+                  },
+                  "nativeType": "int4",
                   "nullable": false
                 },
                 "workdays": {
@@ -16472,7 +18125,7 @@
                 "employeeId": {
                   "codecId": "pg/text@1",
                   "nativeType": "text",
-                  "nullable": false
+                  "nullable": true
                 },
                 "entityId": {
                   "codecId": "pg/text@1",
@@ -16607,6 +18260,15 @@
             }
           },
           "valueSet": {
+            "AttendanceCorrectionStatus": {
+              "kind": "valueSet",
+              "values": [
+                "PENDING",
+                "APPROVED",
+                "REJECTED",
+                "CANCELLED"
+              ]
+            },
             "AttendanceSource": {
               "kind": "valueSet",
               "values": [
@@ -16717,6 +18379,22 @@
                 "CANCELLED"
               ]
             },
+            "LeaveAccrualFrequency": {
+              "kind": "valueSet",
+              "values": [
+                "ANNUAL",
+                "MONTHLY",
+                "SERVICE_MONTHLY"
+              ]
+            },
+            "LeaveCarryForwardMode": {
+              "kind": "valueSet",
+              "values": [
+                "NONE",
+                "FULL",
+                "CAPPED"
+              ]
+            },
             "LeaveDayPortion": {
               "kind": "valueSet",
               "values": [
@@ -16728,6 +18406,9 @@
               "kind": "valueSet",
               "values": [
                 "ALLOCATION",
+                "ACCRUAL",
+                "CARRY_FORWARD",
+                "EXPIRATION",
                 "DEDUCTION",
                 "RESTORATION",
                 "ADJUSTMENT"
@@ -16936,12 +18617,38 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "bc9d0b30b214355decab0d622e6d088a928e6f2db82aabc41803ccfd87498d2c"
+    "storageHash": "ba782965fb6c1a29e2ff42ecf9c4201008d69c6ee270373ac6e14a39c6d665dd"
   },
   "execution": {
-    "executionHash": "86300751a2aab713e2e826df5adc3a227e45724d48b8ca108a98b57d69c1969d",
+    "executionHash": "565c50e8f36c6dec7e8dd4d9639c263004ca8b399bd21baadeefd7cbc87d52cd",
     "mutations": {
       "defaults": [
+        {
+          "onCreate": {
+            "id": "uuidv4",
+            "kind": "generator"
+          },
+          "ref": {
+            "entry": "attendance_correction_requests",
+            "field": "id",
+            "namespace": "public"
+          }
+        },
+        {
+          "onCreate": {
+            "id": "instantNow",
+            "kind": "generator"
+          },
+          "onUpdate": {
+            "id": "instantNow",
+            "kind": "generator"
+          },
+          "ref": {
+            "entry": "attendance_correction_requests",
+            "field": "updatedAt",
+            "namespace": "public"
+          }
+        },
         {
           "onCreate": {
             "id": "uuidv4",
@@ -17205,6 +18912,32 @@
           },
           "ref": {
             "entry": "invoices",
+            "field": "updatedAt",
+            "namespace": "public"
+          }
+        },
+        {
+          "onCreate": {
+            "id": "uuidv4",
+            "kind": "generator"
+          },
+          "ref": {
+            "entry": "leave_accrual_policies",
+            "field": "id",
+            "namespace": "public"
+          }
+        },
+        {
+          "onCreate": {
+            "id": "instantNow",
+            "kind": "generator"
+          },
+          "onUpdate": {
+            "id": "instantNow",
+            "kind": "generator"
+          },
+          "ref": {
+            "entry": "leave_accrual_policies",
             "field": "updatedAt",
             "namespace": "public"
           }

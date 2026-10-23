@@ -6211,3 +6211,80 @@ body:has(.workspace-layout[data-theme="dark"]) .country-picker-option.highlighte
     flex: 1;
   }
 }
+
+.workforce-calendar-panel {
+  overflow: hidden;
+}
+.workforce-calendar-heading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+}
+.workforce-calendar-heading h3 {
+  min-width: 160px;
+  margin: 0;
+  text-align: center;
+}
+.workforce-calendar-weekdays,
+.workforce-calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+}
+.workforce-calendar-weekdays {
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  background: color-mix(in srgb, var(--border) 20%, transparent);
+}
+.workforce-calendar-weekdays span {
+  padding: 9px;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 650;
+  text-align: center;
+}
+.workforce-calendar-grid > article,
+.workforce-calendar-grid > span {
+  min-height: 112px;
+  padding: 9px;
+  border-right: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+.workforce-calendar-grid > article:nth-child(7n) {
+  border-right: 0;
+}
+.workforce-calendar-grid article strong {
+  display: block;
+  margin-bottom: 7px;
+  font-size: 12px;
+}
+.workforce-calendar-event {
+  display: block;
+  margin-top: 4px;
+  padding: 4px 6px;
+  overflow: hidden;
+  border-radius: 5px;
+  background: color-mix(in srgb, var(--brand-blue) 9%, transparent);
+  color: var(--foreground);
+  font-size: 10px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.workforce-calendar-event.holiday {
+  background: color-mix(in srgb, #b56a19 13%, transparent);
+}
+.workforce-calendar-event.leave {
+  background: color-mix(in srgb, #7d55c7 12%, transparent);
+}
+.workforce-calendar-event.overtime {
+  background: color-mix(in srgb, #23835e 12%, transparent);
+}
+@media (max-width: 700px) {
+  .workforce-calendar-panel {
+    overflow-x: auto;
+  }
+  .workforce-calendar-weekdays,
+  .workforce-calendar-grid {
+    min-width: 700px;
+  }
+}

@@ -62,6 +62,10 @@ export class ImportOvertimeDto extends PayrollVersionDto {
   @IsUUID() overtimeRequestId!: string;
 }
 
+export class ImportUnpaidLeaveDto extends PayrollVersionDto {
+  @IsUUID() leaveRequestId!: string;
+}
+
 export class RecordPayrollPaymentDto {
   @Matches(MONEY) amount!: string;
   @Matches(DATE) paymentDate!: string;

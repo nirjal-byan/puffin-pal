@@ -51,6 +51,7 @@ export const PERMISSIONS = [
   "overtime:request",
   "overtime:approve",
   "overtime:manage",
+  "workforce:calendar:read",
 ] as const;
 export type Permission = (typeof PERMISSIONS)[number];
 
@@ -68,6 +69,7 @@ const readPermissions: readonly Permission[] = [
   "leave:request",
   "overtime:read",
   "overtime:request",
+  "workforce:calendar:read",
   "cash-flow:read",
 ];
 export const ROLE_PERMISSIONS: Readonly<Record<Role, readonly Permission[]>> = Object.freeze({

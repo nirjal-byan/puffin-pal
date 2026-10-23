@@ -21,6 +21,24 @@ export function centsToMoney(value: bigint): string {
   return `${sign}${absolute / 100n}.${(absolute % 100n).toString().padStart(2, "0")}`;
 }
 
+export function calculateUnpaidLeaveDeduction(
+  grossPay: string,
+  leaveMinutes: number,
+  scheduledMinutes: number,
+  maximumDeduction: string,
+) {
+  if (!Number.isInteger(leaveMinutes) || leaveMinutes <= 0)
+    throw new Error("Leave minutes must be positive");
+  if (!Number.isInteger(scheduledMinutes) || scheduledMinutes <= 0)
+    throw new Error("Scheduled minutes must be positive");
+  const grossCents = moneyToCents(grossPay);
+  const maximumCents = moneyToCents(maximumDeduction);
+  const calculated =
+    (grossCents * BigInt(leaveMinutes) + BigInt(Math.floor(scheduledMinutes / 2))) /
+    BigInt(scheduledMinutes);
+  return centsToMoney(calculated > maximumCents ? maximumCents : calculated);
+}
+
 export function payrollAmount(value: string): Numeric<14, 2> {
   moneyToCents(value);
   return value as Numeric<14, 2>;

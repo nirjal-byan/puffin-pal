@@ -5,6 +5,7 @@ import {
   Get,
   HttpCode,
   Param,
+  Patch,
   ParseUUIDPipe,
   Post,
   Query,
@@ -21,6 +22,13 @@ import {
   ReviewOvertimeDto,
   WorkforceQueryDto,
   WorkScheduleDto,
+  WorkforceSettingsDto,
+  LeaveAccrualPolicyDto,
+  LeaveAccrualRunDto,
+  LeaveBalanceAdjustmentDto,
+  AttendanceCorrectionDto,
+  ReviewAttendanceCorrectionDto,
+  WorkforceCalendarQueryDto,
 } from "./workforce.dto.js";
 import { WorkforceService } from "./workforce.service.js";
 
@@ -29,6 +37,20 @@ import { WorkforceService } from "./workforce.service.js";
 @Controller()
 export class WorkforceController {
   constructor(private readonly workforce: WorkforceService) {}
+
+  @Get("workforce/settings") @RequirePermissions("organization:read") settings() {
+    return this.workforce.settings();
+  }
+  @Patch("workforce/settings") @RequirePermissions("organization:update") updateSettings(
+    @Body() input: WorkforceSettingsDto,
+  ) {
+    return this.workforce.updateSettings(input);
+  }
+  @Get("workforce/calendar") @RequirePermissions("workforce:calendar:read") calendar(
+    @Query() query: WorkforceCalendarQueryDto,
+  ) {
+    return this.workforce.calendar(query);
+  }
 
   @Get("attendance") @RequirePermissions("attendance:read") attendance(
     @Query() query: WorkforceQueryDto,
@@ -67,6 +89,12 @@ export class WorkforceController {
   ) {
     return this.workforce.createSchedule(input);
   }
+  @Patch("attendance/schedules/:id") @RequirePermissions("attendance:manage") updateSchedule(
+    @Param("id", ParseUUIDPipe) id: string,
+    @Body() input: WorkScheduleDto,
+  ) {
+    return this.workforce.updateSchedule(id, input);
+  }
   @Get("attendance/holidays") @RequirePermissions("attendance:read") holidays(
     @Query() query: WorkforceQueryDto,
   ) {
@@ -77,10 +105,45 @@ export class WorkforceController {
   ) {
     return this.workforce.createHoliday(input);
   }
+  @Patch("attendance/holidays/:id") @RequirePermissions("attendance:manage") updateHoliday(
+    @Param("id", ParseUUIDPipe) id: string,
+    @Body() input: HolidayDto,
+  ) {
+    return this.workforce.updateHoliday(id, input);
+  }
   @Delete("attendance/holidays/:id") @RequirePermissions("attendance:manage") deleteHoliday(
     @Param("id", ParseUUIDPipe) id: string,
   ) {
     return this.workforce.deleteHoliday(id);
+  }
+
+  @Get("attendance/corrections") @RequirePermissions("attendance:read") corrections(
+    @Query() query: WorkforceQueryDto,
+  ) {
+    return this.workforce.attendanceCorrections(query);
+  }
+  @Post("attendance/corrections") @RequirePermissions("attendance:self") requestCorrection(
+    @Body() input: AttendanceCorrectionDto,
+  ) {
+    return this.workforce.requestAttendanceCorrection(input);
+  }
+  @Post("attendance/corrections/:id/approve")
+  @HttpCode(200)
+  @RequirePermissions("attendance:manage")
+  approveCorrection(
+    @Param("id", ParseUUIDPipe) id: string,
+    @Body() input: ReviewAttendanceCorrectionDto,
+  ) {
+    return this.workforce.reviewAttendanceCorrection(id, "approve", input);
+  }
+  @Post("attendance/corrections/:id/reject")
+  @HttpCode(200)
+  @RequirePermissions("attendance:manage")
+  rejectCorrection(
+    @Param("id", ParseUUIDPipe) id: string,
+    @Body() input: ReviewAttendanceCorrectionDto,
+  ) {
+    return this.workforce.reviewAttendanceCorrection(id, "reject", input);
   }
 
   @Get("leave/types") @RequirePermissions("leave:read") leaveTypes() {
@@ -115,6 +178,30 @@ export class WorkforceController {
     @Query("employeeId") employeeId?: string,
   ) {
     return this.workforce.leaveBalances(employeeId);
+  }
+  @Post("leave/balances/adjust") @RequirePermissions("leave:manage") adjustBalance(
+    @Body() input: LeaveBalanceAdjustmentDto,
+  ) {
+    return this.workforce.adjustLeaveBalance(input);
+  }
+  @Get("leave/policies") @RequirePermissions("leave:read") leavePolicies() {
+    return this.workforce.leavePolicies();
+  }
+  @Post("leave/policies") @RequirePermissions("leave:manage") createLeavePolicy(
+    @Body() input: LeaveAccrualPolicyDto,
+  ) {
+    return this.workforce.createLeavePolicy(input);
+  }
+  @Patch("leave/policies/:id") @RequirePermissions("leave:manage") updateLeavePolicy(
+    @Param("id", ParseUUIDPipe) id: string,
+    @Body() input: LeaveAccrualPolicyDto,
+  ) {
+    return this.workforce.updateLeavePolicy(id, input);
+  }
+  @Post("leave/accruals/run") @RequirePermissions("leave:manage") runAccruals(
+    @Body() input: LeaveAccrualRunDto,
+  ) {
+    return this.workforce.runLeaveAccruals(input);
   }
   @Post("leave/requests/:id/submit")
   @HttpCode(200)

@@ -19,6 +19,7 @@ import {
   PayrollRunQueryDto,
   PayrollVersionDto,
   ImportOvertimeDto,
+  ImportUnpaidLeaveDto,
   RecordPayrollPaymentDto,
   RejectPayrollDto,
 } from "./payroll.dto.js";
@@ -62,6 +63,15 @@ export class PayrollController {
     @Body() input: ImportOvertimeDto,
   ) {
     return this.payroll.importOvertime(id, entryId, input);
+  }
+  @Post(":id/entries/:entryId/unpaid-leave")
+  @RequirePermissions("payroll:manage")
+  importUnpaidLeave(
+    @Param("id", ParseUUIDPipe) id: string,
+    @Param("entryId", ParseUUIDPipe) entryId: string,
+    @Body() input: ImportUnpaidLeaveDto,
+  ) {
+    return this.payroll.importUnpaidLeave(id, entryId, input);
   }
   @Post(":id/submit") @HttpCode(200) @RequirePermissions("payroll:manage") submit(
     @Param("id", ParseUUIDPipe) id: string,

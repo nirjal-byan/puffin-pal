@@ -9,6 +9,7 @@ import { loadEmployees, loadLeave } from "../../workforce/api";
 import type { EmployeeOption, LeaveBalance, LeaveRequest, LeaveType } from "../../workforce/types";
 import { employeeName, shortDate } from "../../workforce/types";
 import { MetricCard, StatusBadge, WorkforceEmpty } from "../../workforce/workforce-ui";
+import { LeavePolicyManagement } from "./leave-policy-management";
 
 export default function LeavePage({
   api,
@@ -171,14 +172,18 @@ export default function LeavePage({
         <section className="panel leave-balance-strip" data-tour="leave-balances">
           <div className="panel-heading">
             <h3>Leave balances</h3>
-            <span className="muted">Units use half-days</span>
+            <span className="muted">Exact balances in hours and minutes</span>
           </div>
           <div className="balance-grid">
             {balances.slice(0, 8).map((balance) => (
               <article key={`${balance.employeeId}-${balance.leaveTypeId}`}>
                 <strong>{employeeName(employees, balance.employeeId)}</strong>
                 <span>{balance.leaveTypeName}</span>
-                <b>{balance.remainingUnits / 2} days left</b>
+                <b>{(balance.availableMinutes / 60).toFixed(1)} hours available</b>
+                <small className="muted">
+                  {(balance.usedMinutes / 60).toFixed(1)} used ·{" "}
+                  {(balance.pendingMinutes / 60).toFixed(1)} pending
+                </small>
               </article>
             ))}
           </div>
@@ -246,6 +251,9 @@ export default function LeavePage({
           </div>
         )}
       </section>
+      {can("leave:manage") && (
+        <LeavePolicyManagement api={api} types={types} employees={employees} onSaved={onSaved} />
+      )}
       {open === "request" && (
         <FormModal title="Request leave" badge="Time off" onClose={() => setOpen(null)}>
           <div className="workforce-form">

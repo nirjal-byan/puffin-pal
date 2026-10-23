@@ -239,9 +239,31 @@ enum LeaveDayPortion {
 
 enum LeaveLedgerKind {
   ALLOCATION
+  ACCRUAL
+  CARRY_FORWARD
+  EXPIRATION
   DEDUCTION
   RESTORATION
   ADJUSTMENT
+}
+
+enum LeaveAccrualFrequency {
+  ANNUAL
+  MONTHLY
+  SERVICE_MONTHLY
+}
+
+enum LeaveCarryForwardMode {
+  NONE
+  FULL
+  CAPPED
+}
+
+enum AttendanceCorrectionStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
 }
 
 enum OvertimeRequestStatus {
@@ -253,50 +275,54 @@ enum OvertimeRequestStatus {
 }
 
 model Organization {
-  id                      String                         @id @default(uuid())
-  name                    String
-  slug                    String                         @unique
-  website                 String?
-  employeeCount           String?
-  logoUrl                 String?
-  currency                String                         @default("USD")
-  createdAt               DateTime                       @default(now())
-  updatedAt               temporal.updatedAt()
+  id                           String                         @id @default(uuid())
+  name                         String
+  slug                         String                         @unique
+  website                      String?
+  employeeCount                String?
+  logoUrl                      String?
+  currency                     String                         @default("USD")
+  timezone                     String                         @default("UTC")
+  unpaidLeaveDeductionsEnabled Boolean                        @default(false)
+  createdAt                    DateTime                       @default(now())
+  updatedAt                    temporal.updatedAt()
 
-  users                   User[]
-  memberships             Membership[]
-  clients                 Client[]
-  invoices                Invoice[]
-  invoiceExports          InvoiceExport[]
-  payments                Payment[]
-  expenses                Expense[]
-  expenseApprovalHistory  ExpenseApprovalHistory[]
-  retainers               Retainer[]
-  recurringSchedules      RecurringInvoiceSchedule[]
-  recurringOccurrences    RecurringInvoiceOccurrence[]
-  recurringScheduleEvents RecurringScheduleEvent[]
-  departments             Department[]
-  employees               Employee[]
-  salaryStructures        SalaryStructure[]
-  employeeAuditEvents     EmployeeAuditEvent[]
-  payrollRuns             PayrollRun[]
-  payrollEntries          PayrollEntry[]
-  payrollPayments         PayrollPayment[]
-  payrollAuditEvents      PayrollAuditEvent[]
-  payrollSchedule         PayrollSchedule?
-  payrollOccurrences      PayrollScheduleOccurrence[]
-  payrollNotifications    PayrollNotification[]
-  payrollScheduleEvents   PayrollScheduleEvent[]
-  workSchedules           WorkSchedule[]
-  holidays                Holiday[]
-  attendanceRecords       AttendanceRecord[]
-  leaveTypes              LeaveType[]
-  leaveRequests           LeaveRequest[]
-  leaveLedgerEntries      LeaveLedgerEntry[]
-  overtimeRequests        OvertimeRequest[]
-  workforceAuditEvents    WorkforceAuditEvent[]
-  cashFlowConfiguration   CashFlowForecastConfiguration?
-  cashFlowAuditEvents     CashFlowForecastAuditEvent[]
+  users                        User[]
+  memberships                  Membership[]
+  clients                      Client[]
+  invoices                     Invoice[]
+  invoiceExports               InvoiceExport[]
+  payments                     Payment[]
+  expenses                     Expense[]
+  expenseApprovalHistory       ExpenseApprovalHistory[]
+  retainers                    Retainer[]
+  recurringSchedules           RecurringInvoiceSchedule[]
+  recurringOccurrences         RecurringInvoiceOccurrence[]
+  recurringScheduleEvents      RecurringScheduleEvent[]
+  departments                  Department[]
+  employees                    Employee[]
+  salaryStructures             SalaryStructure[]
+  employeeAuditEvents          EmployeeAuditEvent[]
+  payrollRuns                  PayrollRun[]
+  payrollEntries               PayrollEntry[]
+  payrollPayments              PayrollPayment[]
+  payrollAuditEvents           PayrollAuditEvent[]
+  payrollSchedule              PayrollSchedule?
+  payrollOccurrences           PayrollScheduleOccurrence[]
+  payrollNotifications         PayrollNotification[]
+  payrollScheduleEvents        PayrollScheduleEvent[]
+  workSchedules                WorkSchedule[]
+  holidays                     Holiday[]
+  attendanceRecords            AttendanceRecord[]
+  leaveTypes                   LeaveType[]
+  leaveRequests                LeaveRequest[]
+  leaveLedgerEntries           LeaveLedgerEntry[]
+  leaveAccrualPolicies         LeaveAccrualPolicy[]
+  attendanceCorrections        AttendanceCorrectionRequest[]
+  overtimeRequests             OvertimeRequest[]
+  workforceAuditEvents         WorkforceAuditEvent[]
+  cashFlowConfiguration        CashFlowForecastConfiguration?
+  cashFlowAuditEvents          CashFlowForecastAuditEvent[]
 
   @@map("organizations")
 }
@@ -368,47 +394,49 @@ model InvoiceExport {
 }
 
 model User {
-  id                      String                          @id @default(uuid())
-  organizationId          String
-  email                   String
-  passwordHash            String
-  fullName                String
-  firstName               String?
-  middleName              String?
-  lastName                String?
-  phoneNumber             String?
-  avatarUrl               String?
-  onboardingStatus        OnboardingStatus                @default(LEGACY)
-  onboardingStep          String                          @default("welcome")
-  createdAt               DateTime                        @default(now())
-  updatedAt               temporal.updatedAt()
+  id                             String                          @id @default(uuid())
+  organizationId                 String
+  email                          String
+  passwordHash                   String
+  fullName                       String
+  firstName                      String?
+  middleName                     String?
+  lastName                       String?
+  phoneNumber                    String?
+  avatarUrl                      String?
+  onboardingStatus               OnboardingStatus                @default(LEGACY)
+  onboardingStep                 String                          @default("welcome")
+  createdAt                      DateTime                        @default(now())
+  updatedAt                      temporal.updatedAt()
 
-  organization            Organization                    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  memberships             Membership[]
-  createdExpenses         Expense[]                       @relation("ExpenseCreator")
-  submittedExpenses       Expense[]                       @relation("ExpenseSubmitter")
-  reviewedExpenses        Expense[]                       @relation("ExpenseReviewer")
-  expenseApprovalEvents   ExpenseApprovalHistory[]        @relation("ExpenseApprovalActor")
-  recurringSchedules      RecurringInvoiceSchedule[]      @relation("RecurringScheduleCreator")
-  recurringScheduleEvents RecurringScheduleEvent[]        @relation("RecurringScheduleActor")
-  linkedEmployee          Employee?                       @relation("EmployeeUser")
-  createdSalaryStructures SalaryStructure[]               @relation("SalaryCreator")
-  employeeAuditEvents     EmployeeAuditEvent[]            @relation("EmployeeAuditActor")
-  createdPayrollRuns      PayrollRun[]                    @relation("PayrollRunCreator")
-  approvedPayrollRuns     PayrollRun[]                    @relation("PayrollRunApprover")
-  finalizedPayrollRuns    PayrollRun[]                    @relation("PayrollRunFinalizer")
-  payrollPayments         PayrollPayment[]                @relation("PayrollPaymentRecorder")
-  payrollAuditEvents      PayrollAuditEvent[]             @relation("PayrollAuditActor")
-  createdPayrollSchedules PayrollSchedule[]               @relation("PayrollScheduleCreator")
-  payrollNotifications    PayrollNotification[]           @relation("PayrollNotificationRecipient")
-  payrollScheduleEvents   PayrollScheduleEvent[]          @relation("PayrollScheduleEventActor")
-  createdAttendance       AttendanceRecord[]              @relation("AttendanceCreator")
-  updatedAttendance       AttendanceRecord[]              @relation("AttendanceUpdater")
-  reviewedLeaveRequests   LeaveRequest[]                  @relation("LeaveReviewer")
-  reviewedOvertime        OvertimeRequest[]               @relation("OvertimeReviewer")
-  workforceAuditEvents    WorkforceAuditEvent[]           @relation("WorkforceAuditActor")
-  updatedCashFlowConfig   CashFlowForecastConfiguration[] @relation("CashFlowConfigurationUpdater")
-  cashFlowAuditEvents     CashFlowForecastAuditEvent[]    @relation("CashFlowForecastAuditActor")
+  organization                   Organization                    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  memberships                    Membership[]
+  createdExpenses                Expense[]                       @relation("ExpenseCreator")
+  submittedExpenses              Expense[]                       @relation("ExpenseSubmitter")
+  reviewedExpenses               Expense[]                       @relation("ExpenseReviewer")
+  expenseApprovalEvents          ExpenseApprovalHistory[]        @relation("ExpenseApprovalActor")
+  recurringSchedules             RecurringInvoiceSchedule[]      @relation("RecurringScheduleCreator")
+  recurringScheduleEvents        RecurringScheduleEvent[]        @relation("RecurringScheduleActor")
+  linkedEmployee                 Employee?                       @relation("EmployeeUser")
+  createdSalaryStructures        SalaryStructure[]               @relation("SalaryCreator")
+  employeeAuditEvents            EmployeeAuditEvent[]            @relation("EmployeeAuditActor")
+  createdPayrollRuns             PayrollRun[]                    @relation("PayrollRunCreator")
+  approvedPayrollRuns            PayrollRun[]                    @relation("PayrollRunApprover")
+  finalizedPayrollRuns           PayrollRun[]                    @relation("PayrollRunFinalizer")
+  payrollPayments                PayrollPayment[]                @relation("PayrollPaymentRecorder")
+  payrollAuditEvents             PayrollAuditEvent[]             @relation("PayrollAuditActor")
+  createdPayrollSchedules        PayrollSchedule[]               @relation("PayrollScheduleCreator")
+  payrollNotifications           PayrollNotification[]           @relation("PayrollNotificationRecipient")
+  payrollScheduleEvents          PayrollScheduleEvent[]          @relation("PayrollScheduleEventActor")
+  createdAttendance              AttendanceRecord[]              @relation("AttendanceCreator")
+  updatedAttendance              AttendanceRecord[]              @relation("AttendanceUpdater")
+  requestedAttendanceCorrections AttendanceCorrectionRequest[]   @relation("AttendanceCorrectionRequester")
+  reviewedAttendanceCorrections  AttendanceCorrectionRequest[]   @relation("AttendanceCorrectionReviewer")
+  reviewedLeaveRequests          LeaveRequest[]                  @relation("LeaveReviewer")
+  reviewedOvertime               OvertimeRequest[]               @relation("OvertimeReviewer")
+  workforceAuditEvents           WorkforceAuditEvent[]           @relation("WorkforceAuditActor")
+  updatedCashFlowConfig          CashFlowForecastConfiguration[] @relation("CashFlowConfigurationUpdater")
+  cashFlowAuditEvents            CashFlowForecastAuditEvent[]    @relation("CashFlowForecastAuditActor")
 
   @@unique([organizationId, id])
   @@unique([organizationId, email])
@@ -433,40 +461,41 @@ model Department {
 }
 
 model Employee {
-  id               String                @id @default(uuid())
-  organizationId   String
-  employeeCode     String
-  firstName        String
-  lastName         String
-  workEmail        String?
-  phoneNumber      String?
-  notes            String?
-  jobTitle         String
-  employmentType   EmploymentType
-  status           EmploymentStatus      @default(ACTIVE)
-  hireDate         DateTime
-  terminationDate  DateTime?
-  departmentId     String?
-  managerId        String?
-  linkedUserId     String?
-  version          Int                   @default(1)
-  createdAt        DateTime              @default(now())
-  updatedAt        temporal.updatedAt()
+  id                    String                        @id @default(uuid())
+  organizationId        String
+  employeeCode          String
+  firstName             String
+  lastName              String
+  workEmail             String?
+  phoneNumber           String?
+  notes                 String?
+  jobTitle              String
+  employmentType        EmploymentType
+  status                EmploymentStatus              @default(ACTIVE)
+  hireDate              DateTime
+  terminationDate       DateTime?
+  departmentId          String?
+  managerId             String?
+  linkedUserId          String?
+  version               Int                           @default(1)
+  createdAt             DateTime                      @default(now())
+  updatedAt             temporal.updatedAt()
 
-  organization     Organization          @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  department       Department?           @relation(fields: [organizationId, departmentId], references: [organizationId, id], onDelete: Restrict)
-  manager          Employee?             @relation("EmployeeManager", fields: [organizationId, managerId], references: [organizationId, id], onDelete: Restrict)
-  directReports    Employee[]            @relation("EmployeeManager")
-  linkedUser       User?                 @relation("EmployeeUser", fields: [organizationId, linkedUserId], references: [organizationId, id], onDelete: Restrict)
-  salaryStructures SalaryStructure[]
-  auditEvents      EmployeeAuditEvent[]
-  payrollEntries   PayrollEntry[]
-  workSchedules    WorkSchedule[]
-  attendance       AttendanceRecord[]
-  leaveRequests    LeaveRequest[]
-  leaveLedger      LeaveLedgerEntry[]
-  overtimeRequests OvertimeRequest[]
-  workforceEvents  WorkforceAuditEvent[]
+  organization          Organization                  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  department            Department?                   @relation(fields: [organizationId, departmentId], references: [organizationId, id], onDelete: Restrict)
+  manager               Employee?                     @relation("EmployeeManager", fields: [organizationId, managerId], references: [organizationId, id], onDelete: Restrict)
+  directReports         Employee[]                    @relation("EmployeeManager")
+  linkedUser            User?                         @relation("EmployeeUser", fields: [organizationId, linkedUserId], references: [organizationId, id], onDelete: Restrict)
+  salaryStructures      SalaryStructure[]
+  auditEvents           EmployeeAuditEvent[]
+  payrollEntries        PayrollEntry[]
+  workSchedules         WorkSchedule[]
+  attendance            AttendanceRecord[]
+  leaveRequests         LeaveRequest[]
+  leaveLedger           LeaveLedgerEntry[]
+  attendanceCorrections AttendanceCorrectionRequest[]
+  overtimeRequests      OvertimeRequest[]
+  workforceEvents       WorkforceAuditEvent[]
 
   @@unique([organizationId, id])
   @@unique([organizationId, employeeCode])
@@ -718,6 +747,7 @@ model PayrollEntryComponent {
   amount                  Numeric(14, 2)
   sourceSalaryComponentId String?
   sourceOvertimeRequestId String?
+  sourceLeaveRequestId    String?
   sourceMinutes           Int?
   rateSnapshot            Numeric(14, 4)?
   isAdjustment            Boolean              @default(false)
@@ -726,8 +756,10 @@ model PayrollEntryComponent {
 
   payrollEntry            PayrollEntry         @relation(fields: [organizationId, payrollEntryId], references: [organizationId, id], onDelete: Cascade)
   sourceOvertimeRequest   OvertimeRequest?     @relation(fields: [organizationId, sourceOvertimeRequestId], references: [organizationId, id], onDelete: Restrict, map: "payroll_component_overtime_fkey")
+  sourceLeaveRequest      LeaveRequest?        @relation(fields: [organizationId, sourceLeaveRequestId], references: [organizationId, id], onDelete: Restrict, map: "payroll_component_leave_fkey")
 
   @@unique([organizationId, sourceOvertimeRequestId], map: "payroll_component_overtime_key")
+  @@unique([organizationId, sourceLeaveRequestId], map: "payroll_component_leave_key")
   @@index([organizationId, payrollEntryId], map: "payroll_component_entry_idx")
   @@map("payroll_entry_components")
 }
@@ -736,11 +768,15 @@ model WorkSchedule {
   id                   String               @id @default(uuid())
   organizationId       String
   employeeId           String
+  name                 String               @default("Standard schedule")
   timezone             String
   workdays             String
   scheduledStartTime   String
   scheduledEndTime     String
   expectedDailyMinutes Int
+  breakMinutes         Int                  @default(0)
+  isActive             Boolean              @default(true)
+  version              Int                  @default(1)
   effectiveFrom        DateTime
   effectiveTo          DateTime?
   createdAt            DateTime             @default(now())
@@ -755,15 +791,17 @@ model WorkSchedule {
 }
 
 model Holiday {
-  id             String               @id @default(uuid())
-  organizationId String
-  name           String
-  date           DateTime
-  isRecurring    Boolean              @default(false)
-  createdAt      DateTime             @default(now())
-  updatedAt      temporal.updatedAt()
+  id              String               @id @default(uuid())
+  organizationId  String
+  name            String
+  date            DateTime
+  isRecurring     Boolean              @default(false)
+  durationMinutes Int?
+  version         Int                  @default(1)
+  createdAt       DateTime             @default(now())
+  updatedAt       temporal.updatedAt()
 
-  organization   Organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organization    Organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
   @@unique([organizationId, id])
   @@unique([organizationId, date, name])
@@ -772,7 +810,7 @@ model Holiday {
 }
 
 model AttendanceRecord {
-  id             String               @id @default(uuid())
+  id             String                        @id @default(uuid())
   organizationId String
   employeeId     String
   workDate       DateTime
@@ -780,19 +818,20 @@ model AttendanceRecord {
   checkInAt      DateTime?
   checkOutAt     DateTime?
   workedMinutes  Int?
-  isLate         Boolean              @default(false)
+  isLate         Boolean                       @default(false)
   notes          String?
-  source         AttendanceSource     @default(MANUAL)
+  source         AttendanceSource              @default(MANUAL)
   createdById    String
   updatedById    String
-  version        Int                  @default(1)
-  createdAt      DateTime             @default(now())
+  version        Int                           @default(1)
+  createdAt      DateTime                      @default(now())
   updatedAt      temporal.updatedAt()
 
-  organization   Organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  employee       Employee             @relation(fields: [organizationId, employeeId], references: [organizationId, id], onDelete: Restrict)
-  createdBy      User                 @relation("AttendanceCreator", fields: [organizationId, createdById], references: [organizationId, id], onDelete: Restrict)
-  updatedBy      User                 @relation("AttendanceUpdater", fields: [organizationId, updatedById], references: [organizationId, id], onDelete: Restrict)
+  organization   Organization                  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  employee       Employee                      @relation(fields: [organizationId, employeeId], references: [organizationId, id], onDelete: Restrict)
+  createdBy      User                          @relation("AttendanceCreator", fields: [organizationId, createdById], references: [organizationId, id], onDelete: Restrict)
+  updatedBy      User                          @relation("AttendanceUpdater", fields: [organizationId, updatedById], references: [organizationId, id], onDelete: Restrict)
+  corrections    AttendanceCorrectionRequest[]
 
   @@unique([organizationId, id])
   @@unique([organizationId, employeeId, workDate])
@@ -816,6 +855,7 @@ model LeaveType {
   organization         Organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   requests             LeaveRequest[]
   ledgerEntries        LeaveLedgerEntry[]
+  accrualPolicies      LeaveAccrualPolicy[]
 
   @@unique([organizationId, id])
   @@unique([organizationId, code])
@@ -823,29 +863,31 @@ model LeaveType {
 }
 
 model LeaveRequest {
-  id              String               @id @default(uuid())
-  organizationId  String
-  employeeId      String
-  leaveTypeId     String
-  startDate       DateTime
-  endDate         DateTime
-  dayPortion      LeaveDayPortion      @default(FULL_DAY)
-  requestedUnits  Int
-  reason          String?
-  status          LeaveRequestStatus   @default(DRAFT)
-  submittedAt     DateTime?
-  reviewedById    String?
-  reviewedAt      DateTime?
-  rejectionReason String?
-  version         Int                  @default(1)
-  createdAt       DateTime             @default(now())
-  updatedAt       temporal.updatedAt()
+  id                String                  @id @default(uuid())
+  organizationId    String
+  employeeId        String
+  leaveTypeId       String
+  startDate         DateTime
+  endDate           DateTime
+  dayPortion        LeaveDayPortion         @default(FULL_DAY)
+  requestedUnits    Int
+  requestedMinutes  Int?
+  reason            String?
+  status            LeaveRequestStatus      @default(DRAFT)
+  submittedAt       DateTime?
+  reviewedById      String?
+  reviewedAt        DateTime?
+  rejectionReason   String?
+  version           Int                     @default(1)
+  createdAt         DateTime                @default(now())
+  updatedAt         temporal.updatedAt()
 
-  organization    Organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  employee        Employee             @relation(fields: [organizationId, employeeId], references: [organizationId, id], onDelete: Restrict)
-  leaveType       LeaveType            @relation(fields: [organizationId, leaveTypeId], references: [organizationId, id], onDelete: Restrict)
-  reviewedBy      User?                @relation("LeaveReviewer", fields: [organizationId, reviewedById], references: [organizationId, id], onDelete: Restrict)
-  ledgerEntries   LeaveLedgerEntry[]
+  organization      Organization            @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  employee          Employee                @relation(fields: [organizationId, employeeId], references: [organizationId, id], onDelete: Restrict)
+  leaveType         LeaveType               @relation(fields: [organizationId, leaveTypeId], references: [organizationId, id], onDelete: Restrict)
+  reviewedBy        User?                   @relation("LeaveReviewer", fields: [organizationId, reviewedById], references: [organizationId, id], onDelete: Restrict)
+  ledgerEntries     LeaveLedgerEntry[]
+  payrollComponents PayrollEntryComponent[]
 
   @@unique([organizationId, id])
   @@index([organizationId, employeeId, startDate, endDate], map: "leave_request_employee_dates_idx")
@@ -854,24 +896,94 @@ model LeaveRequest {
 }
 
 model LeaveLedgerEntry {
-  id             String          @id @default(uuid())
+  id             String              @id @default(uuid())
   organizationId String
   employeeId     String
   leaveTypeId    String
   leaveRequestId String?
+  policyId       String?
   kind           LeaveLedgerKind
   units          Int
+  minutes        Int?
+  effectiveDate  DateTime            @default(now())
+  expiresAt      DateTime?
+  idempotencyKey String?
   notes          String?
-  createdAt      DateTime        @default(now())
+  createdAt      DateTime            @default(now())
 
-  organization   Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  employee       Employee        @relation(fields: [organizationId, employeeId], references: [organizationId, id], onDelete: Restrict)
-  leaveType      LeaveType       @relation(fields: [organizationId, leaveTypeId], references: [organizationId, id], onDelete: Restrict)
-  leaveRequest   LeaveRequest?   @relation(fields: [organizationId, leaveRequestId], references: [organizationId, id], onDelete: Restrict)
+  organization   Organization        @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  employee       Employee            @relation(fields: [organizationId, employeeId], references: [organizationId, id], onDelete: Restrict)
+  leaveType      LeaveType           @relation(fields: [organizationId, leaveTypeId], references: [organizationId, id], onDelete: Restrict)
+  leaveRequest   LeaveRequest?       @relation(fields: [organizationId, leaveRequestId], references: [organizationId, id], onDelete: Restrict)
+  policy         LeaveAccrualPolicy? @relation(fields: [organizationId, policyId], references: [organizationId, id], onDelete: Restrict)
 
   @@unique([organizationId, leaveRequestId, kind], map: "leave_ledger_request_kind_key")
+  @@unique([organizationId, idempotencyKey], map: "leave_ledger_idempotency_key")
   @@index([organizationId, employeeId, leaveTypeId], map: "leave_ledger_employee_type_idx")
+  @@index([organizationId, effectiveDate], map: "leave_ledger_effective_idx")
   @@map("leave_ledger_entries")
+}
+
+model LeaveAccrualPolicy {
+  id                     String                @id @default(uuid())
+  organizationId         String
+  leaveTypeId            String
+  name                   String
+  frequency              LeaveAccrualFrequency
+  entitlementMinutes     Int
+  effectiveFrom          DateTime
+  effectiveTo            DateTime?
+  prorateNewJoiners      Boolean               @default(false)
+  maximumBalanceMinutes  Int?
+  carryForwardMode       LeaveCarryForwardMode @default(NONE)
+  carryForwardCapMinutes Int?
+  expiresAfterMonths     Int?
+  isActive               Boolean               @default(true)
+  version                Int                   @default(1)
+  createdAt              DateTime              @default(now())
+  updatedAt              temporal.updatedAt()
+
+  organization           Organization          @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  leaveType              LeaveType             @relation(fields: [organizationId, leaveTypeId], references: [organizationId, id], onDelete: Restrict)
+  ledgerEntries          LeaveLedgerEntry[]
+
+  @@unique([organizationId, id])
+  @@unique([organizationId, leaveTypeId, name], map: "leave_policy_type_name_key")
+  @@index([organizationId, isActive, effectiveFrom], map: "leave_policy_effective_idx")
+  @@map("leave_accrual_policies")
+}
+
+model AttendanceCorrectionRequest {
+  id                    String                     @id @default(uuid())
+  organizationId        String
+  attendanceRecordId    String
+  employeeId            String
+  requestedById         String
+  reviewedById          String?
+  proposedStatus        AttendanceStatus
+  proposedCheckInAt     DateTime?
+  proposedCheckOutAt    DateTime?
+  proposedWorkedMinutes Int?
+  reason                String
+  reviewReason          String?
+  beforeSnapshot        String
+  status                AttendanceCorrectionStatus @default(PENDING)
+  payrollImpact         Boolean                    @default(false)
+  version               Int                        @default(1)
+  reviewedAt            DateTime?
+  createdAt             DateTime                   @default(now())
+  updatedAt             temporal.updatedAt()
+
+  organization          Organization               @relation(fields: [organizationId], references: [id], onDelete: Cascade, map: "attendance_correction_org_fkey")
+  attendanceRecord      AttendanceRecord           @relation(fields: [organizationId, attendanceRecordId], references: [organizationId, id], onDelete: Restrict, map: "attendance_correction_record_fkey")
+  employee              Employee                   @relation(fields: [organizationId, employeeId], references: [organizationId, id], onDelete: Restrict, map: "attendance_correction_employee_fkey")
+  requestedBy           User                       @relation("AttendanceCorrectionRequester", fields: [organizationId, requestedById], references: [organizationId, id], onDelete: Restrict, map: "attendance_correction_requester_fkey")
+  reviewedBy            User?                      @relation("AttendanceCorrectionReviewer", fields: [organizationId, reviewedById], references: [organizationId, id], onDelete: Restrict, map: "attendance_correction_reviewer_fkey")
+
+  @@unique([organizationId, id])
+  @@index([organizationId, employeeId, status], map: "attendance_correction_employee_idx")
+  @@index([organizationId, attendanceRecordId, status], map: "attendance_correction_record_idx")
+  @@map("attendance_correction_requests")
 }
 
 model OvertimeRequest {
@@ -907,7 +1019,7 @@ model OvertimeRequest {
 model WorkforceAuditEvent {
   id             String       @id @default(uuid())
   organizationId String
-  employeeId     String
+  employeeId     String?
   actorId        String
   entityType     String
   entityId       String
@@ -916,7 +1028,7 @@ model WorkforceAuditEvent {
   createdAt      DateTime     @default(now())
 
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  employee       Employee     @relation(fields: [organizationId, employeeId], references: [organizationId, id], onDelete: Restrict)
+  employee       Employee?    @relation(fields: [organizationId, employeeId], references: [organizationId, id], onDelete: Restrict)
   actor          User         @relation("WorkforceAuditActor", fields: [organizationId, actorId], references: [organizationId, id], onDelete: Restrict)
 
   @@index([organizationId, employeeId, createdAt], map: "workforce_audit_employee_idx")

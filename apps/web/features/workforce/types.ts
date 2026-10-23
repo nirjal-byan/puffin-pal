@@ -27,6 +27,18 @@ export interface AttendanceSummary {
   attendancePercentage: number;
   missingRecords: number;
 }
+export interface AttendanceCorrection {
+  id: string;
+  attendanceRecordId: string;
+  employeeId: string;
+  proposedStatus: string;
+  proposedWorkedMinutes?: number;
+  reason: string;
+  reviewReason?: string;
+  status: string;
+  payrollImpact: boolean;
+  version: number;
+}
 export interface LeaveType {
   id: string;
   name: string;
@@ -52,9 +64,12 @@ export interface LeaveBalance {
   leaveTypeId: string;
   leaveTypeName: string;
   allowanceUnits: number;
-  usedUnits: number;
-  pendingUnits: number;
-  remainingUnits: number;
+  availableMinutes: number;
+  accruedMinutes: number;
+  usedMinutes: number;
+  pendingMinutes: number;
+  carriedForwardMinutes: number;
+  expiredMinutes: number;
 }
 export interface OvertimeRequest {
   id: string;

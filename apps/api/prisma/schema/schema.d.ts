@@ -34,9 +34,9 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'bc9d0b30b214355decab0d622e6d088a928e6f2db82aabc41803ccfd87498d2c'>;
+  StorageHashBase<'ba782965fb6c1a29e2ff42ecf9c4201008d69c6ee270373ac6e14a39c6d665dd'>;
 export type ExecutionHash =
-  ExecutionHashBase<'86300751a2aab713e2e826df5adc3a227e45724d48b8ca108a98b57d69c1969d'>;
+  ExecutionHashBase<'565c50e8f36c6dec7e8dd4d9639c263004ca8b399bd21baadeefd7cbc87d52cd'>;
 export type ProfileHash =
   ProfileHashBase<'3916f444a8a17ad749191acf9e08dad97d1a327b88c2f1d45d12f240296aa8b2'>;
 
@@ -250,6 +250,27 @@ type DefaultLiteralValue<CodecId extends string, Encoded> = CodecId extends keyo
 
 export type FieldOutputTypes = {
   readonly public: {
+    readonly AttendanceCorrectionRequest: {
+      readonly attendanceRecordId: CodecTypes['pg/text@1']['output'];
+      readonly beforeSnapshot: CodecTypes['pg/text@1']['output'];
+      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly employeeId: CodecTypes['pg/text@1']['output'];
+      readonly id: CodecTypes['pg/text@1']['output'];
+      readonly organizationId: CodecTypes['pg/text@1']['output'];
+      readonly payrollImpact: CodecTypes['pg/bool@1']['output'];
+      readonly proposedCheckInAt: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
+      readonly proposedCheckOutAt: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
+      readonly proposedStatus: 'PRESENT' | 'ABSENT' | 'HALF_DAY' | 'ON_LEAVE' | 'HOLIDAY';
+      readonly proposedWorkedMinutes: CodecTypes['pg/int4@1']['output'] | null;
+      readonly reason: CodecTypes['pg/text@1']['output'];
+      readonly requestedById: CodecTypes['pg/text@1']['output'];
+      readonly reviewReason: CodecTypes['pg/text@1']['output'] | null;
+      readonly reviewedAt: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
+      readonly reviewedById: CodecTypes['pg/text@1']['output'] | null;
+      readonly status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'CANCELLED';
+      readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly version: CodecTypes['pg/int4@1']['output'];
+    };
     readonly AttendanceRecord: {
       readonly checkInAt: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
       readonly checkOutAt: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
@@ -388,11 +409,13 @@ export type FieldOutputTypes = {
     readonly Holiday: {
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
       readonly date: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly durationMinutes: CodecTypes['pg/int4@1']['output'] | null;
       readonly id: CodecTypes['pg/text@1']['output'];
       readonly isRecurring: CodecTypes['pg/bool@1']['output'];
       readonly name: CodecTypes['pg/text@1']['output'];
       readonly organizationId: CodecTypes['pg/text@1']['output'];
       readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly version: CodecTypes['pg/int4@1']['output'];
     };
     readonly Invoice: {
       readonly billingCompanyName: CodecTypes['pg/text@1']['output'] | null;
@@ -448,15 +471,46 @@ export type FieldOutputTypes = {
       readonly quantity: CodecTypes['pg/int4@1']['output'];
       readonly unitPrice: Numeric<12, 2>;
     };
+    readonly LeaveAccrualPolicy: {
+      readonly carryForwardCapMinutes: CodecTypes['pg/int4@1']['output'] | null;
+      readonly carryForwardMode: 'NONE' | 'FULL' | 'CAPPED';
+      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly effectiveFrom: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly effectiveTo: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
+      readonly entitlementMinutes: CodecTypes['pg/int4@1']['output'];
+      readonly expiresAfterMonths: CodecTypes['pg/int4@1']['output'] | null;
+      readonly frequency: 'ANNUAL' | 'MONTHLY' | 'SERVICE_MONTHLY';
+      readonly id: CodecTypes['pg/text@1']['output'];
+      readonly isActive: CodecTypes['pg/bool@1']['output'];
+      readonly leaveTypeId: CodecTypes['pg/text@1']['output'];
+      readonly maximumBalanceMinutes: CodecTypes['pg/int4@1']['output'] | null;
+      readonly name: CodecTypes['pg/text@1']['output'];
+      readonly organizationId: CodecTypes['pg/text@1']['output'];
+      readonly prorateNewJoiners: CodecTypes['pg/bool@1']['output'];
+      readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly version: CodecTypes['pg/int4@1']['output'];
+    };
     readonly LeaveLedgerEntry: {
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly effectiveDate: CodecTypes['pg/timestamptz-temporal@1']['output'];
       readonly employeeId: CodecTypes['pg/text@1']['output'];
+      readonly expiresAt: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
       readonly id: CodecTypes['pg/text@1']['output'];
-      readonly kind: 'ALLOCATION' | 'DEDUCTION' | 'RESTORATION' | 'ADJUSTMENT';
+      readonly idempotencyKey: CodecTypes['pg/text@1']['output'] | null;
+      readonly kind:
+        | 'ALLOCATION'
+        | 'ACCRUAL'
+        | 'CARRY_FORWARD'
+        | 'EXPIRATION'
+        | 'DEDUCTION'
+        | 'RESTORATION'
+        | 'ADJUSTMENT';
       readonly leaveRequestId: CodecTypes['pg/text@1']['output'] | null;
       readonly leaveTypeId: CodecTypes['pg/text@1']['output'];
+      readonly minutes: CodecTypes['pg/int4@1']['output'] | null;
       readonly notes: CodecTypes['pg/text@1']['output'] | null;
       readonly organizationId: CodecTypes['pg/text@1']['output'];
+      readonly policyId: CodecTypes['pg/text@1']['output'] | null;
       readonly units: CodecTypes['pg/int4@1']['output'];
     };
     readonly LeaveRequest: {
@@ -469,6 +523,7 @@ export type FieldOutputTypes = {
       readonly organizationId: CodecTypes['pg/text@1']['output'];
       readonly reason: CodecTypes['pg/text@1']['output'] | null;
       readonly rejectionReason: CodecTypes['pg/text@1']['output'] | null;
+      readonly requestedMinutes: CodecTypes['pg/int4@1']['output'] | null;
       readonly requestedUnits: CodecTypes['pg/int4@1']['output'];
       readonly reviewedAt: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
       readonly reviewedById: CodecTypes['pg/text@1']['output'] | null;
@@ -506,6 +561,8 @@ export type FieldOutputTypes = {
       readonly logoUrl: CodecTypes['pg/text@1']['output'] | null;
       readonly name: CodecTypes['pg/text@1']['output'];
       readonly slug: CodecTypes['pg/text@1']['output'];
+      readonly timezone: CodecTypes['pg/text@1']['output'];
+      readonly unpaidLeaveDeductionsEnabled: CodecTypes['pg/bool@1']['output'];
       readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
       readonly website: CodecTypes['pg/text@1']['output'] | null;
     };
@@ -593,6 +650,7 @@ export type FieldOutputTypes = {
       readonly payrollEntryId: CodecTypes['pg/text@1']['output'];
       readonly rateSnapshot: Numeric<14, 4> | null;
       readonly sortOrder: CodecTypes['pg/int4@1']['output'];
+      readonly sourceLeaveRequestId: CodecTypes['pg/text@1']['output'] | null;
       readonly sourceMinutes: CodecTypes['pg/int4@1']['output'] | null;
       readonly sourceOvertimeRequestId: CodecTypes['pg/text@1']['output'] | null;
       readonly sourceSalaryComponentId: CodecTypes['pg/text@1']['output'] | null;
@@ -808,30 +866,55 @@ export type FieldOutputTypes = {
       readonly actorId: CodecTypes['pg/text@1']['output'];
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
       readonly details: CodecTypes['pg/text@1']['output'] | null;
-      readonly employeeId: CodecTypes['pg/text@1']['output'];
+      readonly employeeId: CodecTypes['pg/text@1']['output'] | null;
       readonly entityId: CodecTypes['pg/text@1']['output'];
       readonly entityType: CodecTypes['pg/text@1']['output'];
       readonly id: CodecTypes['pg/text@1']['output'];
       readonly organizationId: CodecTypes['pg/text@1']['output'];
     };
     readonly WorkSchedule: {
+      readonly breakMinutes: CodecTypes['pg/int4@1']['output'];
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
       readonly effectiveFrom: CodecTypes['pg/timestamptz-temporal@1']['output'];
       readonly effectiveTo: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
       readonly employeeId: CodecTypes['pg/text@1']['output'];
       readonly expectedDailyMinutes: CodecTypes['pg/int4@1']['output'];
       readonly id: CodecTypes['pg/text@1']['output'];
+      readonly isActive: CodecTypes['pg/bool@1']['output'];
+      readonly name: CodecTypes['pg/text@1']['output'];
       readonly organizationId: CodecTypes['pg/text@1']['output'];
       readonly scheduledEndTime: CodecTypes['pg/text@1']['output'];
       readonly scheduledStartTime: CodecTypes['pg/text@1']['output'];
       readonly timezone: CodecTypes['pg/text@1']['output'];
       readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly version: CodecTypes['pg/int4@1']['output'];
       readonly workdays: CodecTypes['pg/text@1']['output'];
     };
   };
 };
 export type FieldInputTypes = {
   readonly public: {
+    readonly AttendanceCorrectionRequest: {
+      readonly attendanceRecordId: CodecTypes['pg/text@1']['input'];
+      readonly beforeSnapshot: CodecTypes['pg/text@1']['input'];
+      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly employeeId: CodecTypes['pg/text@1']['input'];
+      readonly id: CodecTypes['pg/text@1']['input'];
+      readonly organizationId: CodecTypes['pg/text@1']['input'];
+      readonly payrollImpact: CodecTypes['pg/bool@1']['input'];
+      readonly proposedCheckInAt: CodecTypes['pg/timestamptz-temporal@1']['input'] | null;
+      readonly proposedCheckOutAt: CodecTypes['pg/timestamptz-temporal@1']['input'] | null;
+      readonly proposedStatus: 'PRESENT' | 'ABSENT' | 'HALF_DAY' | 'ON_LEAVE' | 'HOLIDAY';
+      readonly proposedWorkedMinutes: CodecTypes['pg/int4@1']['input'] | null;
+      readonly reason: CodecTypes['pg/text@1']['input'];
+      readonly requestedById: CodecTypes['pg/text@1']['input'];
+      readonly reviewReason: CodecTypes['pg/text@1']['input'] | null;
+      readonly reviewedAt: CodecTypes['pg/timestamptz-temporal@1']['input'] | null;
+      readonly reviewedById: CodecTypes['pg/text@1']['input'] | null;
+      readonly status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'CANCELLED';
+      readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly version: CodecTypes['pg/int4@1']['input'];
+    };
     readonly AttendanceRecord: {
       readonly checkInAt: CodecTypes['pg/timestamptz-temporal@1']['input'] | null;
       readonly checkOutAt: CodecTypes['pg/timestamptz-temporal@1']['input'] | null;
@@ -970,11 +1053,13 @@ export type FieldInputTypes = {
     readonly Holiday: {
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
       readonly date: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly durationMinutes: CodecTypes['pg/int4@1']['input'] | null;
       readonly id: CodecTypes['pg/text@1']['input'];
       readonly isRecurring: CodecTypes['pg/bool@1']['input'];
       readonly name: CodecTypes['pg/text@1']['input'];
       readonly organizationId: CodecTypes['pg/text@1']['input'];
       readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly version: CodecTypes['pg/int4@1']['input'];
     };
     readonly Invoice: {
       readonly billingCompanyName: CodecTypes['pg/text@1']['input'] | null;
@@ -1030,15 +1115,46 @@ export type FieldInputTypes = {
       readonly quantity: CodecTypes['pg/int4@1']['input'];
       readonly unitPrice: CodecTypes['pg/numeric@1']['input'];
     };
+    readonly LeaveAccrualPolicy: {
+      readonly carryForwardCapMinutes: CodecTypes['pg/int4@1']['input'] | null;
+      readonly carryForwardMode: 'NONE' | 'FULL' | 'CAPPED';
+      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly effectiveFrom: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly effectiveTo: CodecTypes['pg/timestamptz-temporal@1']['input'] | null;
+      readonly entitlementMinutes: CodecTypes['pg/int4@1']['input'];
+      readonly expiresAfterMonths: CodecTypes['pg/int4@1']['input'] | null;
+      readonly frequency: 'ANNUAL' | 'MONTHLY' | 'SERVICE_MONTHLY';
+      readonly id: CodecTypes['pg/text@1']['input'];
+      readonly isActive: CodecTypes['pg/bool@1']['input'];
+      readonly leaveTypeId: CodecTypes['pg/text@1']['input'];
+      readonly maximumBalanceMinutes: CodecTypes['pg/int4@1']['input'] | null;
+      readonly name: CodecTypes['pg/text@1']['input'];
+      readonly organizationId: CodecTypes['pg/text@1']['input'];
+      readonly prorateNewJoiners: CodecTypes['pg/bool@1']['input'];
+      readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly version: CodecTypes['pg/int4@1']['input'];
+    };
     readonly LeaveLedgerEntry: {
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly effectiveDate: CodecTypes['pg/timestamptz-temporal@1']['input'];
       readonly employeeId: CodecTypes['pg/text@1']['input'];
+      readonly expiresAt: CodecTypes['pg/timestamptz-temporal@1']['input'] | null;
       readonly id: CodecTypes['pg/text@1']['input'];
-      readonly kind: 'ALLOCATION' | 'DEDUCTION' | 'RESTORATION' | 'ADJUSTMENT';
+      readonly idempotencyKey: CodecTypes['pg/text@1']['input'] | null;
+      readonly kind:
+        | 'ALLOCATION'
+        | 'ACCRUAL'
+        | 'CARRY_FORWARD'
+        | 'EXPIRATION'
+        | 'DEDUCTION'
+        | 'RESTORATION'
+        | 'ADJUSTMENT';
       readonly leaveRequestId: CodecTypes['pg/text@1']['input'] | null;
       readonly leaveTypeId: CodecTypes['pg/text@1']['input'];
+      readonly minutes: CodecTypes['pg/int4@1']['input'] | null;
       readonly notes: CodecTypes['pg/text@1']['input'] | null;
       readonly organizationId: CodecTypes['pg/text@1']['input'];
+      readonly policyId: CodecTypes['pg/text@1']['input'] | null;
       readonly units: CodecTypes['pg/int4@1']['input'];
     };
     readonly LeaveRequest: {
@@ -1051,6 +1167,7 @@ export type FieldInputTypes = {
       readonly organizationId: CodecTypes['pg/text@1']['input'];
       readonly reason: CodecTypes['pg/text@1']['input'] | null;
       readonly rejectionReason: CodecTypes['pg/text@1']['input'] | null;
+      readonly requestedMinutes: CodecTypes['pg/int4@1']['input'] | null;
       readonly requestedUnits: CodecTypes['pg/int4@1']['input'];
       readonly reviewedAt: CodecTypes['pg/timestamptz-temporal@1']['input'] | null;
       readonly reviewedById: CodecTypes['pg/text@1']['input'] | null;
@@ -1088,6 +1205,8 @@ export type FieldInputTypes = {
       readonly logoUrl: CodecTypes['pg/text@1']['input'] | null;
       readonly name: CodecTypes['pg/text@1']['input'];
       readonly slug: CodecTypes['pg/text@1']['input'];
+      readonly timezone: CodecTypes['pg/text@1']['input'];
+      readonly unpaidLeaveDeductionsEnabled: CodecTypes['pg/bool@1']['input'];
       readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
       readonly website: CodecTypes['pg/text@1']['input'] | null;
     };
@@ -1175,6 +1294,7 @@ export type FieldInputTypes = {
       readonly payrollEntryId: CodecTypes['pg/text@1']['input'];
       readonly rateSnapshot: CodecTypes['pg/numeric@1']['input'] | null;
       readonly sortOrder: CodecTypes['pg/int4@1']['input'];
+      readonly sourceLeaveRequestId: CodecTypes['pg/text@1']['input'] | null;
       readonly sourceMinutes: CodecTypes['pg/int4@1']['input'] | null;
       readonly sourceOvertimeRequestId: CodecTypes['pg/text@1']['input'] | null;
       readonly sourceSalaryComponentId: CodecTypes['pg/text@1']['input'] | null;
@@ -1390,30 +1510,55 @@ export type FieldInputTypes = {
       readonly actorId: CodecTypes['pg/text@1']['input'];
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
       readonly details: CodecTypes['pg/text@1']['input'] | null;
-      readonly employeeId: CodecTypes['pg/text@1']['input'];
+      readonly employeeId: CodecTypes['pg/text@1']['input'] | null;
       readonly entityId: CodecTypes['pg/text@1']['input'];
       readonly entityType: CodecTypes['pg/text@1']['input'];
       readonly id: CodecTypes['pg/text@1']['input'];
       readonly organizationId: CodecTypes['pg/text@1']['input'];
     };
     readonly WorkSchedule: {
+      readonly breakMinutes: CodecTypes['pg/int4@1']['input'];
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
       readonly effectiveFrom: CodecTypes['pg/timestamptz-temporal@1']['input'];
       readonly effectiveTo: CodecTypes['pg/timestamptz-temporal@1']['input'] | null;
       readonly employeeId: CodecTypes['pg/text@1']['input'];
       readonly expectedDailyMinutes: CodecTypes['pg/int4@1']['input'];
       readonly id: CodecTypes['pg/text@1']['input'];
+      readonly isActive: CodecTypes['pg/bool@1']['input'];
+      readonly name: CodecTypes['pg/text@1']['input'];
       readonly organizationId: CodecTypes['pg/text@1']['input'];
       readonly scheduledEndTime: CodecTypes['pg/text@1']['input'];
       readonly scheduledStartTime: CodecTypes['pg/text@1']['input'];
       readonly timezone: CodecTypes['pg/text@1']['input'];
       readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly version: CodecTypes['pg/int4@1']['input'];
       readonly workdays: CodecTypes['pg/text@1']['input'];
     };
   };
 };
 export type StorageColumnTypes = {
   readonly public: {
+    readonly attendance_correction_requests: {
+      readonly attendanceRecordId: CodecTypes['pg/text@1']['output'];
+      readonly beforeSnapshot: CodecTypes['pg/text@1']['output'];
+      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly employeeId: CodecTypes['pg/text@1']['output'];
+      readonly id: CodecTypes['pg/text@1']['output'];
+      readonly organizationId: CodecTypes['pg/text@1']['output'];
+      readonly payrollImpact: CodecTypes['pg/bool@1']['output'];
+      readonly proposedCheckInAt: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
+      readonly proposedCheckOutAt: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
+      readonly proposedStatus: 'PRESENT' | 'ABSENT' | 'HALF_DAY' | 'ON_LEAVE' | 'HOLIDAY';
+      readonly proposedWorkedMinutes: CodecTypes['pg/int4@1']['output'] | null;
+      readonly reason: CodecTypes['pg/text@1']['output'];
+      readonly requestedById: CodecTypes['pg/text@1']['output'];
+      readonly reviewedAt: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
+      readonly reviewedById: CodecTypes['pg/text@1']['output'] | null;
+      readonly reviewReason: CodecTypes['pg/text@1']['output'] | null;
+      readonly status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'CANCELLED';
+      readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly version: CodecTypes['pg/int4@1']['output'];
+    };
     readonly attendance_records: {
       readonly checkInAt: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
       readonly checkOutAt: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
@@ -1552,11 +1697,13 @@ export type StorageColumnTypes = {
     readonly holidays: {
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
       readonly date: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly durationMinutes: CodecTypes['pg/int4@1']['output'] | null;
       readonly id: CodecTypes['pg/text@1']['output'];
       readonly isRecurring: CodecTypes['pg/bool@1']['output'];
       readonly name: CodecTypes['pg/text@1']['output'];
       readonly organizationId: CodecTypes['pg/text@1']['output'];
       readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly version: CodecTypes['pg/int4@1']['output'];
     };
     readonly invoice_exports: {
       readonly archiveKey: CodecTypes['pg/text@1']['output'] | null;
@@ -1612,15 +1759,46 @@ export type StorageColumnTypes = {
       readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
       readonly version: CodecTypes['pg/int4@1']['output'];
     };
+    readonly leave_accrual_policies: {
+      readonly carryForwardCapMinutes: CodecTypes['pg/int4@1']['output'] | null;
+      readonly carryForwardMode: 'NONE' | 'FULL' | 'CAPPED';
+      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly effectiveFrom: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly effectiveTo: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
+      readonly entitlementMinutes: CodecTypes['pg/int4@1']['output'];
+      readonly expiresAfterMonths: CodecTypes['pg/int4@1']['output'] | null;
+      readonly frequency: 'ANNUAL' | 'MONTHLY' | 'SERVICE_MONTHLY';
+      readonly id: CodecTypes['pg/text@1']['output'];
+      readonly isActive: CodecTypes['pg/bool@1']['output'];
+      readonly leaveTypeId: CodecTypes['pg/text@1']['output'];
+      readonly maximumBalanceMinutes: CodecTypes['pg/int4@1']['output'] | null;
+      readonly name: CodecTypes['pg/text@1']['output'];
+      readonly organizationId: CodecTypes['pg/text@1']['output'];
+      readonly prorateNewJoiners: CodecTypes['pg/bool@1']['output'];
+      readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly version: CodecTypes['pg/int4@1']['output'];
+    };
     readonly leave_ledger_entries: {
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly effectiveDate: CodecTypes['pg/timestamptz-temporal@1']['output'];
       readonly employeeId: CodecTypes['pg/text@1']['output'];
+      readonly expiresAt: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
       readonly id: CodecTypes['pg/text@1']['output'];
-      readonly kind: 'ALLOCATION' | 'DEDUCTION' | 'RESTORATION' | 'ADJUSTMENT';
+      readonly idempotencyKey: CodecTypes['pg/text@1']['output'] | null;
+      readonly kind:
+        | 'ALLOCATION'
+        | 'ACCRUAL'
+        | 'CARRY_FORWARD'
+        | 'EXPIRATION'
+        | 'DEDUCTION'
+        | 'RESTORATION'
+        | 'ADJUSTMENT';
       readonly leaveRequestId: CodecTypes['pg/text@1']['output'] | null;
       readonly leaveTypeId: CodecTypes['pg/text@1']['output'];
+      readonly minutes: CodecTypes['pg/int4@1']['output'] | null;
       readonly notes: CodecTypes['pg/text@1']['output'] | null;
       readonly organizationId: CodecTypes['pg/text@1']['output'];
+      readonly policyId: CodecTypes['pg/text@1']['output'] | null;
       readonly units: CodecTypes['pg/int4@1']['output'];
     };
     readonly leave_requests: {
@@ -1633,6 +1811,7 @@ export type StorageColumnTypes = {
       readonly organizationId: CodecTypes['pg/text@1']['output'];
       readonly reason: CodecTypes['pg/text@1']['output'] | null;
       readonly rejectionReason: CodecTypes['pg/text@1']['output'] | null;
+      readonly requestedMinutes: CodecTypes['pg/int4@1']['output'] | null;
       readonly requestedUnits: CodecTypes['pg/int4@1']['output'];
       readonly reviewedAt: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
       readonly reviewedById: CodecTypes['pg/text@1']['output'] | null;
@@ -1670,6 +1849,8 @@ export type StorageColumnTypes = {
       readonly logoUrl: CodecTypes['pg/text@1']['output'] | null;
       readonly name: CodecTypes['pg/text@1']['output'];
       readonly slug: CodecTypes['pg/text@1']['output'];
+      readonly timezone: CodecTypes['pg/text@1']['output'];
+      readonly unpaidLeaveDeductionsEnabled: CodecTypes['pg/bool@1']['output'];
       readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
       readonly website: CodecTypes['pg/text@1']['output'] | null;
     };
@@ -1757,6 +1938,7 @@ export type StorageColumnTypes = {
       readonly payrollEntryId: CodecTypes['pg/text@1']['output'];
       readonly rateSnapshot: Numeric<14, 4> | null;
       readonly sortOrder: CodecTypes['pg/int4@1']['output'];
+      readonly sourceLeaveRequestId: CodecTypes['pg/text@1']['output'] | null;
       readonly sourceMinutes: CodecTypes['pg/int4@1']['output'] | null;
       readonly sourceOvertimeRequestId: CodecTypes['pg/text@1']['output'] | null;
       readonly sourceSalaryComponentId: CodecTypes['pg/text@1']['output'] | null;
@@ -1968,17 +2150,21 @@ export type StorageColumnTypes = {
       readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
     };
     readonly work_schedules: {
+      readonly breakMinutes: CodecTypes['pg/int4@1']['output'];
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
       readonly effectiveFrom: CodecTypes['pg/timestamptz-temporal@1']['output'];
       readonly effectiveTo: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
       readonly employeeId: CodecTypes['pg/text@1']['output'];
       readonly expectedDailyMinutes: CodecTypes['pg/int4@1']['output'];
       readonly id: CodecTypes['pg/text@1']['output'];
+      readonly isActive: CodecTypes['pg/bool@1']['output'];
+      readonly name: CodecTypes['pg/text@1']['output'];
       readonly organizationId: CodecTypes['pg/text@1']['output'];
       readonly scheduledEndTime: CodecTypes['pg/text@1']['output'];
       readonly scheduledStartTime: CodecTypes['pg/text@1']['output'];
       readonly timezone: CodecTypes['pg/text@1']['output'];
       readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly version: CodecTypes['pg/int4@1']['output'];
       readonly workdays: CodecTypes['pg/text@1']['output'];
     };
     readonly workforce_audit_events: {
@@ -1986,7 +2172,7 @@ export type StorageColumnTypes = {
       readonly actorId: CodecTypes['pg/text@1']['output'];
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
       readonly details: CodecTypes['pg/text@1']['output'] | null;
-      readonly employeeId: CodecTypes['pg/text@1']['output'];
+      readonly employeeId: CodecTypes['pg/text@1']['output'] | null;
       readonly entityId: CodecTypes['pg/text@1']['output'];
       readonly entityType: CodecTypes['pg/text@1']['output'];
       readonly id: CodecTypes['pg/text@1']['output'];
@@ -1996,6 +2182,27 @@ export type StorageColumnTypes = {
 };
 export type StorageColumnInputTypes = {
   readonly public: {
+    readonly attendance_correction_requests: {
+      readonly attendanceRecordId: CodecTypes['pg/text@1']['input'];
+      readonly beforeSnapshot: CodecTypes['pg/text@1']['input'];
+      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly employeeId: CodecTypes['pg/text@1']['input'];
+      readonly id: CodecTypes['pg/text@1']['input'];
+      readonly organizationId: CodecTypes['pg/text@1']['input'];
+      readonly payrollImpact: CodecTypes['pg/bool@1']['input'];
+      readonly proposedCheckInAt: CodecTypes['pg/timestamptz-temporal@1']['input'] | null;
+      readonly proposedCheckOutAt: CodecTypes['pg/timestamptz-temporal@1']['input'] | null;
+      readonly proposedStatus: 'PRESENT' | 'ABSENT' | 'HALF_DAY' | 'ON_LEAVE' | 'HOLIDAY';
+      readonly proposedWorkedMinutes: CodecTypes['pg/int4@1']['input'] | null;
+      readonly reason: CodecTypes['pg/text@1']['input'];
+      readonly requestedById: CodecTypes['pg/text@1']['input'];
+      readonly reviewedAt: CodecTypes['pg/timestamptz-temporal@1']['input'] | null;
+      readonly reviewedById: CodecTypes['pg/text@1']['input'] | null;
+      readonly reviewReason: CodecTypes['pg/text@1']['input'] | null;
+      readonly status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'CANCELLED';
+      readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly version: CodecTypes['pg/int4@1']['input'];
+    };
     readonly attendance_records: {
       readonly checkInAt: CodecTypes['pg/timestamptz-temporal@1']['input'] | null;
       readonly checkOutAt: CodecTypes['pg/timestamptz-temporal@1']['input'] | null;
@@ -2134,11 +2341,13 @@ export type StorageColumnInputTypes = {
     readonly holidays: {
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
       readonly date: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly durationMinutes: CodecTypes['pg/int4@1']['input'] | null;
       readonly id: CodecTypes['pg/text@1']['input'];
       readonly isRecurring: CodecTypes['pg/bool@1']['input'];
       readonly name: CodecTypes['pg/text@1']['input'];
       readonly organizationId: CodecTypes['pg/text@1']['input'];
       readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly version: CodecTypes['pg/int4@1']['input'];
     };
     readonly invoice_exports: {
       readonly archiveKey: CodecTypes['pg/text@1']['input'] | null;
@@ -2194,15 +2403,46 @@ export type StorageColumnInputTypes = {
       readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
       readonly version: CodecTypes['pg/int4@1']['input'];
     };
+    readonly leave_accrual_policies: {
+      readonly carryForwardCapMinutes: CodecTypes['pg/int4@1']['input'] | null;
+      readonly carryForwardMode: 'NONE' | 'FULL' | 'CAPPED';
+      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly effectiveFrom: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly effectiveTo: CodecTypes['pg/timestamptz-temporal@1']['input'] | null;
+      readonly entitlementMinutes: CodecTypes['pg/int4@1']['input'];
+      readonly expiresAfterMonths: CodecTypes['pg/int4@1']['input'] | null;
+      readonly frequency: 'ANNUAL' | 'MONTHLY' | 'SERVICE_MONTHLY';
+      readonly id: CodecTypes['pg/text@1']['input'];
+      readonly isActive: CodecTypes['pg/bool@1']['input'];
+      readonly leaveTypeId: CodecTypes['pg/text@1']['input'];
+      readonly maximumBalanceMinutes: CodecTypes['pg/int4@1']['input'] | null;
+      readonly name: CodecTypes['pg/text@1']['input'];
+      readonly organizationId: CodecTypes['pg/text@1']['input'];
+      readonly prorateNewJoiners: CodecTypes['pg/bool@1']['input'];
+      readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly version: CodecTypes['pg/int4@1']['input'];
+    };
     readonly leave_ledger_entries: {
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly effectiveDate: CodecTypes['pg/timestamptz-temporal@1']['input'];
       readonly employeeId: CodecTypes['pg/text@1']['input'];
+      readonly expiresAt: CodecTypes['pg/timestamptz-temporal@1']['input'] | null;
       readonly id: CodecTypes['pg/text@1']['input'];
-      readonly kind: 'ALLOCATION' | 'DEDUCTION' | 'RESTORATION' | 'ADJUSTMENT';
+      readonly idempotencyKey: CodecTypes['pg/text@1']['input'] | null;
+      readonly kind:
+        | 'ALLOCATION'
+        | 'ACCRUAL'
+        | 'CARRY_FORWARD'
+        | 'EXPIRATION'
+        | 'DEDUCTION'
+        | 'RESTORATION'
+        | 'ADJUSTMENT';
       readonly leaveRequestId: CodecTypes['pg/text@1']['input'] | null;
       readonly leaveTypeId: CodecTypes['pg/text@1']['input'];
+      readonly minutes: CodecTypes['pg/int4@1']['input'] | null;
       readonly notes: CodecTypes['pg/text@1']['input'] | null;
       readonly organizationId: CodecTypes['pg/text@1']['input'];
+      readonly policyId: CodecTypes['pg/text@1']['input'] | null;
       readonly units: CodecTypes['pg/int4@1']['input'];
     };
     readonly leave_requests: {
@@ -2215,6 +2455,7 @@ export type StorageColumnInputTypes = {
       readonly organizationId: CodecTypes['pg/text@1']['input'];
       readonly reason: CodecTypes['pg/text@1']['input'] | null;
       readonly rejectionReason: CodecTypes['pg/text@1']['input'] | null;
+      readonly requestedMinutes: CodecTypes['pg/int4@1']['input'] | null;
       readonly requestedUnits: CodecTypes['pg/int4@1']['input'];
       readonly reviewedAt: CodecTypes['pg/timestamptz-temporal@1']['input'] | null;
       readonly reviewedById: CodecTypes['pg/text@1']['input'] | null;
@@ -2252,6 +2493,8 @@ export type StorageColumnInputTypes = {
       readonly logoUrl: CodecTypes['pg/text@1']['input'] | null;
       readonly name: CodecTypes['pg/text@1']['input'];
       readonly slug: CodecTypes['pg/text@1']['input'];
+      readonly timezone: CodecTypes['pg/text@1']['input'];
+      readonly unpaidLeaveDeductionsEnabled: CodecTypes['pg/bool@1']['input'];
       readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
       readonly website: CodecTypes['pg/text@1']['input'] | null;
     };
@@ -2339,6 +2582,7 @@ export type StorageColumnInputTypes = {
       readonly payrollEntryId: CodecTypes['pg/text@1']['input'];
       readonly rateSnapshot: CodecTypes['pg/numeric@1']['input'] | null;
       readonly sortOrder: CodecTypes['pg/int4@1']['input'];
+      readonly sourceLeaveRequestId: CodecTypes['pg/text@1']['input'] | null;
       readonly sourceMinutes: CodecTypes['pg/int4@1']['input'] | null;
       readonly sourceOvertimeRequestId: CodecTypes['pg/text@1']['input'] | null;
       readonly sourceSalaryComponentId: CodecTypes['pg/text@1']['input'] | null;
@@ -2550,17 +2794,21 @@ export type StorageColumnInputTypes = {
       readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
     };
     readonly work_schedules: {
+      readonly breakMinutes: CodecTypes['pg/int4@1']['input'];
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
       readonly effectiveFrom: CodecTypes['pg/timestamptz-temporal@1']['input'];
       readonly effectiveTo: CodecTypes['pg/timestamptz-temporal@1']['input'] | null;
       readonly employeeId: CodecTypes['pg/text@1']['input'];
       readonly expectedDailyMinutes: CodecTypes['pg/int4@1']['input'];
       readonly id: CodecTypes['pg/text@1']['input'];
+      readonly isActive: CodecTypes['pg/bool@1']['input'];
+      readonly name: CodecTypes['pg/text@1']['input'];
       readonly organizationId: CodecTypes['pg/text@1']['input'];
       readonly scheduledEndTime: CodecTypes['pg/text@1']['input'];
       readonly scheduledStartTime: CodecTypes['pg/text@1']['input'];
       readonly timezone: CodecTypes['pg/text@1']['input'];
       readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly version: CodecTypes['pg/int4@1']['input'];
       readonly workdays: CodecTypes['pg/text@1']['input'];
     };
     readonly workforce_audit_events: {
@@ -2568,7 +2816,7 @@ export type StorageColumnInputTypes = {
       readonly actorId: CodecTypes['pg/text@1']['input'];
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
       readonly details: CodecTypes['pg/text@1']['input'] | null;
-      readonly employeeId: CodecTypes['pg/text@1']['input'];
+      readonly employeeId: CodecTypes['pg/text@1']['input'] | null;
       readonly entityId: CodecTypes['pg/text@1']['input'];
       readonly entityType: CodecTypes['pg/text@1']['input'];
       readonly id: CodecTypes['pg/text@1']['input'];
@@ -2578,6 +2826,34 @@ export type StorageColumnInputTypes = {
 };
 
 export namespace Models {
+  export type public_AttendanceCorrectionRequest = {
+    attendanceRecordId: CodecTypes['pg/text@1']['output'];
+    beforeSnapshot: CodecTypes['pg/text@1']['output'];
+    createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+    employeeId: CodecTypes['pg/text@1']['output'];
+    id: CodecTypes['pg/text@1']['output'];
+    organizationId: CodecTypes['pg/text@1']['output'];
+    payrollImpact: CodecTypes['pg/bool@1']['output'];
+    proposedCheckInAt: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
+    proposedCheckOutAt: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
+    proposedStatus: 'PRESENT' | 'ABSENT' | 'HALF_DAY' | 'ON_LEAVE' | 'HOLIDAY';
+    proposedWorkedMinutes: CodecTypes['pg/int4@1']['output'] | null;
+    reason: CodecTypes['pg/text@1']['output'];
+    requestedById: CodecTypes['pg/text@1']['output'];
+    reviewReason: CodecTypes['pg/text@1']['output'] | null;
+    reviewedAt: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
+    reviewedById: CodecTypes['pg/text@1']['output'] | null;
+    status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'CANCELLED';
+    updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+    version: CodecTypes['pg/int4@1']['output'];
+    attendanceRecord: public_AttendanceRecord;
+    employee: public_Employee;
+    organization: public_Organization;
+    requestedBy: public_User;
+    reviewedBy: public_User | null;
+    readonly [RelationKeys]?:
+      'attendanceRecord' | 'employee' | 'organization' | 'requestedBy' | 'reviewedBy';
+  };
   export type public_AttendanceRecord = {
     checkInAt: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
     checkOutAt: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
@@ -2595,11 +2871,13 @@ export namespace Models {
     version: CodecTypes['pg/int4@1']['output'];
     workDate: CodecTypes['pg/timestamptz-temporal@1']['output'];
     workedMinutes: CodecTypes['pg/int4@1']['output'] | null;
+    corrections: public_AttendanceCorrectionRequest[];
     createdBy: public_User;
     employee: public_Employee;
     organization: public_Organization;
     updatedBy: public_User;
-    readonly [RelationKeys]?: 'createdBy' | 'employee' | 'organization' | 'updatedBy';
+    readonly [RelationKeys]?:
+      'corrections' | 'createdBy' | 'employee' | 'organization' | 'updatedBy';
   };
   export type public_CashFlowForecastAuditEvent = {
     action: 'CONFIGURATION_UPDATED';
@@ -2678,6 +2956,7 @@ export namespace Models {
     version: CodecTypes['pg/int4@1']['output'];
     workEmail: CodecTypes['pg/text@1']['output'] | null;
     attendance: public_AttendanceRecord[];
+    attendanceCorrections: public_AttendanceCorrectionRequest[];
     auditEvents: public_EmployeeAuditEvent[];
     department: public_Department | null;
     directReports: public_Employee[];
@@ -2693,6 +2972,7 @@ export namespace Models {
     workforceEvents: public_WorkforceAuditEvent[];
     readonly [RelationKeys]?:
       | 'attendance'
+      | 'attendanceCorrections'
       | 'auditEvents'
       | 'department'
       | 'directReports'
@@ -2778,11 +3058,13 @@ export namespace Models {
   export type public_Holiday = {
     createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
     date: CodecTypes['pg/timestamptz-temporal@1']['output'];
+    durationMinutes: CodecTypes['pg/int4@1']['output'] | null;
     id: CodecTypes['pg/text@1']['output'];
     isRecurring: CodecTypes['pg/bool@1']['output'];
     name: CodecTypes['pg/text@1']['output'];
     organizationId: CodecTypes['pg/text@1']['output'];
     updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+    version: CodecTypes['pg/int4@1']['output'];
     organization: public_Organization;
     readonly [RelationKeys]?: 'organization';
   };
@@ -2851,21 +3133,57 @@ export namespace Models {
     invoice: public_Invoice;
     readonly [RelationKeys]?: 'invoice';
   };
+  export type public_LeaveAccrualPolicy = {
+    carryForwardCapMinutes: CodecTypes['pg/int4@1']['output'] | null;
+    carryForwardMode: 'NONE' | 'FULL' | 'CAPPED';
+    createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+    effectiveFrom: CodecTypes['pg/timestamptz-temporal@1']['output'];
+    effectiveTo: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
+    entitlementMinutes: CodecTypes['pg/int4@1']['output'];
+    expiresAfterMonths: CodecTypes['pg/int4@1']['output'] | null;
+    frequency: 'ANNUAL' | 'MONTHLY' | 'SERVICE_MONTHLY';
+    id: CodecTypes['pg/text@1']['output'];
+    isActive: CodecTypes['pg/bool@1']['output'];
+    leaveTypeId: CodecTypes['pg/text@1']['output'];
+    maximumBalanceMinutes: CodecTypes['pg/int4@1']['output'] | null;
+    name: CodecTypes['pg/text@1']['output'];
+    organizationId: CodecTypes['pg/text@1']['output'];
+    prorateNewJoiners: CodecTypes['pg/bool@1']['output'];
+    updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+    version: CodecTypes['pg/int4@1']['output'];
+    leaveType: public_LeaveType;
+    ledgerEntries: public_LeaveLedgerEntry[];
+    organization: public_Organization;
+    readonly [RelationKeys]?: 'leaveType' | 'ledgerEntries' | 'organization';
+  };
   export type public_LeaveLedgerEntry = {
     createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+    effectiveDate: CodecTypes['pg/timestamptz-temporal@1']['output'];
     employeeId: CodecTypes['pg/text@1']['output'];
+    expiresAt: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
     id: CodecTypes['pg/text@1']['output'];
-    kind: 'ALLOCATION' | 'DEDUCTION' | 'RESTORATION' | 'ADJUSTMENT';
+    idempotencyKey: CodecTypes['pg/text@1']['output'] | null;
+    kind:
+      | 'ALLOCATION'
+      | 'ACCRUAL'
+      | 'CARRY_FORWARD'
+      | 'EXPIRATION'
+      | 'DEDUCTION'
+      | 'RESTORATION'
+      | 'ADJUSTMENT';
     leaveRequestId: CodecTypes['pg/text@1']['output'] | null;
     leaveTypeId: CodecTypes['pg/text@1']['output'];
+    minutes: CodecTypes['pg/int4@1']['output'] | null;
     notes: CodecTypes['pg/text@1']['output'] | null;
     organizationId: CodecTypes['pg/text@1']['output'];
+    policyId: CodecTypes['pg/text@1']['output'] | null;
     units: CodecTypes['pg/int4@1']['output'];
     employee: public_Employee;
     leaveRequest: public_LeaveRequest | null;
     leaveType: public_LeaveType;
     organization: public_Organization;
-    readonly [RelationKeys]?: 'employee' | 'leaveRequest' | 'leaveType' | 'organization';
+    policy: public_LeaveAccrualPolicy | null;
+    readonly [RelationKeys]?: 'employee' | 'leaveRequest' | 'leaveType' | 'organization' | 'policy';
   };
   export type public_LeaveRequest = {
     createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
@@ -2877,6 +3195,7 @@ export namespace Models {
     organizationId: CodecTypes['pg/text@1']['output'];
     reason: CodecTypes['pg/text@1']['output'] | null;
     rejectionReason: CodecTypes['pg/text@1']['output'] | null;
+    requestedMinutes: CodecTypes['pg/int4@1']['output'] | null;
     requestedUnits: CodecTypes['pg/int4@1']['output'];
     reviewedAt: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
     reviewedById: CodecTypes['pg/text@1']['output'] | null;
@@ -2889,9 +3208,15 @@ export namespace Models {
     leaveType: public_LeaveType;
     ledgerEntries: public_LeaveLedgerEntry[];
     organization: public_Organization;
+    payrollComponents: public_PayrollEntryComponent[];
     reviewedBy: public_User | null;
     readonly [RelationKeys]?:
-      'employee' | 'leaveType' | 'ledgerEntries' | 'organization' | 'reviewedBy';
+      | 'employee'
+      | 'leaveType'
+      | 'ledgerEntries'
+      | 'organization'
+      | 'payrollComponents'
+      | 'reviewedBy';
   };
   export type public_LeaveType = {
     annualAllowanceUnits: CodecTypes['pg/int4@1']['output'];
@@ -2905,10 +3230,11 @@ export namespace Models {
     organizationId: CodecTypes['pg/text@1']['output'];
     requiresApproval: CodecTypes['pg/bool@1']['output'];
     updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+    accrualPolicies: public_LeaveAccrualPolicy[];
     ledgerEntries: public_LeaveLedgerEntry[];
     organization: public_Organization;
     requests: public_LeaveRequest[];
-    readonly [RelationKeys]?: 'ledgerEntries' | 'organization' | 'requests';
+    readonly [RelationKeys]?: 'accrualPolicies' | 'ledgerEntries' | 'organization' | 'requests';
   };
   export type public_Membership = {
     createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
@@ -2928,8 +3254,11 @@ export namespace Models {
     logoUrl: CodecTypes['pg/text@1']['output'] | null;
     name: CodecTypes['pg/text@1']['output'];
     slug: CodecTypes['pg/text@1']['output'];
+    timezone: CodecTypes['pg/text@1']['output'];
+    unpaidLeaveDeductionsEnabled: CodecTypes['pg/bool@1']['output'];
     updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
     website: CodecTypes['pg/text@1']['output'] | null;
+    attendanceCorrections: public_AttendanceCorrectionRequest[];
     attendanceRecords: public_AttendanceRecord[];
     cashFlowAuditEvents: public_CashFlowForecastAuditEvent[];
     cashFlowConfiguration: public_CashFlowForecastConfiguration | null;
@@ -2942,6 +3271,7 @@ export namespace Models {
     holidays: public_Holiday[];
     invoiceExports: public_InvoiceExport[];
     invoices: public_Invoice[];
+    leaveAccrualPolicies: public_LeaveAccrualPolicy[];
     leaveLedgerEntries: public_LeaveLedgerEntry[];
     leaveRequests: public_LeaveRequest[];
     leaveTypes: public_LeaveType[];
@@ -2965,6 +3295,7 @@ export namespace Models {
     workSchedules: public_WorkSchedule[];
     workforceAuditEvents: public_WorkforceAuditEvent[];
     readonly [RelationKeys]?:
+      | 'attendanceCorrections'
       | 'attendanceRecords'
       | 'cashFlowAuditEvents'
       | 'cashFlowConfiguration'
@@ -2977,6 +3308,7 @@ export namespace Models {
       | 'holidays'
       | 'invoiceExports'
       | 'invoices'
+      | 'leaveAccrualPolicies'
       | 'leaveLedgerEntries'
       | 'leaveRequests'
       | 'leaveTypes'
@@ -3112,13 +3444,15 @@ export namespace Models {
     payrollEntryId: CodecTypes['pg/text@1']['output'];
     rateSnapshot: Numeric<14, 4> | null;
     sortOrder: CodecTypes['pg/int4@1']['output'];
+    sourceLeaveRequestId: CodecTypes['pg/text@1']['output'] | null;
     sourceMinutes: CodecTypes['pg/int4@1']['output'] | null;
     sourceOvertimeRequestId: CodecTypes['pg/text@1']['output'] | null;
     sourceSalaryComponentId: CodecTypes['pg/text@1']['output'] | null;
     type: 'EARNING' | 'DEDUCTION';
     payrollEntry: public_PayrollEntry;
+    sourceLeaveRequest: public_LeaveRequest | null;
     sourceOvertimeRequest: public_OvertimeRequest | null;
-    readonly [RelationKeys]?: 'payrollEntry' | 'sourceOvertimeRequest';
+    readonly [RelationKeys]?: 'payrollEntry' | 'sourceLeaveRequest' | 'sourceOvertimeRequest';
   };
   export type public_PayrollNotification = {
     createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
@@ -3411,6 +3745,8 @@ export namespace Models {
     payrollScheduleEvents: public_PayrollScheduleEvent[];
     recurringScheduleEvents: public_RecurringScheduleEvent[];
     recurringSchedules: public_RecurringInvoiceSchedule[];
+    requestedAttendanceCorrections: public_AttendanceCorrectionRequest[];
+    reviewedAttendanceCorrections: public_AttendanceCorrectionRequest[];
     reviewedExpenses: public_Expense[];
     reviewedLeaveRequests: public_LeaveRequest[];
     reviewedOvertime: public_OvertimeRequest[];
@@ -3438,6 +3774,8 @@ export namespace Models {
       | 'payrollScheduleEvents'
       | 'recurringScheduleEvents'
       | 'recurringSchedules'
+      | 'requestedAttendanceCorrections'
+      | 'reviewedAttendanceCorrections'
       | 'reviewedExpenses'
       | 'reviewedLeaveRequests'
       | 'reviewedOvertime'
@@ -3447,17 +3785,21 @@ export namespace Models {
       | 'workforceAuditEvents';
   };
   export type public_WorkSchedule = {
+    breakMinutes: CodecTypes['pg/int4@1']['output'];
     createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
     effectiveFrom: CodecTypes['pg/timestamptz-temporal@1']['output'];
     effectiveTo: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
     employeeId: CodecTypes['pg/text@1']['output'];
     expectedDailyMinutes: CodecTypes['pg/int4@1']['output'];
     id: CodecTypes['pg/text@1']['output'];
+    isActive: CodecTypes['pg/bool@1']['output'];
+    name: CodecTypes['pg/text@1']['output'];
     organizationId: CodecTypes['pg/text@1']['output'];
     scheduledEndTime: CodecTypes['pg/text@1']['output'];
     scheduledStartTime: CodecTypes['pg/text@1']['output'];
     timezone: CodecTypes['pg/text@1']['output'];
     updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+    version: CodecTypes['pg/int4@1']['output'];
     workdays: CodecTypes['pg/text@1']['output'];
     employee: public_Employee;
     organization: public_Organization;
@@ -3468,13 +3810,13 @@ export namespace Models {
     actorId: CodecTypes['pg/text@1']['output'];
     createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
     details: CodecTypes['pg/text@1']['output'] | null;
-    employeeId: CodecTypes['pg/text@1']['output'];
+    employeeId: CodecTypes['pg/text@1']['output'] | null;
     entityId: CodecTypes['pg/text@1']['output'];
     entityType: CodecTypes['pg/text@1']['output'];
     id: CodecTypes['pg/text@1']['output'];
     organizationId: CodecTypes['pg/text@1']['output'];
     actor: public_User;
-    employee: public_Employee;
+    employee: public_Employee | null;
     organization: public_Organization;
     readonly [RelationKeys]?: 'actor' | 'employee' | 'organization';
   };
@@ -3482,6 +3824,7 @@ export namespace Models {
 
 export declare const models: {
   public: {
+    AttendanceCorrectionRequest: Models.public_AttendanceCorrectionRequest;
     AttendanceRecord: Models.public_AttendanceRecord;
     CashFlowForecastAuditEvent: Models.public_CashFlowForecastAuditEvent;
     CashFlowForecastConfiguration: Models.public_CashFlowForecastConfiguration;
@@ -3495,6 +3838,7 @@ export declare const models: {
     Invoice: Models.public_Invoice;
     InvoiceExport: Models.public_InvoiceExport;
     InvoiceItem: Models.public_InvoiceItem;
+    LeaveAccrualPolicy: Models.public_LeaveAccrualPolicy;
     LeaveLedgerEntry: Models.public_LeaveLedgerEntry;
     LeaveRequest: Models.public_LeaveRequest;
     LeaveType: Models.public_LeaveType;
@@ -3542,6 +3886,229 @@ type ContractBase = Omit<
         readonly kind: 'postgres-schema';
         readonly entries: {
           readonly table: {
+            readonly attendance_correction_requests: {
+              columns: {
+                readonly attendanceRecordId: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly beforeSnapshot: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly createdAt: {
+                  readonly nativeType: 'timestamptz';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                  readonly nullable: false;
+                  readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
+                };
+                readonly employeeId: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly id: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly organizationId: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly payrollImpact: {
+                  readonly nativeType: 'bool';
+                  readonly codecId: 'pg/bool@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/bool@1', false>;
+                  };
+                };
+                readonly proposedCheckInAt: {
+                  readonly nativeType: 'timestamptz';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                  readonly nullable: true;
+                };
+                readonly proposedCheckOutAt: {
+                  readonly nativeType: 'timestamptz';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                  readonly nullable: true;
+                };
+                readonly proposedStatus: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly proposedWorkedMinutes: {
+                  readonly nativeType: 'int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: true;
+                };
+                readonly reason: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly requestedById: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly reviewReason: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                };
+                readonly reviewedAt: {
+                  readonly nativeType: 'timestamptz';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                  readonly nullable: true;
+                };
+                readonly reviewedById: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                };
+                readonly status: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/text@1', 'PENDING'>;
+                  };
+                };
+                readonly updatedAt: {
+                  readonly nativeType: 'timestamptz';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                  readonly nullable: false;
+                };
+                readonly version: {
+                  readonly nativeType: 'int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/int4@1', 1>;
+                  };
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [{ readonly columns: readonly ['organizationId', 'id'] }];
+              indexes: readonly [
+                {
+                  readonly name: 'attendance_correction_employee_idx';
+                  readonly columns: readonly ['organizationId', 'employeeId', 'status'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'attendance_correction_record_idx';
+                  readonly columns: readonly ['organizationId', 'attendanceRecordId', 'status'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'attendance_correction_requests_organizationId_attendan_e3e17a38';
+                  readonly prefix: 'attendance_correction_requests_organizationId_attendan';
+                  readonly columns: readonly ['organizationId', 'attendanceRecordId'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'attendance_correction_requests_organizationId_employee_f6f89764';
+                  readonly prefix: 'attendance_correction_requests_organizationId_employee';
+                  readonly columns: readonly ['organizationId', 'employeeId'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'attendance_correction_requests_organizationId_idx_2e17ef41';
+                  readonly prefix: 'attendance_correction_requests_organizationId_idx';
+                  readonly columns: readonly ['organizationId'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'attendance_correction_requests_organizationId_requeste_5a2c1783';
+                  readonly prefix: 'attendance_correction_requests_organizationId_requeste';
+                  readonly columns: readonly ['organizationId', 'requestedById'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'attendance_correction_requests_organizationId_reviewed_82814071';
+                  readonly prefix: 'attendance_correction_requests_organizationId_reviewed';
+                  readonly columns: readonly ['organizationId', 'reviewedById'];
+                  readonly unique: false;
+                },
+              ];
+              foreignKeys: readonly [
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'attendance_correction_requests';
+                    readonly columns: readonly ['organizationId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'organizations';
+                    readonly columns: readonly ['id'];
+                  };
+                  readonly name: 'attendance_correction_org_fkey';
+                },
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'attendance_correction_requests';
+                    readonly columns: readonly ['organizationId', 'attendanceRecordId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'attendance_records';
+                    readonly columns: readonly ['organizationId', 'id'];
+                  };
+                  readonly name: 'attendance_correction_record_fkey';
+                },
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'attendance_correction_requests';
+                    readonly columns: readonly ['organizationId', 'employeeId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'employees';
+                    readonly columns: readonly ['organizationId', 'id'];
+                  };
+                  readonly name: 'attendance_correction_employee_fkey';
+                },
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'attendance_correction_requests';
+                    readonly columns: readonly ['organizationId', 'requestedById'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'users';
+                    readonly columns: readonly ['organizationId', 'id'];
+                  };
+                  readonly name: 'attendance_correction_requester_fkey';
+                },
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'attendance_correction_requests';
+                    readonly columns: readonly ['organizationId', 'reviewedById'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'users';
+                    readonly columns: readonly ['organizationId', 'id'];
+                  };
+                  readonly name: 'attendance_correction_reviewer_fkey';
+                },
+              ];
+            };
             readonly attendance_records: {
               columns: {
                 readonly checkInAt: {
@@ -4745,6 +5312,11 @@ type ContractBase = Omit<
                   readonly codecId: 'pg/timestamptz-temporal@1';
                   readonly nullable: false;
                 };
+                readonly durationMinutes: {
+                  readonly nativeType: 'int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: true;
+                };
                 readonly id: {
                   readonly nativeType: 'text';
                   readonly codecId: 'pg/text@1';
@@ -4773,6 +5345,15 @@ type ContractBase = Omit<
                   readonly nativeType: 'timestamptz';
                   readonly codecId: 'pg/timestamptz-temporal@1';
                   readonly nullable: false;
+                };
+                readonly version: {
+                  readonly nativeType: 'int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/int4@1', 1>;
+                  };
                 };
               };
               primaryKey: { readonly columns: readonly ['id'] };
@@ -5219,9 +5800,174 @@ type ContractBase = Omit<
                 },
               ];
             };
+            readonly leave_accrual_policies: {
+              columns: {
+                readonly carryForwardCapMinutes: {
+                  readonly nativeType: 'int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: true;
+                };
+                readonly carryForwardMode: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/text@1', 'NONE'>;
+                  };
+                };
+                readonly createdAt: {
+                  readonly nativeType: 'timestamptz';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                  readonly nullable: false;
+                  readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
+                };
+                readonly effectiveFrom: {
+                  readonly nativeType: 'timestamptz';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                  readonly nullable: false;
+                };
+                readonly effectiveTo: {
+                  readonly nativeType: 'timestamptz';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                  readonly nullable: true;
+                };
+                readonly entitlementMinutes: {
+                  readonly nativeType: 'int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                };
+                readonly expiresAfterMonths: {
+                  readonly nativeType: 'int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: true;
+                };
+                readonly frequency: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly id: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly isActive: {
+                  readonly nativeType: 'bool';
+                  readonly codecId: 'pg/bool@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/bool@1', true>;
+                  };
+                };
+                readonly leaveTypeId: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly maximumBalanceMinutes: {
+                  readonly nativeType: 'int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: true;
+                };
+                readonly name: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly organizationId: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly prorateNewJoiners: {
+                  readonly nativeType: 'bool';
+                  readonly codecId: 'pg/bool@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/bool@1', false>;
+                  };
+                };
+                readonly updatedAt: {
+                  readonly nativeType: 'timestamptz';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                  readonly nullable: false;
+                };
+                readonly version: {
+                  readonly nativeType: 'int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/int4@1', 1>;
+                  };
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [
+                { readonly columns: readonly ['organizationId', 'id'] },
+                {
+                  readonly columns: readonly ['organizationId', 'leaveTypeId', 'name'];
+                  readonly name: 'leave_policy_type_name_key';
+                },
+              ];
+              indexes: readonly [
+                {
+                  readonly name: 'leave_accrual_policies_organizationId_idx_2e17ef41';
+                  readonly prefix: 'leave_accrual_policies_organizationId_idx';
+                  readonly columns: readonly ['organizationId'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'leave_accrual_policies_organizationId_leaveTypeId_idx_bffb852c';
+                  readonly prefix: 'leave_accrual_policies_organizationId_leaveTypeId_idx';
+                  readonly columns: readonly ['organizationId', 'leaveTypeId'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'leave_policy_effective_idx';
+                  readonly columns: readonly ['organizationId', 'isActive', 'effectiveFrom'];
+                  readonly unique: false;
+                },
+              ];
+              foreignKeys: readonly [
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'leave_accrual_policies';
+                    readonly columns: readonly ['organizationId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'organizations';
+                    readonly columns: readonly ['id'];
+                  };
+                },
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'leave_accrual_policies';
+                    readonly columns: readonly ['organizationId', 'leaveTypeId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'leave_types';
+                    readonly columns: readonly ['organizationId', 'id'];
+                  };
+                },
+              ];
+            };
             readonly leave_ledger_entries: {
               columns: {
                 readonly createdAt: {
+                  readonly nativeType: 'timestamptz';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                  readonly nullable: false;
+                  readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
+                };
+                readonly effectiveDate: {
                   readonly nativeType: 'timestamptz';
                   readonly codecId: 'pg/timestamptz-temporal@1';
                   readonly nullable: false;
@@ -5232,10 +5978,20 @@ type ContractBase = Omit<
                   readonly codecId: 'pg/text@1';
                   readonly nullable: false;
                 };
+                readonly expiresAt: {
+                  readonly nativeType: 'timestamptz';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                  readonly nullable: true;
+                };
                 readonly id: {
                   readonly nativeType: 'text';
                   readonly codecId: 'pg/text@1';
                   readonly nullable: false;
+                };
+                readonly idempotencyKey: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
                 };
                 readonly kind: {
                   readonly nativeType: 'text';
@@ -5252,6 +6008,11 @@ type ContractBase = Omit<
                   readonly codecId: 'pg/text@1';
                   readonly nullable: false;
                 };
+                readonly minutes: {
+                  readonly nativeType: 'int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: true;
+                };
                 readonly notes: {
                   readonly nativeType: 'text';
                   readonly codecId: 'pg/text@1';
@@ -5262,6 +6023,11 @@ type ContractBase = Omit<
                   readonly codecId: 'pg/text@1';
                   readonly nullable: false;
                 };
+                readonly policyId: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                };
                 readonly units: {
                   readonly nativeType: 'int4';
                   readonly codecId: 'pg/int4@1';
@@ -5271,11 +6037,20 @@ type ContractBase = Omit<
               primaryKey: { readonly columns: readonly ['id'] };
               uniques: readonly [
                 {
+                  readonly columns: readonly ['organizationId', 'idempotencyKey'];
+                  readonly name: 'leave_ledger_idempotency_key';
+                },
+                {
                   readonly columns: readonly ['organizationId', 'leaveRequestId', 'kind'];
                   readonly name: 'leave_ledger_request_kind_key';
                 },
               ];
               indexes: readonly [
+                {
+                  readonly name: 'leave_ledger_effective_idx';
+                  readonly columns: readonly ['organizationId', 'effectiveDate'];
+                  readonly unique: false;
+                },
                 {
                   readonly name: 'leave_ledger_employee_type_idx';
                   readonly columns: readonly ['organizationId', 'employeeId', 'leaveTypeId'];
@@ -5303,6 +6078,12 @@ type ContractBase = Omit<
                   readonly name: 'leave_ledger_entries_organizationId_leaveTypeId_idx_bffb852c';
                   readonly prefix: 'leave_ledger_entries_organizationId_leaveTypeId_idx';
                   readonly columns: readonly ['organizationId', 'leaveTypeId'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'leave_ledger_entries_organizationId_policyId_idx_977575fb';
+                  readonly prefix: 'leave_ledger_entries_organizationId_policyId_idx';
+                  readonly columns: readonly ['organizationId', 'policyId'];
                   readonly unique: false;
                 },
               ];
@@ -5352,6 +6133,18 @@ type ContractBase = Omit<
                   readonly target: {
                     readonly namespaceId: 'public' & NamespaceId;
                     readonly tableName: 'leave_requests';
+                    readonly columns: readonly ['organizationId', 'id'];
+                  };
+                },
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'leave_ledger_entries';
+                    readonly columns: readonly ['organizationId', 'policyId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'leave_accrual_policies';
                     readonly columns: readonly ['organizationId', 'id'];
                   };
                 },
@@ -5407,6 +6200,11 @@ type ContractBase = Omit<
                 readonly rejectionReason: {
                   readonly nativeType: 'text';
                   readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                };
+                readonly requestedMinutes: {
+                  readonly nativeType: 'int4';
+                  readonly codecId: 'pg/int4@1';
                   readonly nullable: true;
                 };
                 readonly requestedUnits: {
@@ -5767,6 +6565,24 @@ type ContractBase = Omit<
                   readonly nativeType: 'text';
                   readonly codecId: 'pg/text@1';
                   readonly nullable: false;
+                };
+                readonly timezone: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/text@1', 'UTC'>;
+                  };
+                };
+                readonly unpaidLeaveDeductionsEnabled: {
+                  readonly nativeType: 'bool';
+                  readonly codecId: 'pg/bool@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/bool@1', false>;
+                  };
                 };
                 readonly updatedAt: {
                   readonly nativeType: 'timestamptz';
@@ -6447,6 +7263,11 @@ type ContractBase = Omit<
                     readonly value: DefaultLiteralValue<'pg/int4@1', 0>;
                   };
                 };
+                readonly sourceLeaveRequestId: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                };
                 readonly sourceMinutes: {
                   readonly nativeType: 'int4';
                   readonly codecId: 'pg/int4@1';
@@ -6470,6 +7291,10 @@ type ContractBase = Omit<
               };
               primaryKey: { readonly columns: readonly ['id'] };
               uniques: readonly [
+                {
+                  readonly columns: readonly ['organizationId', 'sourceLeaveRequestId'];
+                  readonly name: 'payroll_component_leave_key';
+                },
                 {
                   readonly columns: readonly ['organizationId', 'sourceOvertimeRequestId'];
                   readonly name: 'payroll_component_overtime_key';
@@ -6507,6 +7332,19 @@ type ContractBase = Omit<
                     readonly columns: readonly ['organizationId', 'id'];
                   };
                   readonly name: 'payroll_component_overtime_fkey';
+                },
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'payroll_entry_components';
+                    readonly columns: readonly ['organizationId', 'sourceLeaveRequestId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'leave_requests';
+                    readonly columns: readonly ['organizationId', 'id'];
+                  };
+                  readonly name: 'payroll_component_leave_fkey';
                 },
               ];
             };
@@ -8303,6 +9141,15 @@ type ContractBase = Omit<
             };
             readonly work_schedules: {
               columns: {
+                readonly breakMinutes: {
+                  readonly nativeType: 'int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/int4@1', 0>;
+                  };
+                };
                 readonly createdAt: {
                   readonly nativeType: 'timestamptz';
                   readonly codecId: 'pg/timestamptz-temporal@1';
@@ -8334,6 +9181,24 @@ type ContractBase = Omit<
                   readonly codecId: 'pg/text@1';
                   readonly nullable: false;
                 };
+                readonly isActive: {
+                  readonly nativeType: 'bool';
+                  readonly codecId: 'pg/bool@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/bool@1', true>;
+                  };
+                };
+                readonly name: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/text@1', 'Standard schedule'>;
+                  };
+                };
                 readonly organizationId: {
                   readonly nativeType: 'text';
                   readonly codecId: 'pg/text@1';
@@ -8358,6 +9223,15 @@ type ContractBase = Omit<
                   readonly nativeType: 'timestamptz';
                   readonly codecId: 'pg/timestamptz-temporal@1';
                   readonly nullable: false;
+                };
+                readonly version: {
+                  readonly nativeType: 'int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/int4@1', 1>;
+                  };
                 };
                 readonly workdays: {
                   readonly nativeType: 'text';
@@ -8439,7 +9313,7 @@ type ContractBase = Omit<
                 readonly employeeId: {
                   readonly nativeType: 'text';
                   readonly codecId: 'pg/text@1';
-                  readonly nullable: false;
+                  readonly nullable: true;
                 };
                 readonly entityId: {
                   readonly nativeType: 'text';
@@ -8535,6 +9409,10 @@ type ContractBase = Omit<
             };
           };
           readonly valueSet: {
+            readonly AttendanceCorrectionStatus: {
+              readonly kind: 'valueSet';
+              readonly values: readonly ['PENDING', 'APPROVED', 'REJECTED', 'CANCELLED'];
+            };
             readonly AttendanceSource: {
               readonly kind: 'valueSet';
               readonly values: readonly ['MANUAL', 'SELF_SERVICE'];
@@ -8604,13 +9482,29 @@ type ContractBase = Omit<
                 'CANCELLED',
               ];
             };
+            readonly LeaveAccrualFrequency: {
+              readonly kind: 'valueSet';
+              readonly values: readonly ['ANNUAL', 'MONTHLY', 'SERVICE_MONTHLY'];
+            };
+            readonly LeaveCarryForwardMode: {
+              readonly kind: 'valueSet';
+              readonly values: readonly ['NONE', 'FULL', 'CAPPED'];
+            };
             readonly LeaveDayPortion: {
               readonly kind: 'valueSet';
               readonly values: readonly ['FULL_DAY', 'HALF_DAY'];
             };
             readonly LeaveLedgerKind: {
               readonly kind: 'valueSet';
-              readonly values: readonly ['ALLOCATION', 'DEDUCTION', 'RESTORATION', 'ADJUSTMENT'];
+              readonly values: readonly [
+                'ALLOCATION',
+                'ACCRUAL',
+                'CARRY_FORWARD',
+                'EXPIRATION',
+                'DEDUCTION',
+                'RESTORATION',
+                'ADJUSTMENT',
+              ];
             };
             readonly LeaveRequestStatus: {
               readonly kind: 'valueSet';
@@ -8758,6 +9652,10 @@ type ContractBase = Omit<
   readonly target: 'postgres';
   readonly targetFamily: 'sql';
   readonly roots: {
+    readonly attendance_correction_requests: {
+      readonly namespace: 'public' & NamespaceId;
+      readonly model: 'AttendanceCorrectionRequest';
+    };
     readonly attendance_records: {
       readonly namespace: 'public' & NamespaceId;
       readonly model: 'AttendanceRecord';
@@ -8795,6 +9693,10 @@ type ContractBase = Omit<
       readonly model: 'InvoiceItem';
     };
     readonly invoices: { readonly namespace: 'public' & NamespaceId; readonly model: 'Invoice' };
+    readonly leave_accrual_policies: {
+      readonly namespace: 'public' & NamespaceId;
+      readonly model: 'LeaveAccrualPolicy';
+    };
     readonly leave_ledger_entries: {
       readonly namespace: 'public' & NamespaceId;
       readonly model: 'LeaveLedgerEntry';
@@ -8895,6 +9797,182 @@ type ContractBase = Omit<
     readonly namespaces: {
       readonly public: {
         readonly models: {
+          readonly AttendanceCorrectionRequest: {
+            readonly fields: {
+              readonly attendanceRecordId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly beforeSnapshot: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly createdAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                };
+              };
+              readonly employeeId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly organizationId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly payrollImpact: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/bool@1' };
+              };
+              readonly proposedCheckInAt: {
+                readonly nullable: true;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                };
+              };
+              readonly proposedCheckOutAt: {
+                readonly nullable: true;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                };
+              };
+              readonly proposedStatus: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly proposedWorkedMinutes: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly reason: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly requestedById: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly reviewReason: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly reviewedAt: {
+                readonly nullable: true;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                };
+              };
+              readonly reviewedById: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly status: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly updatedAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                };
+              };
+              readonly version: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+            };
+            readonly relations: {
+              readonly attendanceRecord: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'AttendanceRecord';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['organizationId', 'attendanceRecordId'];
+                  readonly targetFields: readonly ['organizationId', 'id'];
+                };
+              };
+              readonly employee: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'Employee';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['organizationId', 'employeeId'];
+                  readonly targetFields: readonly ['organizationId', 'id'];
+                };
+              };
+              readonly organization: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'Organization';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['organizationId'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
+              readonly requestedBy: {
+                readonly to: { readonly namespace: 'public' & NamespaceId; readonly model: 'User' };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['organizationId', 'requestedById'];
+                  readonly targetFields: readonly ['organizationId', 'id'];
+                };
+              };
+              readonly reviewedBy: {
+                readonly to: { readonly namespace: 'public' & NamespaceId; readonly model: 'User' };
+                readonly cardinality: 'N:1';
+                readonly nullable: true;
+                readonly on: {
+                  readonly localFields: readonly ['organizationId', 'reviewedById'];
+                  readonly targetFields: readonly ['organizationId', 'id'];
+                };
+              };
+            };
+            readonly storage: {
+              readonly table: 'attendance_correction_requests';
+              readonly namespaceId: 'public';
+              readonly fields: {
+                readonly attendanceRecordId: { readonly column: 'attendanceRecordId' };
+                readonly beforeSnapshot: { readonly column: 'beforeSnapshot' };
+                readonly createdAt: { readonly column: 'createdAt' };
+                readonly employeeId: { readonly column: 'employeeId' };
+                readonly id: { readonly column: 'id' };
+                readonly organizationId: { readonly column: 'organizationId' };
+                readonly payrollImpact: { readonly column: 'payrollImpact' };
+                readonly proposedCheckInAt: { readonly column: 'proposedCheckInAt' };
+                readonly proposedCheckOutAt: { readonly column: 'proposedCheckOutAt' };
+                readonly proposedStatus: { readonly column: 'proposedStatus' };
+                readonly proposedWorkedMinutes: { readonly column: 'proposedWorkedMinutes' };
+                readonly reason: { readonly column: 'reason' };
+                readonly requestedById: { readonly column: 'requestedById' };
+                readonly reviewReason: { readonly column: 'reviewReason' };
+                readonly reviewedAt: { readonly column: 'reviewedAt' };
+                readonly reviewedById: { readonly column: 'reviewedById' };
+                readonly status: { readonly column: 'status' };
+                readonly updatedAt: { readonly column: 'updatedAt' };
+                readonly version: { readonly column: 'version' };
+              };
+            };
+          };
           readonly AttendanceRecord: {
             readonly fields: {
               readonly checkInAt: {
@@ -8978,6 +10056,17 @@ type ContractBase = Omit<
               };
             };
             readonly relations: {
+              readonly corrections: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'AttendanceCorrectionRequest';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['organizationId', 'id'];
+                  readonly targetFields: readonly ['organizationId', 'attendanceRecordId'];
+                };
+              };
               readonly createdBy: {
                 readonly to: { readonly namespace: 'public' & NamespaceId; readonly model: 'User' };
                 readonly cardinality: 'N:1';
@@ -9496,6 +10585,17 @@ type ContractBase = Omit<
                 readonly to: {
                   readonly namespace: 'public' & NamespaceId;
                   readonly model: 'AttendanceRecord';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['organizationId', 'id'];
+                  readonly targetFields: readonly ['organizationId', 'employeeId'];
+                };
+              };
+              readonly attendanceCorrections: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'AttendanceCorrectionRequest';
                 };
                 readonly cardinality: '1:N';
                 readonly on: {
@@ -10067,6 +11167,10 @@ type ContractBase = Omit<
                   readonly codecId: 'pg/timestamptz-temporal@1';
                 };
               };
+              readonly durationMinutes: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
               readonly id: {
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
@@ -10090,6 +11194,10 @@ type ContractBase = Omit<
                   readonly codecId: 'pg/timestamptz-temporal@1';
                 };
               };
+              readonly version: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
             };
             readonly relations: {
               readonly organization: {
@@ -10111,11 +11219,13 @@ type ContractBase = Omit<
               readonly fields: {
                 readonly createdAt: { readonly column: 'createdAt' };
                 readonly date: { readonly column: 'date' };
+                readonly durationMinutes: { readonly column: 'durationMinutes' };
                 readonly id: { readonly column: 'id' };
                 readonly isRecurring: { readonly column: 'isRecurring' };
                 readonly name: { readonly column: 'name' };
                 readonly organizationId: { readonly column: 'organizationId' };
                 readonly updatedAt: { readonly column: 'updatedAt' };
+                readonly version: { readonly column: 'version' };
               };
             };
           };
@@ -10524,9 +11634,160 @@ type ContractBase = Omit<
               };
             };
           };
+          readonly LeaveAccrualPolicy: {
+            readonly fields: {
+              readonly carryForwardCapMinutes: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly carryForwardMode: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly createdAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                };
+              };
+              readonly effectiveFrom: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                };
+              };
+              readonly effectiveTo: {
+                readonly nullable: true;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                };
+              };
+              readonly entitlementMinutes: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly expiresAfterMonths: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly frequency: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly isActive: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/bool@1' };
+              };
+              readonly leaveTypeId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly maximumBalanceMinutes: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly name: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly organizationId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly prorateNewJoiners: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/bool@1' };
+              };
+              readonly updatedAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                };
+              };
+              readonly version: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+            };
+            readonly relations: {
+              readonly leaveType: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'LeaveType';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['organizationId', 'leaveTypeId'];
+                  readonly targetFields: readonly ['organizationId', 'id'];
+                };
+              };
+              readonly ledgerEntries: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'LeaveLedgerEntry';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['organizationId', 'id'];
+                  readonly targetFields: readonly ['organizationId', 'policyId'];
+                };
+              };
+              readonly organization: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'Organization';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['organizationId'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
+            };
+            readonly storage: {
+              readonly table: 'leave_accrual_policies';
+              readonly namespaceId: 'public';
+              readonly fields: {
+                readonly carryForwardCapMinutes: { readonly column: 'carryForwardCapMinutes' };
+                readonly carryForwardMode: { readonly column: 'carryForwardMode' };
+                readonly createdAt: { readonly column: 'createdAt' };
+                readonly effectiveFrom: { readonly column: 'effectiveFrom' };
+                readonly effectiveTo: { readonly column: 'effectiveTo' };
+                readonly entitlementMinutes: { readonly column: 'entitlementMinutes' };
+                readonly expiresAfterMonths: { readonly column: 'expiresAfterMonths' };
+                readonly frequency: { readonly column: 'frequency' };
+                readonly id: { readonly column: 'id' };
+                readonly isActive: { readonly column: 'isActive' };
+                readonly leaveTypeId: { readonly column: 'leaveTypeId' };
+                readonly maximumBalanceMinutes: { readonly column: 'maximumBalanceMinutes' };
+                readonly name: { readonly column: 'name' };
+                readonly organizationId: { readonly column: 'organizationId' };
+                readonly prorateNewJoiners: { readonly column: 'prorateNewJoiners' };
+                readonly updatedAt: { readonly column: 'updatedAt' };
+                readonly version: { readonly column: 'version' };
+              };
+            };
+          };
           readonly LeaveLedgerEntry: {
             readonly fields: {
               readonly createdAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                };
+              };
+              readonly effectiveDate: {
                 readonly nullable: false;
                 readonly type: {
                   readonly kind: 'scalar';
@@ -10537,8 +11798,19 @@ type ContractBase = Omit<
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
+              readonly expiresAt: {
+                readonly nullable: true;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                };
+              };
               readonly id: {
                 readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly idempotencyKey: {
+                readonly nullable: true;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
               readonly kind: {
@@ -10553,12 +11825,20 @@ type ContractBase = Omit<
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
+              readonly minutes: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
               readonly notes: {
                 readonly nullable: true;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
               readonly organizationId: {
                 readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly policyId: {
+                readonly nullable: true;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
               readonly units: {
@@ -10615,19 +11895,36 @@ type ContractBase = Omit<
                   readonly targetFields: readonly ['id'];
                 };
               };
+              readonly policy: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'LeaveAccrualPolicy';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: true;
+                readonly on: {
+                  readonly localFields: readonly ['organizationId', 'policyId'];
+                  readonly targetFields: readonly ['organizationId', 'id'];
+                };
+              };
             };
             readonly storage: {
               readonly table: 'leave_ledger_entries';
               readonly namespaceId: 'public';
               readonly fields: {
                 readonly createdAt: { readonly column: 'createdAt' };
+                readonly effectiveDate: { readonly column: 'effectiveDate' };
                 readonly employeeId: { readonly column: 'employeeId' };
+                readonly expiresAt: { readonly column: 'expiresAt' };
                 readonly id: { readonly column: 'id' };
+                readonly idempotencyKey: { readonly column: 'idempotencyKey' };
                 readonly kind: { readonly column: 'kind' };
                 readonly leaveRequestId: { readonly column: 'leaveRequestId' };
                 readonly leaveTypeId: { readonly column: 'leaveTypeId' };
+                readonly minutes: { readonly column: 'minutes' };
                 readonly notes: { readonly column: 'notes' };
                 readonly organizationId: { readonly column: 'organizationId' };
+                readonly policyId: { readonly column: 'policyId' };
                 readonly units: { readonly column: 'units' };
               };
             };
@@ -10675,6 +11972,10 @@ type ContractBase = Omit<
               readonly rejectionReason: {
                 readonly nullable: true;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly requestedMinutes: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
               };
               readonly requestedUnits: {
                 readonly nullable: false;
@@ -10769,6 +12070,17 @@ type ContractBase = Omit<
                   readonly targetFields: readonly ['id'];
                 };
               };
+              readonly payrollComponents: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'PayrollEntryComponent';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['organizationId', 'id'];
+                  readonly targetFields: readonly ['organizationId', 'sourceLeaveRequestId'];
+                };
+              };
               readonly reviewedBy: {
                 readonly to: { readonly namespace: 'public' & NamespaceId; readonly model: 'User' };
                 readonly cardinality: 'N:1';
@@ -10792,6 +12104,7 @@ type ContractBase = Omit<
                 readonly organizationId: { readonly column: 'organizationId' };
                 readonly reason: { readonly column: 'reason' };
                 readonly rejectionReason: { readonly column: 'rejectionReason' };
+                readonly requestedMinutes: { readonly column: 'requestedMinutes' };
                 readonly requestedUnits: { readonly column: 'requestedUnits' };
                 readonly reviewedAt: { readonly column: 'reviewedAt' };
                 readonly reviewedById: { readonly column: 'reviewedById' };
@@ -10857,6 +12170,17 @@ type ContractBase = Omit<
               };
             };
             readonly relations: {
+              readonly accrualPolicies: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'LeaveAccrualPolicy';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['organizationId', 'id'];
+                  readonly targetFields: readonly ['organizationId', 'leaveTypeId'];
+                };
+              };
               readonly ledgerEntries: {
                 readonly to: {
                   readonly namespace: 'public' & NamespaceId;
@@ -11004,6 +12328,14 @@ type ContractBase = Omit<
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
+              readonly timezone: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly unpaidLeaveDeductionsEnabled: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/bool@1' };
+              };
               readonly updatedAt: {
                 readonly nullable: false;
                 readonly type: {
@@ -11017,6 +12349,17 @@ type ContractBase = Omit<
               };
             };
             readonly relations: {
+              readonly attendanceCorrections: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'AttendanceCorrectionRequest';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['organizationId'];
+                };
+              };
               readonly attendanceRecords: {
                 readonly to: {
                   readonly namespace: 'public' & NamespaceId;
@@ -11143,6 +12486,17 @@ type ContractBase = Omit<
                 readonly to: {
                   readonly namespace: 'public' & NamespaceId;
                   readonly model: 'Invoice';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['organizationId'];
+                };
+              };
+              readonly leaveAccrualPolicies: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'LeaveAccrualPolicy';
                 };
                 readonly cardinality: '1:N';
                 readonly on: {
@@ -11402,6 +12756,10 @@ type ContractBase = Omit<
                 readonly logoUrl: { readonly column: 'logoUrl' };
                 readonly name: { readonly column: 'name' };
                 readonly slug: { readonly column: 'slug' };
+                readonly timezone: { readonly column: 'timezone' };
+                readonly unpaidLeaveDeductionsEnabled: {
+                  readonly column: 'unpaidLeaveDeductionsEnabled';
+                };
                 readonly updatedAt: { readonly column: 'updatedAt' };
                 readonly website: { readonly column: 'website' };
               };
@@ -12037,6 +13395,10 @@ type ContractBase = Omit<
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
               };
+              readonly sourceLeaveRequestId: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
               readonly sourceMinutes: {
                 readonly nullable: true;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
@@ -12067,6 +13429,18 @@ type ContractBase = Omit<
                   readonly targetFields: readonly ['organizationId', 'id'];
                 };
               };
+              readonly sourceLeaveRequest: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'LeaveRequest';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: true;
+                readonly on: {
+                  readonly localFields: readonly ['organizationId', 'sourceLeaveRequestId'];
+                  readonly targetFields: readonly ['organizationId', 'id'];
+                };
+              };
               readonly sourceOvertimeRequest: {
                 readonly to: {
                   readonly namespace: 'public' & NamespaceId;
@@ -12093,6 +13467,7 @@ type ContractBase = Omit<
                 readonly payrollEntryId: { readonly column: 'payrollEntryId' };
                 readonly rateSnapshot: { readonly column: 'rateSnapshot' };
                 readonly sortOrder: { readonly column: 'sortOrder' };
+                readonly sourceLeaveRequestId: { readonly column: 'sourceLeaveRequestId' };
                 readonly sourceMinutes: { readonly column: 'sourceMinutes' };
                 readonly sourceOvertimeRequestId: { readonly column: 'sourceOvertimeRequestId' };
                 readonly sourceSalaryComponentId: { readonly column: 'sourceSalaryComponentId' };
@@ -13944,6 +15319,28 @@ type ContractBase = Omit<
                   readonly targetFields: readonly ['organizationId', 'createdById'];
                 };
               };
+              readonly requestedAttendanceCorrections: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'AttendanceCorrectionRequest';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['organizationId', 'id'];
+                  readonly targetFields: readonly ['organizationId', 'requestedById'];
+                };
+              };
+              readonly reviewedAttendanceCorrections: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'AttendanceCorrectionRequest';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['organizationId', 'id'];
+                  readonly targetFields: readonly ['organizationId', 'reviewedById'];
+                };
+              };
               readonly reviewedExpenses: {
                 readonly to: {
                   readonly namespace: 'public' & NamespaceId;
@@ -14065,7 +15462,7 @@ type ContractBase = Omit<
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
               readonly employeeId: {
-                readonly nullable: false;
+                readonly nullable: true;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
               readonly entityId: {
@@ -14101,7 +15498,7 @@ type ContractBase = Omit<
                   readonly model: 'Employee';
                 };
                 readonly cardinality: 'N:1';
-                readonly nullable: false;
+                readonly nullable: true;
                 readonly on: {
                   readonly localFields: readonly ['organizationId', 'employeeId'];
                   readonly targetFields: readonly ['organizationId', 'id'];
@@ -14138,6 +15535,10 @@ type ContractBase = Omit<
           };
           readonly WorkSchedule: {
             readonly fields: {
+              readonly breakMinutes: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
               readonly createdAt: {
                 readonly nullable: false;
                 readonly type: {
@@ -14171,6 +15572,14 @@ type ContractBase = Omit<
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
+              readonly isActive: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/bool@1' };
+              };
+              readonly name: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
               readonly organizationId: {
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
@@ -14193,6 +15602,10 @@ type ContractBase = Omit<
                   readonly kind: 'scalar';
                   readonly codecId: 'pg/timestamptz-temporal@1';
                 };
+              };
+              readonly version: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
               };
               readonly workdays: {
                 readonly nullable: false;
@@ -14229,23 +15642,36 @@ type ContractBase = Omit<
               readonly table: 'work_schedules';
               readonly namespaceId: 'public';
               readonly fields: {
+                readonly breakMinutes: { readonly column: 'breakMinutes' };
                 readonly createdAt: { readonly column: 'createdAt' };
                 readonly effectiveFrom: { readonly column: 'effectiveFrom' };
                 readonly effectiveTo: { readonly column: 'effectiveTo' };
                 readonly employeeId: { readonly column: 'employeeId' };
                 readonly expectedDailyMinutes: { readonly column: 'expectedDailyMinutes' };
                 readonly id: { readonly column: 'id' };
+                readonly isActive: { readonly column: 'isActive' };
+                readonly name: { readonly column: 'name' };
                 readonly organizationId: { readonly column: 'organizationId' };
                 readonly scheduledEndTime: { readonly column: 'scheduledEndTime' };
                 readonly scheduledStartTime: { readonly column: 'scheduledStartTime' };
                 readonly timezone: { readonly column: 'timezone' };
                 readonly updatedAt: { readonly column: 'updatedAt' };
+                readonly version: { readonly column: 'version' };
                 readonly workdays: { readonly column: 'workdays' };
               };
             };
           };
         };
         readonly enum: {
+          readonly AttendanceCorrectionStatus: {
+            readonly codecId: 'pg/text@1';
+            readonly members: readonly [
+              { readonly name: 'PENDING'; readonly value: 'PENDING' },
+              { readonly name: 'APPROVED'; readonly value: 'APPROVED' },
+              { readonly name: 'REJECTED'; readonly value: 'REJECTED' },
+              { readonly name: 'CANCELLED'; readonly value: 'CANCELLED' },
+            ];
+          };
           readonly AttendanceSource: {
             readonly codecId: 'pg/text@1';
             readonly members: readonly [
@@ -14356,6 +15782,22 @@ type ContractBase = Omit<
               { readonly name: 'CANCELLED'; readonly value: 'CANCELLED' },
             ];
           };
+          readonly LeaveAccrualFrequency: {
+            readonly codecId: 'pg/text@1';
+            readonly members: readonly [
+              { readonly name: 'ANNUAL'; readonly value: 'ANNUAL' },
+              { readonly name: 'MONTHLY'; readonly value: 'MONTHLY' },
+              { readonly name: 'SERVICE_MONTHLY'; readonly value: 'SERVICE_MONTHLY' },
+            ];
+          };
+          readonly LeaveCarryForwardMode: {
+            readonly codecId: 'pg/text@1';
+            readonly members: readonly [
+              { readonly name: 'NONE'; readonly value: 'NONE' },
+              { readonly name: 'FULL'; readonly value: 'FULL' },
+              { readonly name: 'CAPPED'; readonly value: 'CAPPED' },
+            ];
+          };
           readonly LeaveDayPortion: {
             readonly codecId: 'pg/text@1';
             readonly members: readonly [
@@ -14367,6 +15809,9 @@ type ContractBase = Omit<
             readonly codecId: 'pg/text@1';
             readonly members: readonly [
               { readonly name: 'ALLOCATION'; readonly value: 'ALLOCATION' },
+              { readonly name: 'ACCRUAL'; readonly value: 'ACCRUAL' },
+              { readonly name: 'CARRY_FORWARD'; readonly value: 'CARRY_FORWARD' },
+              { readonly name: 'EXPIRATION'; readonly value: 'EXPIRATION' },
               { readonly name: 'DEDUCTION'; readonly value: 'DEDUCTION' },
               { readonly name: 'RESTORATION'; readonly value: 'RESTORATION' },
               { readonly name: 'ADJUSTMENT'; readonly value: 'ADJUSTMENT' },
@@ -14601,6 +16046,23 @@ type ContractBase = Omit<
         {
           readonly onCreate: { readonly id: 'uuidv4'; readonly kind: 'generator' };
           readonly ref: {
+            readonly entry: 'attendance_correction_requests';
+            readonly field: 'id';
+            readonly namespace: 'public';
+          };
+        },
+        {
+          readonly onCreate: { readonly id: 'instantNow'; readonly kind: 'generator' };
+          readonly onUpdate: { readonly id: 'instantNow'; readonly kind: 'generator' };
+          readonly ref: {
+            readonly entry: 'attendance_correction_requests';
+            readonly field: 'updatedAt';
+            readonly namespace: 'public';
+          };
+        },
+        {
+          readonly onCreate: { readonly id: 'uuidv4'; readonly kind: 'generator' };
+          readonly ref: {
             readonly entry: 'attendance_records';
             readonly field: 'id';
             readonly namespace: 'public';
@@ -14771,6 +16233,23 @@ type ContractBase = Omit<
           readonly onUpdate: { readonly id: 'instantNow'; readonly kind: 'generator' };
           readonly ref: {
             readonly entry: 'invoices';
+            readonly field: 'updatedAt';
+            readonly namespace: 'public';
+          };
+        },
+        {
+          readonly onCreate: { readonly id: 'uuidv4'; readonly kind: 'generator' };
+          readonly ref: {
+            readonly entry: 'leave_accrual_policies';
+            readonly field: 'id';
+            readonly namespace: 'public';
+          };
+        },
+        {
+          readonly onCreate: { readonly id: 'instantNow'; readonly kind: 'generator' };
+          readonly onUpdate: { readonly id: 'instantNow'; readonly kind: 'generator' };
+          readonly ref: {
+            readonly entry: 'leave_accrual_policies';
             readonly field: 'updatedAt';
             readonly namespace: 'public';
           };

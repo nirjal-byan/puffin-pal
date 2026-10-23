@@ -50,6 +50,7 @@ import AttendancePage from "../attendance/page";
 import LeavePage from "../leave/page";
 import OvertimePage from "../overtime/page";
 import CashFlowPage from "../cash-flow/page";
+import WorkforcePage from "../workforce/page";
 
 export default function WorkspacePage({
   session,
@@ -148,6 +149,7 @@ export default function WorkspacePage({
       tab === "expenses" ||
       tab === "retainers" ||
       tab === "employees" ||
+      tab === "workforce" ||
       tab === "attendance" ||
       tab === "leave" ||
       tab === "overtime" ||
@@ -363,6 +365,12 @@ export default function WorkspacePage({
             <EmployeesPage
               api={api}
               currency={session.organization.currency}
+              permissions={session.permissions}
+              onSaved={recordNotification}
+            />
+          ) : tab === "workforce" ? (
+            <WorkforcePage
+              api={api}
               permissions={session.permissions}
               onSaved={recordNotification}
             />
