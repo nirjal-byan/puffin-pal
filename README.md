@@ -1,6 +1,4 @@
-<p align="center">
-  <img src="apps/web/public/puffinpal-logo-transparent.png" alt="PuffinPal" width="300" />
-</p>
+<img src="apps/web/public/puffinpal-icon.svg" alt="PuffinPal bird logo" width="80" />
 
 # PuffinPal
 
