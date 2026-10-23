@@ -331,6 +331,7 @@ export class PayrollService {
             type: component.type,
             amount: payrollAmount(component.amount),
             sourceSalaryComponentId: component.id,
+            statutoryClass: component.statutoryClass,
             sortOrder: component.sortOrder,
           });
         gross += moneyToCents(item.amounts.grossPay);
@@ -579,6 +580,7 @@ export class PayrollService {
           amount: payrollAmount(amount),
           sourceOvertimeRequestId: overtime.id,
           sourceMinutes: overtime.approvedMinutes,
+          statutoryClass: "TAXABLE_EARNING",
           rateSnapshot: overtime.approvedRateSnapshot,
           isAdjustment: true,
           sortOrder: 9000,
@@ -711,6 +713,7 @@ export class PayrollService {
           amount: payrollAmount(amount),
           sourceLeaveRequestId: leave.id,
           sourceMinutes: leaveMinutes,
+          statutoryClass: "PRE_TAX_DEDUCTION",
           isAdjustment: true,
           sortOrder: 9100,
         });
@@ -784,6 +787,27 @@ export class PayrollService {
         );
       if (to === "PENDING_APPROVAL" && run.employeeCount < 1)
         throw new BadRequestException("Calculate payroll before submitting it");
+      if (["PENDING_APPROVAL", "APPROVED", "FINALIZED"].includes(to)) {
+        const jurisdiction = (
+          await tx.orm.public.PayrollTaxJurisdiction.where({
+            organizationId,
+            isActive: true,
+          }).all()
+        )[0];
+        if (jurisdiction?.mandatoryCalculation) {
+          const entries = await tx.orm.public.PayrollEntry.where({
+            organizationId,
+            payrollRunId: id,
+          }).all();
+          const applications = await tx.orm.public.PayrollStatutoryApplication.where({
+            organizationId,
+          }).all();
+          if (entries.some((entry) => !applications.some((row) => row.payrollEntryId === entry.id)))
+            throw new ConflictException(
+              "Apply current statutory calculations to every payroll entry before continuing",
+            );
+        }
+      }
       if (to === "APPROVED" && run.createdById === this.userId)
         throw new ForbiddenException("The payroll creator cannot approve their own run");
       if (to === "FINALIZED") {

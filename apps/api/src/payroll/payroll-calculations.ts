@@ -3,7 +3,7 @@ import type { Numeric } from "@prisma/orm-postgres/target/codec-types";
 
 export type PayrollComponentInput = {
   name: string;
-  type: "EARNING" | "DEDUCTION";
+  type: "EARNING" | "DEDUCTION" | "EMPLOYER_CONTRIBUTION";
   amount: string;
   sortOrder?: number;
 };
@@ -71,7 +71,7 @@ export function calculateFixedPayroll(baseAmount: string, components: PayrollCom
   for (const component of components) {
     const amount = moneyToCents(component.amount);
     if (component.type === "EARNING") earnings += amount;
-    else deductions += amount;
+    else if (component.type === "DEDUCTION") deductions += amount;
   }
   const gross = base + earnings;
   const net = gross - deductions;

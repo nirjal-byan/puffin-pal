@@ -125,6 +125,35 @@ enum SalaryComponentType {
   DEDUCTION
 }
 
+enum StatutoryComponentClass {
+  TAXABLE_EARNING
+  NON_TAXABLE_EARNING
+  PRE_TAX_DEDUCTION
+  POST_TAX_DEDUCTION
+}
+
+enum StatutoryRuleStatus {
+  DRAFT
+  ACTIVE
+  SUPERSEDED
+}
+
+enum StatutoryRuleKind {
+  FLAT_WITHHOLDING
+  EMPLOYEE_CONTRIBUTION
+  EMPLOYER_CONTRIBUTION
+}
+
+enum StatutoryCalculationType {
+  RATE
+  FIXED_AMOUNT
+}
+
+enum StatutoryCalculationBase {
+  TAXABLE_EARNINGS
+  GROSS_EARNINGS
+}
+
 enum EmployeeAuditAction {
   CREATED
   UPDATED
@@ -145,6 +174,7 @@ enum PayrollRunStatus {
 enum PayrollComponentType {
   EARNING
   DEDUCTION
+  EMPLOYER_CONTRIBUTION
 }
 
 enum PayslipStatus {
@@ -323,6 +353,10 @@ model Organization {
   workforceAuditEvents         WorkforceAuditEvent[]
   cashFlowConfiguration        CashFlowForecastConfiguration?
   cashFlowAuditEvents          CashFlowForecastAuditEvent[]
+  taxJurisdictions             PayrollTaxJurisdiction[]
+  statutoryRuleSets            PayrollStatutoryRuleSet[]
+  statutoryApplications        PayrollStatutoryApplication[]
+  statutoryAuditEvents         PayrollStatutoryAuditEvent[]
 
   @@map("organizations")
 }
@@ -437,6 +471,10 @@ model User {
   workforceAuditEvents           WorkforceAuditEvent[]           @relation("WorkforceAuditActor")
   updatedCashFlowConfig          CashFlowForecastConfiguration[] @relation("CashFlowConfigurationUpdater")
   cashFlowAuditEvents            CashFlowForecastAuditEvent[]    @relation("CashFlowForecastAuditActor")
+  createdStatutoryRules          PayrollStatutoryRuleSet[]       @relation("StatutoryRuleCreator")
+  activatedStatutoryRules        PayrollStatutoryRuleSet[]       @relation("StatutoryRuleActivator")
+  appliedStatutoryCalculations   PayrollStatutoryApplication[]   @relation("StatutoryApplicationActor")
+  statutoryAuditEvents           PayrollStatutoryAuditEvent[]    @relation("StatutoryAuditActor")
 
   @@unique([organizationId, id])
   @@unique([organizationId, email])
@@ -534,19 +572,112 @@ model SalaryStructure {
 }
 
 model SalaryComponent {
-  id                String              @id @default(uuid())
+  id                String                   @id @default(uuid())
   organizationId    String
   salaryStructureId String
   name              String
   type              SalaryComponentType
   amount            Numeric(12, 2)
-  sortOrder         Int                 @default(0)
-  createdAt         DateTime            @default(now())
+  sortOrder         Int                      @default(0)
+  statutoryClass    StatutoryComponentClass?
+  createdAt         DateTime                 @default(now())
 
-  salaryStructure   SalaryStructure     @relation(fields: [organizationId, salaryStructureId], references: [organizationId, id], onDelete: Cascade)
+  salaryStructure   SalaryStructure          @relation(fields: [organizationId, salaryStructureId], references: [organizationId, id], onDelete: Cascade)
 
   @@index([organizationId, salaryStructureId], map: "salary_component_structure_idx")
   @@map("salary_components")
+}
+
+model PayrollTaxJurisdiction {
+  id                   String                    @id @default(uuid())
+  organizationId       String
+  countryCode          String
+  subdivisionCode      String?
+  currency             String
+  taxYearStartMonth    Int                       @default(1)
+  taxYearStartDay      Int                       @default(1)
+  mandatoryCalculation Boolean                   @default(false)
+  isActive             Boolean                   @default(true)
+  version              Int                       @default(1)
+  createdAt            DateTime                  @default(now())
+  updatedAt            temporal.updatedAt()
+
+  organization         Organization              @relation(fields: [organizationId], references: [id], onDelete: Cascade, map: "tax_jurisdiction_org_fkey")
+  ruleSets             PayrollStatutoryRuleSet[]
+
+  @@unique([organizationId, id])
+  @@unique([organizationId, countryCode, subdivisionCode], map: "tax_jurisdiction_region_key")
+  @@index([organizationId, isActive], map: "tax_jurisdiction_active_idx")
+  @@map("payroll_tax_jurisdictions")
+}
+
+model PayrollStatutoryRuleSet {
+  id             String                        @id @default(uuid())
+  organizationId String
+  jurisdictionId String
+  name           String
+  version        Int
+  status         StatutoryRuleStatus           @default(DRAFT)
+  effectiveFrom  DateTime
+  effectiveTo    DateTime?
+  periodsPerYear Int?
+  createdById    String
+  activatedById  String?
+  activatedAt    DateTime?
+  createdAt      DateTime                      @default(now())
+  updatedAt      temporal.updatedAt()
+
+  organization   Organization                  @relation(fields: [organizationId], references: [id], onDelete: Cascade, map: "stat_rule_org_fkey")
+  jurisdiction   PayrollTaxJurisdiction        @relation(fields: [organizationId, jurisdictionId], references: [organizationId, id], onDelete: Restrict, map: "stat_rule_jurisdiction_fkey")
+  createdBy      User                          @relation("StatutoryRuleCreator", fields: [organizationId, createdById], references: [organizationId, id], onDelete: Restrict, map: "stat_rule_creator_fkey")
+  activatedBy    User?                         @relation("StatutoryRuleActivator", fields: [organizationId, activatedById], references: [organizationId, id], onDelete: Restrict, map: "stat_rule_activator_fkey")
+  brackets       PayrollTaxBracket[]
+  rules          PayrollStatutoryRule[]
+  applications   PayrollStatutoryApplication[]
+
+  @@unique([organizationId, id])
+  @@unique([organizationId, jurisdictionId, name, version], map: "stat_rule_version_key")
+  @@index([organizationId, jurisdictionId, status, effectiveFrom], map: "stat_rule_effective_idx")
+  @@map("payroll_statutory_rule_sets")
+}
+
+model PayrollTaxBracket {
+  id             String                  @id @default(uuid())
+  organizationId String
+  ruleSetId      String
+  lowerBound     Numeric(14, 2)
+  upperBound     Numeric(14, 2)?
+  rate           Numeric(9, 6)
+  sortOrder      Int
+  createdAt      DateTime                @default(now())
+
+  ruleSet        PayrollStatutoryRuleSet @relation(fields: [organizationId, ruleSetId], references: [organizationId, id], onDelete: Cascade, map: "tax_bracket_rule_fkey")
+
+  @@unique([organizationId, ruleSetId, sortOrder], map: "tax_bracket_order_key")
+  @@index([organizationId, ruleSetId], map: "tax_bracket_rule_idx")
+  @@map("payroll_tax_brackets")
+}
+
+model PayrollStatutoryRule {
+  id              String                   @id @default(uuid())
+  organizationId  String
+  ruleSetId       String
+  name            String
+  kind            StatutoryRuleKind
+  calculationType StatutoryCalculationType
+  calculationBase StatutoryCalculationBase
+  rate            Numeric(9, 6)?
+  fixedAmount     Numeric(14, 2)?
+  minimumBase     Numeric(14, 2)?
+  maximumBase     Numeric(14, 2)?
+  contributionCap Numeric(14, 2)?
+  sortOrder       Int                      @default(0)
+  createdAt       DateTime                 @default(now())
+
+  ruleSet         PayrollStatutoryRuleSet  @relation(fields: [organizationId, ruleSetId], references: [organizationId, id], onDelete: Cascade, map: "stat_item_rule_set_fkey")
+
+  @@index([organizationId, ruleSetId], map: "stat_item_rule_set_idx")
+  @@map("payroll_statutory_rules")
 }
 
 model EmployeeAuditEvent {
@@ -702,35 +833,36 @@ model PayrollNotification {
 }
 
 model PayrollEntry {
-  id                 String                  @id @default(uuid())
-  organizationId     String
-  payrollRunId       String
-  employeeId         String
-  salaryStructureId  String
-  employeeName       String
-  employeeCode       String
-  departmentName     String?
-  jobTitle           String
-  compensationType   CompensationType
-  payFrequency       PayFrequency
-  baseAmount         Numeric(14, 2)
-  grossPay           Numeric(14, 2)
-  totalDeductions    Numeric(14, 2)
-  netPay             Numeric(14, 2)
-  payslipStatus      PayslipStatus           @default(PENDING)
-  payslipKey         String?
-  payslipFailureCode String?
-  version            Int                     @default(1)
-  createdAt          DateTime                @default(now())
-  updatedAt          temporal.updatedAt()
+  id                   String                       @id @default(uuid())
+  organizationId       String
+  payrollRunId         String
+  employeeId           String
+  salaryStructureId    String
+  employeeName         String
+  employeeCode         String
+  departmentName       String?
+  jobTitle             String
+  compensationType     CompensationType
+  payFrequency         PayFrequency
+  baseAmount           Numeric(14, 2)
+  grossPay             Numeric(14, 2)
+  totalDeductions      Numeric(14, 2)
+  netPay               Numeric(14, 2)
+  payslipStatus        PayslipStatus                @default(PENDING)
+  payslipKey           String?
+  payslipFailureCode   String?
+  version              Int                          @default(1)
+  createdAt            DateTime                     @default(now())
+  updatedAt            temporal.updatedAt()
 
-  organization       Organization            @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  payrollRun         PayrollRun              @relation(fields: [organizationId, payrollRunId], references: [organizationId, id], onDelete: Cascade)
-  employee           Employee                @relation(fields: [organizationId, employeeId], references: [organizationId, id], onDelete: Restrict)
-  salaryStructure    SalaryStructure         @relation(fields: [organizationId, salaryStructureId], references: [organizationId, id], onDelete: Restrict)
-  components         PayrollEntryComponent[]
-  payments           PayrollPayment[]
-  auditEvents        PayrollAuditEvent[]
+  organization         Organization                 @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  payrollRun           PayrollRun                   @relation(fields: [organizationId, payrollRunId], references: [organizationId, id], onDelete: Cascade)
+  employee             Employee                     @relation(fields: [organizationId, employeeId], references: [organizationId, id], onDelete: Restrict)
+  salaryStructure      SalaryStructure              @relation(fields: [organizationId, salaryStructureId], references: [organizationId, id], onDelete: Restrict)
+  components           PayrollEntryComponent[]
+  payments             PayrollPayment[]
+  auditEvents          PayrollAuditEvent[]
+  statutoryApplication PayrollStatutoryApplication?
 
   @@unique([organizationId, id])
   @@unique([organizationId, payrollRunId, employeeId])
@@ -739,7 +871,7 @@ model PayrollEntry {
 }
 
 model PayrollEntryComponent {
-  id                      String               @id @default(uuid())
+  id                      String                   @id @default(uuid())
   organizationId          String
   payrollEntryId          String
   name                    String
@@ -750,18 +882,70 @@ model PayrollEntryComponent {
   sourceLeaveRequestId    String?
   sourceMinutes           Int?
   rateSnapshot            Numeric(14, 4)?
-  isAdjustment            Boolean              @default(false)
-  sortOrder               Int                  @default(0)
-  createdAt               DateTime             @default(now())
+  isAdjustment            Boolean                  @default(false)
+  statutoryClass          StatutoryComponentClass?
+  statutoryRuleName       String?
+  statutoryRuleSetName    String?
+  statutoryJurisdiction   String?
+  calculationSnapshot     String?
+  sortOrder               Int                      @default(0)
+  createdAt               DateTime                 @default(now())
 
-  payrollEntry            PayrollEntry         @relation(fields: [organizationId, payrollEntryId], references: [organizationId, id], onDelete: Cascade)
-  sourceOvertimeRequest   OvertimeRequest?     @relation(fields: [organizationId, sourceOvertimeRequestId], references: [organizationId, id], onDelete: Restrict, map: "payroll_component_overtime_fkey")
-  sourceLeaveRequest      LeaveRequest?        @relation(fields: [organizationId, sourceLeaveRequestId], references: [organizationId, id], onDelete: Restrict, map: "payroll_component_leave_fkey")
+  payrollEntry            PayrollEntry             @relation(fields: [organizationId, payrollEntryId], references: [organizationId, id], onDelete: Cascade)
+  sourceOvertimeRequest   OvertimeRequest?         @relation(fields: [organizationId, sourceOvertimeRequestId], references: [organizationId, id], onDelete: Restrict, map: "payroll_component_overtime_fkey")
+  sourceLeaveRequest      LeaveRequest?            @relation(fields: [organizationId, sourceLeaveRequestId], references: [organizationId, id], onDelete: Restrict, map: "payroll_component_leave_fkey")
 
   @@unique([organizationId, sourceOvertimeRequestId], map: "payroll_component_overtime_key")
   @@unique([organizationId, sourceLeaveRequestId], map: "payroll_component_leave_key")
   @@index([organizationId, payrollEntryId], map: "payroll_component_entry_idx")
   @@map("payroll_entry_components")
+}
+
+model PayrollStatutoryApplication {
+  id                    String                  @id @default(uuid())
+  organizationId        String
+  payrollEntryId        String
+  ruleSetId             String
+  appliedById           String
+  inputHash             String
+  grossEarnings         Numeric(14, 2)
+  taxableEarnings       Numeric(14, 2)
+  nonTaxableEarnings    Numeric(14, 2)
+  preTaxDeductions      Numeric(14, 2)
+  taxWithholding        Numeric(14, 2)
+  employeeContributions Numeric(14, 2)
+  postTaxDeductions     Numeric(14, 2)
+  employerContributions Numeric(14, 2)
+  netPay                Numeric(14, 2)
+  totalEmployerCost     Numeric(14, 2)
+  calculationSnapshot   String
+  appliedAt             DateTime                @default(now())
+
+  organization          Organization            @relation(fields: [organizationId], references: [id], onDelete: Cascade, map: "stat_app_org_fkey")
+  payrollEntry          PayrollEntry            @relation(fields: [organizationId, payrollEntryId], references: [organizationId, id], onDelete: Cascade, map: "stat_app_entry_fkey")
+  ruleSet               PayrollStatutoryRuleSet @relation(fields: [organizationId, ruleSetId], references: [organizationId, id], onDelete: Restrict, map: "stat_app_rule_fkey")
+  appliedBy             User                    @relation("StatutoryApplicationActor", fields: [organizationId, appliedById], references: [organizationId, id], onDelete: Restrict, map: "stat_app_actor_fkey")
+
+  @@unique([organizationId, payrollEntryId], map: "stat_app_entry_key")
+  @@index([organizationId, ruleSetId], map: "stat_app_rule_idx")
+  @@map("payroll_statutory_applications")
+}
+
+model PayrollStatutoryAuditEvent {
+  id             String       @id @default(uuid())
+  organizationId String
+  actorId        String
+  entityType     String
+  entityId       String
+  action         String
+  details        String?
+  createdAt      DateTime     @default(now())
+
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade, map: "stat_audit_org_fkey")
+  actor          User         @relation("StatutoryAuditActor", fields: [organizationId, actorId], references: [organizationId, id], onDelete: Restrict, map: "stat_audit_actor_fkey")
+
+  @@index([organizationId, entityType, entityId, createdAt], map: "stat_audit_entity_idx")
+  @@map("payroll_statutory_audit_events")
 }
 
 model WorkSchedule {

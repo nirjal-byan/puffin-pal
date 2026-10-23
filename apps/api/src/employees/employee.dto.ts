@@ -72,6 +72,9 @@ export class SalaryComponentDto {
   @IsString() @Matches(/\S/) @MaxLength(100) name!: string;
   @IsIn(["EARNING", "DEDUCTION"]) type!: "EARNING" | "DEDUCTION";
   @Matches(MONEY) amount!: string;
+  @IsIn(["TAXABLE_EARNING", "NON_TAXABLE_EARNING", "PRE_TAX_DEDUCTION", "POST_TAX_DEDUCTION"])
+  statutoryClass!:
+    "TAXABLE_EARNING" | "NON_TAXABLE_EARNING" | "PRE_TAX_DEDUCTION" | "POST_TAX_DEDUCTION";
   @IsOptional() @IsInt() @Min(0) @Max(1000) sortOrder?: number;
 }
 

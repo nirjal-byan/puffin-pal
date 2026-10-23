@@ -128,6 +128,30 @@
       "model": "PayrollSchedule",
       "namespace": "public"
     },
+    "payroll_statutory_applications": {
+      "model": "PayrollStatutoryApplication",
+      "namespace": "public"
+    },
+    "payroll_statutory_audit_events": {
+      "model": "PayrollStatutoryAuditEvent",
+      "namespace": "public"
+    },
+    "payroll_statutory_rule_sets": {
+      "model": "PayrollStatutoryRuleSet",
+      "namespace": "public"
+    },
+    "payroll_statutory_rules": {
+      "model": "PayrollStatutoryRule",
+      "namespace": "public"
+    },
+    "payroll_tax_brackets": {
+      "model": "PayrollTaxBracket",
+      "namespace": "public"
+    },
+    "payroll_tax_jurisdictions": {
+      "model": "PayrollTaxJurisdiction",
+      "namespace": "public"
+    },
     "recurring_invoice_items": {
       "model": "RecurringInvoiceItem",
       "namespace": "public"
@@ -748,6 +772,10 @@
               {
                 "name": "DEDUCTION",
                 "value": "DEDUCTION"
+              },
+              {
+                "name": "EMPLOYER_CONTRIBUTION",
+                "value": "EMPLOYER_CONTRIBUTION"
               }
             ]
           },
@@ -1004,6 +1032,87 @@
               {
                 "name": "DEDUCTION",
                 "value": "DEDUCTION"
+              }
+            ]
+          },
+          "StatutoryCalculationBase": {
+            "codecId": "pg/text@1",
+            "members": [
+              {
+                "name": "TAXABLE_EARNINGS",
+                "value": "TAXABLE_EARNINGS"
+              },
+              {
+                "name": "GROSS_EARNINGS",
+                "value": "GROSS_EARNINGS"
+              }
+            ]
+          },
+          "StatutoryCalculationType": {
+            "codecId": "pg/text@1",
+            "members": [
+              {
+                "name": "RATE",
+                "value": "RATE"
+              },
+              {
+                "name": "FIXED_AMOUNT",
+                "value": "FIXED_AMOUNT"
+              }
+            ]
+          },
+          "StatutoryComponentClass": {
+            "codecId": "pg/text@1",
+            "members": [
+              {
+                "name": "TAXABLE_EARNING",
+                "value": "TAXABLE_EARNING"
+              },
+              {
+                "name": "NON_TAXABLE_EARNING",
+                "value": "NON_TAXABLE_EARNING"
+              },
+              {
+                "name": "PRE_TAX_DEDUCTION",
+                "value": "PRE_TAX_DEDUCTION"
+              },
+              {
+                "name": "POST_TAX_DEDUCTION",
+                "value": "POST_TAX_DEDUCTION"
+              }
+            ]
+          },
+          "StatutoryRuleKind": {
+            "codecId": "pg/text@1",
+            "members": [
+              {
+                "name": "FLAT_WITHHOLDING",
+                "value": "FLAT_WITHHOLDING"
+              },
+              {
+                "name": "EMPLOYEE_CONTRIBUTION",
+                "value": "EMPLOYEE_CONTRIBUTION"
+              },
+              {
+                "name": "EMPLOYER_CONTRIBUTION",
+                "value": "EMPLOYER_CONTRIBUTION"
+              }
+            ]
+          },
+          "StatutoryRuleStatus": {
+            "codecId": "pg/text@1",
+            "members": [
+              {
+                "name": "DRAFT",
+                "value": "DRAFT"
+              },
+              {
+                "name": "ACTIVE",
+                "value": "ACTIVE"
+              },
+              {
+                "name": "SUPERSEDED",
+                "value": "SUPERSEDED"
               }
             ]
           }
@@ -5731,6 +5840,66 @@
                   "namespace": "public"
                 }
               },
+              "statutoryApplications": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "organizationId"
+                  ]
+                },
+                "to": {
+                  "model": "PayrollStatutoryApplication",
+                  "namespace": "public"
+                }
+              },
+              "statutoryAuditEvents": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "organizationId"
+                  ]
+                },
+                "to": {
+                  "model": "PayrollStatutoryAuditEvent",
+                  "namespace": "public"
+                }
+              },
+              "statutoryRuleSets": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "organizationId"
+                  ]
+                },
+                "to": {
+                  "model": "PayrollStatutoryRuleSet",
+                  "namespace": "public"
+                }
+              },
+              "taxJurisdictions": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "organizationId"
+                  ]
+                },
+                "to": {
+                  "model": "PayrollTaxJurisdiction",
+                  "namespace": "public"
+                }
+              },
               "users": {
                 "cardinality": "1:N",
                 "on": {
@@ -6715,6 +6884,24 @@
                   "model": "SalaryStructure",
                   "namespace": "public"
                 }
+              },
+              "statutoryApplication": {
+                "cardinality": "1:1",
+                "nullable": true,
+                "on": {
+                  "localFields": [
+                    "organizationId",
+                    "id"
+                  ],
+                  "targetFields": [
+                    "organizationId",
+                    "payrollEntryId"
+                  ]
+                },
+                "to": {
+                  "model": "PayrollStatutoryApplication",
+                  "namespace": "public"
+                }
               }
             },
             "storage": {
@@ -6798,6 +6985,13 @@
                     "precision": 14,
                     "scale": 2
                   }
+                }
+              },
+              "calculationSnapshot": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
                 }
               },
               "createdAt": {
@@ -6888,6 +7082,40 @@
                   "kind": "scalar"
                 }
               },
+              "statutoryClass": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                },
+                "valueSet": {
+                  "entityKind": "enum",
+                  "entityName": "StatutoryComponentClass",
+                  "namespaceId": "public",
+                  "plane": "domain"
+                }
+              },
+              "statutoryJurisdiction": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "statutoryRuleName": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "statutoryRuleSetName": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
               "type": {
                 "nullable": false,
                 "type": {
@@ -6963,6 +7191,9 @@
                 "amount": {
                   "column": "amount"
                 },
+                "calculationSnapshot": {
+                  "column": "calculationSnapshot"
+                },
                 "createdAt": {
                   "column": "createdAt"
                 },
@@ -6998,6 +7229,18 @@
                 },
                 "sourceSalaryComponentId": {
                   "column": "sourceSalaryComponentId"
+                },
+                "statutoryClass": {
+                  "column": "statutoryClass"
+                },
+                "statutoryJurisdiction": {
+                  "column": "statutoryJurisdiction"
+                },
+                "statutoryRuleName": {
+                  "column": "statutoryRuleName"
+                },
+                "statutoryRuleSetName": {
+                  "column": "statutoryRuleSetName"
                 },
                 "type": {
                   "column": "type"
@@ -8362,6 +8605,1208 @@
               "table": "payroll_schedule_occurrences"
             }
           },
+          "PayrollStatutoryApplication": {
+            "fields": {
+              "appliedAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "kind": "scalar"
+                }
+              },
+              "appliedById": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "calculationSnapshot": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "employeeContributions": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/numeric@1",
+                  "kind": "scalar",
+                  "typeParams": {
+                    "precision": 14,
+                    "scale": 2
+                  }
+                }
+              },
+              "employerContributions": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/numeric@1",
+                  "kind": "scalar",
+                  "typeParams": {
+                    "precision": 14,
+                    "scale": 2
+                  }
+                }
+              },
+              "grossEarnings": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/numeric@1",
+                  "kind": "scalar",
+                  "typeParams": {
+                    "precision": 14,
+                    "scale": 2
+                  }
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "inputHash": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "netPay": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/numeric@1",
+                  "kind": "scalar",
+                  "typeParams": {
+                    "precision": 14,
+                    "scale": 2
+                  }
+                }
+              },
+              "nonTaxableEarnings": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/numeric@1",
+                  "kind": "scalar",
+                  "typeParams": {
+                    "precision": 14,
+                    "scale": 2
+                  }
+                }
+              },
+              "organizationId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "payrollEntryId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "postTaxDeductions": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/numeric@1",
+                  "kind": "scalar",
+                  "typeParams": {
+                    "precision": 14,
+                    "scale": 2
+                  }
+                }
+              },
+              "preTaxDeductions": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/numeric@1",
+                  "kind": "scalar",
+                  "typeParams": {
+                    "precision": 14,
+                    "scale": 2
+                  }
+                }
+              },
+              "ruleSetId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "taxWithholding": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/numeric@1",
+                  "kind": "scalar",
+                  "typeParams": {
+                    "precision": 14,
+                    "scale": 2
+                  }
+                }
+              },
+              "taxableEarnings": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/numeric@1",
+                  "kind": "scalar",
+                  "typeParams": {
+                    "precision": 14,
+                    "scale": 2
+                  }
+                }
+              },
+              "totalEmployerCost": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/numeric@1",
+                  "kind": "scalar",
+                  "typeParams": {
+                    "precision": 14,
+                    "scale": 2
+                  }
+                }
+              }
+            },
+            "relations": {
+              "appliedBy": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "organizationId",
+                    "appliedById"
+                  ],
+                  "targetFields": [
+                    "organizationId",
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "User",
+                  "namespace": "public"
+                }
+              },
+              "organization": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "organizationId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "Organization",
+                  "namespace": "public"
+                }
+              },
+              "payrollEntry": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "organizationId",
+                    "payrollEntryId"
+                  ],
+                  "targetFields": [
+                    "organizationId",
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "PayrollEntry",
+                  "namespace": "public"
+                }
+              },
+              "ruleSet": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "organizationId",
+                    "ruleSetId"
+                  ],
+                  "targetFields": [
+                    "organizationId",
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "PayrollStatutoryRuleSet",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "appliedAt": {
+                  "column": "appliedAt"
+                },
+                "appliedById": {
+                  "column": "appliedById"
+                },
+                "calculationSnapshot": {
+                  "column": "calculationSnapshot"
+                },
+                "employeeContributions": {
+                  "column": "employeeContributions"
+                },
+                "employerContributions": {
+                  "column": "employerContributions"
+                },
+                "grossEarnings": {
+                  "column": "grossEarnings"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "inputHash": {
+                  "column": "inputHash"
+                },
+                "netPay": {
+                  "column": "netPay"
+                },
+                "nonTaxableEarnings": {
+                  "column": "nonTaxableEarnings"
+                },
+                "organizationId": {
+                  "column": "organizationId"
+                },
+                "payrollEntryId": {
+                  "column": "payrollEntryId"
+                },
+                "postTaxDeductions": {
+                  "column": "postTaxDeductions"
+                },
+                "preTaxDeductions": {
+                  "column": "preTaxDeductions"
+                },
+                "ruleSetId": {
+                  "column": "ruleSetId"
+                },
+                "taxWithholding": {
+                  "column": "taxWithholding"
+                },
+                "taxableEarnings": {
+                  "column": "taxableEarnings"
+                },
+                "totalEmployerCost": {
+                  "column": "totalEmployerCost"
+                }
+              },
+              "namespaceId": "public",
+              "table": "payroll_statutory_applications"
+            }
+          },
+          "PayrollStatutoryAuditEvent": {
+            "fields": {
+              "action": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "actorId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "createdAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "kind": "scalar"
+                }
+              },
+              "details": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "entityId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "entityType": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "organizationId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "actor": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "organizationId",
+                    "actorId"
+                  ],
+                  "targetFields": [
+                    "organizationId",
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "User",
+                  "namespace": "public"
+                }
+              },
+              "organization": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "organizationId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "Organization",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "action": {
+                  "column": "action"
+                },
+                "actorId": {
+                  "column": "actorId"
+                },
+                "createdAt": {
+                  "column": "createdAt"
+                },
+                "details": {
+                  "column": "details"
+                },
+                "entityId": {
+                  "column": "entityId"
+                },
+                "entityType": {
+                  "column": "entityType"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "organizationId": {
+                  "column": "organizationId"
+                }
+              },
+              "namespaceId": "public",
+              "table": "payroll_statutory_audit_events"
+            }
+          },
+          "PayrollStatutoryRule": {
+            "fields": {
+              "calculationBase": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                },
+                "valueSet": {
+                  "entityKind": "enum",
+                  "entityName": "StatutoryCalculationBase",
+                  "namespaceId": "public",
+                  "plane": "domain"
+                }
+              },
+              "calculationType": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                },
+                "valueSet": {
+                  "entityKind": "enum",
+                  "entityName": "StatutoryCalculationType",
+                  "namespaceId": "public",
+                  "plane": "domain"
+                }
+              },
+              "contributionCap": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/numeric@1",
+                  "kind": "scalar",
+                  "typeParams": {
+                    "precision": 14,
+                    "scale": 2
+                  }
+                }
+              },
+              "createdAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "kind": "scalar"
+                }
+              },
+              "fixedAmount": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/numeric@1",
+                  "kind": "scalar",
+                  "typeParams": {
+                    "precision": 14,
+                    "scale": 2
+                  }
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "kind": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                },
+                "valueSet": {
+                  "entityKind": "enum",
+                  "entityName": "StatutoryRuleKind",
+                  "namespaceId": "public",
+                  "plane": "domain"
+                }
+              },
+              "maximumBase": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/numeric@1",
+                  "kind": "scalar",
+                  "typeParams": {
+                    "precision": 14,
+                    "scale": 2
+                  }
+                }
+              },
+              "minimumBase": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/numeric@1",
+                  "kind": "scalar",
+                  "typeParams": {
+                    "precision": 14,
+                    "scale": 2
+                  }
+                }
+              },
+              "name": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "organizationId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "rate": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/numeric@1",
+                  "kind": "scalar",
+                  "typeParams": {
+                    "precision": 9,
+                    "scale": 6
+                  }
+                }
+              },
+              "ruleSetId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "sortOrder": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "ruleSet": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "organizationId",
+                    "ruleSetId"
+                  ],
+                  "targetFields": [
+                    "organizationId",
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "PayrollStatutoryRuleSet",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "calculationBase": {
+                  "column": "calculationBase"
+                },
+                "calculationType": {
+                  "column": "calculationType"
+                },
+                "contributionCap": {
+                  "column": "contributionCap"
+                },
+                "createdAt": {
+                  "column": "createdAt"
+                },
+                "fixedAmount": {
+                  "column": "fixedAmount"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "kind": {
+                  "column": "kind"
+                },
+                "maximumBase": {
+                  "column": "maximumBase"
+                },
+                "minimumBase": {
+                  "column": "minimumBase"
+                },
+                "name": {
+                  "column": "name"
+                },
+                "organizationId": {
+                  "column": "organizationId"
+                },
+                "rate": {
+                  "column": "rate"
+                },
+                "ruleSetId": {
+                  "column": "ruleSetId"
+                },
+                "sortOrder": {
+                  "column": "sortOrder"
+                }
+              },
+              "namespaceId": "public",
+              "table": "payroll_statutory_rules"
+            }
+          },
+          "PayrollStatutoryRuleSet": {
+            "fields": {
+              "activatedAt": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "kind": "scalar"
+                }
+              },
+              "activatedById": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "createdAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "kind": "scalar"
+                }
+              },
+              "createdById": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "effectiveFrom": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "kind": "scalar"
+                }
+              },
+              "effectiveTo": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "jurisdictionId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "name": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "organizationId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "periodsPerYear": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "status": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                },
+                "valueSet": {
+                  "entityKind": "enum",
+                  "entityName": "StatutoryRuleStatus",
+                  "namespaceId": "public",
+                  "plane": "domain"
+                }
+              },
+              "updatedAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "kind": "scalar"
+                }
+              },
+              "version": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "activatedBy": {
+                "cardinality": "N:1",
+                "nullable": true,
+                "on": {
+                  "localFields": [
+                    "organizationId",
+                    "activatedById"
+                  ],
+                  "targetFields": [
+                    "organizationId",
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "User",
+                  "namespace": "public"
+                }
+              },
+              "applications": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "organizationId",
+                    "id"
+                  ],
+                  "targetFields": [
+                    "organizationId",
+                    "ruleSetId"
+                  ]
+                },
+                "to": {
+                  "model": "PayrollStatutoryApplication",
+                  "namespace": "public"
+                }
+              },
+              "brackets": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "organizationId",
+                    "id"
+                  ],
+                  "targetFields": [
+                    "organizationId",
+                    "ruleSetId"
+                  ]
+                },
+                "to": {
+                  "model": "PayrollTaxBracket",
+                  "namespace": "public"
+                }
+              },
+              "createdBy": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "organizationId",
+                    "createdById"
+                  ],
+                  "targetFields": [
+                    "organizationId",
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "User",
+                  "namespace": "public"
+                }
+              },
+              "jurisdiction": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "organizationId",
+                    "jurisdictionId"
+                  ],
+                  "targetFields": [
+                    "organizationId",
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "PayrollTaxJurisdiction",
+                  "namespace": "public"
+                }
+              },
+              "organization": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "organizationId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "Organization",
+                  "namespace": "public"
+                }
+              },
+              "rules": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "organizationId",
+                    "id"
+                  ],
+                  "targetFields": [
+                    "organizationId",
+                    "ruleSetId"
+                  ]
+                },
+                "to": {
+                  "model": "PayrollStatutoryRule",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "activatedAt": {
+                  "column": "activatedAt"
+                },
+                "activatedById": {
+                  "column": "activatedById"
+                },
+                "createdAt": {
+                  "column": "createdAt"
+                },
+                "createdById": {
+                  "column": "createdById"
+                },
+                "effectiveFrom": {
+                  "column": "effectiveFrom"
+                },
+                "effectiveTo": {
+                  "column": "effectiveTo"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "jurisdictionId": {
+                  "column": "jurisdictionId"
+                },
+                "name": {
+                  "column": "name"
+                },
+                "organizationId": {
+                  "column": "organizationId"
+                },
+                "periodsPerYear": {
+                  "column": "periodsPerYear"
+                },
+                "status": {
+                  "column": "status"
+                },
+                "updatedAt": {
+                  "column": "updatedAt"
+                },
+                "version": {
+                  "column": "version"
+                }
+              },
+              "namespaceId": "public",
+              "table": "payroll_statutory_rule_sets"
+            }
+          },
+          "PayrollTaxBracket": {
+            "fields": {
+              "createdAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "lowerBound": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/numeric@1",
+                  "kind": "scalar",
+                  "typeParams": {
+                    "precision": 14,
+                    "scale": 2
+                  }
+                }
+              },
+              "organizationId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "rate": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/numeric@1",
+                  "kind": "scalar",
+                  "typeParams": {
+                    "precision": 9,
+                    "scale": 6
+                  }
+                }
+              },
+              "ruleSetId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "sortOrder": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "upperBound": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/numeric@1",
+                  "kind": "scalar",
+                  "typeParams": {
+                    "precision": 14,
+                    "scale": 2
+                  }
+                }
+              }
+            },
+            "relations": {
+              "ruleSet": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "organizationId",
+                    "ruleSetId"
+                  ],
+                  "targetFields": [
+                    "organizationId",
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "PayrollStatutoryRuleSet",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "createdAt": {
+                  "column": "createdAt"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "lowerBound": {
+                  "column": "lowerBound"
+                },
+                "organizationId": {
+                  "column": "organizationId"
+                },
+                "rate": {
+                  "column": "rate"
+                },
+                "ruleSetId": {
+                  "column": "ruleSetId"
+                },
+                "sortOrder": {
+                  "column": "sortOrder"
+                },
+                "upperBound": {
+                  "column": "upperBound"
+                }
+              },
+              "namespaceId": "public",
+              "table": "payroll_tax_brackets"
+            }
+          },
+          "PayrollTaxJurisdiction": {
+            "fields": {
+              "countryCode": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "createdAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "kind": "scalar"
+                }
+              },
+              "currency": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "isActive": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/bool@1",
+                  "kind": "scalar"
+                }
+              },
+              "mandatoryCalculation": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/bool@1",
+                  "kind": "scalar"
+                }
+              },
+              "organizationId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "subdivisionCode": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "taxYearStartDay": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "taxYearStartMonth": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "updatedAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "kind": "scalar"
+                }
+              },
+              "version": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "organization": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "organizationId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "Organization",
+                  "namespace": "public"
+                }
+              },
+              "ruleSets": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "organizationId",
+                    "id"
+                  ],
+                  "targetFields": [
+                    "organizationId",
+                    "jurisdictionId"
+                  ]
+                },
+                "to": {
+                  "model": "PayrollStatutoryRuleSet",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "countryCode": {
+                  "column": "countryCode"
+                },
+                "createdAt": {
+                  "column": "createdAt"
+                },
+                "currency": {
+                  "column": "currency"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "isActive": {
+                  "column": "isActive"
+                },
+                "mandatoryCalculation": {
+                  "column": "mandatoryCalculation"
+                },
+                "organizationId": {
+                  "column": "organizationId"
+                },
+                "subdivisionCode": {
+                  "column": "subdivisionCode"
+                },
+                "taxYearStartDay": {
+                  "column": "taxYearStartDay"
+                },
+                "taxYearStartMonth": {
+                  "column": "taxYearStartMonth"
+                },
+                "updatedAt": {
+                  "column": "updatedAt"
+                },
+                "version": {
+                  "column": "version"
+                }
+              },
+              "namespaceId": "public",
+              "table": "payroll_tax_jurisdictions"
+            }
+          },
           "RecurringInvoiceItem": {
             "fields": {
               "amount": {
@@ -9262,6 +10707,19 @@
                   "kind": "scalar"
                 }
               },
+              "statutoryClass": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                },
+                "valueSet": {
+                  "entityKind": "enum",
+                  "entityName": "StatutoryComponentClass",
+                  "namespaceId": "public",
+                  "plane": "domain"
+                }
+              },
               "type": {
                 "nullable": false,
                 "type": {
@@ -9318,6 +10776,9 @@
                 },
                 "sortOrder": {
                   "column": "sortOrder"
+                },
+                "statutoryClass": {
+                  "column": "statutoryClass"
                 },
                 "type": {
                   "column": "type"
@@ -9689,6 +11150,40 @@
               }
             },
             "relations": {
+              "activatedStatutoryRules": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "organizationId",
+                    "id"
+                  ],
+                  "targetFields": [
+                    "organizationId",
+                    "activatedById"
+                  ]
+                },
+                "to": {
+                  "model": "PayrollStatutoryRuleSet",
+                  "namespace": "public"
+                }
+              },
+              "appliedStatutoryCalculations": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "organizationId",
+                    "id"
+                  ],
+                  "targetFields": [
+                    "organizationId",
+                    "appliedById"
+                  ]
+                },
+                "to": {
+                  "model": "PayrollStatutoryApplication",
+                  "namespace": "public"
+                }
+              },
               "approvedPayrollRuns": {
                 "cardinality": "1:N",
                 "on": {
@@ -9805,6 +11300,23 @@
                 },
                 "to": {
                   "model": "SalaryStructure",
+                  "namespace": "public"
+                }
+              },
+              "createdStatutoryRules": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "organizationId",
+                    "id"
+                  ],
+                  "targetFields": [
+                    "organizationId",
+                    "createdById"
+                  ]
+                },
+                "to": {
+                  "model": "PayrollStatutoryRuleSet",
                   "namespace": "public"
                 }
               },
@@ -10094,6 +11606,23 @@
                 },
                 "to": {
                   "model": "OvertimeRequest",
+                  "namespace": "public"
+                }
+              },
+              "statutoryAuditEvents": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "organizationId",
+                    "id"
+                  ],
+                  "targetFields": [
+                    "organizationId",
+                    "actorId"
+                  ]
+                },
+                "to": {
+                  "model": "PayrollStatutoryAuditEvent",
                   "namespace": "public"
                 }
               },
@@ -15222,8 +16751,13 @@
             "payroll_entry_components": {
               "checks": [
                 {
-                  "expression": "\"type\" IN ('EARNING', 'DEDUCTION')",
-                  "name": "payroll_entry_components_type_check_950f4ce8",
+                  "expression": "\"statutoryClass\" IN ('TAXABLE_EARNING', 'NON_TAXABLE_EARNING', 'PRE_TAX_DEDUCTION', 'POST_TAX_DEDUCTION')",
+                  "name": "payroll_entry_components_statutoryClass_check_b7131461",
+                  "prefix": "payroll_entry_components_statutoryClass_check"
+                },
+                {
+                  "expression": "\"type\" IN ('EARNING', 'DEDUCTION', 'EMPLOYER_CONTRIBUTION')",
+                  "name": "payroll_entry_components_type_check_55901ef6",
                   "prefix": "payroll_entry_components_type_check"
                 }
               ],
@@ -15236,6 +16770,11 @@
                     "precision": 14,
                     "scale": 2
                   }
+                },
+                "calculationSnapshot": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
                 },
                 "createdAt": {
                   "codecId": "pg/timestamptz-temporal@1",
@@ -15309,6 +16848,32 @@
                   "nullable": true
                 },
                 "sourceSalaryComponentId": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "statutoryClass": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true,
+                  "valueSet": {
+                    "entityKind": "valueSet",
+                    "entityName": "StatutoryComponentClass",
+                    "namespaceId": "public",
+                    "plane": "storage"
+                  }
+                },
+                "statutoryJurisdiction": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "statutoryRuleName": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "statutoryRuleSetName": {
                   "codecId": "pg/text@1",
                   "nativeType": "text",
                   "nullable": true
@@ -16666,6 +18231,1061 @@
                 }
               ]
             },
+            "payroll_statutory_applications": {
+              "columns": {
+                "appliedAt": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "appliedById": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "calculationSnapshot": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "employeeContributions": {
+                  "codecId": "pg/numeric@1",
+                  "nativeType": "numeric",
+                  "nullable": false,
+                  "typeParams": {
+                    "precision": 14,
+                    "scale": 2
+                  }
+                },
+                "employerContributions": {
+                  "codecId": "pg/numeric@1",
+                  "nativeType": "numeric",
+                  "nullable": false,
+                  "typeParams": {
+                    "precision": 14,
+                    "scale": 2
+                  }
+                },
+                "grossEarnings": {
+                  "codecId": "pg/numeric@1",
+                  "nativeType": "numeric",
+                  "nullable": false,
+                  "typeParams": {
+                    "precision": 14,
+                    "scale": 2
+                  }
+                },
+                "id": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "inputHash": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "netPay": {
+                  "codecId": "pg/numeric@1",
+                  "nativeType": "numeric",
+                  "nullable": false,
+                  "typeParams": {
+                    "precision": 14,
+                    "scale": 2
+                  }
+                },
+                "nonTaxableEarnings": {
+                  "codecId": "pg/numeric@1",
+                  "nativeType": "numeric",
+                  "nullable": false,
+                  "typeParams": {
+                    "precision": 14,
+                    "scale": 2
+                  }
+                },
+                "organizationId": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "payrollEntryId": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "postTaxDeductions": {
+                  "codecId": "pg/numeric@1",
+                  "nativeType": "numeric",
+                  "nullable": false,
+                  "typeParams": {
+                    "precision": 14,
+                    "scale": 2
+                  }
+                },
+                "preTaxDeductions": {
+                  "codecId": "pg/numeric@1",
+                  "nativeType": "numeric",
+                  "nullable": false,
+                  "typeParams": {
+                    "precision": 14,
+                    "scale": 2
+                  }
+                },
+                "ruleSetId": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "taxWithholding": {
+                  "codecId": "pg/numeric@1",
+                  "nativeType": "numeric",
+                  "nullable": false,
+                  "typeParams": {
+                    "precision": 14,
+                    "scale": 2
+                  }
+                },
+                "taxableEarnings": {
+                  "codecId": "pg/numeric@1",
+                  "nativeType": "numeric",
+                  "nullable": false,
+                  "typeParams": {
+                    "precision": 14,
+                    "scale": 2
+                  }
+                },
+                "totalEmployerCost": {
+                  "codecId": "pg/numeric@1",
+                  "nativeType": "numeric",
+                  "nullable": false,
+                  "typeParams": {
+                    "precision": 14,
+                    "scale": 2
+                  }
+                }
+              },
+              "foreignKeys": [
+                {
+                  "name": "stat_app_org_fkey",
+                  "onDelete": "cascade",
+                  "source": {
+                    "columns": [
+                      "organizationId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "payroll_statutory_applications"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "organizations"
+                  }
+                },
+                {
+                  "name": "stat_app_entry_fkey",
+                  "onDelete": "cascade",
+                  "source": {
+                    "columns": [
+                      "organizationId",
+                      "payrollEntryId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "payroll_statutory_applications"
+                  },
+                  "target": {
+                    "columns": [
+                      "organizationId",
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "payroll_entries"
+                  }
+                },
+                {
+                  "name": "stat_app_rule_fkey",
+                  "onDelete": "restrict",
+                  "source": {
+                    "columns": [
+                      "organizationId",
+                      "ruleSetId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "payroll_statutory_applications"
+                  },
+                  "target": {
+                    "columns": [
+                      "organizationId",
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "payroll_statutory_rule_sets"
+                  }
+                },
+                {
+                  "name": "stat_app_actor_fkey",
+                  "onDelete": "restrict",
+                  "source": {
+                    "columns": [
+                      "organizationId",
+                      "appliedById"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "payroll_statutory_applications"
+                  },
+                  "target": {
+                    "columns": [
+                      "organizationId",
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "users"
+                  }
+                }
+              ],
+              "indexes": [
+                {
+                  "columns": [
+                    "organizationId",
+                    "appliedById"
+                  ],
+                  "name": "payroll_statutory_applications_organizationId_appliedB_d2def5ad",
+                  "prefix": "payroll_statutory_applications_organizationId_appliedB",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "organizationId"
+                  ],
+                  "name": "payroll_statutory_applications_organizationId_idx_2e17ef41",
+                  "prefix": "payroll_statutory_applications_organizationId_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "organizationId",
+                    "ruleSetId"
+                  ],
+                  "name": "stat_app_rule_idx",
+                  "unique": false
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": [
+                {
+                  "columns": [
+                    "organizationId",
+                    "payrollEntryId"
+                  ],
+                  "name": "stat_app_entry_key"
+                }
+              ]
+            },
+            "payroll_statutory_audit_events": {
+              "columns": {
+                "action": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "actorId": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "createdAt": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "details": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "entityId": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "entityType": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "id": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "organizationId": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [
+                {
+                  "name": "stat_audit_org_fkey",
+                  "onDelete": "cascade",
+                  "source": {
+                    "columns": [
+                      "organizationId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "payroll_statutory_audit_events"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "organizations"
+                  }
+                },
+                {
+                  "name": "stat_audit_actor_fkey",
+                  "onDelete": "restrict",
+                  "source": {
+                    "columns": [
+                      "organizationId",
+                      "actorId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "payroll_statutory_audit_events"
+                  },
+                  "target": {
+                    "columns": [
+                      "organizationId",
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "users"
+                  }
+                }
+              ],
+              "indexes": [
+                {
+                  "columns": [
+                    "organizationId",
+                    "actorId"
+                  ],
+                  "name": "payroll_statutory_audit_events_organizationId_actorId__327c2974",
+                  "prefix": "payroll_statutory_audit_events_organizationId_actorId_",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "organizationId"
+                  ],
+                  "name": "payroll_statutory_audit_events_organizationId_idx_2e17ef41",
+                  "prefix": "payroll_statutory_audit_events_organizationId_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "organizationId",
+                    "entityType",
+                    "entityId",
+                    "createdAt"
+                  ],
+                  "name": "stat_audit_entity_idx",
+                  "unique": false
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": []
+            },
+            "payroll_statutory_rule_sets": {
+              "checks": [
+                {
+                  "expression": "\"status\" IN ('DRAFT', 'ACTIVE', 'SUPERSEDED')",
+                  "name": "payroll_statutory_rule_sets_status_check_280f52d9",
+                  "prefix": "payroll_statutory_rule_sets_status_check"
+                }
+              ],
+              "columns": {
+                "activatedAt": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "nativeType": "timestamptz",
+                  "nullable": true
+                },
+                "activatedById": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "createdAt": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "createdById": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "effectiveFrom": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "effectiveTo": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "nativeType": "timestamptz",
+                  "nullable": true
+                },
+                "id": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "jurisdictionId": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "name": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "organizationId": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "periodsPerYear": {
+                  "codecId": "pg/int4@1",
+                  "nativeType": "int4",
+                  "nullable": true
+                },
+                "status": {
+                  "codecId": "pg/text@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": "DRAFT"
+                  },
+                  "nativeType": "text",
+                  "nullable": false,
+                  "valueSet": {
+                    "entityKind": "valueSet",
+                    "entityName": "StatutoryRuleStatus",
+                    "namespaceId": "public",
+                    "plane": "storage"
+                  }
+                },
+                "updatedAt": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "version": {
+                  "codecId": "pg/int4@1",
+                  "nativeType": "int4",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [
+                {
+                  "name": "stat_rule_org_fkey",
+                  "onDelete": "cascade",
+                  "source": {
+                    "columns": [
+                      "organizationId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "payroll_statutory_rule_sets"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "organizations"
+                  }
+                },
+                {
+                  "name": "stat_rule_jurisdiction_fkey",
+                  "onDelete": "restrict",
+                  "source": {
+                    "columns": [
+                      "organizationId",
+                      "jurisdictionId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "payroll_statutory_rule_sets"
+                  },
+                  "target": {
+                    "columns": [
+                      "organizationId",
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "payroll_tax_jurisdictions"
+                  }
+                },
+                {
+                  "name": "stat_rule_creator_fkey",
+                  "onDelete": "restrict",
+                  "source": {
+                    "columns": [
+                      "organizationId",
+                      "createdById"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "payroll_statutory_rule_sets"
+                  },
+                  "target": {
+                    "columns": [
+                      "organizationId",
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "users"
+                  }
+                },
+                {
+                  "name": "stat_rule_activator_fkey",
+                  "onDelete": "restrict",
+                  "source": {
+                    "columns": [
+                      "organizationId",
+                      "activatedById"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "payroll_statutory_rule_sets"
+                  },
+                  "target": {
+                    "columns": [
+                      "organizationId",
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "users"
+                  }
+                }
+              ],
+              "indexes": [
+                {
+                  "columns": [
+                    "organizationId",
+                    "activatedById"
+                  ],
+                  "name": "payroll_statutory_rule_sets_organizationId_activatedBy_5b72b40f",
+                  "prefix": "payroll_statutory_rule_sets_organizationId_activatedBy",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "organizationId",
+                    "createdById"
+                  ],
+                  "name": "payroll_statutory_rule_sets_organizationId_createdById_4fb80a04",
+                  "prefix": "payroll_statutory_rule_sets_organizationId_createdById",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "organizationId"
+                  ],
+                  "name": "payroll_statutory_rule_sets_organizationId_idx_2e17ef41",
+                  "prefix": "payroll_statutory_rule_sets_organizationId_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "organizationId",
+                    "jurisdictionId"
+                  ],
+                  "name": "payroll_statutory_rule_sets_organizationId_jurisdictio_2477d924",
+                  "prefix": "payroll_statutory_rule_sets_organizationId_jurisdictio",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "organizationId",
+                    "jurisdictionId",
+                    "status",
+                    "effectiveFrom"
+                  ],
+                  "name": "stat_rule_effective_idx",
+                  "unique": false
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": [
+                {
+                  "columns": [
+                    "organizationId",
+                    "id"
+                  ]
+                },
+                {
+                  "columns": [
+                    "organizationId",
+                    "jurisdictionId",
+                    "name",
+                    "version"
+                  ],
+                  "name": "stat_rule_version_key"
+                }
+              ]
+            },
+            "payroll_statutory_rules": {
+              "checks": [
+                {
+                  "expression": "\"calculationBase\" IN ('TAXABLE_EARNINGS', 'GROSS_EARNINGS')",
+                  "name": "payroll_statutory_rules_calculationBase_check_595c74e9",
+                  "prefix": "payroll_statutory_rules_calculationBase_check"
+                },
+                {
+                  "expression": "\"calculationType\" IN ('RATE', 'FIXED_AMOUNT')",
+                  "name": "payroll_statutory_rules_calculationType_check_e26e54a5",
+                  "prefix": "payroll_statutory_rules_calculationType_check"
+                },
+                {
+                  "expression": "\"kind\" IN ('FLAT_WITHHOLDING', 'EMPLOYEE_CONTRIBUTION', 'EMPLOYER_CONTRIBUTION')",
+                  "name": "payroll_statutory_rules_kind_check_6d819a16",
+                  "prefix": "payroll_statutory_rules_kind_check"
+                }
+              ],
+              "columns": {
+                "calculationBase": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false,
+                  "valueSet": {
+                    "entityKind": "valueSet",
+                    "entityName": "StatutoryCalculationBase",
+                    "namespaceId": "public",
+                    "plane": "storage"
+                  }
+                },
+                "calculationType": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false,
+                  "valueSet": {
+                    "entityKind": "valueSet",
+                    "entityName": "StatutoryCalculationType",
+                    "namespaceId": "public",
+                    "plane": "storage"
+                  }
+                },
+                "contributionCap": {
+                  "codecId": "pg/numeric@1",
+                  "nativeType": "numeric",
+                  "nullable": true,
+                  "typeParams": {
+                    "precision": 14,
+                    "scale": 2
+                  }
+                },
+                "createdAt": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "fixedAmount": {
+                  "codecId": "pg/numeric@1",
+                  "nativeType": "numeric",
+                  "nullable": true,
+                  "typeParams": {
+                    "precision": 14,
+                    "scale": 2
+                  }
+                },
+                "id": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "kind": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false,
+                  "valueSet": {
+                    "entityKind": "valueSet",
+                    "entityName": "StatutoryRuleKind",
+                    "namespaceId": "public",
+                    "plane": "storage"
+                  }
+                },
+                "maximumBase": {
+                  "codecId": "pg/numeric@1",
+                  "nativeType": "numeric",
+                  "nullable": true,
+                  "typeParams": {
+                    "precision": 14,
+                    "scale": 2
+                  }
+                },
+                "minimumBase": {
+                  "codecId": "pg/numeric@1",
+                  "nativeType": "numeric",
+                  "nullable": true,
+                  "typeParams": {
+                    "precision": 14,
+                    "scale": 2
+                  }
+                },
+                "name": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "organizationId": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "rate": {
+                  "codecId": "pg/numeric@1",
+                  "nativeType": "numeric",
+                  "nullable": true,
+                  "typeParams": {
+                    "precision": 9,
+                    "scale": 6
+                  }
+                },
+                "ruleSetId": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "sortOrder": {
+                  "codecId": "pg/int4@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": 0
+                  },
+                  "nativeType": "int4",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [
+                {
+                  "name": "stat_item_rule_set_fkey",
+                  "onDelete": "cascade",
+                  "source": {
+                    "columns": [
+                      "organizationId",
+                      "ruleSetId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "payroll_statutory_rules"
+                  },
+                  "target": {
+                    "columns": [
+                      "organizationId",
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "payroll_statutory_rule_sets"
+                  }
+                }
+              ],
+              "indexes": [
+                {
+                  "columns": [
+                    "organizationId",
+                    "ruleSetId"
+                  ],
+                  "name": "stat_item_rule_set_idx",
+                  "unique": false
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": []
+            },
+            "payroll_tax_brackets": {
+              "columns": {
+                "createdAt": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "id": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "lowerBound": {
+                  "codecId": "pg/numeric@1",
+                  "nativeType": "numeric",
+                  "nullable": false,
+                  "typeParams": {
+                    "precision": 14,
+                    "scale": 2
+                  }
+                },
+                "organizationId": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "rate": {
+                  "codecId": "pg/numeric@1",
+                  "nativeType": "numeric",
+                  "nullable": false,
+                  "typeParams": {
+                    "precision": 9,
+                    "scale": 6
+                  }
+                },
+                "ruleSetId": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "sortOrder": {
+                  "codecId": "pg/int4@1",
+                  "nativeType": "int4",
+                  "nullable": false
+                },
+                "upperBound": {
+                  "codecId": "pg/numeric@1",
+                  "nativeType": "numeric",
+                  "nullable": true,
+                  "typeParams": {
+                    "precision": 14,
+                    "scale": 2
+                  }
+                }
+              },
+              "foreignKeys": [
+                {
+                  "name": "tax_bracket_rule_fkey",
+                  "onDelete": "cascade",
+                  "source": {
+                    "columns": [
+                      "organizationId",
+                      "ruleSetId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "payroll_tax_brackets"
+                  },
+                  "target": {
+                    "columns": [
+                      "organizationId",
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "payroll_statutory_rule_sets"
+                  }
+                }
+              ],
+              "indexes": [
+                {
+                  "columns": [
+                    "organizationId",
+                    "ruleSetId"
+                  ],
+                  "name": "tax_bracket_rule_idx",
+                  "unique": false
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": [
+                {
+                  "columns": [
+                    "organizationId",
+                    "ruleSetId",
+                    "sortOrder"
+                  ],
+                  "name": "tax_bracket_order_key"
+                }
+              ]
+            },
+            "payroll_tax_jurisdictions": {
+              "columns": {
+                "countryCode": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "createdAt": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "currency": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "id": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "isActive": {
+                  "codecId": "pg/bool@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": true
+                  },
+                  "nativeType": "bool",
+                  "nullable": false
+                },
+                "mandatoryCalculation": {
+                  "codecId": "pg/bool@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": false
+                  },
+                  "nativeType": "bool",
+                  "nullable": false
+                },
+                "organizationId": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "subdivisionCode": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "taxYearStartDay": {
+                  "codecId": "pg/int4@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": 1
+                  },
+                  "nativeType": "int4",
+                  "nullable": false
+                },
+                "taxYearStartMonth": {
+                  "codecId": "pg/int4@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": 1
+                  },
+                  "nativeType": "int4",
+                  "nullable": false
+                },
+                "updatedAt": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "version": {
+                  "codecId": "pg/int4@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": 1
+                  },
+                  "nativeType": "int4",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [
+                {
+                  "name": "tax_jurisdiction_org_fkey",
+                  "onDelete": "cascade",
+                  "source": {
+                    "columns": [
+                      "organizationId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "payroll_tax_jurisdictions"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "organizations"
+                  }
+                }
+              ],
+              "indexes": [
+                {
+                  "columns": [
+                    "organizationId"
+                  ],
+                  "name": "payroll_tax_jurisdictions_organizationId_idx_2e17ef41",
+                  "prefix": "payroll_tax_jurisdictions_organizationId_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "organizationId",
+                    "isActive"
+                  ],
+                  "name": "tax_jurisdiction_active_idx",
+                  "unique": false
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": [
+                {
+                  "columns": [
+                    "organizationId",
+                    "id"
+                  ]
+                },
+                {
+                  "columns": [
+                    "organizationId",
+                    "countryCode",
+                    "subdivisionCode"
+                  ],
+                  "name": "tax_jurisdiction_region_key"
+                }
+              ]
+            },
             "recurring_invoice_items": {
               "columns": {
                 "amount": {
@@ -17446,6 +20066,11 @@
             "salary_components": {
               "checks": [
                 {
+                  "expression": "\"statutoryClass\" IN ('TAXABLE_EARNING', 'NON_TAXABLE_EARNING', 'PRE_TAX_DEDUCTION', 'POST_TAX_DEDUCTION')",
+                  "name": "salary_components_statutoryClass_check_b7131461",
+                  "prefix": "salary_components_statutoryClass_check"
+                },
+                {
                   "expression": "\"type\" IN ('EARNING', 'DEDUCTION')",
                   "name": "salary_components_type_check_950f4ce8",
                   "prefix": "salary_components_type_check"
@@ -17498,6 +20123,17 @@
                   },
                   "nativeType": "int4",
                   "nullable": false
+                },
+                "statutoryClass": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true,
+                  "valueSet": {
+                    "entityKind": "valueSet",
+                    "entityName": "StatutoryComponentClass",
+                    "namespaceId": "public",
+                    "plane": "storage"
+                  }
                 },
                 "type": {
                   "codecId": "pg/text@1",
@@ -18499,7 +21135,8 @@
               "kind": "valueSet",
               "values": [
                 "EARNING",
-                "DEDUCTION"
+                "DEDUCTION",
+                "EMPLOYER_CONTRIBUTION"
               ]
             },
             "PayrollNotificationType": {
@@ -18610,6 +21247,45 @@
                 "EARNING",
                 "DEDUCTION"
               ]
+            },
+            "StatutoryCalculationBase": {
+              "kind": "valueSet",
+              "values": [
+                "TAXABLE_EARNINGS",
+                "GROSS_EARNINGS"
+              ]
+            },
+            "StatutoryCalculationType": {
+              "kind": "valueSet",
+              "values": [
+                "RATE",
+                "FIXED_AMOUNT"
+              ]
+            },
+            "StatutoryComponentClass": {
+              "kind": "valueSet",
+              "values": [
+                "TAXABLE_EARNING",
+                "NON_TAXABLE_EARNING",
+                "PRE_TAX_DEDUCTION",
+                "POST_TAX_DEDUCTION"
+              ]
+            },
+            "StatutoryRuleKind": {
+              "kind": "valueSet",
+              "values": [
+                "FLAT_WITHHOLDING",
+                "EMPLOYEE_CONTRIBUTION",
+                "EMPLOYER_CONTRIBUTION"
+              ]
+            },
+            "StatutoryRuleStatus": {
+              "kind": "valueSet",
+              "values": [
+                "DRAFT",
+                "ACTIVE",
+                "SUPERSEDED"
+              ]
             }
           }
         },
@@ -18617,10 +21293,10 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "ba782965fb6c1a29e2ff42ecf9c4201008d69c6ee270373ac6e14a39c6d665dd"
+    "storageHash": "acebefa7812ba1d4d8d946d5db9f3ae475a02c785a10ffa8202bb48c9cbeb0cd"
   },
   "execution": {
-    "executionHash": "565c50e8f36c6dec7e8dd4d9639c263004ca8b399bd21baadeefd7cbc87d52cd",
+    "executionHash": "c81aba6801dfe80bc68bbda7592daa6cd6d3e5c11780dd01a7cde56c55733d67",
     "mutations": {
       "defaults": [
         {
@@ -19234,6 +21910,102 @@
           },
           "ref": {
             "entry": "payroll_schedules",
+            "field": "updatedAt",
+            "namespace": "public"
+          }
+        },
+        {
+          "onCreate": {
+            "id": "uuidv4",
+            "kind": "generator"
+          },
+          "ref": {
+            "entry": "payroll_statutory_applications",
+            "field": "id",
+            "namespace": "public"
+          }
+        },
+        {
+          "onCreate": {
+            "id": "uuidv4",
+            "kind": "generator"
+          },
+          "ref": {
+            "entry": "payroll_statutory_audit_events",
+            "field": "id",
+            "namespace": "public"
+          }
+        },
+        {
+          "onCreate": {
+            "id": "uuidv4",
+            "kind": "generator"
+          },
+          "ref": {
+            "entry": "payroll_statutory_rule_sets",
+            "field": "id",
+            "namespace": "public"
+          }
+        },
+        {
+          "onCreate": {
+            "id": "instantNow",
+            "kind": "generator"
+          },
+          "onUpdate": {
+            "id": "instantNow",
+            "kind": "generator"
+          },
+          "ref": {
+            "entry": "payroll_statutory_rule_sets",
+            "field": "updatedAt",
+            "namespace": "public"
+          }
+        },
+        {
+          "onCreate": {
+            "id": "uuidv4",
+            "kind": "generator"
+          },
+          "ref": {
+            "entry": "payroll_statutory_rules",
+            "field": "id",
+            "namespace": "public"
+          }
+        },
+        {
+          "onCreate": {
+            "id": "uuidv4",
+            "kind": "generator"
+          },
+          "ref": {
+            "entry": "payroll_tax_brackets",
+            "field": "id",
+            "namespace": "public"
+          }
+        },
+        {
+          "onCreate": {
+            "id": "uuidv4",
+            "kind": "generator"
+          },
+          "ref": {
+            "entry": "payroll_tax_jurisdictions",
+            "field": "id",
+            "namespace": "public"
+          }
+        },
+        {
+          "onCreate": {
+            "id": "instantNow",
+            "kind": "generator"
+          },
+          "onUpdate": {
+            "id": "instantNow",
+            "kind": "generator"
+          },
+          "ref": {
+            "entry": "payroll_tax_jurisdictions",
             "field": "updatedAt",
             "namespace": "public"
           }

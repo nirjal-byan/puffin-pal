@@ -7,6 +7,7 @@ import { DatePicker } from "../../../components/date-picker";
 import { FormModal } from "../../../components/form-modal";
 import { errorMessage, type WorkspaceApi } from "../../../lib/api";
 import { PayrollAutomation } from "./payroll-automation";
+import { PayrollStatutory } from "./payroll-statutory";
 
 type PayrollRun = {
   id: string;
@@ -355,6 +356,7 @@ export default function PayrollPage({
         onSaved={onSaved}
         onRunsChanged={load}
       />
+      {can("payroll:manage") && <PayrollStatutory api={api} />}
       <section className="panel">
         <div className="panel-heading">
           <h3>Payroll history</h3>
@@ -565,6 +567,15 @@ export default function PayrollPage({
                 </button>
               )}
             </div>
+            {can("payroll:manage") && selected.status === "DRAFT" && (
+              <PayrollStatutory
+                api={api}
+                run={selected}
+                onApplied={async () => {
+                  await open(selected);
+                }}
+              />
+            )}
             <section className="payroll-workforce-review" data-tour="payroll-attendance-review">
               <div className="panel-heading">
                 <h3>Attendance review</h3>

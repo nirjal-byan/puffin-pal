@@ -347,6 +347,7 @@ export class EmployeesService {
           name: component.name.trim(),
           type: component.type,
           amount: expenseAmount(component.amount),
+          statutoryClass: component.statutoryClass,
           sortOrder: component.sortOrder ?? index,
         });
       const action = current

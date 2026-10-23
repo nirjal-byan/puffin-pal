@@ -10,10 +10,17 @@ import { PayrollNotificationsService } from "./payroll-notifications.service.js"
 import { PayrollSchedulesController } from "./payroll-schedules.controller.js";
 import { PayrollSchedulesService } from "./payroll-schedules.service.js";
 import { PayrollNotificationsController } from "./payroll-notifications.controller.js";
+import { PayrollStatutoryController } from "./payroll-statutory.controller.js";
+import { PayrollStatutoryService } from "./payroll-statutory.service.js";
 
 @Module({
   imports: [StorageModule],
-  controllers: [PayrollController, PayrollSchedulesController, PayrollNotificationsController],
+  controllers: [
+    PayrollController,
+    PayrollSchedulesController,
+    PayrollNotificationsController,
+    PayrollStatutoryController,
+  ],
   providers: [
     PayrollService,
     PayrollSchedulesService,
@@ -22,6 +29,7 @@ import { PayrollNotificationsController } from "./payroll-notifications.controll
     PayrollPayslipQueue,
     PayrollPayslipStorageService,
     PayrollPdfService,
+    PayrollStatutoryService,
   ],
   exports: [PayrollPayslipQueue, PayrollAutomationQueue],
 })

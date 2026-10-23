@@ -154,9 +154,10 @@ export class CashFlowService {
     } catch {
       throw new BadRequestException("Provide a valid forecast start date");
     }
-    const [organization, configuration] = await Promise.all([
+    const [organization, configuration, statutoryApplications] = await Promise.all([
       this.db.orm.public.Organization.where({ id: organizationId }).select("currency").first(),
       this.configuration(),
+      this.db.orm.public.PayrollStatutoryApplication.where({ organizationId }).all(),
     ]);
     if (!organization) throw new UnauthorizedException();
     const horizonDays = query.horizonDays ?? configuration.defaultHorizonDays;
@@ -166,6 +167,10 @@ export class CashFlowService {
       "Forecasts are deterministic planning estimates, not guarantees.",
       "Past approved expenses are excluded because expenses do not track payment state.",
     ];
+    if (statutoryApplications.some((row) => moneyToCents(row.employerContributions) > 0n))
+      warnings.push(
+        "Employer statutory contributions are excluded from dated cash flow until a remittance date is configured; employee net pay is already included once.",
+      );
 
     await Promise.all([
       this.invoiceEvents(organizationId, organization.currency, from, events),

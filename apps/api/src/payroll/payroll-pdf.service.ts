@@ -62,6 +62,18 @@ export class PayrollPdfService {
         .text(component.name, 48, doc.y + 8, { width: 240 })
         .text(money(component.amount), 330, doc.y - 12, { width: 210, align: "right" });
     }
+    const employer = input.components.filter((item) => item.type === "EMPLOYER_CONTRIBUTION");
+    if (employer.length) {
+      doc
+        .moveDown(1.5)
+        .font("Helvetica-Bold")
+        .text("Employer contributions (does not reduce net pay)", 48, doc.y, { width: 360 });
+      for (const component of employer)
+        doc
+          .font("Helvetica")
+          .text(component.name, 48, doc.y + 8, { width: 240 })
+          .text(money(component.amount), 330, doc.y - 12, { width: 210, align: "right" });
+    }
     doc.moveDown(2).strokeColor("#cbd8d4").moveTo(48, doc.y).lineTo(547, doc.y).stroke();
     doc.moveDown().font("Helvetica-Bold").fontSize(12);
     doc

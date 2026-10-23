@@ -34,9 +34,9 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'ba782965fb6c1a29e2ff42ecf9c4201008d69c6ee270373ac6e14a39c6d665dd'>;
+  StorageHashBase<'acebefa7812ba1d4d8d946d5db9f3ae475a02c785a10ffa8202bb48c9cbeb0cd'>;
 export type ExecutionHash =
-  ExecutionHashBase<'565c50e8f36c6dec7e8dd4d9639c263004ca8b399bd21baadeefd7cbc87d52cd'>;
+  ExecutionHashBase<'c81aba6801dfe80bc68bbda7592daa6cd6d3e5c11780dd01a7cde56c55733d67'>;
 export type ProfileHash =
   ProfileHashBase<'3916f444a8a17ad749191acf9e08dad97d1a327b88c2f1d45d12f240296aa8b2'>;
 
@@ -642,6 +642,7 @@ export type FieldOutputTypes = {
     };
     readonly PayrollEntryComponent: {
       readonly amount: Numeric<14, 2>;
+      readonly calculationSnapshot: CodecTypes['pg/text@1']['output'] | null;
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
       readonly id: CodecTypes['pg/text@1']['output'];
       readonly isAdjustment: CodecTypes['pg/bool@1']['output'];
@@ -654,7 +655,16 @@ export type FieldOutputTypes = {
       readonly sourceMinutes: CodecTypes['pg/int4@1']['output'] | null;
       readonly sourceOvertimeRequestId: CodecTypes['pg/text@1']['output'] | null;
       readonly sourceSalaryComponentId: CodecTypes['pg/text@1']['output'] | null;
-      readonly type: 'EARNING' | 'DEDUCTION';
+      readonly statutoryClass:
+        | 'TAXABLE_EARNING'
+        | 'NON_TAXABLE_EARNING'
+        | 'PRE_TAX_DEDUCTION'
+        | 'POST_TAX_DEDUCTION'
+        | null;
+      readonly statutoryJurisdiction: CodecTypes['pg/text@1']['output'] | null;
+      readonly statutoryRuleName: CodecTypes['pg/text@1']['output'] | null;
+      readonly statutoryRuleSetName: CodecTypes['pg/text@1']['output'] | null;
+      readonly type: 'EARNING' | 'DEDUCTION' | 'EMPLOYER_CONTRIBUTION';
     };
     readonly PayrollNotification: {
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
@@ -749,6 +759,92 @@ export type FieldOutputTypes = {
       readonly status: 'PENDING' | 'PROCESSING' | 'GENERATED' | 'FAILED' | 'CONFLICT' | 'SKIPPED';
       readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
     };
+    readonly PayrollStatutoryApplication: {
+      readonly appliedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly appliedById: CodecTypes['pg/text@1']['output'];
+      readonly calculationSnapshot: CodecTypes['pg/text@1']['output'];
+      readonly employeeContributions: Numeric<14, 2>;
+      readonly employerContributions: Numeric<14, 2>;
+      readonly grossEarnings: Numeric<14, 2>;
+      readonly id: CodecTypes['pg/text@1']['output'];
+      readonly inputHash: CodecTypes['pg/text@1']['output'];
+      readonly netPay: Numeric<14, 2>;
+      readonly nonTaxableEarnings: Numeric<14, 2>;
+      readonly organizationId: CodecTypes['pg/text@1']['output'];
+      readonly payrollEntryId: CodecTypes['pg/text@1']['output'];
+      readonly postTaxDeductions: Numeric<14, 2>;
+      readonly preTaxDeductions: Numeric<14, 2>;
+      readonly ruleSetId: CodecTypes['pg/text@1']['output'];
+      readonly taxWithholding: Numeric<14, 2>;
+      readonly taxableEarnings: Numeric<14, 2>;
+      readonly totalEmployerCost: Numeric<14, 2>;
+    };
+    readonly PayrollStatutoryAuditEvent: {
+      readonly action: CodecTypes['pg/text@1']['output'];
+      readonly actorId: CodecTypes['pg/text@1']['output'];
+      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly details: CodecTypes['pg/text@1']['output'] | null;
+      readonly entityId: CodecTypes['pg/text@1']['output'];
+      readonly entityType: CodecTypes['pg/text@1']['output'];
+      readonly id: CodecTypes['pg/text@1']['output'];
+      readonly organizationId: CodecTypes['pg/text@1']['output'];
+    };
+    readonly PayrollStatutoryRule: {
+      readonly calculationBase: 'TAXABLE_EARNINGS' | 'GROSS_EARNINGS';
+      readonly calculationType: 'RATE' | 'FIXED_AMOUNT';
+      readonly contributionCap: Numeric<14, 2> | null;
+      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly fixedAmount: Numeric<14, 2> | null;
+      readonly id: CodecTypes['pg/text@1']['output'];
+      readonly kind: 'FLAT_WITHHOLDING' | 'EMPLOYEE_CONTRIBUTION' | 'EMPLOYER_CONTRIBUTION';
+      readonly maximumBase: Numeric<14, 2> | null;
+      readonly minimumBase: Numeric<14, 2> | null;
+      readonly name: CodecTypes['pg/text@1']['output'];
+      readonly organizationId: CodecTypes['pg/text@1']['output'];
+      readonly rate: Numeric<9, 6> | null;
+      readonly ruleSetId: CodecTypes['pg/text@1']['output'];
+      readonly sortOrder: CodecTypes['pg/int4@1']['output'];
+    };
+    readonly PayrollStatutoryRuleSet: {
+      readonly activatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
+      readonly activatedById: CodecTypes['pg/text@1']['output'] | null;
+      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly createdById: CodecTypes['pg/text@1']['output'];
+      readonly effectiveFrom: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly effectiveTo: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
+      readonly id: CodecTypes['pg/text@1']['output'];
+      readonly jurisdictionId: CodecTypes['pg/text@1']['output'];
+      readonly name: CodecTypes['pg/text@1']['output'];
+      readonly organizationId: CodecTypes['pg/text@1']['output'];
+      readonly periodsPerYear: CodecTypes['pg/int4@1']['output'] | null;
+      readonly status: 'DRAFT' | 'ACTIVE' | 'SUPERSEDED';
+      readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly version: CodecTypes['pg/int4@1']['output'];
+    };
+    readonly PayrollTaxBracket: {
+      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly id: CodecTypes['pg/text@1']['output'];
+      readonly lowerBound: Numeric<14, 2>;
+      readonly organizationId: CodecTypes['pg/text@1']['output'];
+      readonly rate: Numeric<9, 6>;
+      readonly ruleSetId: CodecTypes['pg/text@1']['output'];
+      readonly sortOrder: CodecTypes['pg/int4@1']['output'];
+      readonly upperBound: Numeric<14, 2> | null;
+    };
+    readonly PayrollTaxJurisdiction: {
+      readonly countryCode: CodecTypes['pg/text@1']['output'];
+      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly currency: CodecTypes['pg/text@1']['output'];
+      readonly id: CodecTypes['pg/text@1']['output'];
+      readonly isActive: CodecTypes['pg/bool@1']['output'];
+      readonly mandatoryCalculation: CodecTypes['pg/bool@1']['output'];
+      readonly organizationId: CodecTypes['pg/text@1']['output'];
+      readonly subdivisionCode: CodecTypes['pg/text@1']['output'] | null;
+      readonly taxYearStartDay: CodecTypes['pg/int4@1']['output'];
+      readonly taxYearStartMonth: CodecTypes['pg/int4@1']['output'];
+      readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly version: CodecTypes['pg/int4@1']['output'];
+    };
     readonly RecurringInvoiceItem: {
       readonly amount: Numeric<12, 2>;
       readonly description: CodecTypes['pg/text@1']['output'];
@@ -827,6 +923,12 @@ export type FieldOutputTypes = {
       readonly organizationId: CodecTypes['pg/text@1']['output'];
       readonly salaryStructureId: CodecTypes['pg/text@1']['output'];
       readonly sortOrder: CodecTypes['pg/int4@1']['output'];
+      readonly statutoryClass:
+        | 'TAXABLE_EARNING'
+        | 'NON_TAXABLE_EARNING'
+        | 'PRE_TAX_DEDUCTION'
+        | 'POST_TAX_DEDUCTION'
+        | null;
       readonly type: 'EARNING' | 'DEDUCTION';
     };
     readonly SalaryStructure: {
@@ -1286,6 +1388,7 @@ export type FieldInputTypes = {
     };
     readonly PayrollEntryComponent: {
       readonly amount: CodecTypes['pg/numeric@1']['input'];
+      readonly calculationSnapshot: CodecTypes['pg/text@1']['input'] | null;
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
       readonly id: CodecTypes['pg/text@1']['input'];
       readonly isAdjustment: CodecTypes['pg/bool@1']['input'];
@@ -1298,7 +1401,16 @@ export type FieldInputTypes = {
       readonly sourceMinutes: CodecTypes['pg/int4@1']['input'] | null;
       readonly sourceOvertimeRequestId: CodecTypes['pg/text@1']['input'] | null;
       readonly sourceSalaryComponentId: CodecTypes['pg/text@1']['input'] | null;
-      readonly type: 'EARNING' | 'DEDUCTION';
+      readonly statutoryClass:
+        | 'TAXABLE_EARNING'
+        | 'NON_TAXABLE_EARNING'
+        | 'PRE_TAX_DEDUCTION'
+        | 'POST_TAX_DEDUCTION'
+        | null;
+      readonly statutoryJurisdiction: CodecTypes['pg/text@1']['input'] | null;
+      readonly statutoryRuleName: CodecTypes['pg/text@1']['input'] | null;
+      readonly statutoryRuleSetName: CodecTypes['pg/text@1']['input'] | null;
+      readonly type: 'EARNING' | 'DEDUCTION' | 'EMPLOYER_CONTRIBUTION';
     };
     readonly PayrollNotification: {
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
@@ -1393,6 +1505,92 @@ export type FieldInputTypes = {
       readonly status: 'PENDING' | 'PROCESSING' | 'GENERATED' | 'FAILED' | 'CONFLICT' | 'SKIPPED';
       readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
     };
+    readonly PayrollStatutoryApplication: {
+      readonly appliedAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly appliedById: CodecTypes['pg/text@1']['input'];
+      readonly calculationSnapshot: CodecTypes['pg/text@1']['input'];
+      readonly employeeContributions: CodecTypes['pg/numeric@1']['input'];
+      readonly employerContributions: CodecTypes['pg/numeric@1']['input'];
+      readonly grossEarnings: CodecTypes['pg/numeric@1']['input'];
+      readonly id: CodecTypes['pg/text@1']['input'];
+      readonly inputHash: CodecTypes['pg/text@1']['input'];
+      readonly netPay: CodecTypes['pg/numeric@1']['input'];
+      readonly nonTaxableEarnings: CodecTypes['pg/numeric@1']['input'];
+      readonly organizationId: CodecTypes['pg/text@1']['input'];
+      readonly payrollEntryId: CodecTypes['pg/text@1']['input'];
+      readonly postTaxDeductions: CodecTypes['pg/numeric@1']['input'];
+      readonly preTaxDeductions: CodecTypes['pg/numeric@1']['input'];
+      readonly ruleSetId: CodecTypes['pg/text@1']['input'];
+      readonly taxWithholding: CodecTypes['pg/numeric@1']['input'];
+      readonly taxableEarnings: CodecTypes['pg/numeric@1']['input'];
+      readonly totalEmployerCost: CodecTypes['pg/numeric@1']['input'];
+    };
+    readonly PayrollStatutoryAuditEvent: {
+      readonly action: CodecTypes['pg/text@1']['input'];
+      readonly actorId: CodecTypes['pg/text@1']['input'];
+      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly details: CodecTypes['pg/text@1']['input'] | null;
+      readonly entityId: CodecTypes['pg/text@1']['input'];
+      readonly entityType: CodecTypes['pg/text@1']['input'];
+      readonly id: CodecTypes['pg/text@1']['input'];
+      readonly organizationId: CodecTypes['pg/text@1']['input'];
+    };
+    readonly PayrollStatutoryRule: {
+      readonly calculationBase: 'TAXABLE_EARNINGS' | 'GROSS_EARNINGS';
+      readonly calculationType: 'RATE' | 'FIXED_AMOUNT';
+      readonly contributionCap: CodecTypes['pg/numeric@1']['input'] | null;
+      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly fixedAmount: CodecTypes['pg/numeric@1']['input'] | null;
+      readonly id: CodecTypes['pg/text@1']['input'];
+      readonly kind: 'FLAT_WITHHOLDING' | 'EMPLOYEE_CONTRIBUTION' | 'EMPLOYER_CONTRIBUTION';
+      readonly maximumBase: CodecTypes['pg/numeric@1']['input'] | null;
+      readonly minimumBase: CodecTypes['pg/numeric@1']['input'] | null;
+      readonly name: CodecTypes['pg/text@1']['input'];
+      readonly organizationId: CodecTypes['pg/text@1']['input'];
+      readonly rate: CodecTypes['pg/numeric@1']['input'] | null;
+      readonly ruleSetId: CodecTypes['pg/text@1']['input'];
+      readonly sortOrder: CodecTypes['pg/int4@1']['input'];
+    };
+    readonly PayrollStatutoryRuleSet: {
+      readonly activatedAt: CodecTypes['pg/timestamptz-temporal@1']['input'] | null;
+      readonly activatedById: CodecTypes['pg/text@1']['input'] | null;
+      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly createdById: CodecTypes['pg/text@1']['input'];
+      readonly effectiveFrom: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly effectiveTo: CodecTypes['pg/timestamptz-temporal@1']['input'] | null;
+      readonly id: CodecTypes['pg/text@1']['input'];
+      readonly jurisdictionId: CodecTypes['pg/text@1']['input'];
+      readonly name: CodecTypes['pg/text@1']['input'];
+      readonly organizationId: CodecTypes['pg/text@1']['input'];
+      readonly periodsPerYear: CodecTypes['pg/int4@1']['input'] | null;
+      readonly status: 'DRAFT' | 'ACTIVE' | 'SUPERSEDED';
+      readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly version: CodecTypes['pg/int4@1']['input'];
+    };
+    readonly PayrollTaxBracket: {
+      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly id: CodecTypes['pg/text@1']['input'];
+      readonly lowerBound: CodecTypes['pg/numeric@1']['input'];
+      readonly organizationId: CodecTypes['pg/text@1']['input'];
+      readonly rate: CodecTypes['pg/numeric@1']['input'];
+      readonly ruleSetId: CodecTypes['pg/text@1']['input'];
+      readonly sortOrder: CodecTypes['pg/int4@1']['input'];
+      readonly upperBound: CodecTypes['pg/numeric@1']['input'] | null;
+    };
+    readonly PayrollTaxJurisdiction: {
+      readonly countryCode: CodecTypes['pg/text@1']['input'];
+      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly currency: CodecTypes['pg/text@1']['input'];
+      readonly id: CodecTypes['pg/text@1']['input'];
+      readonly isActive: CodecTypes['pg/bool@1']['input'];
+      readonly mandatoryCalculation: CodecTypes['pg/bool@1']['input'];
+      readonly organizationId: CodecTypes['pg/text@1']['input'];
+      readonly subdivisionCode: CodecTypes['pg/text@1']['input'] | null;
+      readonly taxYearStartDay: CodecTypes['pg/int4@1']['input'];
+      readonly taxYearStartMonth: CodecTypes['pg/int4@1']['input'];
+      readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly version: CodecTypes['pg/int4@1']['input'];
+    };
     readonly RecurringInvoiceItem: {
       readonly amount: CodecTypes['pg/numeric@1']['input'];
       readonly description: CodecTypes['pg/text@1']['input'];
@@ -1471,6 +1669,12 @@ export type FieldInputTypes = {
       readonly organizationId: CodecTypes['pg/text@1']['input'];
       readonly salaryStructureId: CodecTypes['pg/text@1']['input'];
       readonly sortOrder: CodecTypes['pg/int4@1']['input'];
+      readonly statutoryClass:
+        | 'TAXABLE_EARNING'
+        | 'NON_TAXABLE_EARNING'
+        | 'PRE_TAX_DEDUCTION'
+        | 'POST_TAX_DEDUCTION'
+        | null;
       readonly type: 'EARNING' | 'DEDUCTION';
     };
     readonly SalaryStructure: {
@@ -1930,6 +2134,7 @@ export type StorageColumnTypes = {
     };
     readonly payroll_entry_components: {
       readonly amount: Numeric<14, 2>;
+      readonly calculationSnapshot: CodecTypes['pg/text@1']['output'] | null;
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
       readonly id: CodecTypes['pg/text@1']['output'];
       readonly isAdjustment: CodecTypes['pg/bool@1']['output'];
@@ -1942,7 +2147,16 @@ export type StorageColumnTypes = {
       readonly sourceMinutes: CodecTypes['pg/int4@1']['output'] | null;
       readonly sourceOvertimeRequestId: CodecTypes['pg/text@1']['output'] | null;
       readonly sourceSalaryComponentId: CodecTypes['pg/text@1']['output'] | null;
-      readonly type: 'EARNING' | 'DEDUCTION';
+      readonly statutoryClass:
+        | 'TAXABLE_EARNING'
+        | 'NON_TAXABLE_EARNING'
+        | 'PRE_TAX_DEDUCTION'
+        | 'POST_TAX_DEDUCTION'
+        | null;
+      readonly statutoryJurisdiction: CodecTypes['pg/text@1']['output'] | null;
+      readonly statutoryRuleName: CodecTypes['pg/text@1']['output'] | null;
+      readonly statutoryRuleSetName: CodecTypes['pg/text@1']['output'] | null;
+      readonly type: 'EARNING' | 'DEDUCTION' | 'EMPLOYER_CONTRIBUTION';
     };
     readonly payroll_notifications: {
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
@@ -2037,6 +2251,92 @@ export type StorageColumnTypes = {
       readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
       readonly version: CodecTypes['pg/int4@1']['output'];
     };
+    readonly payroll_statutory_applications: {
+      readonly appliedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly appliedById: CodecTypes['pg/text@1']['output'];
+      readonly calculationSnapshot: CodecTypes['pg/text@1']['output'];
+      readonly employeeContributions: Numeric<14, 2>;
+      readonly employerContributions: Numeric<14, 2>;
+      readonly grossEarnings: Numeric<14, 2>;
+      readonly id: CodecTypes['pg/text@1']['output'];
+      readonly inputHash: CodecTypes['pg/text@1']['output'];
+      readonly netPay: Numeric<14, 2>;
+      readonly nonTaxableEarnings: Numeric<14, 2>;
+      readonly organizationId: CodecTypes['pg/text@1']['output'];
+      readonly payrollEntryId: CodecTypes['pg/text@1']['output'];
+      readonly postTaxDeductions: Numeric<14, 2>;
+      readonly preTaxDeductions: Numeric<14, 2>;
+      readonly ruleSetId: CodecTypes['pg/text@1']['output'];
+      readonly taxableEarnings: Numeric<14, 2>;
+      readonly taxWithholding: Numeric<14, 2>;
+      readonly totalEmployerCost: Numeric<14, 2>;
+    };
+    readonly payroll_statutory_audit_events: {
+      readonly action: CodecTypes['pg/text@1']['output'];
+      readonly actorId: CodecTypes['pg/text@1']['output'];
+      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly details: CodecTypes['pg/text@1']['output'] | null;
+      readonly entityId: CodecTypes['pg/text@1']['output'];
+      readonly entityType: CodecTypes['pg/text@1']['output'];
+      readonly id: CodecTypes['pg/text@1']['output'];
+      readonly organizationId: CodecTypes['pg/text@1']['output'];
+    };
+    readonly payroll_statutory_rule_sets: {
+      readonly activatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
+      readonly activatedById: CodecTypes['pg/text@1']['output'] | null;
+      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly createdById: CodecTypes['pg/text@1']['output'];
+      readonly effectiveFrom: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly effectiveTo: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
+      readonly id: CodecTypes['pg/text@1']['output'];
+      readonly jurisdictionId: CodecTypes['pg/text@1']['output'];
+      readonly name: CodecTypes['pg/text@1']['output'];
+      readonly organizationId: CodecTypes['pg/text@1']['output'];
+      readonly periodsPerYear: CodecTypes['pg/int4@1']['output'] | null;
+      readonly status: 'DRAFT' | 'ACTIVE' | 'SUPERSEDED';
+      readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly version: CodecTypes['pg/int4@1']['output'];
+    };
+    readonly payroll_statutory_rules: {
+      readonly calculationBase: 'TAXABLE_EARNINGS' | 'GROSS_EARNINGS';
+      readonly calculationType: 'RATE' | 'FIXED_AMOUNT';
+      readonly contributionCap: Numeric<14, 2> | null;
+      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly fixedAmount: Numeric<14, 2> | null;
+      readonly id: CodecTypes['pg/text@1']['output'];
+      readonly kind: 'FLAT_WITHHOLDING' | 'EMPLOYEE_CONTRIBUTION' | 'EMPLOYER_CONTRIBUTION';
+      readonly maximumBase: Numeric<14, 2> | null;
+      readonly minimumBase: Numeric<14, 2> | null;
+      readonly name: CodecTypes['pg/text@1']['output'];
+      readonly organizationId: CodecTypes['pg/text@1']['output'];
+      readonly rate: Numeric<9, 6> | null;
+      readonly ruleSetId: CodecTypes['pg/text@1']['output'];
+      readonly sortOrder: CodecTypes['pg/int4@1']['output'];
+    };
+    readonly payroll_tax_brackets: {
+      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly id: CodecTypes['pg/text@1']['output'];
+      readonly lowerBound: Numeric<14, 2>;
+      readonly organizationId: CodecTypes['pg/text@1']['output'];
+      readonly rate: Numeric<9, 6>;
+      readonly ruleSetId: CodecTypes['pg/text@1']['output'];
+      readonly sortOrder: CodecTypes['pg/int4@1']['output'];
+      readonly upperBound: Numeric<14, 2> | null;
+    };
+    readonly payroll_tax_jurisdictions: {
+      readonly countryCode: CodecTypes['pg/text@1']['output'];
+      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly currency: CodecTypes['pg/text@1']['output'];
+      readonly id: CodecTypes['pg/text@1']['output'];
+      readonly isActive: CodecTypes['pg/bool@1']['output'];
+      readonly mandatoryCalculation: CodecTypes['pg/bool@1']['output'];
+      readonly organizationId: CodecTypes['pg/text@1']['output'];
+      readonly subdivisionCode: CodecTypes['pg/text@1']['output'] | null;
+      readonly taxYearStartDay: CodecTypes['pg/int4@1']['output'];
+      readonly taxYearStartMonth: CodecTypes['pg/int4@1']['output'];
+      readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly version: CodecTypes['pg/int4@1']['output'];
+    };
     readonly recurring_invoice_items: {
       readonly amount: Numeric<12, 2>;
       readonly description: CodecTypes['pg/text@1']['output'];
@@ -2115,6 +2415,12 @@ export type StorageColumnTypes = {
       readonly organizationId: CodecTypes['pg/text@1']['output'];
       readonly salaryStructureId: CodecTypes['pg/text@1']['output'];
       readonly sortOrder: CodecTypes['pg/int4@1']['output'];
+      readonly statutoryClass:
+        | 'TAXABLE_EARNING'
+        | 'NON_TAXABLE_EARNING'
+        | 'PRE_TAX_DEDUCTION'
+        | 'POST_TAX_DEDUCTION'
+        | null;
       readonly type: 'EARNING' | 'DEDUCTION';
     };
     readonly salary_structures: {
@@ -2574,6 +2880,7 @@ export type StorageColumnInputTypes = {
     };
     readonly payroll_entry_components: {
       readonly amount: CodecTypes['pg/numeric@1']['input'];
+      readonly calculationSnapshot: CodecTypes['pg/text@1']['input'] | null;
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
       readonly id: CodecTypes['pg/text@1']['input'];
       readonly isAdjustment: CodecTypes['pg/bool@1']['input'];
@@ -2586,7 +2893,16 @@ export type StorageColumnInputTypes = {
       readonly sourceMinutes: CodecTypes['pg/int4@1']['input'] | null;
       readonly sourceOvertimeRequestId: CodecTypes['pg/text@1']['input'] | null;
       readonly sourceSalaryComponentId: CodecTypes['pg/text@1']['input'] | null;
-      readonly type: 'EARNING' | 'DEDUCTION';
+      readonly statutoryClass:
+        | 'TAXABLE_EARNING'
+        | 'NON_TAXABLE_EARNING'
+        | 'PRE_TAX_DEDUCTION'
+        | 'POST_TAX_DEDUCTION'
+        | null;
+      readonly statutoryJurisdiction: CodecTypes['pg/text@1']['input'] | null;
+      readonly statutoryRuleName: CodecTypes['pg/text@1']['input'] | null;
+      readonly statutoryRuleSetName: CodecTypes['pg/text@1']['input'] | null;
+      readonly type: 'EARNING' | 'DEDUCTION' | 'EMPLOYER_CONTRIBUTION';
     };
     readonly payroll_notifications: {
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
@@ -2681,6 +2997,92 @@ export type StorageColumnInputTypes = {
       readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
       readonly version: CodecTypes['pg/int4@1']['input'];
     };
+    readonly payroll_statutory_applications: {
+      readonly appliedAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly appliedById: CodecTypes['pg/text@1']['input'];
+      readonly calculationSnapshot: CodecTypes['pg/text@1']['input'];
+      readonly employeeContributions: CodecTypes['pg/numeric@1']['input'];
+      readonly employerContributions: CodecTypes['pg/numeric@1']['input'];
+      readonly grossEarnings: CodecTypes['pg/numeric@1']['input'];
+      readonly id: CodecTypes['pg/text@1']['input'];
+      readonly inputHash: CodecTypes['pg/text@1']['input'];
+      readonly netPay: CodecTypes['pg/numeric@1']['input'];
+      readonly nonTaxableEarnings: CodecTypes['pg/numeric@1']['input'];
+      readonly organizationId: CodecTypes['pg/text@1']['input'];
+      readonly payrollEntryId: CodecTypes['pg/text@1']['input'];
+      readonly postTaxDeductions: CodecTypes['pg/numeric@1']['input'];
+      readonly preTaxDeductions: CodecTypes['pg/numeric@1']['input'];
+      readonly ruleSetId: CodecTypes['pg/text@1']['input'];
+      readonly taxableEarnings: CodecTypes['pg/numeric@1']['input'];
+      readonly taxWithholding: CodecTypes['pg/numeric@1']['input'];
+      readonly totalEmployerCost: CodecTypes['pg/numeric@1']['input'];
+    };
+    readonly payroll_statutory_audit_events: {
+      readonly action: CodecTypes['pg/text@1']['input'];
+      readonly actorId: CodecTypes['pg/text@1']['input'];
+      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly details: CodecTypes['pg/text@1']['input'] | null;
+      readonly entityId: CodecTypes['pg/text@1']['input'];
+      readonly entityType: CodecTypes['pg/text@1']['input'];
+      readonly id: CodecTypes['pg/text@1']['input'];
+      readonly organizationId: CodecTypes['pg/text@1']['input'];
+    };
+    readonly payroll_statutory_rule_sets: {
+      readonly activatedAt: CodecTypes['pg/timestamptz-temporal@1']['input'] | null;
+      readonly activatedById: CodecTypes['pg/text@1']['input'] | null;
+      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly createdById: CodecTypes['pg/text@1']['input'];
+      readonly effectiveFrom: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly effectiveTo: CodecTypes['pg/timestamptz-temporal@1']['input'] | null;
+      readonly id: CodecTypes['pg/text@1']['input'];
+      readonly jurisdictionId: CodecTypes['pg/text@1']['input'];
+      readonly name: CodecTypes['pg/text@1']['input'];
+      readonly organizationId: CodecTypes['pg/text@1']['input'];
+      readonly periodsPerYear: CodecTypes['pg/int4@1']['input'] | null;
+      readonly status: 'DRAFT' | 'ACTIVE' | 'SUPERSEDED';
+      readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly version: CodecTypes['pg/int4@1']['input'];
+    };
+    readonly payroll_statutory_rules: {
+      readonly calculationBase: 'TAXABLE_EARNINGS' | 'GROSS_EARNINGS';
+      readonly calculationType: 'RATE' | 'FIXED_AMOUNT';
+      readonly contributionCap: CodecTypes['pg/numeric@1']['input'] | null;
+      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly fixedAmount: CodecTypes['pg/numeric@1']['input'] | null;
+      readonly id: CodecTypes['pg/text@1']['input'];
+      readonly kind: 'FLAT_WITHHOLDING' | 'EMPLOYEE_CONTRIBUTION' | 'EMPLOYER_CONTRIBUTION';
+      readonly maximumBase: CodecTypes['pg/numeric@1']['input'] | null;
+      readonly minimumBase: CodecTypes['pg/numeric@1']['input'] | null;
+      readonly name: CodecTypes['pg/text@1']['input'];
+      readonly organizationId: CodecTypes['pg/text@1']['input'];
+      readonly rate: CodecTypes['pg/numeric@1']['input'] | null;
+      readonly ruleSetId: CodecTypes['pg/text@1']['input'];
+      readonly sortOrder: CodecTypes['pg/int4@1']['input'];
+    };
+    readonly payroll_tax_brackets: {
+      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly id: CodecTypes['pg/text@1']['input'];
+      readonly lowerBound: CodecTypes['pg/numeric@1']['input'];
+      readonly organizationId: CodecTypes['pg/text@1']['input'];
+      readonly rate: CodecTypes['pg/numeric@1']['input'];
+      readonly ruleSetId: CodecTypes['pg/text@1']['input'];
+      readonly sortOrder: CodecTypes['pg/int4@1']['input'];
+      readonly upperBound: CodecTypes['pg/numeric@1']['input'] | null;
+    };
+    readonly payroll_tax_jurisdictions: {
+      readonly countryCode: CodecTypes['pg/text@1']['input'];
+      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly currency: CodecTypes['pg/text@1']['input'];
+      readonly id: CodecTypes['pg/text@1']['input'];
+      readonly isActive: CodecTypes['pg/bool@1']['input'];
+      readonly mandatoryCalculation: CodecTypes['pg/bool@1']['input'];
+      readonly organizationId: CodecTypes['pg/text@1']['input'];
+      readonly subdivisionCode: CodecTypes['pg/text@1']['input'] | null;
+      readonly taxYearStartDay: CodecTypes['pg/int4@1']['input'];
+      readonly taxYearStartMonth: CodecTypes['pg/int4@1']['input'];
+      readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly version: CodecTypes['pg/int4@1']['input'];
+    };
     readonly recurring_invoice_items: {
       readonly amount: CodecTypes['pg/numeric@1']['input'];
       readonly description: CodecTypes['pg/text@1']['input'];
@@ -2759,6 +3161,12 @@ export type StorageColumnInputTypes = {
       readonly organizationId: CodecTypes['pg/text@1']['input'];
       readonly salaryStructureId: CodecTypes['pg/text@1']['input'];
       readonly sortOrder: CodecTypes['pg/int4@1']['input'];
+      readonly statutoryClass:
+        | 'TAXABLE_EARNING'
+        | 'NON_TAXABLE_EARNING'
+        | 'PRE_TAX_DEDUCTION'
+        | 'POST_TAX_DEDUCTION'
+        | null;
       readonly type: 'EARNING' | 'DEDUCTION';
     };
     readonly salary_structures: {
@@ -3291,6 +3699,10 @@ export namespace Models {
     recurringSchedules: public_RecurringInvoiceSchedule[];
     retainers: public_Retainer[];
     salaryStructures: public_SalaryStructure[];
+    statutoryApplications: public_PayrollStatutoryApplication[];
+    statutoryAuditEvents: public_PayrollStatutoryAuditEvent[];
+    statutoryRuleSets: public_PayrollStatutoryRuleSet[];
+    taxJurisdictions: public_PayrollTaxJurisdiction[];
     users: public_User[];
     workSchedules: public_WorkSchedule[];
     workforceAuditEvents: public_WorkforceAuditEvent[];
@@ -3328,6 +3740,10 @@ export namespace Models {
       | 'recurringSchedules'
       | 'retainers'
       | 'salaryStructures'
+      | 'statutoryApplications'
+      | 'statutoryAuditEvents'
+      | 'statutoryRuleSets'
+      | 'taxJurisdictions'
       | 'users'
       | 'workSchedules'
       | 'workforceAuditEvents';
@@ -3425,6 +3841,7 @@ export namespace Models {
     payments: public_PayrollPayment[];
     payrollRun: public_PayrollRun;
     salaryStructure: public_SalaryStructure;
+    statutoryApplication: public_PayrollStatutoryApplication | null;
     readonly [RelationKeys]?:
       | 'auditEvents'
       | 'components'
@@ -3432,10 +3849,12 @@ export namespace Models {
       | 'organization'
       | 'payments'
       | 'payrollRun'
-      | 'salaryStructure';
+      | 'salaryStructure'
+      | 'statutoryApplication';
   };
   export type public_PayrollEntryComponent = {
     amount: Numeric<14, 2>;
+    calculationSnapshot: CodecTypes['pg/text@1']['output'] | null;
     createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
     id: CodecTypes['pg/text@1']['output'];
     isAdjustment: CodecTypes['pg/bool@1']['output'];
@@ -3448,7 +3867,12 @@ export namespace Models {
     sourceMinutes: CodecTypes['pg/int4@1']['output'] | null;
     sourceOvertimeRequestId: CodecTypes['pg/text@1']['output'] | null;
     sourceSalaryComponentId: CodecTypes['pg/text@1']['output'] | null;
-    type: 'EARNING' | 'DEDUCTION';
+    statutoryClass:
+      'TAXABLE_EARNING' | 'NON_TAXABLE_EARNING' | 'PRE_TAX_DEDUCTION' | 'POST_TAX_DEDUCTION' | null;
+    statutoryJurisdiction: CodecTypes['pg/text@1']['output'] | null;
+    statutoryRuleName: CodecTypes['pg/text@1']['output'] | null;
+    statutoryRuleSetName: CodecTypes['pg/text@1']['output'] | null;
+    type: 'EARNING' | 'DEDUCTION' | 'EMPLOYER_CONTRIBUTION';
     payrollEntry: public_PayrollEntry;
     sourceLeaveRequest: public_LeaveRequest | null;
     sourceOvertimeRequest: public_OvertimeRequest | null;
@@ -3586,6 +4010,122 @@ export namespace Models {
     schedule: public_PayrollSchedule;
     readonly [RelationKeys]?: 'organization' | 'payrollRun' | 'schedule';
   };
+  export type public_PayrollStatutoryApplication = {
+    appliedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+    appliedById: CodecTypes['pg/text@1']['output'];
+    calculationSnapshot: CodecTypes['pg/text@1']['output'];
+    employeeContributions: Numeric<14, 2>;
+    employerContributions: Numeric<14, 2>;
+    grossEarnings: Numeric<14, 2>;
+    id: CodecTypes['pg/text@1']['output'];
+    inputHash: CodecTypes['pg/text@1']['output'];
+    netPay: Numeric<14, 2>;
+    nonTaxableEarnings: Numeric<14, 2>;
+    organizationId: CodecTypes['pg/text@1']['output'];
+    payrollEntryId: CodecTypes['pg/text@1']['output'];
+    postTaxDeductions: Numeric<14, 2>;
+    preTaxDeductions: Numeric<14, 2>;
+    ruleSetId: CodecTypes['pg/text@1']['output'];
+    taxWithholding: Numeric<14, 2>;
+    taxableEarnings: Numeric<14, 2>;
+    totalEmployerCost: Numeric<14, 2>;
+    appliedBy: public_User;
+    organization: public_Organization;
+    payrollEntry: public_PayrollEntry;
+    ruleSet: public_PayrollStatutoryRuleSet;
+    readonly [RelationKeys]?: 'appliedBy' | 'organization' | 'payrollEntry' | 'ruleSet';
+  };
+  export type public_PayrollStatutoryAuditEvent = {
+    action: CodecTypes['pg/text@1']['output'];
+    actorId: CodecTypes['pg/text@1']['output'];
+    createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+    details: CodecTypes['pg/text@1']['output'] | null;
+    entityId: CodecTypes['pg/text@1']['output'];
+    entityType: CodecTypes['pg/text@1']['output'];
+    id: CodecTypes['pg/text@1']['output'];
+    organizationId: CodecTypes['pg/text@1']['output'];
+    actor: public_User;
+    organization: public_Organization;
+    readonly [RelationKeys]?: 'actor' | 'organization';
+  };
+  export type public_PayrollStatutoryRule = {
+    calculationBase: 'TAXABLE_EARNINGS' | 'GROSS_EARNINGS';
+    calculationType: 'RATE' | 'FIXED_AMOUNT';
+    contributionCap: Numeric<14, 2> | null;
+    createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+    fixedAmount: Numeric<14, 2> | null;
+    id: CodecTypes['pg/text@1']['output'];
+    kind: 'FLAT_WITHHOLDING' | 'EMPLOYEE_CONTRIBUTION' | 'EMPLOYER_CONTRIBUTION';
+    maximumBase: Numeric<14, 2> | null;
+    minimumBase: Numeric<14, 2> | null;
+    name: CodecTypes['pg/text@1']['output'];
+    organizationId: CodecTypes['pg/text@1']['output'];
+    rate: Numeric<9, 6> | null;
+    ruleSetId: CodecTypes['pg/text@1']['output'];
+    sortOrder: CodecTypes['pg/int4@1']['output'];
+    ruleSet: public_PayrollStatutoryRuleSet;
+    readonly [RelationKeys]?: 'ruleSet';
+  };
+  export type public_PayrollStatutoryRuleSet = {
+    activatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
+    activatedById: CodecTypes['pg/text@1']['output'] | null;
+    createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+    createdById: CodecTypes['pg/text@1']['output'];
+    effectiveFrom: CodecTypes['pg/timestamptz-temporal@1']['output'];
+    effectiveTo: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
+    id: CodecTypes['pg/text@1']['output'];
+    jurisdictionId: CodecTypes['pg/text@1']['output'];
+    name: CodecTypes['pg/text@1']['output'];
+    organizationId: CodecTypes['pg/text@1']['output'];
+    periodsPerYear: CodecTypes['pg/int4@1']['output'] | null;
+    status: 'DRAFT' | 'ACTIVE' | 'SUPERSEDED';
+    updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+    version: CodecTypes['pg/int4@1']['output'];
+    activatedBy: public_User | null;
+    applications: public_PayrollStatutoryApplication[];
+    brackets: public_PayrollTaxBracket[];
+    createdBy: public_User;
+    jurisdiction: public_PayrollTaxJurisdiction;
+    organization: public_Organization;
+    rules: public_PayrollStatutoryRule[];
+    readonly [RelationKeys]?:
+      | 'activatedBy'
+      | 'applications'
+      | 'brackets'
+      | 'createdBy'
+      | 'jurisdiction'
+      | 'organization'
+      | 'rules';
+  };
+  export type public_PayrollTaxBracket = {
+    createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+    id: CodecTypes['pg/text@1']['output'];
+    lowerBound: Numeric<14, 2>;
+    organizationId: CodecTypes['pg/text@1']['output'];
+    rate: Numeric<9, 6>;
+    ruleSetId: CodecTypes['pg/text@1']['output'];
+    sortOrder: CodecTypes['pg/int4@1']['output'];
+    upperBound: Numeric<14, 2> | null;
+    ruleSet: public_PayrollStatutoryRuleSet;
+    readonly [RelationKeys]?: 'ruleSet';
+  };
+  export type public_PayrollTaxJurisdiction = {
+    countryCode: CodecTypes['pg/text@1']['output'];
+    createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+    currency: CodecTypes['pg/text@1']['output'];
+    id: CodecTypes['pg/text@1']['output'];
+    isActive: CodecTypes['pg/bool@1']['output'];
+    mandatoryCalculation: CodecTypes['pg/bool@1']['output'];
+    organizationId: CodecTypes['pg/text@1']['output'];
+    subdivisionCode: CodecTypes['pg/text@1']['output'] | null;
+    taxYearStartDay: CodecTypes['pg/int4@1']['output'];
+    taxYearStartMonth: CodecTypes['pg/int4@1']['output'];
+    updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+    version: CodecTypes['pg/int4@1']['output'];
+    organization: public_Organization;
+    ruleSets: public_PayrollStatutoryRuleSet[];
+    readonly [RelationKeys]?: 'organization' | 'ruleSets';
+  };
   export type public_RecurringInvoiceItem = {
     amount: Numeric<12, 2>;
     description: CodecTypes['pg/text@1']['output'];
@@ -3684,6 +4224,8 @@ export namespace Models {
     organizationId: CodecTypes['pg/text@1']['output'];
     salaryStructureId: CodecTypes['pg/text@1']['output'];
     sortOrder: CodecTypes['pg/int4@1']['output'];
+    statutoryClass:
+      'TAXABLE_EARNING' | 'NON_TAXABLE_EARNING' | 'PRE_TAX_DEDUCTION' | 'POST_TAX_DEDUCTION' | null;
     type: 'EARNING' | 'DEDUCTION';
     salaryStructure: public_SalaryStructure;
     readonly [RelationKeys]?: 'salaryStructure';
@@ -3726,6 +4268,8 @@ export namespace Models {
     passwordHash: CodecTypes['pg/text@1']['output'];
     phoneNumber: CodecTypes['pg/text@1']['output'] | null;
     updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+    activatedStatutoryRules: public_PayrollStatutoryRuleSet[];
+    appliedStatutoryCalculations: public_PayrollStatutoryApplication[];
     approvedPayrollRuns: public_PayrollRun[];
     cashFlowAuditEvents: public_CashFlowForecastAuditEvent[];
     createdAttendance: public_AttendanceRecord[];
@@ -3733,6 +4277,7 @@ export namespace Models {
     createdPayrollRuns: public_PayrollRun[];
     createdPayrollSchedules: public_PayrollSchedule[];
     createdSalaryStructures: public_SalaryStructure[];
+    createdStatutoryRules: public_PayrollStatutoryRuleSet[];
     employeeAuditEvents: public_EmployeeAuditEvent[];
     expenseApprovalEvents: public_ExpenseApprovalHistory[];
     finalizedPayrollRuns: public_PayrollRun[];
@@ -3750,11 +4295,14 @@ export namespace Models {
     reviewedExpenses: public_Expense[];
     reviewedLeaveRequests: public_LeaveRequest[];
     reviewedOvertime: public_OvertimeRequest[];
+    statutoryAuditEvents: public_PayrollStatutoryAuditEvent[];
     submittedExpenses: public_Expense[];
     updatedAttendance: public_AttendanceRecord[];
     updatedCashFlowConfig: public_CashFlowForecastConfiguration[];
     workforceAuditEvents: public_WorkforceAuditEvent[];
     readonly [RelationKeys]?:
+      | 'activatedStatutoryRules'
+      | 'appliedStatutoryCalculations'
       | 'approvedPayrollRuns'
       | 'cashFlowAuditEvents'
       | 'createdAttendance'
@@ -3762,6 +4310,7 @@ export namespace Models {
       | 'createdPayrollRuns'
       | 'createdPayrollSchedules'
       | 'createdSalaryStructures'
+      | 'createdStatutoryRules'
       | 'employeeAuditEvents'
       | 'expenseApprovalEvents'
       | 'finalizedPayrollRuns'
@@ -3779,6 +4328,7 @@ export namespace Models {
       | 'reviewedExpenses'
       | 'reviewedLeaveRequests'
       | 'reviewedOvertime'
+      | 'statutoryAuditEvents'
       | 'submittedExpenses'
       | 'updatedAttendance'
       | 'updatedCashFlowConfig'
@@ -3855,6 +4405,12 @@ export declare const models: {
     PayrollSchedule: Models.public_PayrollSchedule;
     PayrollScheduleEvent: Models.public_PayrollScheduleEvent;
     PayrollScheduleOccurrence: Models.public_PayrollScheduleOccurrence;
+    PayrollStatutoryApplication: Models.public_PayrollStatutoryApplication;
+    PayrollStatutoryAuditEvent: Models.public_PayrollStatutoryAuditEvent;
+    PayrollStatutoryRule: Models.public_PayrollStatutoryRule;
+    PayrollStatutoryRuleSet: Models.public_PayrollStatutoryRuleSet;
+    PayrollTaxBracket: Models.public_PayrollTaxBracket;
+    PayrollTaxJurisdiction: Models.public_PayrollTaxJurisdiction;
     RecurringInvoiceItem: Models.public_RecurringInvoiceItem;
     RecurringInvoiceOccurrence: Models.public_RecurringInvoiceOccurrence;
     RecurringInvoiceSchedule: Models.public_RecurringInvoiceSchedule;
@@ -7213,6 +7769,11 @@ type ContractBase = Omit<
                   readonly nullable: false;
                   readonly typeParams: { readonly precision: 14; readonly scale: 2 };
                 };
+                readonly calculationSnapshot: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                };
                 readonly createdAt: {
                   readonly nativeType: 'timestamptz';
                   readonly codecId: 'pg/timestamptz-temporal@1';
@@ -7279,6 +7840,26 @@ type ContractBase = Omit<
                   readonly nullable: true;
                 };
                 readonly sourceSalaryComponentId: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                };
+                readonly statutoryClass: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                };
+                readonly statutoryJurisdiction: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                };
+                readonly statutoryRuleName: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                };
+                readonly statutoryRuleSetName: {
                   readonly nativeType: 'text';
                   readonly codecId: 'pg/text@1';
                   readonly nullable: true;
@@ -8243,6 +8824,778 @@ type ContractBase = Omit<
                 },
               ];
             };
+            readonly payroll_statutory_applications: {
+              columns: {
+                readonly appliedAt: {
+                  readonly nativeType: 'timestamptz';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                  readonly nullable: false;
+                  readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
+                };
+                readonly appliedById: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly calculationSnapshot: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly employeeContributions: {
+                  readonly nativeType: 'numeric';
+                  readonly codecId: 'pg/numeric@1';
+                  readonly nullable: false;
+                  readonly typeParams: { readonly precision: 14; readonly scale: 2 };
+                };
+                readonly employerContributions: {
+                  readonly nativeType: 'numeric';
+                  readonly codecId: 'pg/numeric@1';
+                  readonly nullable: false;
+                  readonly typeParams: { readonly precision: 14; readonly scale: 2 };
+                };
+                readonly grossEarnings: {
+                  readonly nativeType: 'numeric';
+                  readonly codecId: 'pg/numeric@1';
+                  readonly nullable: false;
+                  readonly typeParams: { readonly precision: 14; readonly scale: 2 };
+                };
+                readonly id: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly inputHash: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly netPay: {
+                  readonly nativeType: 'numeric';
+                  readonly codecId: 'pg/numeric@1';
+                  readonly nullable: false;
+                  readonly typeParams: { readonly precision: 14; readonly scale: 2 };
+                };
+                readonly nonTaxableEarnings: {
+                  readonly nativeType: 'numeric';
+                  readonly codecId: 'pg/numeric@1';
+                  readonly nullable: false;
+                  readonly typeParams: { readonly precision: 14; readonly scale: 2 };
+                };
+                readonly organizationId: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly payrollEntryId: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly postTaxDeductions: {
+                  readonly nativeType: 'numeric';
+                  readonly codecId: 'pg/numeric@1';
+                  readonly nullable: false;
+                  readonly typeParams: { readonly precision: 14; readonly scale: 2 };
+                };
+                readonly preTaxDeductions: {
+                  readonly nativeType: 'numeric';
+                  readonly codecId: 'pg/numeric@1';
+                  readonly nullable: false;
+                  readonly typeParams: { readonly precision: 14; readonly scale: 2 };
+                };
+                readonly ruleSetId: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly taxWithholding: {
+                  readonly nativeType: 'numeric';
+                  readonly codecId: 'pg/numeric@1';
+                  readonly nullable: false;
+                  readonly typeParams: { readonly precision: 14; readonly scale: 2 };
+                };
+                readonly taxableEarnings: {
+                  readonly nativeType: 'numeric';
+                  readonly codecId: 'pg/numeric@1';
+                  readonly nullable: false;
+                  readonly typeParams: { readonly precision: 14; readonly scale: 2 };
+                };
+                readonly totalEmployerCost: {
+                  readonly nativeType: 'numeric';
+                  readonly codecId: 'pg/numeric@1';
+                  readonly nullable: false;
+                  readonly typeParams: { readonly precision: 14; readonly scale: 2 };
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [
+                {
+                  readonly columns: readonly ['organizationId', 'payrollEntryId'];
+                  readonly name: 'stat_app_entry_key';
+                },
+              ];
+              indexes: readonly [
+                {
+                  readonly name: 'payroll_statutory_applications_organizationId_appliedB_d2def5ad';
+                  readonly prefix: 'payroll_statutory_applications_organizationId_appliedB';
+                  readonly columns: readonly ['organizationId', 'appliedById'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'payroll_statutory_applications_organizationId_idx_2e17ef41';
+                  readonly prefix: 'payroll_statutory_applications_organizationId_idx';
+                  readonly columns: readonly ['organizationId'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'stat_app_rule_idx';
+                  readonly columns: readonly ['organizationId', 'ruleSetId'];
+                  readonly unique: false;
+                },
+              ];
+              foreignKeys: readonly [
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'payroll_statutory_applications';
+                    readonly columns: readonly ['organizationId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'organizations';
+                    readonly columns: readonly ['id'];
+                  };
+                  readonly name: 'stat_app_org_fkey';
+                },
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'payroll_statutory_applications';
+                    readonly columns: readonly ['organizationId', 'payrollEntryId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'payroll_entries';
+                    readonly columns: readonly ['organizationId', 'id'];
+                  };
+                  readonly name: 'stat_app_entry_fkey';
+                },
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'payroll_statutory_applications';
+                    readonly columns: readonly ['organizationId', 'ruleSetId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'payroll_statutory_rule_sets';
+                    readonly columns: readonly ['organizationId', 'id'];
+                  };
+                  readonly name: 'stat_app_rule_fkey';
+                },
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'payroll_statutory_applications';
+                    readonly columns: readonly ['organizationId', 'appliedById'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'users';
+                    readonly columns: readonly ['organizationId', 'id'];
+                  };
+                  readonly name: 'stat_app_actor_fkey';
+                },
+              ];
+            };
+            readonly payroll_statutory_audit_events: {
+              columns: {
+                readonly action: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly actorId: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly createdAt: {
+                  readonly nativeType: 'timestamptz';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                  readonly nullable: false;
+                  readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
+                };
+                readonly details: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                };
+                readonly entityId: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly entityType: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly id: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly organizationId: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [];
+              indexes: readonly [
+                {
+                  readonly name: 'payroll_statutory_audit_events_organizationId_actorId__327c2974';
+                  readonly prefix: 'payroll_statutory_audit_events_organizationId_actorId_';
+                  readonly columns: readonly ['organizationId', 'actorId'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'payroll_statutory_audit_events_organizationId_idx_2e17ef41';
+                  readonly prefix: 'payroll_statutory_audit_events_organizationId_idx';
+                  readonly columns: readonly ['organizationId'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'stat_audit_entity_idx';
+                  readonly columns: readonly [
+                    'organizationId',
+                    'entityType',
+                    'entityId',
+                    'createdAt',
+                  ];
+                  readonly unique: false;
+                },
+              ];
+              foreignKeys: readonly [
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'payroll_statutory_audit_events';
+                    readonly columns: readonly ['organizationId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'organizations';
+                    readonly columns: readonly ['id'];
+                  };
+                  readonly name: 'stat_audit_org_fkey';
+                },
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'payroll_statutory_audit_events';
+                    readonly columns: readonly ['organizationId', 'actorId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'users';
+                    readonly columns: readonly ['organizationId', 'id'];
+                  };
+                  readonly name: 'stat_audit_actor_fkey';
+                },
+              ];
+            };
+            readonly payroll_statutory_rule_sets: {
+              columns: {
+                readonly activatedAt: {
+                  readonly nativeType: 'timestamptz';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                  readonly nullable: true;
+                };
+                readonly activatedById: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                };
+                readonly createdAt: {
+                  readonly nativeType: 'timestamptz';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                  readonly nullable: false;
+                  readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
+                };
+                readonly createdById: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly effectiveFrom: {
+                  readonly nativeType: 'timestamptz';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                  readonly nullable: false;
+                };
+                readonly effectiveTo: {
+                  readonly nativeType: 'timestamptz';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                  readonly nullable: true;
+                };
+                readonly id: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly jurisdictionId: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly name: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly organizationId: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly periodsPerYear: {
+                  readonly nativeType: 'int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: true;
+                };
+                readonly status: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/text@1', 'DRAFT'>;
+                  };
+                };
+                readonly updatedAt: {
+                  readonly nativeType: 'timestamptz';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                  readonly nullable: false;
+                };
+                readonly version: {
+                  readonly nativeType: 'int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [
+                { readonly columns: readonly ['organizationId', 'id'] },
+                {
+                  readonly columns: readonly [
+                    'organizationId',
+                    'jurisdictionId',
+                    'name',
+                    'version',
+                  ];
+                  readonly name: 'stat_rule_version_key';
+                },
+              ];
+              indexes: readonly [
+                {
+                  readonly name: 'payroll_statutory_rule_sets_organizationId_activatedBy_5b72b40f';
+                  readonly prefix: 'payroll_statutory_rule_sets_organizationId_activatedBy';
+                  readonly columns: readonly ['organizationId', 'activatedById'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'payroll_statutory_rule_sets_organizationId_createdById_4fb80a04';
+                  readonly prefix: 'payroll_statutory_rule_sets_organizationId_createdById';
+                  readonly columns: readonly ['organizationId', 'createdById'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'payroll_statutory_rule_sets_organizationId_idx_2e17ef41';
+                  readonly prefix: 'payroll_statutory_rule_sets_organizationId_idx';
+                  readonly columns: readonly ['organizationId'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'payroll_statutory_rule_sets_organizationId_jurisdictio_2477d924';
+                  readonly prefix: 'payroll_statutory_rule_sets_organizationId_jurisdictio';
+                  readonly columns: readonly ['organizationId', 'jurisdictionId'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'stat_rule_effective_idx';
+                  readonly columns: readonly [
+                    'organizationId',
+                    'jurisdictionId',
+                    'status',
+                    'effectiveFrom',
+                  ];
+                  readonly unique: false;
+                },
+              ];
+              foreignKeys: readonly [
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'payroll_statutory_rule_sets';
+                    readonly columns: readonly ['organizationId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'organizations';
+                    readonly columns: readonly ['id'];
+                  };
+                  readonly name: 'stat_rule_org_fkey';
+                },
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'payroll_statutory_rule_sets';
+                    readonly columns: readonly ['organizationId', 'jurisdictionId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'payroll_tax_jurisdictions';
+                    readonly columns: readonly ['organizationId', 'id'];
+                  };
+                  readonly name: 'stat_rule_jurisdiction_fkey';
+                },
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'payroll_statutory_rule_sets';
+                    readonly columns: readonly ['organizationId', 'createdById'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'users';
+                    readonly columns: readonly ['organizationId', 'id'];
+                  };
+                  readonly name: 'stat_rule_creator_fkey';
+                },
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'payroll_statutory_rule_sets';
+                    readonly columns: readonly ['organizationId', 'activatedById'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'users';
+                    readonly columns: readonly ['organizationId', 'id'];
+                  };
+                  readonly name: 'stat_rule_activator_fkey';
+                },
+              ];
+            };
+            readonly payroll_statutory_rules: {
+              columns: {
+                readonly calculationBase: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly calculationType: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly contributionCap: {
+                  readonly nativeType: 'numeric';
+                  readonly codecId: 'pg/numeric@1';
+                  readonly nullable: true;
+                  readonly typeParams: { readonly precision: 14; readonly scale: 2 };
+                };
+                readonly createdAt: {
+                  readonly nativeType: 'timestamptz';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                  readonly nullable: false;
+                  readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
+                };
+                readonly fixedAmount: {
+                  readonly nativeType: 'numeric';
+                  readonly codecId: 'pg/numeric@1';
+                  readonly nullable: true;
+                  readonly typeParams: { readonly precision: 14; readonly scale: 2 };
+                };
+                readonly id: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly kind: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly maximumBase: {
+                  readonly nativeType: 'numeric';
+                  readonly codecId: 'pg/numeric@1';
+                  readonly nullable: true;
+                  readonly typeParams: { readonly precision: 14; readonly scale: 2 };
+                };
+                readonly minimumBase: {
+                  readonly nativeType: 'numeric';
+                  readonly codecId: 'pg/numeric@1';
+                  readonly nullable: true;
+                  readonly typeParams: { readonly precision: 14; readonly scale: 2 };
+                };
+                readonly name: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly organizationId: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly rate: {
+                  readonly nativeType: 'numeric';
+                  readonly codecId: 'pg/numeric@1';
+                  readonly nullable: true;
+                  readonly typeParams: { readonly precision: 9; readonly scale: 6 };
+                };
+                readonly ruleSetId: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly sortOrder: {
+                  readonly nativeType: 'int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/int4@1', 0>;
+                  };
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [];
+              indexes: readonly [
+                {
+                  readonly name: 'stat_item_rule_set_idx';
+                  readonly columns: readonly ['organizationId', 'ruleSetId'];
+                  readonly unique: false;
+                },
+              ];
+              foreignKeys: readonly [
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'payroll_statutory_rules';
+                    readonly columns: readonly ['organizationId', 'ruleSetId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'payroll_statutory_rule_sets';
+                    readonly columns: readonly ['organizationId', 'id'];
+                  };
+                  readonly name: 'stat_item_rule_set_fkey';
+                },
+              ];
+            };
+            readonly payroll_tax_brackets: {
+              columns: {
+                readonly createdAt: {
+                  readonly nativeType: 'timestamptz';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                  readonly nullable: false;
+                  readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
+                };
+                readonly id: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly lowerBound: {
+                  readonly nativeType: 'numeric';
+                  readonly codecId: 'pg/numeric@1';
+                  readonly nullable: false;
+                  readonly typeParams: { readonly precision: 14; readonly scale: 2 };
+                };
+                readonly organizationId: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly rate: {
+                  readonly nativeType: 'numeric';
+                  readonly codecId: 'pg/numeric@1';
+                  readonly nullable: false;
+                  readonly typeParams: { readonly precision: 9; readonly scale: 6 };
+                };
+                readonly ruleSetId: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly sortOrder: {
+                  readonly nativeType: 'int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                };
+                readonly upperBound: {
+                  readonly nativeType: 'numeric';
+                  readonly codecId: 'pg/numeric@1';
+                  readonly nullable: true;
+                  readonly typeParams: { readonly precision: 14; readonly scale: 2 };
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [
+                {
+                  readonly columns: readonly ['organizationId', 'ruleSetId', 'sortOrder'];
+                  readonly name: 'tax_bracket_order_key';
+                },
+              ];
+              indexes: readonly [
+                {
+                  readonly name: 'tax_bracket_rule_idx';
+                  readonly columns: readonly ['organizationId', 'ruleSetId'];
+                  readonly unique: false;
+                },
+              ];
+              foreignKeys: readonly [
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'payroll_tax_brackets';
+                    readonly columns: readonly ['organizationId', 'ruleSetId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'payroll_statutory_rule_sets';
+                    readonly columns: readonly ['organizationId', 'id'];
+                  };
+                  readonly name: 'tax_bracket_rule_fkey';
+                },
+              ];
+            };
+            readonly payroll_tax_jurisdictions: {
+              columns: {
+                readonly countryCode: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly createdAt: {
+                  readonly nativeType: 'timestamptz';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                  readonly nullable: false;
+                  readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
+                };
+                readonly currency: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly id: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly isActive: {
+                  readonly nativeType: 'bool';
+                  readonly codecId: 'pg/bool@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/bool@1', true>;
+                  };
+                };
+                readonly mandatoryCalculation: {
+                  readonly nativeType: 'bool';
+                  readonly codecId: 'pg/bool@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/bool@1', false>;
+                  };
+                };
+                readonly organizationId: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly subdivisionCode: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                };
+                readonly taxYearStartDay: {
+                  readonly nativeType: 'int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/int4@1', 1>;
+                  };
+                };
+                readonly taxYearStartMonth: {
+                  readonly nativeType: 'int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/int4@1', 1>;
+                  };
+                };
+                readonly updatedAt: {
+                  readonly nativeType: 'timestamptz';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                  readonly nullable: false;
+                };
+                readonly version: {
+                  readonly nativeType: 'int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/int4@1', 1>;
+                  };
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [
+                { readonly columns: readonly ['organizationId', 'id'] },
+                {
+                  readonly columns: readonly ['organizationId', 'countryCode', 'subdivisionCode'];
+                  readonly name: 'tax_jurisdiction_region_key';
+                },
+              ];
+              indexes: readonly [
+                {
+                  readonly name: 'payroll_tax_jurisdictions_organizationId_idx_2e17ef41';
+                  readonly prefix: 'payroll_tax_jurisdictions_organizationId_idx';
+                  readonly columns: readonly ['organizationId'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'tax_jurisdiction_active_idx';
+                  readonly columns: readonly ['organizationId', 'isActive'];
+                  readonly unique: false;
+                },
+              ];
+              foreignKeys: readonly [
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'payroll_tax_jurisdictions';
+                    readonly columns: readonly ['organizationId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'organizations';
+                    readonly columns: readonly ['id'];
+                  };
+                  readonly name: 'tax_jurisdiction_org_fkey';
+                },
+              ];
+            };
             readonly recurring_invoice_items: {
               columns: {
                 readonly amount: {
@@ -8853,6 +10206,11 @@ type ContractBase = Omit<
                     readonly kind: 'literal';
                     readonly value: DefaultLiteralValue<'pg/int4@1', 0>;
                   };
+                };
+                readonly statutoryClass: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
                 };
                 readonly type: {
                   readonly nativeType: 'text';
@@ -9576,7 +10934,7 @@ type ContractBase = Omit<
             };
             readonly PayrollComponentType: {
               readonly kind: 'valueSet';
-              readonly values: readonly ['EARNING', 'DEDUCTION'];
+              readonly values: readonly ['EARNING', 'DEDUCTION', 'EMPLOYER_CONTRIBUTION'];
             };
             readonly PayrollNotificationType: {
               readonly kind: 'valueSet';
@@ -9640,6 +10998,35 @@ type ContractBase = Omit<
             readonly SalaryComponentType: {
               readonly kind: 'valueSet';
               readonly values: readonly ['EARNING', 'DEDUCTION'];
+            };
+            readonly StatutoryCalculationBase: {
+              readonly kind: 'valueSet';
+              readonly values: readonly ['TAXABLE_EARNINGS', 'GROSS_EARNINGS'];
+            };
+            readonly StatutoryCalculationType: {
+              readonly kind: 'valueSet';
+              readonly values: readonly ['RATE', 'FIXED_AMOUNT'];
+            };
+            readonly StatutoryComponentClass: {
+              readonly kind: 'valueSet';
+              readonly values: readonly [
+                'TAXABLE_EARNING',
+                'NON_TAXABLE_EARNING',
+                'PRE_TAX_DEDUCTION',
+                'POST_TAX_DEDUCTION',
+              ];
+            };
+            readonly StatutoryRuleKind: {
+              readonly kind: 'valueSet';
+              readonly values: readonly [
+                'FLAT_WITHHOLDING',
+                'EMPLOYEE_CONTRIBUTION',
+                'EMPLOYER_CONTRIBUTION',
+              ];
+            };
+            readonly StatutoryRuleStatus: {
+              readonly kind: 'valueSet';
+              readonly values: readonly ['DRAFT', 'ACTIVE', 'SUPERSEDED'];
             };
           };
         };
@@ -9757,6 +11144,30 @@ type ContractBase = Omit<
     readonly payroll_schedules: {
       readonly namespace: 'public' & NamespaceId;
       readonly model: 'PayrollSchedule';
+    };
+    readonly payroll_statutory_applications: {
+      readonly namespace: 'public' & NamespaceId;
+      readonly model: 'PayrollStatutoryApplication';
+    };
+    readonly payroll_statutory_audit_events: {
+      readonly namespace: 'public' & NamespaceId;
+      readonly model: 'PayrollStatutoryAuditEvent';
+    };
+    readonly payroll_statutory_rule_sets: {
+      readonly namespace: 'public' & NamespaceId;
+      readonly model: 'PayrollStatutoryRuleSet';
+    };
+    readonly payroll_statutory_rules: {
+      readonly namespace: 'public' & NamespaceId;
+      readonly model: 'PayrollStatutoryRule';
+    };
+    readonly payroll_tax_brackets: {
+      readonly namespace: 'public' & NamespaceId;
+      readonly model: 'PayrollTaxBracket';
+    };
+    readonly payroll_tax_jurisdictions: {
+      readonly namespace: 'public' & NamespaceId;
+      readonly model: 'PayrollTaxJurisdiction';
     };
     readonly recurring_invoice_items: {
       readonly namespace: 'public' & NamespaceId;
@@ -12714,6 +14125,50 @@ type ContractBase = Omit<
                   readonly targetFields: readonly ['organizationId'];
                 };
               };
+              readonly statutoryApplications: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'PayrollStatutoryApplication';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['organizationId'];
+                };
+              };
+              readonly statutoryAuditEvents: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'PayrollStatutoryAuditEvent';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['organizationId'];
+                };
+              };
+              readonly statutoryRuleSets: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'PayrollStatutoryRuleSet';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['organizationId'];
+                };
+              };
+              readonly taxJurisdictions: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'PayrollTaxJurisdiction';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['organizationId'];
+                };
+              };
               readonly users: {
                 readonly to: { readonly namespace: 'public' & NamespaceId; readonly model: 'User' };
                 readonly cardinality: '1:N';
@@ -13317,6 +14772,18 @@ type ContractBase = Omit<
                   readonly targetFields: readonly ['organizationId', 'id'];
                 };
               };
+              readonly statutoryApplication: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'PayrollStatutoryApplication';
+                };
+                readonly cardinality: '1:1';
+                readonly nullable: true;
+                readonly on: {
+                  readonly localFields: readonly ['organizationId', 'id'];
+                  readonly targetFields: readonly ['organizationId', 'payrollEntryId'];
+                };
+              };
             };
             readonly storage: {
               readonly table: 'payroll_entries';
@@ -13355,6 +14822,10 @@ type ContractBase = Omit<
                   readonly codecId: 'pg/numeric@1';
                   readonly typeParams: { readonly precision: 14; readonly scale: 2 };
                 };
+              };
+              readonly calculationSnapshot: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
               readonly createdAt: {
                 readonly nullable: false;
@@ -13411,6 +14882,22 @@ type ContractBase = Omit<
                 readonly nullable: true;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
+              readonly statutoryClass: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly statutoryJurisdiction: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly statutoryRuleName: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly statutoryRuleSetName: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
               readonly type: {
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
@@ -13459,6 +14946,7 @@ type ContractBase = Omit<
               readonly namespaceId: 'public';
               readonly fields: {
                 readonly amount: { readonly column: 'amount' };
+                readonly calculationSnapshot: { readonly column: 'calculationSnapshot' };
                 readonly createdAt: { readonly column: 'createdAt' };
                 readonly id: { readonly column: 'id' };
                 readonly isAdjustment: { readonly column: 'isAdjustment' };
@@ -13471,6 +14959,10 @@ type ContractBase = Omit<
                 readonly sourceMinutes: { readonly column: 'sourceMinutes' };
                 readonly sourceOvertimeRequestId: { readonly column: 'sourceOvertimeRequestId' };
                 readonly sourceSalaryComponentId: { readonly column: 'sourceSalaryComponentId' };
+                readonly statutoryClass: { readonly column: 'statutoryClass' };
+                readonly statutoryJurisdiction: { readonly column: 'statutoryJurisdiction' };
+                readonly statutoryRuleName: { readonly column: 'statutoryRuleName' };
+                readonly statutoryRuleSetName: { readonly column: 'statutoryRuleSetName' };
                 readonly type: { readonly column: 'type' };
               };
             };
@@ -14299,6 +15791,741 @@ type ContractBase = Omit<
               };
             };
           };
+          readonly PayrollStatutoryApplication: {
+            readonly fields: {
+              readonly appliedAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                };
+              };
+              readonly appliedById: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly calculationSnapshot: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly employeeContributions: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/numeric@1';
+                  readonly typeParams: { readonly precision: 14; readonly scale: 2 };
+                };
+              };
+              readonly employerContributions: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/numeric@1';
+                  readonly typeParams: { readonly precision: 14; readonly scale: 2 };
+                };
+              };
+              readonly grossEarnings: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/numeric@1';
+                  readonly typeParams: { readonly precision: 14; readonly scale: 2 };
+                };
+              };
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly inputHash: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly netPay: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/numeric@1';
+                  readonly typeParams: { readonly precision: 14; readonly scale: 2 };
+                };
+              };
+              readonly nonTaxableEarnings: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/numeric@1';
+                  readonly typeParams: { readonly precision: 14; readonly scale: 2 };
+                };
+              };
+              readonly organizationId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly payrollEntryId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly postTaxDeductions: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/numeric@1';
+                  readonly typeParams: { readonly precision: 14; readonly scale: 2 };
+                };
+              };
+              readonly preTaxDeductions: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/numeric@1';
+                  readonly typeParams: { readonly precision: 14; readonly scale: 2 };
+                };
+              };
+              readonly ruleSetId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly taxWithholding: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/numeric@1';
+                  readonly typeParams: { readonly precision: 14; readonly scale: 2 };
+                };
+              };
+              readonly taxableEarnings: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/numeric@1';
+                  readonly typeParams: { readonly precision: 14; readonly scale: 2 };
+                };
+              };
+              readonly totalEmployerCost: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/numeric@1';
+                  readonly typeParams: { readonly precision: 14; readonly scale: 2 };
+                };
+              };
+            };
+            readonly relations: {
+              readonly appliedBy: {
+                readonly to: { readonly namespace: 'public' & NamespaceId; readonly model: 'User' };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['organizationId', 'appliedById'];
+                  readonly targetFields: readonly ['organizationId', 'id'];
+                };
+              };
+              readonly organization: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'Organization';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['organizationId'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
+              readonly payrollEntry: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'PayrollEntry';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['organizationId', 'payrollEntryId'];
+                  readonly targetFields: readonly ['organizationId', 'id'];
+                };
+              };
+              readonly ruleSet: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'PayrollStatutoryRuleSet';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['organizationId', 'ruleSetId'];
+                  readonly targetFields: readonly ['organizationId', 'id'];
+                };
+              };
+            };
+            readonly storage: {
+              readonly table: 'payroll_statutory_applications';
+              readonly namespaceId: 'public';
+              readonly fields: {
+                readonly appliedAt: { readonly column: 'appliedAt' };
+                readonly appliedById: { readonly column: 'appliedById' };
+                readonly calculationSnapshot: { readonly column: 'calculationSnapshot' };
+                readonly employeeContributions: { readonly column: 'employeeContributions' };
+                readonly employerContributions: { readonly column: 'employerContributions' };
+                readonly grossEarnings: { readonly column: 'grossEarnings' };
+                readonly id: { readonly column: 'id' };
+                readonly inputHash: { readonly column: 'inputHash' };
+                readonly netPay: { readonly column: 'netPay' };
+                readonly nonTaxableEarnings: { readonly column: 'nonTaxableEarnings' };
+                readonly organizationId: { readonly column: 'organizationId' };
+                readonly payrollEntryId: { readonly column: 'payrollEntryId' };
+                readonly postTaxDeductions: { readonly column: 'postTaxDeductions' };
+                readonly preTaxDeductions: { readonly column: 'preTaxDeductions' };
+                readonly ruleSetId: { readonly column: 'ruleSetId' };
+                readonly taxWithholding: { readonly column: 'taxWithholding' };
+                readonly taxableEarnings: { readonly column: 'taxableEarnings' };
+                readonly totalEmployerCost: { readonly column: 'totalEmployerCost' };
+              };
+            };
+          };
+          readonly PayrollStatutoryAuditEvent: {
+            readonly fields: {
+              readonly action: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly actorId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly createdAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                };
+              };
+              readonly details: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly entityId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly entityType: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly organizationId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+            };
+            readonly relations: {
+              readonly actor: {
+                readonly to: { readonly namespace: 'public' & NamespaceId; readonly model: 'User' };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['organizationId', 'actorId'];
+                  readonly targetFields: readonly ['organizationId', 'id'];
+                };
+              };
+              readonly organization: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'Organization';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['organizationId'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
+            };
+            readonly storage: {
+              readonly table: 'payroll_statutory_audit_events';
+              readonly namespaceId: 'public';
+              readonly fields: {
+                readonly action: { readonly column: 'action' };
+                readonly actorId: { readonly column: 'actorId' };
+                readonly createdAt: { readonly column: 'createdAt' };
+                readonly details: { readonly column: 'details' };
+                readonly entityId: { readonly column: 'entityId' };
+                readonly entityType: { readonly column: 'entityType' };
+                readonly id: { readonly column: 'id' };
+                readonly organizationId: { readonly column: 'organizationId' };
+              };
+            };
+          };
+          readonly PayrollStatutoryRule: {
+            readonly fields: {
+              readonly calculationBase: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly calculationType: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly contributionCap: {
+                readonly nullable: true;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/numeric@1';
+                  readonly typeParams: { readonly precision: 14; readonly scale: 2 };
+                };
+              };
+              readonly createdAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                };
+              };
+              readonly fixedAmount: {
+                readonly nullable: true;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/numeric@1';
+                  readonly typeParams: { readonly precision: 14; readonly scale: 2 };
+                };
+              };
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly kind: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly maximumBase: {
+                readonly nullable: true;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/numeric@1';
+                  readonly typeParams: { readonly precision: 14; readonly scale: 2 };
+                };
+              };
+              readonly minimumBase: {
+                readonly nullable: true;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/numeric@1';
+                  readonly typeParams: { readonly precision: 14; readonly scale: 2 };
+                };
+              };
+              readonly name: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly organizationId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly rate: {
+                readonly nullable: true;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/numeric@1';
+                  readonly typeParams: { readonly precision: 9; readonly scale: 6 };
+                };
+              };
+              readonly ruleSetId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly sortOrder: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+            };
+            readonly relations: {
+              readonly ruleSet: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'PayrollStatutoryRuleSet';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['organizationId', 'ruleSetId'];
+                  readonly targetFields: readonly ['organizationId', 'id'];
+                };
+              };
+            };
+            readonly storage: {
+              readonly table: 'payroll_statutory_rules';
+              readonly namespaceId: 'public';
+              readonly fields: {
+                readonly calculationBase: { readonly column: 'calculationBase' };
+                readonly calculationType: { readonly column: 'calculationType' };
+                readonly contributionCap: { readonly column: 'contributionCap' };
+                readonly createdAt: { readonly column: 'createdAt' };
+                readonly fixedAmount: { readonly column: 'fixedAmount' };
+                readonly id: { readonly column: 'id' };
+                readonly kind: { readonly column: 'kind' };
+                readonly maximumBase: { readonly column: 'maximumBase' };
+                readonly minimumBase: { readonly column: 'minimumBase' };
+                readonly name: { readonly column: 'name' };
+                readonly organizationId: { readonly column: 'organizationId' };
+                readonly rate: { readonly column: 'rate' };
+                readonly ruleSetId: { readonly column: 'ruleSetId' };
+                readonly sortOrder: { readonly column: 'sortOrder' };
+              };
+            };
+          };
+          readonly PayrollStatutoryRuleSet: {
+            readonly fields: {
+              readonly activatedAt: {
+                readonly nullable: true;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                };
+              };
+              readonly activatedById: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly createdAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                };
+              };
+              readonly createdById: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly effectiveFrom: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                };
+              };
+              readonly effectiveTo: {
+                readonly nullable: true;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                };
+              };
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly jurisdictionId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly name: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly organizationId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly periodsPerYear: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly status: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly updatedAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                };
+              };
+              readonly version: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+            };
+            readonly relations: {
+              readonly activatedBy: {
+                readonly to: { readonly namespace: 'public' & NamespaceId; readonly model: 'User' };
+                readonly cardinality: 'N:1';
+                readonly nullable: true;
+                readonly on: {
+                  readonly localFields: readonly ['organizationId', 'activatedById'];
+                  readonly targetFields: readonly ['organizationId', 'id'];
+                };
+              };
+              readonly applications: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'PayrollStatutoryApplication';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['organizationId', 'id'];
+                  readonly targetFields: readonly ['organizationId', 'ruleSetId'];
+                };
+              };
+              readonly brackets: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'PayrollTaxBracket';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['organizationId', 'id'];
+                  readonly targetFields: readonly ['organizationId', 'ruleSetId'];
+                };
+              };
+              readonly createdBy: {
+                readonly to: { readonly namespace: 'public' & NamespaceId; readonly model: 'User' };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['organizationId', 'createdById'];
+                  readonly targetFields: readonly ['organizationId', 'id'];
+                };
+              };
+              readonly jurisdiction: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'PayrollTaxJurisdiction';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['organizationId', 'jurisdictionId'];
+                  readonly targetFields: readonly ['organizationId', 'id'];
+                };
+              };
+              readonly organization: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'Organization';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['organizationId'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
+              readonly rules: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'PayrollStatutoryRule';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['organizationId', 'id'];
+                  readonly targetFields: readonly ['organizationId', 'ruleSetId'];
+                };
+              };
+            };
+            readonly storage: {
+              readonly table: 'payroll_statutory_rule_sets';
+              readonly namespaceId: 'public';
+              readonly fields: {
+                readonly activatedAt: { readonly column: 'activatedAt' };
+                readonly activatedById: { readonly column: 'activatedById' };
+                readonly createdAt: { readonly column: 'createdAt' };
+                readonly createdById: { readonly column: 'createdById' };
+                readonly effectiveFrom: { readonly column: 'effectiveFrom' };
+                readonly effectiveTo: { readonly column: 'effectiveTo' };
+                readonly id: { readonly column: 'id' };
+                readonly jurisdictionId: { readonly column: 'jurisdictionId' };
+                readonly name: { readonly column: 'name' };
+                readonly organizationId: { readonly column: 'organizationId' };
+                readonly periodsPerYear: { readonly column: 'periodsPerYear' };
+                readonly status: { readonly column: 'status' };
+                readonly updatedAt: { readonly column: 'updatedAt' };
+                readonly version: { readonly column: 'version' };
+              };
+            };
+          };
+          readonly PayrollTaxBracket: {
+            readonly fields: {
+              readonly createdAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                };
+              };
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly lowerBound: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/numeric@1';
+                  readonly typeParams: { readonly precision: 14; readonly scale: 2 };
+                };
+              };
+              readonly organizationId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly rate: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/numeric@1';
+                  readonly typeParams: { readonly precision: 9; readonly scale: 6 };
+                };
+              };
+              readonly ruleSetId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly sortOrder: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly upperBound: {
+                readonly nullable: true;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/numeric@1';
+                  readonly typeParams: { readonly precision: 14; readonly scale: 2 };
+                };
+              };
+            };
+            readonly relations: {
+              readonly ruleSet: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'PayrollStatutoryRuleSet';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['organizationId', 'ruleSetId'];
+                  readonly targetFields: readonly ['organizationId', 'id'];
+                };
+              };
+            };
+            readonly storage: {
+              readonly table: 'payroll_tax_brackets';
+              readonly namespaceId: 'public';
+              readonly fields: {
+                readonly createdAt: { readonly column: 'createdAt' };
+                readonly id: { readonly column: 'id' };
+                readonly lowerBound: { readonly column: 'lowerBound' };
+                readonly organizationId: { readonly column: 'organizationId' };
+                readonly rate: { readonly column: 'rate' };
+                readonly ruleSetId: { readonly column: 'ruleSetId' };
+                readonly sortOrder: { readonly column: 'sortOrder' };
+                readonly upperBound: { readonly column: 'upperBound' };
+              };
+            };
+          };
+          readonly PayrollTaxJurisdiction: {
+            readonly fields: {
+              readonly countryCode: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly createdAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                };
+              };
+              readonly currency: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly isActive: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/bool@1' };
+              };
+              readonly mandatoryCalculation: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/bool@1' };
+              };
+              readonly organizationId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly subdivisionCode: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly taxYearStartDay: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly taxYearStartMonth: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly updatedAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                };
+              };
+              readonly version: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+            };
+            readonly relations: {
+              readonly organization: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'Organization';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['organizationId'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
+              readonly ruleSets: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'PayrollStatutoryRuleSet';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['organizationId', 'id'];
+                  readonly targetFields: readonly ['organizationId', 'jurisdictionId'];
+                };
+              };
+            };
+            readonly storage: {
+              readonly table: 'payroll_tax_jurisdictions';
+              readonly namespaceId: 'public';
+              readonly fields: {
+                readonly countryCode: { readonly column: 'countryCode' };
+                readonly createdAt: { readonly column: 'createdAt' };
+                readonly currency: { readonly column: 'currency' };
+                readonly id: { readonly column: 'id' };
+                readonly isActive: { readonly column: 'isActive' };
+                readonly mandatoryCalculation: { readonly column: 'mandatoryCalculation' };
+                readonly organizationId: { readonly column: 'organizationId' };
+                readonly subdivisionCode: { readonly column: 'subdivisionCode' };
+                readonly taxYearStartDay: { readonly column: 'taxYearStartDay' };
+                readonly taxYearStartMonth: { readonly column: 'taxYearStartMonth' };
+                readonly updatedAt: { readonly column: 'updatedAt' };
+                readonly version: { readonly column: 'version' };
+              };
+            };
+          };
           readonly RecurringInvoiceItem: {
             readonly fields: {
               readonly amount: {
@@ -14855,6 +17082,10 @@ type ContractBase = Omit<
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
               };
+              readonly statutoryClass: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
               readonly type: {
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
@@ -14885,6 +17116,7 @@ type ContractBase = Omit<
                 readonly organizationId: { readonly column: 'organizationId' };
                 readonly salaryStructureId: { readonly column: 'salaryStructureId' };
                 readonly sortOrder: { readonly column: 'sortOrder' };
+                readonly statutoryClass: { readonly column: 'statutoryClass' };
                 readonly type: { readonly column: 'type' };
               };
             };
@@ -15108,6 +17340,28 @@ type ContractBase = Omit<
               };
             };
             readonly relations: {
+              readonly activatedStatutoryRules: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'PayrollStatutoryRuleSet';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['organizationId', 'id'];
+                  readonly targetFields: readonly ['organizationId', 'activatedById'];
+                };
+              };
+              readonly appliedStatutoryCalculations: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'PayrollStatutoryApplication';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['organizationId', 'id'];
+                  readonly targetFields: readonly ['organizationId', 'appliedById'];
+                };
+              };
               readonly approvedPayrollRuns: {
                 readonly to: {
                   readonly namespace: 'public' & NamespaceId;
@@ -15178,6 +17432,17 @@ type ContractBase = Omit<
                 readonly to: {
                   readonly namespace: 'public' & NamespaceId;
                   readonly model: 'SalaryStructure';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['organizationId', 'id'];
+                  readonly targetFields: readonly ['organizationId', 'createdById'];
+                };
+              };
+              readonly createdStatutoryRules: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'PayrollStatutoryRuleSet';
                 };
                 readonly cardinality: '1:N';
                 readonly on: {
@@ -15372,6 +17637,17 @@ type ContractBase = Omit<
                 readonly on: {
                   readonly localFields: readonly ['organizationId', 'id'];
                   readonly targetFields: readonly ['organizationId', 'reviewedById'];
+                };
+              };
+              readonly statutoryAuditEvents: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'PayrollStatutoryAuditEvent';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['organizationId', 'id'];
+                  readonly targetFields: readonly ['organizationId', 'actorId'];
                 };
               };
               readonly submittedExpenses: {
@@ -15903,6 +18179,7 @@ type ContractBase = Omit<
             readonly members: readonly [
               { readonly name: 'EARNING'; readonly value: 'EARNING' },
               { readonly name: 'DEDUCTION'; readonly value: 'DEDUCTION' },
+              { readonly name: 'EMPLOYER_CONTRIBUTION'; readonly value: 'EMPLOYER_CONTRIBUTION' },
             ];
           };
           readonly PayrollNotificationType: {
@@ -16012,6 +18289,45 @@ type ContractBase = Omit<
             readonly members: readonly [
               { readonly name: 'EARNING'; readonly value: 'EARNING' },
               { readonly name: 'DEDUCTION'; readonly value: 'DEDUCTION' },
+            ];
+          };
+          readonly StatutoryCalculationBase: {
+            readonly codecId: 'pg/text@1';
+            readonly members: readonly [
+              { readonly name: 'TAXABLE_EARNINGS'; readonly value: 'TAXABLE_EARNINGS' },
+              { readonly name: 'GROSS_EARNINGS'; readonly value: 'GROSS_EARNINGS' },
+            ];
+          };
+          readonly StatutoryCalculationType: {
+            readonly codecId: 'pg/text@1';
+            readonly members: readonly [
+              { readonly name: 'RATE'; readonly value: 'RATE' },
+              { readonly name: 'FIXED_AMOUNT'; readonly value: 'FIXED_AMOUNT' },
+            ];
+          };
+          readonly StatutoryComponentClass: {
+            readonly codecId: 'pg/text@1';
+            readonly members: readonly [
+              { readonly name: 'TAXABLE_EARNING'; readonly value: 'TAXABLE_EARNING' },
+              { readonly name: 'NON_TAXABLE_EARNING'; readonly value: 'NON_TAXABLE_EARNING' },
+              { readonly name: 'PRE_TAX_DEDUCTION'; readonly value: 'PRE_TAX_DEDUCTION' },
+              { readonly name: 'POST_TAX_DEDUCTION'; readonly value: 'POST_TAX_DEDUCTION' },
+            ];
+          };
+          readonly StatutoryRuleKind: {
+            readonly codecId: 'pg/text@1';
+            readonly members: readonly [
+              { readonly name: 'FLAT_WITHHOLDING'; readonly value: 'FLAT_WITHHOLDING' },
+              { readonly name: 'EMPLOYEE_CONTRIBUTION'; readonly value: 'EMPLOYEE_CONTRIBUTION' },
+              { readonly name: 'EMPLOYER_CONTRIBUTION'; readonly value: 'EMPLOYER_CONTRIBUTION' },
+            ];
+          };
+          readonly StatutoryRuleStatus: {
+            readonly codecId: 'pg/text@1';
+            readonly members: readonly [
+              { readonly name: 'DRAFT'; readonly value: 'DRAFT' },
+              { readonly name: 'ACTIVE'; readonly value: 'ACTIVE' },
+              { readonly name: 'SUPERSEDED'; readonly value: 'SUPERSEDED' },
             ];
           };
         };
@@ -16450,6 +18766,72 @@ type ContractBase = Omit<
           readonly onUpdate: { readonly id: 'instantNow'; readonly kind: 'generator' };
           readonly ref: {
             readonly entry: 'payroll_schedules';
+            readonly field: 'updatedAt';
+            readonly namespace: 'public';
+          };
+        },
+        {
+          readonly onCreate: { readonly id: 'uuidv4'; readonly kind: 'generator' };
+          readonly ref: {
+            readonly entry: 'payroll_statutory_applications';
+            readonly field: 'id';
+            readonly namespace: 'public';
+          };
+        },
+        {
+          readonly onCreate: { readonly id: 'uuidv4'; readonly kind: 'generator' };
+          readonly ref: {
+            readonly entry: 'payroll_statutory_audit_events';
+            readonly field: 'id';
+            readonly namespace: 'public';
+          };
+        },
+        {
+          readonly onCreate: { readonly id: 'uuidv4'; readonly kind: 'generator' };
+          readonly ref: {
+            readonly entry: 'payroll_statutory_rule_sets';
+            readonly field: 'id';
+            readonly namespace: 'public';
+          };
+        },
+        {
+          readonly onCreate: { readonly id: 'instantNow'; readonly kind: 'generator' };
+          readonly onUpdate: { readonly id: 'instantNow'; readonly kind: 'generator' };
+          readonly ref: {
+            readonly entry: 'payroll_statutory_rule_sets';
+            readonly field: 'updatedAt';
+            readonly namespace: 'public';
+          };
+        },
+        {
+          readonly onCreate: { readonly id: 'uuidv4'; readonly kind: 'generator' };
+          readonly ref: {
+            readonly entry: 'payroll_statutory_rules';
+            readonly field: 'id';
+            readonly namespace: 'public';
+          };
+        },
+        {
+          readonly onCreate: { readonly id: 'uuidv4'; readonly kind: 'generator' };
+          readonly ref: {
+            readonly entry: 'payroll_tax_brackets';
+            readonly field: 'id';
+            readonly namespace: 'public';
+          };
+        },
+        {
+          readonly onCreate: { readonly id: 'uuidv4'; readonly kind: 'generator' };
+          readonly ref: {
+            readonly entry: 'payroll_tax_jurisdictions';
+            readonly field: 'id';
+            readonly namespace: 'public';
+          };
+        },
+        {
+          readonly onCreate: { readonly id: 'instantNow'; readonly kind: 'generator' };
+          readonly onUpdate: { readonly id: 'instantNow'; readonly kind: 'generator' };
+          readonly ref: {
+            readonly entry: 'payroll_tax_jurisdictions';
             readonly field: 'updatedAt';
             readonly namespace: 'public';
           };

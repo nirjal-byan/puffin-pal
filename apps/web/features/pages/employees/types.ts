@@ -32,6 +32,8 @@ export interface SalaryComponent {
   name: string;
   type: "EARNING" | "DEDUCTION";
   amount: string;
+  statutoryClass:
+    "TAXABLE_EARNING" | "NON_TAXABLE_EARNING" | "PRE_TAX_DEDUCTION" | "POST_TAX_DEDUCTION";
 }
 
 export interface SalaryStructure {

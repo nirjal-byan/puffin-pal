@@ -4,7 +4,13 @@ import { AppModal } from "../../../components/app-modal";
 import { DatePicker } from "../../../components/date-picker";
 import { Dropdown } from "../../../components/dropdown";
 import { FormModal } from "../../../components/form-modal";
-import type { Department, Employee, SalaryFormValues, SalaryStructure } from "./types";
+import type {
+  Department,
+  Employee,
+  SalaryComponent,
+  SalaryFormValues,
+  SalaryStructure,
+} from "./types";
 
 export function DepartmentModal({
   departments,
@@ -333,6 +339,36 @@ export function SalaryFormModal({
                 }
               />
               <Dropdown
+                name={`salary-component-${index}-statutory`}
+                label={`Component ${index + 1} tax treatment`}
+                searchable={false}
+                value={component.statutoryClass}
+                onChange={(statutoryClass) =>
+                  onChange({
+                    ...values,
+                    components: values.components.map((item, itemIndex) =>
+                      itemIndex === index
+                        ? {
+                            ...item,
+                            statutoryClass: statutoryClass as SalaryComponent["statutoryClass"],
+                          }
+                        : item,
+                    ),
+                  })
+                }
+                options={
+                  component.type === "EARNING"
+                    ? [
+                        { value: "TAXABLE_EARNING", label: "Taxable earning" },
+                        { value: "NON_TAXABLE_EARNING", label: "Non-taxable earning" },
+                      ]
+                    : [
+                        { value: "PRE_TAX_DEDUCTION", label: "Pre-tax deduction" },
+                        { value: "POST_TAX_DEDUCTION", label: "Post-tax deduction" },
+                      ]
+                }
+              />
+              <Dropdown
                 name={`salary-component-${index}-type`}
                 label={`Component ${index + 1} type`}
                 searchable={false}
@@ -386,7 +422,10 @@ export function SalaryFormModal({
             onClick={() =>
               onChange({
                 ...values,
-                components: [...values.components, { name: "", type: "EARNING", amount: "" }],
+                components: [
+                  ...values.components,
+                  { name: "", type: "EARNING", amount: "", statutoryClass: "TAXABLE_EARNING" },
+                ],
               })
             }
           >

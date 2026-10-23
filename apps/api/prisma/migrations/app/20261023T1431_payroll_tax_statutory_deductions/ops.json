@@ -1,0 +1,2039 @@
+[
+  {
+    "id": "dropCheckConstraint.payroll_entry_components.payroll_entry_components_type_check_950f4ce8",
+    "label": "Drop check constraint \"payroll_entry_components_type_check_950f4ce8\" on \"payroll_entry_components\"",
+    "operationClass": "destructive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "checkConstraint",
+        "name": "payroll_entry_components_type_check_950f4ce8",
+        "table": "payroll_entry_components"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"payroll_entry_components_type_check_950f4ce8\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "payroll_entry_components_type_check_950f4ce8",
+          "public",
+          "\"public\".\"payroll_entry_components\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "drop check constraint \"payroll_entry_components_type_check_950f4ce8\"",
+        "sql": "ALTER TABLE \"public\".\"payroll_entry_components\" DROP CONSTRAINT \"payroll_entry_components_type_check_950f4ce8\""
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"payroll_entry_components_type_check_950f4ce8\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "payroll_entry_components_type_check_950f4ce8",
+          "public",
+          "\"public\".\"payroll_entry_components\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.payroll_statutory_applications",
+    "label": "Create table \"payroll_statutory_applications\"",
+    "summary": "Creates table \"payroll_statutory_applications\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "payroll_statutory_applications"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"payroll_statutory_applications\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payroll_statutory_applications\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"payroll_statutory_applications\"",
+        "sql": "CREATE TABLE \"public\".\"payroll_statutory_applications\" (\n  \"appliedAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"appliedById\" text NOT NULL,\n  \"calculationSnapshot\" text NOT NULL,\n  \"employeeContributions\" numeric(14,2) NOT NULL,\n  \"employerContributions\" numeric(14,2) NOT NULL,\n  \"grossEarnings\" numeric(14,2) NOT NULL,\n  \"id\" text NOT NULL,\n  \"inputHash\" text NOT NULL,\n  \"netPay\" numeric(14,2) NOT NULL,\n  \"nonTaxableEarnings\" numeric(14,2) NOT NULL,\n  \"organizationId\" text NOT NULL,\n  \"payrollEntryId\" text NOT NULL,\n  \"postTaxDeductions\" numeric(14,2) NOT NULL,\n  \"preTaxDeductions\" numeric(14,2) NOT NULL,\n  \"ruleSetId\" text NOT NULL,\n  \"taxWithholding\" numeric(14,2) NOT NULL,\n  \"taxableEarnings\" numeric(14,2) NOT NULL,\n  \"totalEmployerCost\" numeric(14,2) NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"payroll_statutory_applications\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payroll_statutory_applications\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.payroll_statutory_audit_events",
+    "label": "Create table \"payroll_statutory_audit_events\"",
+    "summary": "Creates table \"payroll_statutory_audit_events\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "payroll_statutory_audit_events"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"payroll_statutory_audit_events\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payroll_statutory_audit_events\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"payroll_statutory_audit_events\"",
+        "sql": "CREATE TABLE \"public\".\"payroll_statutory_audit_events\" (\n  \"action\" text NOT NULL,\n  \"actorId\" text NOT NULL,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"details\" text,\n  \"entityId\" text NOT NULL,\n  \"entityType\" text NOT NULL,\n  \"id\" text NOT NULL,\n  \"organizationId\" text NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"payroll_statutory_audit_events\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payroll_statutory_audit_events\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.payroll_statutory_rule_sets",
+    "label": "Create table \"payroll_statutory_rule_sets\"",
+    "summary": "Creates table \"payroll_statutory_rule_sets\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "payroll_statutory_rule_sets"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"payroll_statutory_rule_sets\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payroll_statutory_rule_sets\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"payroll_statutory_rule_sets\"",
+        "sql": "CREATE TABLE \"public\".\"payroll_statutory_rule_sets\" (\n  \"activatedAt\" timestamptz,\n  \"activatedById\" text,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"createdById\" text NOT NULL,\n  \"effectiveFrom\" timestamptz NOT NULL,\n  \"effectiveTo\" timestamptz,\n  \"id\" text NOT NULL,\n  \"jurisdictionId\" text NOT NULL,\n  \"name\" text NOT NULL,\n  \"organizationId\" text NOT NULL,\n  \"periodsPerYear\" int4,\n  \"status\" text DEFAULT 'DRAFT' NOT NULL,\n  \"updatedAt\" timestamptz NOT NULL,\n  \"version\" int4 NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"payroll_statutory_rule_sets_status_check_280f52d9\" CHECK (\"status\" IN ('DRAFT', 'ACTIVE', 'SUPERSEDED'))\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"payroll_statutory_rule_sets\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payroll_statutory_rule_sets\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.payroll_statutory_rules",
+    "label": "Create table \"payroll_statutory_rules\"",
+    "summary": "Creates table \"payroll_statutory_rules\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "payroll_statutory_rules"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"payroll_statutory_rules\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payroll_statutory_rules\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"payroll_statutory_rules\"",
+        "sql": "CREATE TABLE \"public\".\"payroll_statutory_rules\" (\n  \"calculationBase\" text NOT NULL,\n  \"calculationType\" text NOT NULL,\n  \"contributionCap\" numeric(14,2),\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"fixedAmount\" numeric(14,2),\n  \"id\" text NOT NULL,\n  \"kind\" text NOT NULL,\n  \"maximumBase\" numeric(14,2),\n  \"minimumBase\" numeric(14,2),\n  \"name\" text NOT NULL,\n  \"organizationId\" text NOT NULL,\n  \"rate\" numeric(9,6),\n  \"ruleSetId\" text NOT NULL,\n  \"sortOrder\" int4 DEFAULT 0 NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"payroll_statutory_rules_calculationBase_check_595c74e9\" CHECK (\"calculationBase\" IN ('TAXABLE_EARNINGS', 'GROSS_EARNINGS')),\n  CONSTRAINT \"payroll_statutory_rules_calculationType_check_e26e54a5\" CHECK (\"calculationType\" IN ('RATE', 'FIXED_AMOUNT')),\n  CONSTRAINT \"payroll_statutory_rules_kind_check_6d819a16\" CHECK (\"kind\" IN ('FLAT_WITHHOLDING', 'EMPLOYEE_CONTRIBUTION', 'EMPLOYER_CONTRIBUTION'))\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"payroll_statutory_rules\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payroll_statutory_rules\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.payroll_tax_brackets",
+    "label": "Create table \"payroll_tax_brackets\"",
+    "summary": "Creates table \"payroll_tax_brackets\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "payroll_tax_brackets"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"payroll_tax_brackets\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payroll_tax_brackets\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"payroll_tax_brackets\"",
+        "sql": "CREATE TABLE \"public\".\"payroll_tax_brackets\" (\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"id\" text NOT NULL,\n  \"lowerBound\" numeric(14,2) NOT NULL,\n  \"organizationId\" text NOT NULL,\n  \"rate\" numeric(9,6) NOT NULL,\n  \"ruleSetId\" text NOT NULL,\n  \"sortOrder\" int4 NOT NULL,\n  \"upperBound\" numeric(14,2),\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"payroll_tax_brackets\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payroll_tax_brackets\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.payroll_tax_jurisdictions",
+    "label": "Create table \"payroll_tax_jurisdictions\"",
+    "summary": "Creates table \"payroll_tax_jurisdictions\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "payroll_tax_jurisdictions"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"payroll_tax_jurisdictions\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payroll_tax_jurisdictions\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"payroll_tax_jurisdictions\"",
+        "sql": "CREATE TABLE \"public\".\"payroll_tax_jurisdictions\" (\n  \"countryCode\" text NOT NULL,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"currency\" text NOT NULL,\n  \"id\" text NOT NULL,\n  \"isActive\" bool DEFAULT true NOT NULL,\n  \"mandatoryCalculation\" bool DEFAULT false NOT NULL,\n  \"organizationId\" text NOT NULL,\n  \"subdivisionCode\" text,\n  \"taxYearStartDay\" int4 DEFAULT 1 NOT NULL,\n  \"taxYearStartMonth\" int4 DEFAULT 1 NOT NULL,\n  \"updatedAt\" timestamptz NOT NULL,\n  \"version\" int4 DEFAULT 1 NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"payroll_tax_jurisdictions\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payroll_tax_jurisdictions\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.payroll_entry_components.calculationSnapshot",
+    "label": "Add column \"calculationSnapshot\" to \"payroll_entry_components\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "calculationSnapshot",
+        "table": "payroll_entry_components"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"calculationSnapshot\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "payroll_entry_components",
+          "calculationSnapshot"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"calculationSnapshot\"",
+        "sql": "ALTER TABLE \"public\".\"payroll_entry_components\" ADD COLUMN \"calculationSnapshot\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"calculationSnapshot\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "payroll_entry_components",
+          "calculationSnapshot"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.payroll_entry_components.statutoryClass",
+    "label": "Add column \"statutoryClass\" to \"payroll_entry_components\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "statutoryClass",
+        "table": "payroll_entry_components"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"statutoryClass\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "payroll_entry_components",
+          "statutoryClass"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"statutoryClass\"",
+        "sql": "ALTER TABLE \"public\".\"payroll_entry_components\" ADD COLUMN \"statutoryClass\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"statutoryClass\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "payroll_entry_components",
+          "statutoryClass"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.payroll_entry_components.statutoryJurisdiction",
+    "label": "Add column \"statutoryJurisdiction\" to \"payroll_entry_components\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "statutoryJurisdiction",
+        "table": "payroll_entry_components"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"statutoryJurisdiction\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "payroll_entry_components",
+          "statutoryJurisdiction"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"statutoryJurisdiction\"",
+        "sql": "ALTER TABLE \"public\".\"payroll_entry_components\" ADD COLUMN \"statutoryJurisdiction\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"statutoryJurisdiction\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "payroll_entry_components",
+          "statutoryJurisdiction"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.payroll_entry_components.statutoryRuleName",
+    "label": "Add column \"statutoryRuleName\" to \"payroll_entry_components\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "statutoryRuleName",
+        "table": "payroll_entry_components"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"statutoryRuleName\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "payroll_entry_components",
+          "statutoryRuleName"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"statutoryRuleName\"",
+        "sql": "ALTER TABLE \"public\".\"payroll_entry_components\" ADD COLUMN \"statutoryRuleName\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"statutoryRuleName\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "payroll_entry_components",
+          "statutoryRuleName"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.payroll_entry_components.statutoryRuleSetName",
+    "label": "Add column \"statutoryRuleSetName\" to \"payroll_entry_components\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "statutoryRuleSetName",
+        "table": "payroll_entry_components"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"statutoryRuleSetName\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "payroll_entry_components",
+          "statutoryRuleSetName"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"statutoryRuleSetName\"",
+        "sql": "ALTER TABLE \"public\".\"payroll_entry_components\" ADD COLUMN \"statutoryRuleSetName\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"statutoryRuleSetName\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "payroll_entry_components",
+          "statutoryRuleSetName"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.salary_components.statutoryClass",
+    "label": "Add column \"statutoryClass\" to \"salary_components\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "statutoryClass",
+        "table": "salary_components"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"statutoryClass\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "salary_components",
+          "statutoryClass"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"statutoryClass\"",
+        "sql": "ALTER TABLE \"public\".\"salary_components\" ADD COLUMN \"statutoryClass\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"statutoryClass\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "salary_components",
+          "statutoryClass"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "checkConstraint.payroll_entry_components.payroll_entry_components_statutoryClass_check_b7131461",
+    "label": "Add check constraint \"payroll_entry_components_statutoryClass_check_b7131461\" on \"payroll_entry_components\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "checkConstraint",
+        "name": "payroll_entry_components_statutoryClass_check_b7131461",
+        "table": "payroll_entry_components"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"payroll_entry_components_statutoryClass_check_b7131461\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "payroll_entry_components_statutoryClass_check_b7131461",
+          "public",
+          "\"public\".\"payroll_entry_components\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add check constraint \"payroll_entry_components_statutoryClass_check_b7131461\"",
+        "sql": "ALTER TABLE \"public\".\"payroll_entry_components\" ADD CONSTRAINT \"payroll_entry_components_statutoryClass_check_b7131461\" CHECK (\"statutoryClass\" IN ('TAXABLE_EARNING', 'NON_TAXABLE_EARNING', 'PRE_TAX_DEDUCTION', 'POST_TAX_DEDUCTION'))"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"payroll_entry_components_statutoryClass_check_b7131461\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "payroll_entry_components_statutoryClass_check_b7131461",
+          "public",
+          "\"public\".\"payroll_entry_components\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "checkConstraint.payroll_entry_components.payroll_entry_components_type_check_55901ef6",
+    "label": "Add check constraint \"payroll_entry_components_type_check_55901ef6\" on \"payroll_entry_components\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "checkConstraint",
+        "name": "payroll_entry_components_type_check_55901ef6",
+        "table": "payroll_entry_components"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"payroll_entry_components_type_check_55901ef6\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "payroll_entry_components_type_check_55901ef6",
+          "public",
+          "\"public\".\"payroll_entry_components\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add check constraint \"payroll_entry_components_type_check_55901ef6\"",
+        "sql": "ALTER TABLE \"public\".\"payroll_entry_components\" ADD CONSTRAINT \"payroll_entry_components_type_check_55901ef6\" CHECK (\"type\" IN ('EARNING', 'DEDUCTION', 'EMPLOYER_CONTRIBUTION'))"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"payroll_entry_components_type_check_55901ef6\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "payroll_entry_components_type_check_55901ef6",
+          "public",
+          "\"public\".\"payroll_entry_components\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.payroll_statutory_applications.stat_app_entry_key",
+    "label": "Add unique constraint on \"payroll_statutory_applications\" (organizationId, payrollEntryId)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "stat_app_entry_key",
+        "table": "payroll_statutory_applications"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"stat_app_entry_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "stat_app_entry_key",
+          "public",
+          "\"public\".\"payroll_statutory_applications\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"stat_app_entry_key\"",
+        "sql": "ALTER TABLE \"public\".\"payroll_statutory_applications\" ADD CONSTRAINT \"stat_app_entry_key\" UNIQUE (\"organizationId\", \"payrollEntryId\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"stat_app_entry_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "stat_app_entry_key",
+          "public",
+          "\"public\".\"payroll_statutory_applications\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.payroll_statutory_rule_sets.payroll_statutory_rule_sets_organizationId_id_key",
+    "label": "Add unique constraint on \"payroll_statutory_rule_sets\" (organizationId, id)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "payroll_statutory_rule_sets_organizationId_id_key",
+        "table": "payroll_statutory_rule_sets"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"payroll_statutory_rule_sets_organizationId_id_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "payroll_statutory_rule_sets_organizationId_id_key",
+          "public",
+          "\"public\".\"payroll_statutory_rule_sets\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"payroll_statutory_rule_sets_organizationId_id_key\"",
+        "sql": "ALTER TABLE \"public\".\"payroll_statutory_rule_sets\" ADD CONSTRAINT \"payroll_statutory_rule_sets_organizationId_id_key\" UNIQUE (\"organizationId\", \"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"payroll_statutory_rule_sets_organizationId_id_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "payroll_statutory_rule_sets_organizationId_id_key",
+          "public",
+          "\"public\".\"payroll_statutory_rule_sets\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.payroll_statutory_rule_sets.stat_rule_version_key",
+    "label": "Add unique constraint on \"payroll_statutory_rule_sets\" (organizationId, jurisdictionId, name, version)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "stat_rule_version_key",
+        "table": "payroll_statutory_rule_sets"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"stat_rule_version_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "stat_rule_version_key",
+          "public",
+          "\"public\".\"payroll_statutory_rule_sets\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"stat_rule_version_key\"",
+        "sql": "ALTER TABLE \"public\".\"payroll_statutory_rule_sets\" ADD CONSTRAINT \"stat_rule_version_key\" UNIQUE (\"organizationId\", \"jurisdictionId\", \"name\", \"version\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"stat_rule_version_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "stat_rule_version_key",
+          "public",
+          "\"public\".\"payroll_statutory_rule_sets\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.payroll_tax_brackets.tax_bracket_order_key",
+    "label": "Add unique constraint on \"payroll_tax_brackets\" (organizationId, ruleSetId, sortOrder)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "tax_bracket_order_key",
+        "table": "payroll_tax_brackets"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"tax_bracket_order_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "tax_bracket_order_key",
+          "public",
+          "\"public\".\"payroll_tax_brackets\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"tax_bracket_order_key\"",
+        "sql": "ALTER TABLE \"public\".\"payroll_tax_brackets\" ADD CONSTRAINT \"tax_bracket_order_key\" UNIQUE (\"organizationId\", \"ruleSetId\", \"sortOrder\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"tax_bracket_order_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "tax_bracket_order_key",
+          "public",
+          "\"public\".\"payroll_tax_brackets\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.payroll_tax_jurisdictions.payroll_tax_jurisdictions_organizationId_id_key",
+    "label": "Add unique constraint on \"payroll_tax_jurisdictions\" (organizationId, id)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "payroll_tax_jurisdictions_organizationId_id_key",
+        "table": "payroll_tax_jurisdictions"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"payroll_tax_jurisdictions_organizationId_id_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "payroll_tax_jurisdictions_organizationId_id_key",
+          "public",
+          "\"public\".\"payroll_tax_jurisdictions\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"payroll_tax_jurisdictions_organizationId_id_key\"",
+        "sql": "ALTER TABLE \"public\".\"payroll_tax_jurisdictions\" ADD CONSTRAINT \"payroll_tax_jurisdictions_organizationId_id_key\" UNIQUE (\"organizationId\", \"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"payroll_tax_jurisdictions_organizationId_id_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "payroll_tax_jurisdictions_organizationId_id_key",
+          "public",
+          "\"public\".\"payroll_tax_jurisdictions\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.payroll_tax_jurisdictions.tax_jurisdiction_region_key",
+    "label": "Add unique constraint on \"payroll_tax_jurisdictions\" (organizationId, countryCode, subdivisionCode)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "tax_jurisdiction_region_key",
+        "table": "payroll_tax_jurisdictions"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"tax_jurisdiction_region_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "tax_jurisdiction_region_key",
+          "public",
+          "\"public\".\"payroll_tax_jurisdictions\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"tax_jurisdiction_region_key\"",
+        "sql": "ALTER TABLE \"public\".\"payroll_tax_jurisdictions\" ADD CONSTRAINT \"tax_jurisdiction_region_key\" UNIQUE (\"organizationId\", \"countryCode\", \"subdivisionCode\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"tax_jurisdiction_region_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "tax_jurisdiction_region_key",
+          "public",
+          "\"public\".\"payroll_tax_jurisdictions\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "checkConstraint.salary_components.salary_components_statutoryClass_check_b7131461",
+    "label": "Add check constraint \"salary_components_statutoryClass_check_b7131461\" on \"salary_components\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "checkConstraint",
+        "name": "salary_components_statutoryClass_check_b7131461",
+        "table": "salary_components"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"salary_components_statutoryClass_check_b7131461\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "salary_components_statutoryClass_check_b7131461",
+          "public",
+          "\"public\".\"salary_components\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add check constraint \"salary_components_statutoryClass_check_b7131461\"",
+        "sql": "ALTER TABLE \"public\".\"salary_components\" ADD CONSTRAINT \"salary_components_statutoryClass_check_b7131461\" CHECK (\"statutoryClass\" IN ('TAXABLE_EARNING', 'NON_TAXABLE_EARNING', 'PRE_TAX_DEDUCTION', 'POST_TAX_DEDUCTION'))"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"salary_components_statutoryClass_check_b7131461\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "salary_components_statutoryClass_check_b7131461",
+          "public",
+          "\"public\".\"salary_components\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.payroll_statutory_applications.payroll_statutory_applications_organizationId_appliedB_d2def5ad",
+    "label": "Create index \"payroll_statutory_applications_organizationId_appliedB_d2def5ad\" on \"payroll_statutory_applications\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "payroll_statutory_applications_organizationId_appliedB_d2def5ad",
+        "table": "payroll_statutory_applications"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"payroll_statutory_applications_organizationId_appliedB_d2def5ad\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payroll_statutory_applications_organizationId_appliedB_d2def5ad\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"payroll_statutory_applications_organizationId_appliedB_d2def5ad\"",
+        "sql": "CREATE INDEX \"payroll_statutory_applications_organizationId_appliedB_d2def5ad\" ON \"public\".\"payroll_statutory_applications\" (\"organizationId\", \"appliedById\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"payroll_statutory_applications_organizationId_appliedB_d2def5ad\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payroll_statutory_applications_organizationId_appliedB_d2def5ad\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.payroll_statutory_applications.payroll_statutory_applications_organizationId_idx_2e17ef41",
+    "label": "Create index \"payroll_statutory_applications_organizationId_idx_2e17ef41\" on \"payroll_statutory_applications\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "payroll_statutory_applications_organizationId_idx_2e17ef41",
+        "table": "payroll_statutory_applications"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"payroll_statutory_applications_organizationId_idx_2e17ef41\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payroll_statutory_applications_organizationId_idx_2e17ef41\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"payroll_statutory_applications_organizationId_idx_2e17ef41\"",
+        "sql": "CREATE INDEX \"payroll_statutory_applications_organizationId_idx_2e17ef41\" ON \"public\".\"payroll_statutory_applications\" (\"organizationId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"payroll_statutory_applications_organizationId_idx_2e17ef41\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payroll_statutory_applications_organizationId_idx_2e17ef41\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.payroll_statutory_applications.stat_app_rule_idx",
+    "label": "Create index \"stat_app_rule_idx\" on \"payroll_statutory_applications\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "stat_app_rule_idx",
+        "table": "payroll_statutory_applications"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"stat_app_rule_idx\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"stat_app_rule_idx\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"stat_app_rule_idx\"",
+        "sql": "CREATE INDEX \"stat_app_rule_idx\" ON \"public\".\"payroll_statutory_applications\" (\"organizationId\", \"ruleSetId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"stat_app_rule_idx\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"stat_app_rule_idx\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.payroll_statutory_audit_events.payroll_statutory_audit_events_organizationId_actorId__327c2974",
+    "label": "Create index \"payroll_statutory_audit_events_organizationId_actorId__327c2974\" on \"payroll_statutory_audit_events\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "payroll_statutory_audit_events_organizationId_actorId__327c2974",
+        "table": "payroll_statutory_audit_events"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"payroll_statutory_audit_events_organizationId_actorId__327c2974\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payroll_statutory_audit_events_organizationId_actorId__327c2974\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"payroll_statutory_audit_events_organizationId_actorId__327c2974\"",
+        "sql": "CREATE INDEX \"payroll_statutory_audit_events_organizationId_actorId__327c2974\" ON \"public\".\"payroll_statutory_audit_events\" (\"organizationId\", \"actorId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"payroll_statutory_audit_events_organizationId_actorId__327c2974\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payroll_statutory_audit_events_organizationId_actorId__327c2974\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.payroll_statutory_audit_events.payroll_statutory_audit_events_organizationId_idx_2e17ef41",
+    "label": "Create index \"payroll_statutory_audit_events_organizationId_idx_2e17ef41\" on \"payroll_statutory_audit_events\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "payroll_statutory_audit_events_organizationId_idx_2e17ef41",
+        "table": "payroll_statutory_audit_events"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"payroll_statutory_audit_events_organizationId_idx_2e17ef41\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payroll_statutory_audit_events_organizationId_idx_2e17ef41\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"payroll_statutory_audit_events_organizationId_idx_2e17ef41\"",
+        "sql": "CREATE INDEX \"payroll_statutory_audit_events_organizationId_idx_2e17ef41\" ON \"public\".\"payroll_statutory_audit_events\" (\"organizationId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"payroll_statutory_audit_events_organizationId_idx_2e17ef41\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payroll_statutory_audit_events_organizationId_idx_2e17ef41\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.payroll_statutory_audit_events.stat_audit_entity_idx",
+    "label": "Create index \"stat_audit_entity_idx\" on \"payroll_statutory_audit_events\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "stat_audit_entity_idx",
+        "table": "payroll_statutory_audit_events"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"stat_audit_entity_idx\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"stat_audit_entity_idx\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"stat_audit_entity_idx\"",
+        "sql": "CREATE INDEX \"stat_audit_entity_idx\" ON \"public\".\"payroll_statutory_audit_events\" (\"organizationId\", \"entityType\", \"entityId\", \"createdAt\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"stat_audit_entity_idx\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"stat_audit_entity_idx\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.payroll_statutory_rule_sets.payroll_statutory_rule_sets_organizationId_activatedBy_5b72b40f",
+    "label": "Create index \"payroll_statutory_rule_sets_organizationId_activatedBy_5b72b40f\" on \"payroll_statutory_rule_sets\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "payroll_statutory_rule_sets_organizationId_activatedBy_5b72b40f",
+        "table": "payroll_statutory_rule_sets"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"payroll_statutory_rule_sets_organizationId_activatedBy_5b72b40f\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payroll_statutory_rule_sets_organizationId_activatedBy_5b72b40f\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"payroll_statutory_rule_sets_organizationId_activatedBy_5b72b40f\"",
+        "sql": "CREATE INDEX \"payroll_statutory_rule_sets_organizationId_activatedBy_5b72b40f\" ON \"public\".\"payroll_statutory_rule_sets\" (\"organizationId\", \"activatedById\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"payroll_statutory_rule_sets_organizationId_activatedBy_5b72b40f\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payroll_statutory_rule_sets_organizationId_activatedBy_5b72b40f\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.payroll_statutory_rule_sets.payroll_statutory_rule_sets_organizationId_createdById_4fb80a04",
+    "label": "Create index \"payroll_statutory_rule_sets_organizationId_createdById_4fb80a04\" on \"payroll_statutory_rule_sets\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "payroll_statutory_rule_sets_organizationId_createdById_4fb80a04",
+        "table": "payroll_statutory_rule_sets"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"payroll_statutory_rule_sets_organizationId_createdById_4fb80a04\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payroll_statutory_rule_sets_organizationId_createdById_4fb80a04\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"payroll_statutory_rule_sets_organizationId_createdById_4fb80a04\"",
+        "sql": "CREATE INDEX \"payroll_statutory_rule_sets_organizationId_createdById_4fb80a04\" ON \"public\".\"payroll_statutory_rule_sets\" (\"organizationId\", \"createdById\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"payroll_statutory_rule_sets_organizationId_createdById_4fb80a04\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payroll_statutory_rule_sets_organizationId_createdById_4fb80a04\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.payroll_statutory_rule_sets.payroll_statutory_rule_sets_organizationId_idx_2e17ef41",
+    "label": "Create index \"payroll_statutory_rule_sets_organizationId_idx_2e17ef41\" on \"payroll_statutory_rule_sets\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "payroll_statutory_rule_sets_organizationId_idx_2e17ef41",
+        "table": "payroll_statutory_rule_sets"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"payroll_statutory_rule_sets_organizationId_idx_2e17ef41\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payroll_statutory_rule_sets_organizationId_idx_2e17ef41\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"payroll_statutory_rule_sets_organizationId_idx_2e17ef41\"",
+        "sql": "CREATE INDEX \"payroll_statutory_rule_sets_organizationId_idx_2e17ef41\" ON \"public\".\"payroll_statutory_rule_sets\" (\"organizationId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"payroll_statutory_rule_sets_organizationId_idx_2e17ef41\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payroll_statutory_rule_sets_organizationId_idx_2e17ef41\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.payroll_statutory_rule_sets.payroll_statutory_rule_sets_organizationId_jurisdictio_2477d924",
+    "label": "Create index \"payroll_statutory_rule_sets_organizationId_jurisdictio_2477d924\" on \"payroll_statutory_rule_sets\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "payroll_statutory_rule_sets_organizationId_jurisdictio_2477d924",
+        "table": "payroll_statutory_rule_sets"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"payroll_statutory_rule_sets_organizationId_jurisdictio_2477d924\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payroll_statutory_rule_sets_organizationId_jurisdictio_2477d924\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"payroll_statutory_rule_sets_organizationId_jurisdictio_2477d924\"",
+        "sql": "CREATE INDEX \"payroll_statutory_rule_sets_organizationId_jurisdictio_2477d924\" ON \"public\".\"payroll_statutory_rule_sets\" (\"organizationId\", \"jurisdictionId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"payroll_statutory_rule_sets_organizationId_jurisdictio_2477d924\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payroll_statutory_rule_sets_organizationId_jurisdictio_2477d924\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.payroll_statutory_rule_sets.stat_rule_effective_idx",
+    "label": "Create index \"stat_rule_effective_idx\" on \"payroll_statutory_rule_sets\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "stat_rule_effective_idx",
+        "table": "payroll_statutory_rule_sets"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"stat_rule_effective_idx\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"stat_rule_effective_idx\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"stat_rule_effective_idx\"",
+        "sql": "CREATE INDEX \"stat_rule_effective_idx\" ON \"public\".\"payroll_statutory_rule_sets\" (\"organizationId\", \"jurisdictionId\", \"status\", \"effectiveFrom\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"stat_rule_effective_idx\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"stat_rule_effective_idx\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.payroll_statutory_rules.stat_item_rule_set_idx",
+    "label": "Create index \"stat_item_rule_set_idx\" on \"payroll_statutory_rules\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "stat_item_rule_set_idx",
+        "table": "payroll_statutory_rules"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"stat_item_rule_set_idx\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"stat_item_rule_set_idx\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"stat_item_rule_set_idx\"",
+        "sql": "CREATE INDEX \"stat_item_rule_set_idx\" ON \"public\".\"payroll_statutory_rules\" (\"organizationId\", \"ruleSetId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"stat_item_rule_set_idx\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"stat_item_rule_set_idx\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.payroll_tax_brackets.tax_bracket_rule_idx",
+    "label": "Create index \"tax_bracket_rule_idx\" on \"payroll_tax_brackets\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "tax_bracket_rule_idx",
+        "table": "payroll_tax_brackets"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"tax_bracket_rule_idx\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"tax_bracket_rule_idx\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"tax_bracket_rule_idx\"",
+        "sql": "CREATE INDEX \"tax_bracket_rule_idx\" ON \"public\".\"payroll_tax_brackets\" (\"organizationId\", \"ruleSetId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"tax_bracket_rule_idx\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"tax_bracket_rule_idx\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.payroll_tax_jurisdictions.payroll_tax_jurisdictions_organizationId_idx_2e17ef41",
+    "label": "Create index \"payroll_tax_jurisdictions_organizationId_idx_2e17ef41\" on \"payroll_tax_jurisdictions\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "payroll_tax_jurisdictions_organizationId_idx_2e17ef41",
+        "table": "payroll_tax_jurisdictions"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"payroll_tax_jurisdictions_organizationId_idx_2e17ef41\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payroll_tax_jurisdictions_organizationId_idx_2e17ef41\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"payroll_tax_jurisdictions_organizationId_idx_2e17ef41\"",
+        "sql": "CREATE INDEX \"payroll_tax_jurisdictions_organizationId_idx_2e17ef41\" ON \"public\".\"payroll_tax_jurisdictions\" (\"organizationId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"payroll_tax_jurisdictions_organizationId_idx_2e17ef41\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payroll_tax_jurisdictions_organizationId_idx_2e17ef41\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.payroll_tax_jurisdictions.tax_jurisdiction_active_idx",
+    "label": "Create index \"tax_jurisdiction_active_idx\" on \"payroll_tax_jurisdictions\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "tax_jurisdiction_active_idx",
+        "table": "payroll_tax_jurisdictions"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"tax_jurisdiction_active_idx\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"tax_jurisdiction_active_idx\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"tax_jurisdiction_active_idx\"",
+        "sql": "CREATE INDEX \"tax_jurisdiction_active_idx\" ON \"public\".\"payroll_tax_jurisdictions\" (\"organizationId\", \"isActive\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"tax_jurisdiction_active_idx\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"tax_jurisdiction_active_idx\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.payroll_statutory_applications.stat_app_org_fkey",
+    "label": "Add foreign key \"stat_app_org_fkey\" on \"payroll_statutory_applications\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "stat_app_org_fkey",
+        "table": "payroll_statutory_applications"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"stat_app_org_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "stat_app_org_fkey",
+          "public",
+          "\"public\".\"payroll_statutory_applications\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"stat_app_org_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"payroll_statutory_applications\"\nADD CONSTRAINT \"stat_app_org_fkey\"\nFOREIGN KEY (\"organizationId\")\nREFERENCES \"public\".\"organizations\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"stat_app_org_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "stat_app_org_fkey",
+          "public",
+          "\"public\".\"payroll_statutory_applications\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.payroll_statutory_applications.stat_app_entry_fkey",
+    "label": "Add foreign key \"stat_app_entry_fkey\" on \"payroll_statutory_applications\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "stat_app_entry_fkey",
+        "table": "payroll_statutory_applications"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"stat_app_entry_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "stat_app_entry_fkey",
+          "public",
+          "\"public\".\"payroll_statutory_applications\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"stat_app_entry_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"payroll_statutory_applications\"\nADD CONSTRAINT \"stat_app_entry_fkey\"\nFOREIGN KEY (\"organizationId\", \"payrollEntryId\")\nREFERENCES \"public\".\"payroll_entries\" (\"organizationId\", \"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"stat_app_entry_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "stat_app_entry_fkey",
+          "public",
+          "\"public\".\"payroll_statutory_applications\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.payroll_statutory_applications.stat_app_rule_fkey",
+    "label": "Add foreign key \"stat_app_rule_fkey\" on \"payroll_statutory_applications\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "stat_app_rule_fkey",
+        "table": "payroll_statutory_applications"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"stat_app_rule_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "stat_app_rule_fkey",
+          "public",
+          "\"public\".\"payroll_statutory_applications\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"stat_app_rule_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"payroll_statutory_applications\"\nADD CONSTRAINT \"stat_app_rule_fkey\"\nFOREIGN KEY (\"organizationId\", \"ruleSetId\")\nREFERENCES \"public\".\"payroll_statutory_rule_sets\" (\"organizationId\", \"id\")\nON DELETE RESTRICT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"stat_app_rule_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "stat_app_rule_fkey",
+          "public",
+          "\"public\".\"payroll_statutory_applications\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.payroll_statutory_applications.stat_app_actor_fkey",
+    "label": "Add foreign key \"stat_app_actor_fkey\" on \"payroll_statutory_applications\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "stat_app_actor_fkey",
+        "table": "payroll_statutory_applications"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"stat_app_actor_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "stat_app_actor_fkey",
+          "public",
+          "\"public\".\"payroll_statutory_applications\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"stat_app_actor_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"payroll_statutory_applications\"\nADD CONSTRAINT \"stat_app_actor_fkey\"\nFOREIGN KEY (\"organizationId\", \"appliedById\")\nREFERENCES \"public\".\"users\" (\"organizationId\", \"id\")\nON DELETE RESTRICT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"stat_app_actor_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "stat_app_actor_fkey",
+          "public",
+          "\"public\".\"payroll_statutory_applications\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.payroll_statutory_audit_events.stat_audit_org_fkey",
+    "label": "Add foreign key \"stat_audit_org_fkey\" on \"payroll_statutory_audit_events\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "stat_audit_org_fkey",
+        "table": "payroll_statutory_audit_events"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"stat_audit_org_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "stat_audit_org_fkey",
+          "public",
+          "\"public\".\"payroll_statutory_audit_events\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"stat_audit_org_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"payroll_statutory_audit_events\"\nADD CONSTRAINT \"stat_audit_org_fkey\"\nFOREIGN KEY (\"organizationId\")\nREFERENCES \"public\".\"organizations\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"stat_audit_org_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "stat_audit_org_fkey",
+          "public",
+          "\"public\".\"payroll_statutory_audit_events\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.payroll_statutory_audit_events.stat_audit_actor_fkey",
+    "label": "Add foreign key \"stat_audit_actor_fkey\" on \"payroll_statutory_audit_events\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "stat_audit_actor_fkey",
+        "table": "payroll_statutory_audit_events"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"stat_audit_actor_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "stat_audit_actor_fkey",
+          "public",
+          "\"public\".\"payroll_statutory_audit_events\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"stat_audit_actor_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"payroll_statutory_audit_events\"\nADD CONSTRAINT \"stat_audit_actor_fkey\"\nFOREIGN KEY (\"organizationId\", \"actorId\")\nREFERENCES \"public\".\"users\" (\"organizationId\", \"id\")\nON DELETE RESTRICT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"stat_audit_actor_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "stat_audit_actor_fkey",
+          "public",
+          "\"public\".\"payroll_statutory_audit_events\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.payroll_statutory_rule_sets.stat_rule_org_fkey",
+    "label": "Add foreign key \"stat_rule_org_fkey\" on \"payroll_statutory_rule_sets\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "stat_rule_org_fkey",
+        "table": "payroll_statutory_rule_sets"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"stat_rule_org_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "stat_rule_org_fkey",
+          "public",
+          "\"public\".\"payroll_statutory_rule_sets\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"stat_rule_org_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"payroll_statutory_rule_sets\"\nADD CONSTRAINT \"stat_rule_org_fkey\"\nFOREIGN KEY (\"organizationId\")\nREFERENCES \"public\".\"organizations\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"stat_rule_org_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "stat_rule_org_fkey",
+          "public",
+          "\"public\".\"payroll_statutory_rule_sets\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.payroll_statutory_rule_sets.stat_rule_jurisdiction_fkey",
+    "label": "Add foreign key \"stat_rule_jurisdiction_fkey\" on \"payroll_statutory_rule_sets\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "stat_rule_jurisdiction_fkey",
+        "table": "payroll_statutory_rule_sets"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"stat_rule_jurisdiction_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "stat_rule_jurisdiction_fkey",
+          "public",
+          "\"public\".\"payroll_statutory_rule_sets\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"stat_rule_jurisdiction_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"payroll_statutory_rule_sets\"\nADD CONSTRAINT \"stat_rule_jurisdiction_fkey\"\nFOREIGN KEY (\"organizationId\", \"jurisdictionId\")\nREFERENCES \"public\".\"payroll_tax_jurisdictions\" (\"organizationId\", \"id\")\nON DELETE RESTRICT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"stat_rule_jurisdiction_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "stat_rule_jurisdiction_fkey",
+          "public",
+          "\"public\".\"payroll_statutory_rule_sets\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.payroll_statutory_rule_sets.stat_rule_creator_fkey",
+    "label": "Add foreign key \"stat_rule_creator_fkey\" on \"payroll_statutory_rule_sets\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "stat_rule_creator_fkey",
+        "table": "payroll_statutory_rule_sets"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"stat_rule_creator_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "stat_rule_creator_fkey",
+          "public",
+          "\"public\".\"payroll_statutory_rule_sets\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"stat_rule_creator_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"payroll_statutory_rule_sets\"\nADD CONSTRAINT \"stat_rule_creator_fkey\"\nFOREIGN KEY (\"organizationId\", \"createdById\")\nREFERENCES \"public\".\"users\" (\"organizationId\", \"id\")\nON DELETE RESTRICT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"stat_rule_creator_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "stat_rule_creator_fkey",
+          "public",
+          "\"public\".\"payroll_statutory_rule_sets\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.payroll_statutory_rule_sets.stat_rule_activator_fkey",
+    "label": "Add foreign key \"stat_rule_activator_fkey\" on \"payroll_statutory_rule_sets\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "stat_rule_activator_fkey",
+        "table": "payroll_statutory_rule_sets"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"stat_rule_activator_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "stat_rule_activator_fkey",
+          "public",
+          "\"public\".\"payroll_statutory_rule_sets\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"stat_rule_activator_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"payroll_statutory_rule_sets\"\nADD CONSTRAINT \"stat_rule_activator_fkey\"\nFOREIGN KEY (\"organizationId\", \"activatedById\")\nREFERENCES \"public\".\"users\" (\"organizationId\", \"id\")\nON DELETE RESTRICT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"stat_rule_activator_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "stat_rule_activator_fkey",
+          "public",
+          "\"public\".\"payroll_statutory_rule_sets\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.payroll_statutory_rules.stat_item_rule_set_fkey",
+    "label": "Add foreign key \"stat_item_rule_set_fkey\" on \"payroll_statutory_rules\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "stat_item_rule_set_fkey",
+        "table": "payroll_statutory_rules"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"stat_item_rule_set_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "stat_item_rule_set_fkey",
+          "public",
+          "\"public\".\"payroll_statutory_rules\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"stat_item_rule_set_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"payroll_statutory_rules\"\nADD CONSTRAINT \"stat_item_rule_set_fkey\"\nFOREIGN KEY (\"organizationId\", \"ruleSetId\")\nREFERENCES \"public\".\"payroll_statutory_rule_sets\" (\"organizationId\", \"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"stat_item_rule_set_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "stat_item_rule_set_fkey",
+          "public",
+          "\"public\".\"payroll_statutory_rules\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.payroll_tax_brackets.tax_bracket_rule_fkey",
+    "label": "Add foreign key \"tax_bracket_rule_fkey\" on \"payroll_tax_brackets\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "tax_bracket_rule_fkey",
+        "table": "payroll_tax_brackets"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"tax_bracket_rule_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "tax_bracket_rule_fkey",
+          "public",
+          "\"public\".\"payroll_tax_brackets\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"tax_bracket_rule_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"payroll_tax_brackets\"\nADD CONSTRAINT \"tax_bracket_rule_fkey\"\nFOREIGN KEY (\"organizationId\", \"ruleSetId\")\nREFERENCES \"public\".\"payroll_statutory_rule_sets\" (\"organizationId\", \"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"tax_bracket_rule_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "tax_bracket_rule_fkey",
+          "public",
+          "\"public\".\"payroll_tax_brackets\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.payroll_tax_jurisdictions.tax_jurisdiction_org_fkey",
+    "label": "Add foreign key \"tax_jurisdiction_org_fkey\" on \"payroll_tax_jurisdictions\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "tax_jurisdiction_org_fkey",
+        "table": "payroll_tax_jurisdictions"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"tax_jurisdiction_org_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "tax_jurisdiction_org_fkey",
+          "public",
+          "\"public\".\"payroll_tax_jurisdictions\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"tax_jurisdiction_org_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"payroll_tax_jurisdictions\"\nADD CONSTRAINT \"tax_jurisdiction_org_fkey\"\nFOREIGN KEY (\"organizationId\")\nREFERENCES \"public\".\"organizations\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"tax_jurisdiction_org_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "tax_jurisdiction_org_fkey",
+          "public",
+          "\"public\".\"payroll_tax_jurisdictions\""
+        ]
+      }
+    ]
+  }
+]
