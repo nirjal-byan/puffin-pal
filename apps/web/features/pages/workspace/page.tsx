@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { flushSync } from "react-dom";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { InvoiceDetailPage } from "../../invoices/components/invoice-detail-page";
@@ -85,7 +86,20 @@ export default function WorkspacePage({
   const [notifications, setNotifications] = useState<string[]>([]);
   function toggleTheme() {
     const next = theme === "light" ? "dark" : "light";
-    setTheme(next);
+    const applyTheme = () => {
+      flushSync(() => setTheme(next));
+    };
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (!document.startViewTransition || reduceMotion) {
+      applyTheme();
+    } else {
+      document.documentElement.classList.add("theme-view-transition");
+      const transition = document.startViewTransition(applyTheme);
+      const finishTransition = () => {
+        document.documentElement.classList.remove("theme-view-transition");
+      };
+      void transition.finished.then(finishTransition, finishTransition);
+    }
     try {
       localStorage.setItem("puffinpal-theme", next);
     } catch {

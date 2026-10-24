@@ -2095,20 +2095,30 @@ tr:hover td {
     td,
     input,
     select,
+    textarea,
+    fieldset,
+    .button,
+    .date-picker-popover,
+    .app-modal,
+    .workforce-form-section,
+    .workforce-metric,
+    .dashboard-kpi,
+    .dashboard-chart,
+    .currency-menu-panel,
     .notifications-panel,
     .notifications-heading,
     .notice,
     .alert
   ) {
   transition:
-    background-color 320ms ease,
-    color 320ms ease,
-    border-color 320ms ease,
-    box-shadow 320ms ease;
+    background-color 420ms cubic-bezier(0.22, 1, 0.36, 1),
+    color 360ms ease,
+    border-color 420ms cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 420ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 .workspace-layout
   :where(h1, h2, h3, p, small, strong, .muted, .field-hint, .nav-label, .topbar-slug) {
-  transition: color 320ms ease;
+  transition: color 360ms ease;
 }
 .theme-switch {
   position: relative;
@@ -2146,10 +2156,20 @@ tr:hover td {
 .theme-switch-moon {
   position: relative;
   z-index: 1;
-  transition: color 320ms ease;
+  transform-origin: center;
+  transition:
+    color 320ms ease,
+    opacity 320ms ease,
+    transform 420ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 .theme-switch-sun {
   color: #567966;
+  opacity: 1;
+  transform: rotate(0deg) scale(1);
+}
+.theme-switch-moon {
+  opacity: 0.55;
+  transform: rotate(-28deg) scale(0.88);
 }
 .theme-switch[aria-checked="true"] {
   background: #2b4335;
@@ -2163,9 +2183,13 @@ tr:hover td {
 }
 .theme-switch[aria-checked="true"] .theme-switch-sun {
   color: #91a99a;
+  opacity: 0.55;
+  transform: rotate(28deg) scale(0.88);
 }
 .theme-switch[aria-checked="true"] .theme-switch-moon {
   color: #244131;
+  opacity: 1;
+  transform: rotate(0deg) scale(1);
 }
 @media (hover: hover) and (pointer: fine) {
   .theme-switch:hover {
@@ -2180,6 +2204,34 @@ tr:hover td {
   .workspace-layout *,
   .workspace-layout *::before {
     transition: none !important;
+  }
+}
+
+/* Sweep the newly selected theme across the viewport from left to right. */
+@keyframes theme-wipe-in {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+  to {
+    clip-path: inset(0);
+  }
+}
+::view-transition-old(root) {
+  z-index: 1;
+  animation: none;
+}
+::view-transition-new(root) {
+  z-index: 2;
+  animation: theme-wipe-in 620ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.theme-view-transition .workspace-layout,
+.theme-view-transition .workspace-layout * {
+  transition: none !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none;
   }
 }
 
