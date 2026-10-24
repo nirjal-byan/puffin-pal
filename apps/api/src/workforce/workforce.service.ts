@@ -17,6 +17,7 @@ import type { AuthenticatedRequest } from "../auth/auth.types.js";
 import type {
   AttendanceDto,
   AttendanceCorrectionDto,
+  CreateHolidayDto,
   HolidayDto,
   LeaveAccrualPolicyDto,
   LeaveAccrualRunDto,
@@ -516,13 +517,28 @@ export class WorkforceService {
     }
     return rows.sort((a, b) => this.day(a.date).localeCompare(this.day(b.date)));
   }
-  createHoliday(input: HolidayDto) {
-    return this.db.orm.public.Holiday.create({
-      organizationId: this.organizationId,
-      name: input.name.trim(),
-      date: dateInstant(input.date),
-      isRecurring: input.isRecurring,
-      durationMinutes: input.durationMinutes ?? null,
+  async createHoliday(input: CreateHolidayDto) {
+    const start = Temporal.PlainDate.from(input.date);
+    const end = Temporal.PlainDate.from(input.endDate ?? input.date);
+    if (Temporal.PlainDate.compare(end, start) < 0)
+      throw new BadRequestException("Holiday end date must be on or after the start date");
+    const dayCount = start.until(end, { largestUnit: "days" }).days + 1;
+    if (dayCount > 31) throw new BadRequestException("A holiday range cannot exceed 31 days");
+
+    return this.db.transaction(async (tx) => {
+      const created = [];
+      for (let offset = 0; offset < dayCount; offset++) {
+        created.push(
+          await tx.orm.public.Holiday.create({
+            organizationId: this.organizationId,
+            name: input.name.trim(),
+            date: dateInstant(start.add({ days: offset }).toString()),
+            isRecurring: input.isRecurring,
+            durationMinutes: input.durationMinutes ?? null,
+          }),
+        );
+      }
+      return dayCount === 1 ? created[0] : created;
     });
   }
   async updateHoliday(id: string, input: HolidayDto) {

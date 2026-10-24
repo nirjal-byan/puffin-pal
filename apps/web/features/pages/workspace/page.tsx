@@ -35,6 +35,7 @@ import { Sidebar } from "../../../components/sidebar";
 import { Footer } from "../../../components/footer";
 import { AppModal } from "../../../components/app-modal";
 import { DocumentTitle } from "../../../components/document-title";
+import { Snackbar } from "../../../components/snackbar";
 import WorkspaceLayout from "./layout";
 import OverviewPage from "../overview/page";
 import ClientsPage from "../clients/page";
@@ -107,7 +108,7 @@ export default function WorkspacePage({
     }
   }
   function recordNotification(message: string) {
-    setNotice(message);
+    setNotice((current) => ({ id: (current?.id ?? 0) + 1, message }));
     setNotifications((items) => [message, ...items].slice(0, 20));
   }
   const pathname = usePathname();
@@ -129,7 +130,8 @@ export default function WorkspacePage({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [loadFailed, setLoadFailed] = useState(false);
-  const [notice, setNotice] = useState("");
+  const [notice, setNotice] = useState<{ id: number; message: string } | null>(null);
+  const dismissNotice = useCallback(() => setNotice(null), [setNotice]);
   const [revision, setRevision] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
   const can = (permission: Permission) => session.permissions.includes(permission);
@@ -199,7 +201,7 @@ export default function WorkspacePage({
     setOffset(0);
     setRows([]);
     setError("");
-    setNotice("");
+    setNotice(null);
     setLoading(true);
     setLoadFailed(false);
   }
@@ -221,7 +223,7 @@ export default function WorkspacePage({
     setError("");
     try {
       onProfileChange(await api<Profile>("/auth/me"));
-      setNotice("Your access is up to date.");
+      recordNotification("Your access is up to date.");
     } catch (failure) {
       setError(errorMessage(failure));
     } finally {
@@ -320,9 +322,7 @@ export default function WorkspacePage({
             </section>
           )}
           {notice && (
-            <p className="notice" role="status">
-              {notice}
-            </p>
+            <Snackbar key={notice.id} message={notice.message} onDismiss={dismissNotice} />
           )}
           {invoiceId ? (
             <InvoiceDetailPage

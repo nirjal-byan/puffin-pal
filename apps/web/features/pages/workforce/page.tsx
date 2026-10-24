@@ -73,6 +73,7 @@ export default function WorkforcePage({
   const [holiday, setHoliday] = useState({
     name: "",
     date: "",
+    endDate: "",
     isRecurring: false,
     durationMinutes: undefined as number | undefined,
     expectedVersion: undefined as number | undefined,
@@ -151,14 +152,33 @@ export default function WorkforcePage({
     ];
   }, [range, view]);
   async function saveHoliday() {
-    await api(
-      editingHolidayId ? `/attendance/holidays/${editingHolidayId}` : "/attendance/holidays",
-      { method: editingHolidayId ? "PATCH" : "POST", body: holiday },
-    );
-    setEditingHolidayId(null);
-    setOpen(null);
-    await load();
-    onSaved("Holiday created.");
+    try {
+      const spansMultipleDays = Boolean(holiday.endDate && holiday.endDate !== holiday.date);
+      await api(
+        editingHolidayId ? `/attendance/holidays/${editingHolidayId}` : "/attendance/holidays",
+        {
+          method: editingHolidayId ? "PATCH" : "POST",
+          body: {
+            ...holiday,
+            endDate: editingHolidayId ? undefined : holiday.endDate || undefined,
+          },
+        },
+      );
+      setEditingHolidayId(null);
+      setOpen(null);
+      await load();
+      onSaved(spansMultipleDays ? "Holiday range created." : "Holiday created.");
+      setHoliday({
+        name: "",
+        date: "",
+        endDate: "",
+        isRecurring: false,
+        durationMinutes: undefined,
+        expectedVersion: undefined,
+      });
+    } catch (failure) {
+      setError(errorMessage(failure));
+    }
   }
   async function saveSchedule() {
     await api(
@@ -184,6 +204,7 @@ export default function WorkforcePage({
     setHoliday({
       name: row.name,
       date: row.date.slice(0, 10),
+      endDate: "",
       isRecurring: row.isRecurring,
       durationMinutes: row.durationMinutes,
       expectedVersion: row.version,
@@ -266,7 +287,7 @@ export default function WorkforcePage({
             {data?.timezone ?? "your organization timezone"}.
           </p>
         </div>
-        <div className="row-actions">
+        <div className="workforce-calendar-filters">
           <Dropdown
             name="calendarEmployee"
             label="Employee filter"
@@ -281,10 +302,18 @@ export default function WorkforcePage({
             ]}
           />
           <div className="segmented-control">
-            <button className={view === "month" ? "active" : ""} onClick={() => setView("month")}>
+            <button
+              type="button"
+              className={view === "month" ? "active" : ""}
+              onClick={() => setView("month")}
+            >
               Month
             </button>
-            <button className={view === "week" ? "active" : ""} onClick={() => setView("week")}>
+            <button
+              type="button"
+              className={view === "week" ? "active" : ""}
+              onClick={() => setView("week")}
+            >
               Week
             </button>
           </div>
@@ -293,148 +322,179 @@ export default function WorkforcePage({
               Settings
             </button>
           )}
-          {canManage && (
-            <button className="button secondary" onClick={() => setOpen("schedule")}>
-              Assign schedule
-            </button>
-          )}
-          {canManage && (
-            <button className="button primary" onClick={() => setOpen("holiday")}>
-              + Holiday
-            </button>
-          )}
         </div>
       </section>
-      <section className="panel workforce-calendar-panel">
-        <div className="panel-heading workforce-calendar-heading">
-          <button
-            className="button secondary compact"
-            onClick={() =>
-              setMonth(
-                new Date(
-                  Date.UTC(
-                    month.getUTCFullYear(),
-                    month.getUTCMonth() + (view === "month" ? -1 : 0),
-                    month.getUTCDate() + (view === "week" ? -7 : 0),
-                  ),
-                ),
-              )
-            }
-          >
-            ‹
-          </button>
-          <h3>
-            {view === "month"
-              ? month.toLocaleDateString(undefined, {
-                  month: "long",
-                  year: "numeric",
-                  timeZone: "UTC",
-                })
-              : `${range.from} – ${range.to}`}
-          </h3>
-          <button
-            className="button secondary compact"
-            onClick={() =>
-              setMonth(
-                new Date(
-                  Date.UTC(
-                    month.getUTCFullYear(),
-                    month.getUTCMonth() + (view === "month" ? 1 : 0),
-                    month.getUTCDate() + (view === "week" ? 7 : 0),
-                  ),
-                ),
-              )
-            }
-          >
-            ›
-          </button>
-        </div>
-        <div className="workforce-calendar-weekdays">
-          {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
-            <span key={day}>{day}</span>
-          ))}
-        </div>
-        <div className="workforce-calendar-grid">
-          {days.map((date, index) =>
-            date ? (
-              <article key={date}>
-                <strong>{Number(date.slice(-2))}</strong>
-                {events(date).map((event, eventIndex) => (
-                  <span
-                    className={`workforce-calendar-event ${event.kind}`}
-                    key={`${event.kind}-${eventIndex}`}
-                  >
-                    {event.label}
-                  </span>
-                ))}
-              </article>
-            ) : (
-              <span key={`empty-${index}`} />
-            ),
-          )}
-        </div>
-      </section>
-      {canManage && data && (
-        <section className="panel">
-          <div className="panel-heading">
-            <div>
-              <h3>Schedules and holidays</h3>
-              <p className="muted">
-                Review effective schedules and this month&apos;s holiday rules.
-              </p>
+      <div className={`workforce-calendar-layout ${canManage ? "has-management" : ""}`}>
+        <section className="panel workforce-calendar-panel">
+          <div className="panel-heading workforce-calendar-heading">
+            <div className="workforce-calendar-period">
+              <h3>
+                {view === "month"
+                  ? month.toLocaleDateString(undefined, {
+                      month: "long",
+                      year: "numeric",
+                      timeZone: "UTC",
+                    })
+                  : `${range.from} – ${range.to}`}
+              </h3>
+              <span>{view === "month" ? "Monthly overview" : "Weekly overview"}</span>
+            </div>
+            <div className="workforce-calendar-navigation">
+              <button
+                type="button"
+                className="workforce-calendar-nav"
+                aria-label={`Previous ${view}`}
+                onClick={() =>
+                  setMonth(
+                    new Date(
+                      Date.UTC(
+                        month.getUTCFullYear(),
+                        month.getUTCMonth() + (view === "month" ? -1 : 0),
+                        month.getUTCDate() + (view === "week" ? -7 : 0),
+                      ),
+                    ),
+                  )
+                }
+              >
+                ‹
+              </button>
+              <button
+                type="button"
+                className="button secondary workforce-today"
+                onClick={() => setMonth(new Date())}
+              >
+                Today
+              </button>
+              <button
+                type="button"
+                className="workforce-calendar-nav"
+                aria-label={`Next ${view}`}
+                onClick={() =>
+                  setMonth(
+                    new Date(
+                      Date.UTC(
+                        month.getUTCFullYear(),
+                        month.getUTCMonth() + (view === "month" ? 1 : 0),
+                        month.getUTCDate() + (view === "week" ? 7 : 0),
+                      ),
+                    ),
+                  )
+                }
+              >
+                ›
+              </button>
             </div>
           </div>
-          <div className="table-scroll">
-            <table>
-              <thead>
-                <tr>
-                  <th>Type</th>
-                  <th>Name</th>
-                  <th>Effective date</th>
-                  <th>Status</th>
-                  <th />
-                </tr>
-              </thead>
-              <tbody>
-                {data.schedules.map((row) => (
-                  <tr key={row.id}>
-                    <td>Schedule</td>
-                    <td>{row.name}</td>
-                    <td>{row.effectiveFrom.slice(0, 10)}</td>
-                    <td>{row.isActive ? "Active" : "Inactive"}</td>
-                    <td>
-                      <button className="text-button" onClick={() => editSchedule(row)}>
-                        Edit
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-                {data.holidays.map((row) => (
-                  <tr key={row.id}>
-                    <td>Holiday</td>
-                    <td>{row.name}</td>
-                    <td>{row.date.slice(0, 10)}</td>
-                    <td>{row.isRecurring ? "Annual" : "One time"}</td>
-                    <td>
-                      <div className="row-actions">
-                        <button className="text-button" onClick={() => editHoliday(row)}>
-                          Edit
-                        </button>
-                        <button
-                          className="text-button danger"
-                          onClick={() => void deleteHoliday(row.id)}
-                        >
-                          Delete
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <div className="workforce-calendar-weekdays">
+            {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
+              <span key={day}>{day}</span>
+            ))}
+          </div>
+          <div className={`workforce-calendar-grid ${view === "week" ? "is-week" : ""}`}>
+            {days.map((date, index) =>
+              date ? (
+                <article className={date === iso(new Date()) ? "is-today" : undefined} key={date}>
+                  <strong>{Number(date.slice(-2))}</strong>
+                  {events(date).map((event, eventIndex) => (
+                    <span
+                      className={`workforce-calendar-event ${event.kind}`}
+                      key={`${event.kind}-${eventIndex}`}
+                    >
+                      {event.label}
+                    </span>
+                  ))}
+                </article>
+              ) : (
+                <span key={`empty-${index}`} />
+              ),
+            )}
           </div>
         </section>
-      )}
+        {canManage && data && (
+          <aside className="panel workforce-management-panel">
+            <div className="workforce-management-group">
+              <div className="workforce-management-heading">
+                <div>
+                  <span className="eyebrow">Schedules</span>
+                  <h3>Work patterns</h3>
+                </div>
+                <button className="button secondary compact" onClick={() => setOpen("schedule")}>
+                  + Assign
+                </button>
+              </div>
+              <div className="workforce-management-list">
+                {data.schedules.length ? (
+                  data.schedules.map((row) => (
+                    <button type="button" key={row.id} onClick={() => editSchedule(row)}>
+                      <span>
+                        <strong>{row.name}</strong>
+                        <small>{row.effectiveFrom.slice(0, 10)}</small>
+                      </span>
+                      <span className={`workforce-status ${row.isActive ? "active" : ""}`}>
+                        {row.isActive ? "Active" : "Inactive"}
+                      </span>
+                    </button>
+                  ))
+                ) : (
+                  <p className="workforce-management-empty">No schedules assigned.</p>
+                )}
+              </div>
+            </div>
+            <div className="workforce-management-group">
+              <div className="workforce-management-heading">
+                <div>
+                  <span className="eyebrow">Holidays</span>
+                  <h3>Time off calendar</h3>
+                </div>
+                <button className="button primary compact" onClick={() => setOpen("holiday")}>
+                  + Add
+                </button>
+              </div>
+              <div className="workforce-management-list">
+                {data.holidays.length ? (
+                  data.holidays.map((row) => (
+                    <div className="workforce-management-item" key={row.id}>
+                      <button
+                        type="button"
+                        disabled={row.date.slice(0, 10) < iso(new Date())}
+                        title={
+                          row.date.slice(0, 10) < iso(new Date())
+                            ? "Historical holidays are locked"
+                            : "Edit holiday"
+                        }
+                        onClick={() => editHoliday(row)}
+                      >
+                        <span>
+                          <strong>{row.name}</strong>
+                          <small>{row.date.slice(0, 10)}</small>
+                        </span>
+                        <span className="workforce-status">
+                          {row.date.slice(0, 10) < iso(new Date())
+                            ? "Historical"
+                            : row.isRecurring
+                              ? "Annual"
+                              : "Once"}
+                        </span>
+                      </button>
+                      {row.date.slice(0, 10) >= iso(new Date()) && (
+                        <button
+                          className="workforce-delete"
+                          aria-label={`Delete ${row.name}`}
+                          onClick={() => void deleteHoliday(row.id)}
+                        >
+                          ×
+                        </button>
+                      )}
+                    </div>
+                  ))
+                ) : (
+                  <p className="workforce-management-empty">No holidays this period.</p>
+                )}
+              </div>
+            </div>
+          </aside>
+        )}
+      </div>
       {open === "holiday" && (
         <FormModal
           title={editingHolidayId ? "Edit holiday" : "Add holiday"}
@@ -455,13 +515,25 @@ export default function WorkforcePage({
               />
             </label>
             <label>
-              Date
+              {editingHolidayId ? "Date" : "Starts on"}
               <DatePicker
                 value={holiday.date}
                 onChange={(date) => setHoliday({ ...holiday, date })}
                 ariaLabel="Holiday date"
               />
             </label>
+            {!editingHolidayId && (
+              <label>
+                Ends on <small>Optional</small>
+                <DatePicker
+                  value={holiday.endDate}
+                  min={holiday.date || undefined}
+                  onChange={(endDate) => setHoliday({ ...holiday, endDate })}
+                  ariaLabel="Holiday end date"
+                />
+                <small>Leave blank for one day. A range can include up to 31 days.</small>
+              </label>
+            )}
             <label>
               Partial-day duration <small>Optional</small>
               <input

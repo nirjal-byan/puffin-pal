@@ -14,6 +14,7 @@ import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 import { RequirePermissions } from "../auth/auth.decorators.js";
 import {
   AttendanceDto,
+  CreateHolidayDto,
   HolidayDto,
   LeaveRequestDto,
   LeaveTypeDto,
@@ -101,7 +102,7 @@ export class WorkforceController {
     return this.workforce.holidays(query);
   }
   @Post("attendance/holidays") @RequirePermissions("attendance:manage") createHoliday(
-    @Body() input: HolidayDto,
+    @Body() input: CreateHolidayDto,
   ) {
     return this.workforce.createHoliday(input);
   }

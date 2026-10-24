@@ -99,6 +99,10 @@ export class HolidayDto {
   @IsOptional() @IsInt() @Min(1) expectedVersion?: number;
 }
 
+export class CreateHolidayDto extends HolidayDto {
+  @IsOptional() @Matches(DATE) endDate?: string;
+}
+
 export class ImportOvertimeDto extends VersionDto {
   @IsUUID() overtimeRequestId!: string;
 }

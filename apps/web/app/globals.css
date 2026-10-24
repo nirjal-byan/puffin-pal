@@ -321,6 +321,74 @@ small {
   background: #edf5ff;
   color: #174e9d;
 }
+.snackbar {
+  position: fixed;
+  right: 72px;
+  bottom: 24px;
+  z-index: 80;
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr) 28px;
+  width: min(380px, calc(100vw - 32px));
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid #d5e5db;
+  border-radius: 12px;
+  background: #fff;
+  color: #21332a;
+  box-shadow: 0 14px 40px #12261a29;
+  font-size: 13px;
+  font-weight: 550;
+  animation: snackbar-in 240ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.snackbar-icon {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  border-radius: 999px;
+  background: #e7f6ed;
+  color: #23835e;
+  font-size: 13px;
+  font-weight: 750;
+}
+.snackbar button {
+  width: 28px;
+  height: 28px;
+  min-height: 28px;
+  padding: 0;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: #708078;
+  font-size: 18px;
+}
+.workspace-layout[data-theme="dark"] .snackbar {
+  border-color: #354a3e;
+  background: #1b2921;
+  color: #e5eee9;
+  box-shadow: 0 16px 44px #0006;
+}
+.workspace-layout[data-theme="dark"] .snackbar-icon {
+  background: #294737;
+  color: #9ee0bb;
+}
+@keyframes snackbar-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+@media (max-width: 600px) {
+  .snackbar {
+    right: 16px;
+    bottom: 16px;
+  }
+}
 .sr-only {
   position: absolute;
   width: 1px;
@@ -6047,6 +6115,42 @@ body:has(.workspace-layout[data-theme="dark"]) .country-picker-option.highlighte
   padding: 16px 18px;
   margin-bottom: 16px;
 }
+.workforce-calendar-filters {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+}
+.workforce-calendar-filters > .registration-dropdown-trigger {
+  width: 260px;
+}
+.workforce-calendar-filters .segmented-control {
+  display: inline-flex;
+  flex-shrink: 0;
+  gap: 2px;
+  padding: 3px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: color-mix(in srgb, var(--border) 24%, transparent);
+}
+.workforce-calendar-filters .segmented-control button {
+  min-height: 30px;
+  padding: 5px 11px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 600;
+}
+.workforce-calendar-filters .segmented-control button.active {
+  background: #fff;
+  color: var(--foreground);
+  box-shadow: 0 1px 3px #142c1d1a;
+}
+.workspace-layout[data-theme="dark"] .workforce-calendar-filters .segmented-control button.active {
+  background: #26382e;
+}
 
 .workforce-toolbar h3,
 .workforce-toolbar p {
@@ -6435,21 +6539,66 @@ body:has(.workspace-layout[data-theme="dark"]) .country-picker-option.highlighte
 .workforce-calendar-panel {
   overflow: hidden;
 }
+.workforce-calendar-layout {
+  display: grid;
+  gap: 16px;
+  align-items: stretch;
+}
+.workforce-calendar-layout.has-management {
+  grid-template-columns: minmax(0, 1fr) 310px;
+}
 .workforce-calendar-heading {
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: space-between;
   gap: 14px;
+  padding: 13px 16px;
 }
 .workforce-calendar-heading h3 {
-  min-width: 160px;
   margin: 0;
-  text-align: center;
+  font-size: 15px;
+}
+.workforce-calendar-period span {
+  display: block;
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 11px;
+}
+.workforce-calendar-navigation {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.workforce-calendar-nav {
+  display: grid;
+  width: 32px;
+  height: 32px;
+  min-height: 32px;
+  padding: 0;
+  place-items: center;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--foreground);
+  font-size: 20px;
+  line-height: 1;
+}
+.workforce-today {
+  min-height: 32px;
+  padding: 5px 10px;
+  font-size: 11px;
 }
 .workforce-calendar-weekdays,
 .workforce-calendar-grid {
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
+}
+.workforce-calendar-grid {
+  grid-auto-rows: 1fr;
+  height: clamp(420px, calc(100dvh - 500px), 465px);
+}
+.workforce-calendar-grid.is-week {
+  height: clamp(130px, calc(100dvh - 500px), 190px);
 }
 .workforce-calendar-weekdays {
   border-top: 1px solid var(--border);
@@ -6457,7 +6606,7 @@ body:has(.workspace-layout[data-theme="dark"]) .country-picker-option.highlighte
   background: color-mix(in srgb, var(--border) 20%, transparent);
 }
 .workforce-calendar-weekdays span {
-  padding: 9px;
+  padding: 7px;
   color: var(--muted);
   font-size: 11px;
   font-weight: 650;
@@ -6465,8 +6614,8 @@ body:has(.workspace-layout[data-theme="dark"]) .country-picker-option.highlighte
 }
 .workforce-calendar-grid > article,
 .workforce-calendar-grid > span {
-  min-height: 112px;
-  padding: 9px;
+  min-height: 0;
+  padding: 7px;
   border-right: 1px solid var(--border);
   border-bottom: 1px solid var(--border);
 }
@@ -6474,14 +6623,22 @@ body:has(.workspace-layout[data-theme="dark"]) .country-picker-option.highlighte
   border-right: 0;
 }
 .workforce-calendar-grid article strong {
-  display: block;
-  margin-bottom: 7px;
-  font-size: 12px;
+  display: grid;
+  width: 24px;
+  height: 24px;
+  margin-bottom: 3px;
+  place-items: center;
+  border-radius: 999px;
+  font-size: 11px;
+}
+.workforce-calendar-grid article.is-today strong {
+  background: var(--brand-blue);
+  color: #fff;
 }
 .workforce-calendar-event {
   display: block;
-  margin-top: 4px;
-  padding: 4px 6px;
+  margin-top: 3px;
+  padding: 3px 5px;
   overflow: hidden;
   border-radius: 5px;
   background: color-mix(in srgb, var(--brand-blue) 9%, transparent);
@@ -6499,12 +6656,155 @@ body:has(.workspace-layout[data-theme="dark"]) .country-picker-option.highlighte
 .workforce-calendar-event.overtime {
   background: color-mix(in srgb, #23835e 12%, transparent);
 }
+.workforce-management-panel {
+  overflow: hidden;
+  height: 100%;
+}
+.workforce-management-group + .workforce-management-group {
+  border-top: 1px solid var(--border);
+}
+.workforce-management-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 15px;
+}
+.workforce-management-heading .eyebrow {
+  margin-bottom: 2px;
+}
+.workforce-management-heading h3 {
+  font-size: 14px;
+}
+.workforce-management-heading .button {
+  min-height: 32px;
+  padding: 6px 10px;
+  font-size: 11px;
+}
+.workforce-management-list {
+  display: grid;
+  padding: 0 10px 12px;
+}
+.workforce-management-list > button,
+.workforce-management-item > button:first-child {
+  display: flex;
+  width: 100%;
+  min-height: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 9px 6px;
+  border: 0;
+  border-top: 1px solid var(--border);
+  background: transparent;
+  color: var(--foreground);
+  text-align: left;
+}
+.workforce-management-list button span:first-child {
+  display: grid;
+  min-width: 0;
+}
+.workforce-management-list strong {
+  overflow: hidden;
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.workforce-management-list small {
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 10px;
+}
+.workforce-status {
+  flex-shrink: 0;
+  padding: 3px 6px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--border) 45%, transparent);
+  color: var(--muted);
+  font-size: 9px;
+  font-weight: 650;
+}
+.workforce-status.active {
+  background: color-mix(in srgb, #23835e 13%, transparent);
+  color: #237151;
+}
+.workforce-management-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 28px;
+  align-items: center;
+  border-top: 1px solid var(--border);
+}
+.workforce-management-item > button:first-child {
+  border-top: 0;
+}
+.workforce-management-item > button:first-child:disabled {
+  cursor: default;
+  opacity: 1;
+}
+.workforce-delete {
+  width: 26px;
+  height: 26px;
+  min-height: 26px;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--muted);
+}
+.workforce-management-empty {
+  padding: 14px 6px;
+  border-top: 1px solid var(--border);
+  color: var(--muted);
+  font-size: 11px;
+}
+@media (hover: hover) and (pointer: fine) {
+  .workforce-calendar-nav:hover,
+  .workforce-management-list > button:hover,
+  .workforce-management-item > button:first-child:hover {
+    background: color-mix(in srgb, var(--border) 30%, transparent);
+  }
+  .workforce-delete:hover {
+    background: #fff0ed;
+    color: #b83b2d;
+  }
+}
+@media (max-width: 1100px) {
+  .workforce-calendar-layout.has-management {
+    grid-template-columns: 1fr;
+  }
+  .workforce-management-panel {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .workforce-management-group + .workforce-management-group {
+    border-top: 0;
+    border-left: 1px solid var(--border);
+  }
+}
 @media (max-width: 700px) {
+  .workforce-calendar-filters {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .workforce-calendar-filters > .registration-dropdown-trigger {
+    width: 100%;
+  }
   .workforce-calendar-panel {
     overflow-x: auto;
   }
   .workforce-calendar-weekdays,
   .workforce-calendar-grid {
     min-width: 700px;
+  }
+  .workforce-calendar-grid {
+    height: auto;
+    grid-auto-rows: minmax(78px, auto);
+  }
+  .workforce-management-panel {
+    grid-template-columns: 1fr;
+  }
+  .workforce-management-group + .workforce-management-group {
+    border-top: 1px solid var(--border);
+    border-left: 0;
   }
 }
