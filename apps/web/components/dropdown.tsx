@@ -169,7 +169,7 @@ export function Dropdown({
           }
         }}
       >
-        {compact && (
+        {selected?.leading && (
           <span className="phone-country-flag" aria-hidden="true">
             {selected?.leading}
           </span>

@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { DatePicker } from "../../../components/date-picker";
 import { Dropdown } from "../../../components/dropdown";
+import { CurrencyDropdown } from "../../../components/currency-dropdown";
 import {
   FormCheckbox,
   FormField,
@@ -347,10 +348,11 @@ export function PayrollStatutory({
                 />
               </FormField>
               <FormField label="Currency">
-                <input
-                  maxLength={3}
+                <CurrencyDropdown
                   value={form.currency}
-                  onChange={(event) => setForm({ ...form, currency: event.target.value })}
+                  onChange={(currency) => setForm({ ...form, currency })}
+                  name="statutory-currency"
+                  label="Statutory reporting currency"
                 />
               </FormField>
             </div>

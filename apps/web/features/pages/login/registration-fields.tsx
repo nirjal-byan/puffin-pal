@@ -1,11 +1,11 @@
 "use client";
 import { CompanyLogoPicker } from "../../../components/company-logo-picker";
+import { CurrencyDropdown } from "../../../components/currency-dropdown";
 import { PasswordInput } from "../../../components/password-input";
 import { suggestedSlug, type RegistrationDraft } from "../../../lib/registration";
 
 import { Dropdown } from "../../../components/dropdown";
 import { PhoneInput } from "../../../components/phone-input";
-import { CURRENCIES } from "../../../lib/currencies";
 
 export function RegistrationFields({
   step,
@@ -162,18 +162,12 @@ export function RegistrationFields({
         </div>
         <label>
           Workspace currency <span className="required-mark">*</span>
-          <Dropdown
+          <CurrencyDropdown
             name="currency"
             label="Workspace currency"
             placeholder="Select currency"
             value={draft.currency}
             onChange={(currency) => onDraftChange({ currency })}
-            options={CURRENCIES.map((currency) => ({
-              value: currency.code,
-              label: `${currency.flag} ${currency.code} — ${currency.name}`,
-              leading: currency.flag,
-              detail: currency.code,
-            }))}
           />
           <span className="field-hint">Used for invoices, payments, and PDFs.</span>
         </label>

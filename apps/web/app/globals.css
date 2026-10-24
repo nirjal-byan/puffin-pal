@@ -2816,7 +2816,7 @@ tr:hover td {
 .registration-dropdown-trigger {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
   gap: 10px;
   width: 100%;
   min-height: 48px;
@@ -2831,6 +2831,14 @@ tr:hover td {
     border-color 180ms ease,
     box-shadow 180ms ease;
 }
+.registration-dropdown-trigger > span:not(.phone-country-flag) {
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 .registration-dropdown-trigger:hover {
   background-color: #f4f7fc;
 }
@@ -2839,6 +2847,7 @@ tr:hover td {
   box-shadow: 0 0 0 3px #2588ff14;
 }
 .registration-dropdown-trigger svg {
+  margin-left: auto;
   flex-shrink: 0;
   transition: transform 180ms ease;
 }
