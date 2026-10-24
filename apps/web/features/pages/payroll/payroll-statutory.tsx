@@ -3,7 +3,13 @@
 import { useCallback, useEffect, useState } from "react";
 import { DatePicker } from "../../../components/date-picker";
 import { Dropdown } from "../../../components/dropdown";
-import { FormModal, FormModalIntro, FormModalSection } from "../../../components/form-modal";
+import {
+  FormCheckbox,
+  FormField,
+  FormModal,
+  FormModalIntro,
+  FormModalSection,
+} from "../../../components/form-modal";
 import { errorMessage, type WorkspaceApi } from "../../../lib/api";
 
 type RuleSet = { id: string; name: string; version: number; status: string };
@@ -326,30 +332,27 @@ export function PayrollStatutory({
           </FormModalIntro>
           <FormModalSection title="Jurisdiction" description="Tax authority and reporting currency">
             <div className="standard-form-grid">
-              <label>
-                Country code
+              <FormField label="Country code">
                 <input
                   maxLength={2}
                   value={form.countryCode}
                   onChange={(event) => setForm({ ...form, countryCode: event.target.value })}
                   placeholder="US"
                 />
-              </label>
-              <label>
-                Region <small>Optional</small>
+              </FormField>
+              <FormField label="Region" optional>
                 <input
                   value={form.subdivisionCode}
                   onChange={(event) => setForm({ ...form, subdivisionCode: event.target.value })}
                 />
-              </label>
-              <label>
-                Currency
+              </FormField>
+              <FormField label="Currency">
                 <input
                   maxLength={3}
                   value={form.currency}
                   onChange={(event) => setForm({ ...form, currency: event.target.value })}
                 />
-              </label>
+              </FormField>
             </div>
           </FormModalSection>
           <FormModalSection
@@ -357,23 +360,20 @@ export function PayrollStatutory({
             description="Calculation method and dates"
           >
             <div className="standard-form-grid">
-              <label>
-                Rule-set name
+              <FormField label="Rule-set name">
                 <input
                   value={form.name}
                   onChange={(event) => setForm({ ...form, name: event.target.value })}
                 />
-              </label>
-              <label>
-                Effective from
+              </FormField>
+              <FormField label="Effective from">
                 <DatePicker
                   value={form.effectiveFrom}
                   onChange={(effectiveFrom) => setForm({ ...form, effectiveFrom })}
                   ariaLabel="Statutory rule effective date"
                 />
-              </label>
-              <label>
-                Pay periods per year
+              </FormField>
+              <FormField label="Pay periods per year">
                 <Dropdown
                   name="statutory-periods"
                   label="Pay periods per year"
@@ -385,9 +385,8 @@ export function PayrollStatutory({
                     label: `${value} periods`,
                   }))}
                 />
-              </label>
-              <label>
-                Income-tax method
+              </FormField>
+              <FormField label="Income-tax method">
                 <Dropdown
                   name="statutory-tax-method"
                   label="Income-tax method"
@@ -401,20 +400,18 @@ export function PayrollStatutory({
                     { value: "PROGRESSIVE", label: "Two progressive brackets" },
                   ]}
                 />
-              </label>
+              </FormField>
               {form.taxMethod === "FLAT" ? (
-                <label>
-                  Flat withholding rate
+                <FormField label="Flat withholding rate">
                   <input
                     inputMode="decimal"
                     value={form.flatRate}
                     onChange={(event) => setForm({ ...form, flatRate: event.target.value })}
                   />
-                </label>
+                </FormField>
               ) : (
                 <>
-                  <label>
-                    First bracket ends at
+                  <FormField label="First bracket ends at">
                     <input
                       inputMode="decimal"
                       value={form.bracketThreshold}
@@ -422,9 +419,8 @@ export function PayrollStatutory({
                         setForm({ ...form, bracketThreshold: event.target.value })
                       }
                     />
-                  </label>
-                  <label>
-                    First bracket rate
+                  </FormField>
+                  <FormField label="First bracket rate">
                     <input
                       inputMode="decimal"
                       value={form.lowerBracketRate}
@@ -432,9 +428,8 @@ export function PayrollStatutory({
                         setForm({ ...form, lowerBracketRate: event.target.value })
                       }
                     />
-                  </label>
-                  <label>
-                    Remaining income rate
+                  </FormField>
+                  <FormField label="Remaining income rate">
                     <input
                       inputMode="decimal"
                       value={form.upperBracketRate}
@@ -442,38 +437,31 @@ export function PayrollStatutory({
                         setForm({ ...form, upperBracketRate: event.target.value })
                       }
                     />
-                  </label>
+                  </FormField>
                 </>
               )}
-              <label>
-                Employee contribution rate
+              <FormField label="Employee contribution rate">
                 <input
                   inputMode="decimal"
                   value={form.employeeRate}
                   onChange={(event) => setForm({ ...form, employeeRate: event.target.value })}
                 />
-              </label>
-              <label>
-                Employer contribution rate
+              </FormField>
+              <FormField label="Employer contribution rate">
                 <input
                   inputMode="decimal"
                   value={form.employerRate}
                   onChange={(event) => setForm({ ...form, employerRate: event.target.value })}
                 />
-              </label>
+              </FormField>
             </div>
           </FormModalSection>
-          <label className="checkbox-row">
-            <input
-              type="checkbox"
-              checked={form.mandatoryCalculation}
-              onChange={(event) => setForm({ ...form, mandatoryCalculation: event.target.checked })}
-            />
-            <span>
-              <strong>Require statutory calculations before approval</strong>
-              <small>Blocks submission until every payroll entry has an applied snapshot.</small>
-            </span>
-          </label>
+          <FormCheckbox
+            checked={form.mandatoryCalculation}
+            onChange={(mandatoryCalculation) => setForm({ ...form, mandatoryCalculation })}
+            label="Require statutory calculations before approval"
+            description="Blocks submission until every payroll entry has an applied snapshot."
+          />
         </FormModal>
       )}
     </section>

@@ -5,7 +5,12 @@ import { useCallback, useEffect, useState } from "react";
 import { AppModal } from "../../../components/app-modal";
 import { DatePicker } from "../../../components/date-picker";
 import { Dropdown } from "../../../components/dropdown";
-import { FormModal, FormModalIntro, FormModalSection } from "../../../components/form-modal";
+import {
+  FormField,
+  FormModal,
+  FormModalIntro,
+  FormModalSection,
+} from "../../../components/form-modal";
 import { errorMessage, type WorkspaceApi } from "../../../lib/api";
 
 type Schedule = {
@@ -341,15 +346,13 @@ export function PayrollAutomation({
           </FormModalIntro>
           <FormModalSection title="Schedule details" description="Required payroll settings">
             <div className="standard-form-grid">
-              <label>
-                Schedule name
+              <FormField label="Schedule name">
                 <input
                   value={form.name}
                   onChange={(event) => setForm({ ...form, name: event.target.value })}
                 />
-              </label>
-              <label>
-                Frequency
+              </FormField>
+              <FormField label="Frequency">
                 <Dropdown
                   name="payroll-frequency"
                   label="Payroll frequency"
@@ -365,25 +368,22 @@ export function PayrollAutomation({
                     { value: "MONTHLY", label: "Every month" },
                   ]}
                 />
-              </label>
-              <label>
-                First period starts
+              </FormField>
+              <FormField label="First period starts">
                 <DatePicker
                   value={form.startDate}
                   onChange={(startDate) => setForm({ ...form, startDate })}
                   ariaLabel="First payroll period start date"
                 />
-              </label>
-              <label>
-                Timezone
+              </FormField>
+              <FormField label="Timezone">
                 <input
                   value={form.timezone}
                   onChange={(event) => setForm({ ...form, timezone: event.target.value })}
                   placeholder="America/Toronto"
                 />
-              </label>
-              <label>
-                Create draft at
+              </FormField>
+              <FormField label="Create draft at">
                 <Dropdown
                   name="payroll-generation-time"
                   label="Draft creation time"
@@ -404,9 +404,8 @@ export function PayrollAutomation({
                     return { value, label };
                   })}
                 />
-              </label>
-              <label>
-                Intended payment timing
+              </FormField>
+              <FormField label="Intended payment timing" optional>
                 <Dropdown
                   name="payroll-payment-timing"
                   label="Intended payment timing"
@@ -422,7 +421,7 @@ export function PayrollAutomation({
                     { value: "7", label: "7 days after period end" },
                   ]}
                 />
-              </label>
+              </FormField>
             </div>
             {form.frequency === "SEMIMONTHLY" && (
               <p className="field-hint">

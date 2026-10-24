@@ -92,3 +92,57 @@ export function FormModalSection({
     </section>
   );
 }
+
+export function FormField({
+  label,
+  optional = false,
+  hint,
+  wide = false,
+  children,
+}: {
+  label: string;
+  optional?: boolean;
+  hint?: string;
+  wide?: boolean;
+  children: ReactNode;
+}) {
+  return (
+    <label className={`form-field${wide ? " standard-form-grid-wide" : ""}`}>
+      <span className="form-field-label">
+        <span>{label}</span>
+        {optional && <small>Optional</small>}
+      </span>
+      {children}
+      {hint && <span className="form-field-hint">{hint}</span>}
+    </label>
+  );
+}
+
+export function FormCheckbox({
+  checked,
+  onChange,
+  label,
+  description,
+  disabled = false,
+}: {
+  checked: boolean;
+  onChange: (checked: boolean) => void;
+  label: string;
+  description?: string;
+  disabled?: boolean;
+}) {
+  return (
+    <label className="form-checkbox">
+      <input
+        type="checkbox"
+        checked={checked}
+        disabled={disabled}
+        onChange={(event) => onChange(event.target.checked)}
+      />
+      <span>
+        <strong>{label}</strong>
+        {description && <small>{description}</small>}
+      </span>
+    </label>
+  );
+}
