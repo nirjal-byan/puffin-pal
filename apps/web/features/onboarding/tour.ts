@@ -19,215 +19,72 @@ export const TOUR_STEPS: readonly TutorialStep[] = [
       "Let’s take a quick look around your workspace. You can skip or replay this tour anytime.",
   },
   {
-    id: "dashboard",
+    id: "overview",
     route: "/",
     target: "dashboard-summary",
-    title: "Financial overview",
-    description: "Review revenue, payments, outstanding balances, expenses, and cash flow.",
-  },
-  {
-    id: "dashboard-charts",
-    route: "/",
-    target: "dashboard-charts",
-    title: "Spot financial trends",
-    description: "Use charts and date filters to understand billing and spending over time.",
-    requiredPermissions: ["invoices:read", "expenses:read"],
-  },
-  {
-    id: "clients",
-    route: "/?section=clients&area=workspace",
-    target: "nav-clients",
-    requiredPermissions: ["clients:read"],
-    title: "Keep your clients together",
-    description: "Manage client names and billing details here, ready for your invoices.",
-  },
-  {
-    id: "invoices",
-    route: "/invoices",
-    target: "nav-invoices",
-    requiredPermissions: ["invoices:read"],
-    title: "Manage your invoices",
+    title: "See the business at a glance",
     description:
-      "Find invoice records, open their details, and edit drafts when your role allows it.",
+      "Review revenue, collections, expenses, outstanding invoices, and financial trends from your overview.",
   },
   {
-    id: "create-invoice",
-    route: "/invoices",
-    target: "create-invoice",
-    requiredPermissions: ["invoices:create"],
-    title: "Start with a draft",
-    description:
-      "Create Invoice opens the form for your client, dates and line items. Nothing is created during this tour.",
-  },
-  {
-    id: "issuance",
+    id: "billing",
     route: "/invoices",
     target: "page-heading",
     requiredPermissions: ["invoices:read"],
-    title: "Issue and track invoices",
+    title: "Manage clients and billing",
     description:
-      "Issuing locks billing details and enables PDF downloads. The list then shows paid, outstanding, and overdue status.",
+      "Create clients, prepare and issue invoices, record payments, export PDFs, and schedule recurring retainers from the Workspace section.",
   },
   {
-    id: "payment-basics",
-    route: "/invoices",
-    target: "page-heading",
-    requiredPermissions: ["invoices:record-payment"],
-    title: "Track payments",
-    description:
-      "Record full or partial payments on issued invoices. Each entry updates the outstanding balance and stays available in payment history.",
-  },
-  {
-    id: "bulk-exports",
-    route: "/invoices",
-    target: "page-heading",
-    requiredPermissions: ["invoices:read"],
-    title: "Export invoice PDFs",
-    description: "Select eligible invoices to prepare a private ZIP export in the background.",
-  },
-  {
-    id: "expenses",
+    id: "spending",
     route: "/?section=expenses&area=workspace",
-    target: "nav-expenses",
+    target: "page-heading",
     requiredPermissions: ["expenses:read"],
-    title: "Track business expenses",
-    description: "Record costs, choose categories, attach private receipts, and filter the list.",
-  },
-  {
-    id: "expense-approvals",
-    route: "/?section=expenses&area=workspace",
-    target: "page-heading",
-    requiredPermissions: ["expenses:approve"],
-    title: "Review submitted expenses",
-    description: "Approve or reject pending expenses and review their approval history.",
-  },
-  {
-    id: "retainers",
-    route: "/?section=retainers&area=workspace",
-    target: "nav-retainers",
-    requiredPermissions: ["retainers:read"],
-    title: "Automate repeat billing",
-    description: "Manage recurring schedules, generated invoices, and paused or active retainers.",
+    title: "Control business spending",
+    description:
+      "Record expenses, attach private receipts, submit them for approval, and review their history here.",
   },
   {
     id: "cash-flow",
     route: "/?section=cash-flow",
     target: "cash-flow-overview",
     requiredPermissions: ["cash-flow:read"],
-    title: "Plan your cash position",
+    title: "Plan future cash flow",
     description:
       "Compare deterministic cash scenarios from invoices, payroll, recurring billing, and enabled planning assumptions.",
   },
   {
-    id: "employees",
-    route: "/?section=employees",
-    target: "nav-employees",
-    requiredPermissions: ["employees:read"],
-    title: "Manage employees",
-    description: "Keep employee profiles, departments, reporting managers, and status together.",
-  },
-  {
-    id: "salaries",
+    id: "people",
     route: "/?section=employees",
     target: "page-heading",
-    requiredPermissions: ["salaries:read"],
-    title: "Review compensation history",
-    description: "Authorized users can view effective-dated salaries and compensation components.",
-  },
-  {
-    id: "attendance",
-    route: "/?section=attendance",
-    target: "attendance-overview",
-    requiredPermissions: ["attendance:read"],
-    title: "Review attendance",
-    description: "See confirmed attendance, late arrivals, worked hours, and missing records.",
-  },
-  {
-    id: "attendance-actions",
-    route: "/?section=attendance",
-    target: "record-attendance",
-    requiredPermissions: ["attendance:manage"],
-    title: "Record attendance",
-    description: "Managers can record or correct a workday here.",
-  },
-  {
-    id: "leave",
-    route: "/?section=leave",
-    target: "leave-overview",
-    requiredPermissions: ["leave:read"],
-    title: "Manage leave",
-    description: "Review requests, workday-aware balances, and upcoming leave.",
-  },
-  {
-    id: "leave-approval",
-    route: "/?section=leave",
-    target: "leave-approvals",
-    requiredPermissions: ["leave:approve"],
-    title: "Approve leave",
-    description: "Approve or reject pending requests without changing historical balances.",
-  },
-  {
-    id: "overtime",
-    route: "/?section=overtime",
-    target: "overtime-overview",
-    requiredPermissions: ["overtime:read"],
-    title: "Track overtime",
-    description: "Keep requested time separate from approved payable overtime.",
+    requiredPermissions: ["employees:read"],
+    title: "Manage people and workforce",
+    description:
+      "The People section covers employees, salary history, schedules, attendance, leave, overtime, holidays, and team access.",
   },
   {
     id: "payroll",
     route: "/?section=payroll",
-    target: "nav-payroll",
+    target: "payroll-overview",
     requiredPermissions: ["payroll:read"],
     title: "Run payroll",
     description:
-      "Calculate fixed salaries, route pay runs for approval, and download finalized payslips.",
+      "Create pay runs, review workforce inputs and statutory deductions, approve payroll, record payments, and download payslips.",
   },
   {
-    id: "payroll-approval",
-    route: "/?section=payroll",
-    target: "payroll-overview",
-    requiredPermissions: ["payroll:approve"],
-    title: "Review before finalizing",
-    description: "Approvers verify totals before finalized payroll is locked.",
-  },
-  {
-    id: "payroll-workforce-review",
-    route: "/?section=payroll",
-    target: "payroll-attendance-review",
-    requiredPermissions: ["payroll:read"],
-    title: "Check workforce inputs",
-    description: "Review attendance and leave warnings, then import approved overtime explicitly.",
-  },
-  {
-    id: "payroll-payments",
-    route: "/?section=payroll",
-    target: "payroll-overview",
-    requiredPermissions: ["payroll:payments:record"],
-    title: "Track salary payments",
-    description: "Record external payments and download private payslips from finalized runs.",
-  },
-  {
-    id: "team",
-    route: "/?section=members",
-    target: "nav-members",
-    requiredPermissions: ["members:manage"],
-    title: "Invite your team",
-    description: "Add teammates and choose their roles to give them the access they need.",
-  },
-  {
-    id: "settings",
-    route: "/?section=profile",
+    id: "payroll-automation",
+    route: "/?section=payroll-automation",
     target: "page-heading",
-    title: "Make yourself at home",
+    requiredPermissions: ["payroll:read"],
+    title: "Automate payroll preparation",
     description:
-      "Update your profile here. Owners and admins can also manage the company logo in Settings.",
+      "Schedule payroll drafts, review reminders, and configure versioned tax and statutory calculation rules on the Automation page.",
   },
   {
     id: "finish",
     title: "You’re ready to go",
     description:
-      "Start with a client or explore your invoices. Use Tutorial in the top bar whenever you need another look.",
+      "Choose any section to begin. Use Tutorial in the top bar whenever you want this quick overview again.",
   },
 ];
 
@@ -235,14 +92,36 @@ export interface TourState {
   active: boolean;
   manual: boolean;
   step: string;
-  invoiceRoute?: string;
   direction?: 1 | -1;
 }
 const LEGACY_STEP_ALIASES: Readonly<Record<string, string>> = {
-  "record-payment": "payment-basics",
-  "payment-balance": "payment-basics",
-  "payment-history": "payment-basics",
-  "payment-status": "issuance",
+  dashboard: "overview",
+  "dashboard-charts": "overview",
+  clients: "billing",
+  invoices: "billing",
+  "create-invoice": "billing",
+  issuance: "billing",
+  "payment-basics": "billing",
+  "record-payment": "billing",
+  "payment-balance": "billing",
+  "payment-history": "billing",
+  "payment-status": "billing",
+  "bulk-exports": "billing",
+  expenses: "spending",
+  "expense-approvals": "spending",
+  retainers: "billing",
+  employees: "people",
+  salaries: "people",
+  attendance: "people",
+  "attendance-actions": "people",
+  leave: "people",
+  "leave-approval": "people",
+  overtime: "people",
+  "payroll-approval": "payroll",
+  "payroll-workforce-review": "payroll",
+  "payroll-payments": "payroll",
+  team: "finish",
+  settings: "finish",
 };
 
 function currentStepId(value: unknown) {
@@ -251,25 +130,7 @@ function currentStepId(value: unknown) {
   return TOUR_STEPS.some((step) => step.id === candidate) ? candidate : undefined;
 }
 
-export function invoiceTourRoute(value: unknown): string | undefined {
-  return typeof value === "string" &&
-    /^\/invoices\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value)
-    ? value
-    : undefined;
-}
-export function paymentTourLink(
-  root: Pick<Document, "querySelector">,
-  requireRecordButton: boolean,
-) {
-  const link = root.querySelector<HTMLAnchorElement>(
-    requireRecordButton ? 'a[data-tour-payment-invoice="record"]' : "a[data-tour-payment-invoice]",
-  );
-  return invoiceTourRoute(link?.getAttribute("href"));
-}
 export const tourStorageKey = (userId: string) => `puffinpal-tour-v1:${userId}`;
-export function paymentTourWaiting(root: Pick<Document, "querySelector">) {
-  return root.querySelector('.workspace-main .panel.loading[role="status"]') !== null;
-}
 export function tourSteps(permissions: readonly Permission[]) {
   return TOUR_STEPS.filter(
     (step) =>

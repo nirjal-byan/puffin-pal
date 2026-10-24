@@ -1,18 +1,22 @@
 # Onboarding tutorial
 
 The guided tutorial is defined in `apps/web/features/onboarding/tour.ts` and rendered by
-`product-tour.tsx`. Step definitions contain stable IDs, concise copy, an optional route and
-spotlight target, and the backend permissions required to show the step.
+`product-tour.tsx`. It is deliberately capped at nine permission-filtered steps: welcome,
+overview, billing, spending, cash flow, people, payroll, payroll automation, and finish.
+
+Each feature gets one short page-level explanation. The tour covers recurring billing, workforce
+management, cash-flow forecasting, payroll, automation, reminders, and statutory rules without
+asking the user to create sample records.
 
 The renderer filters steps from the authenticated session permissions, navigates between routes,
 and looks up targets through `data-tour` attributes. Target lookup is bounded; a missing or hidden
 target falls back to a centered tutorial card instead of blocking progress. Resize and scroll
 events reposition visible spotlights. Arrow keys move between steps and Escape dismisses the tour.
 
-First-time progress continues to use the existing onboarding API and per-user session-storage key.
+First-time progress uses the existing onboarding API and per-user session-storage key.
 Completed and skipped users are not restarted. Manual replay stores local progress without changing
-their existing server completion state. Stable IDs allow newly added permission-specific steps to be
-skipped safely when an older saved step no longer applies.
+their existing server completion state. Legacy detailed step IDs map to their new concise section,
+so saved tours continue after this reduction.
 
 ## Adding a step
 
