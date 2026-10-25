@@ -54,6 +54,7 @@ import LeavePage from "../leave/page";
 import OvertimePage from "../overtime/page";
 import CashFlowPage from "../cash-flow/page";
 import WorkforcePage from "../workforce/page";
+import BankingPage from "../../banking/banking-page";
 
 export default function WorkspacePage({
   session,
@@ -173,6 +174,7 @@ export default function WorkspacePage({
       tab === "payroll" ||
       tab === "payroll-automation" ||
       tab === "cash-flow" ||
+      tab === "banking" ||
       !allowed
     )
       return;
@@ -280,6 +282,7 @@ export default function WorkspacePage({
                     "profile",
                     "password",
                     "cash-flow",
+                    "banking",
                     "payroll",
                     "payroll-automation",
                   ].includes(tab) &&
@@ -426,6 +429,8 @@ export default function WorkspacePage({
               permissions={session.permissions}
               onSaved={recordNotification}
             />
+          ) : tab === "banking" ? (
+            <BankingPage api={api} permissions={session.permissions} onSaved={recordNotification} />
           ) : loading ? (
             <section className="panel loading" role="status">
               <span className="spinner" />

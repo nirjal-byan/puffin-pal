@@ -59,3 +59,11 @@ test("payroll access excludes project managers and keeps finance viewers read-on
   assert.equal(hasPermission("OWNER", "payroll:finalize"), true);
   assert.equal(hasPermission("ADMIN", "payroll:payments:record"), true);
 });
+
+test("banking is restricted to finance roles with explicit write access", () => {
+  assert.equal(hasPermission("PROJECT_MANAGER", "banking:read"), false);
+  assert.equal(hasPermission("FINANCE_VIEWER", "banking:read"), true);
+  assert.equal(hasPermission("FINANCE_VIEWER", "banking:manage"), false);
+  assert.equal(hasPermission("OWNER", "banking:reconcile"), true);
+  assert.equal(hasPermission("ADMIN", "banking:manage"), true);
+});

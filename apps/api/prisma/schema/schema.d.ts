@@ -34,9 +34,9 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'acebefa7812ba1d4d8d946d5db9f3ae475a02c785a10ffa8202bb48c9cbeb0cd'>;
+  StorageHashBase<'3e2878bed097dfdb8164710ad24a561d1792d7baafe2c150e42692accfa31039'>;
 export type ExecutionHash =
-  ExecutionHashBase<'c81aba6801dfe80bc68bbda7592daa6cd6d3e5c11780dd01a7cde56c55733d67'>;
+  ExecutionHashBase<'4fd811b3dc9d9abf4cd3d603eda968a71e3f6b60c96faa94ed1bb55595def080'>;
 export type ProfileHash =
   ProfileHashBase<'3916f444a8a17ad749191acf9e08dad97d1a327b88c2f1d45d12f240296aa8b2'>;
 
@@ -288,6 +288,73 @@ export type FieldOutputTypes = {
       readonly version: CodecTypes['pg/int4@1']['output'];
       readonly workDate: CodecTypes['pg/timestamptz-temporal@1']['output'];
       readonly workedMinutes: CodecTypes['pg/int4@1']['output'] | null;
+    };
+    readonly BankAccount: {
+      readonly accountHolder: CodecTypes['pg/text@1']['output'];
+      readonly bankName: CodecTypes['pg/text@1']['output'];
+      readonly countryCode: CodecTypes['pg/text@1']['output'];
+      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly createdById: CodecTypes['pg/text@1']['output'];
+      readonly currency: CodecTypes['pg/text@1']['output'];
+      readonly displayName: CodecTypes['pg/text@1']['output'];
+      readonly id: CodecTypes['pg/text@1']['output'];
+      readonly isActive: CodecTypes['pg/bool@1']['output'];
+      readonly isDefault: CodecTypes['pg/bool@1']['output'];
+      readonly maskedIdentifier: CodecTypes['pg/text@1']['output'];
+      readonly organizationId: CodecTypes['pg/text@1']['output'];
+      readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly version: CodecTypes['pg/int4@1']['output'];
+    };
+    readonly BankingAuditEvent: {
+      readonly action: CodecTypes['pg/text@1']['output'];
+      readonly actorId: CodecTypes['pg/text@1']['output'];
+      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly details: CodecTypes['pg/text@1']['output'] | null;
+      readonly entityId: CodecTypes['pg/text@1']['output'];
+      readonly entityType: CodecTypes['pg/text@1']['output'];
+      readonly id: CodecTypes['pg/text@1']['output'];
+      readonly organizationId: CodecTypes['pg/text@1']['output'];
+    };
+    readonly BankReconciliation: {
+      readonly bankTransactionId: CodecTypes['pg/text@1']['output'];
+      readonly id: CodecTypes['pg/text@1']['output'];
+      readonly invoicePaymentId: CodecTypes['pg/text@1']['output'] | null;
+      readonly organizationId: CodecTypes['pg/text@1']['output'];
+      readonly payrollPaymentId: CodecTypes['pg/text@1']['output'] | null;
+      readonly reconciledAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly reconciledById: CodecTypes['pg/text@1']['output'];
+      readonly reversalReason: CodecTypes['pg/text@1']['output'] | null;
+      readonly reversedAt: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
+      readonly reversedById: CodecTypes['pg/text@1']['output'] | null;
+      readonly targetType: 'INVOICE_PAYMENT' | 'PAYROLL_PAYMENT';
+      readonly version: CodecTypes['pg/int4@1']['output'];
+    };
+    readonly BankTransaction: {
+      readonly amount: Numeric<14, 2>;
+      readonly bankAccountId: CodecTypes['pg/text@1']['output'];
+      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly currency: CodecTypes['pg/text@1']['output'];
+      readonly description: CodecTypes['pg/text@1']['output'];
+      readonly direction: 'CREDIT' | 'DEBIT';
+      readonly fingerprint: CodecTypes['pg/text@1']['output'];
+      readonly id: CodecTypes['pg/text@1']['output'];
+      readonly importId: CodecTypes['pg/text@1']['output'];
+      readonly organizationId: CodecTypes['pg/text@1']['output'];
+      readonly reference: CodecTypes['pg/text@1']['output'] | null;
+      readonly transactionDate: CodecTypes['pg/timestamptz-temporal@1']['output'];
+    };
+    readonly BankTransactionImport: {
+      readonly bankAccountId: CodecTypes['pg/text@1']['output'];
+      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly duplicateCount: CodecTypes['pg/int4@1']['output'];
+      readonly fileName: CodecTypes['pg/text@1']['output'];
+      readonly id: CodecTypes['pg/text@1']['output'];
+      readonly importedCount: CodecTypes['pg/int4@1']['output'];
+      readonly organizationId: CodecTypes['pg/text@1']['output'];
+      readonly rowCount: CodecTypes['pg/int4@1']['output'];
+      readonly sourceHash: CodecTypes['pg/text@1']['output'];
+      readonly status: 'IMPORTED' | 'PARTIALLY_IMPORTED' | 'FAILED';
+      readonly uploadedById: CodecTypes['pg/text@1']['output'];
     };
     readonly CashFlowForecastAuditEvent: {
       readonly action: 'CONFIGURATION_UPDATED';
@@ -690,6 +757,33 @@ export type FieldOutputTypes = {
       readonly recordedById: CodecTypes['pg/text@1']['output'];
       readonly reference: CodecTypes['pg/text@1']['output'];
     };
+    readonly PayrollPaymentBatch: {
+      readonly bankAccountId: CodecTypes['pg/text@1']['output'] | null;
+      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly createdById: CodecTypes['pg/text@1']['output'];
+      readonly currency: CodecTypes['pg/text@1']['output'];
+      readonly id: CodecTypes['pg/text@1']['output'];
+      readonly name: CodecTypes['pg/text@1']['output'];
+      readonly organizationId: CodecTypes['pg/text@1']['output'];
+      readonly payrollRunId: CodecTypes['pg/text@1']['output'];
+      readonly status: 'DRAFT' | 'PROCESSING' | 'COMPLETED' | 'CANCELLED';
+      readonly totalAmount: Numeric<14, 2>;
+      readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly version: CodecTypes['pg/int4@1']['output'];
+    };
+    readonly PayrollPaymentBatchItem: {
+      readonly amount: Numeric<14, 2>;
+      readonly attemptedAt: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
+      readonly batchId: CodecTypes['pg/text@1']['output'];
+      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly employeeName: CodecTypes['pg/text@1']['output'];
+      readonly id: CodecTypes['pg/text@1']['output'];
+      readonly organizationId: CodecTypes['pg/text@1']['output'];
+      readonly paymentReference: CodecTypes['pg/text@1']['output'] | null;
+      readonly payrollEntryId: CodecTypes['pg/text@1']['output'];
+      readonly status: 'PENDING' | 'ATTEMPTED' | 'PAID' | 'FAILED';
+      readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+    };
     readonly PayrollRun: {
       readonly approvedAt: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
       readonly approvedById: CodecTypes['pg/text@1']['output'] | null;
@@ -1034,6 +1128,73 @@ export type FieldInputTypes = {
       readonly version: CodecTypes['pg/int4@1']['input'];
       readonly workDate: CodecTypes['pg/timestamptz-temporal@1']['input'];
       readonly workedMinutes: CodecTypes['pg/int4@1']['input'] | null;
+    };
+    readonly BankAccount: {
+      readonly accountHolder: CodecTypes['pg/text@1']['input'];
+      readonly bankName: CodecTypes['pg/text@1']['input'];
+      readonly countryCode: CodecTypes['pg/text@1']['input'];
+      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly createdById: CodecTypes['pg/text@1']['input'];
+      readonly currency: CodecTypes['pg/text@1']['input'];
+      readonly displayName: CodecTypes['pg/text@1']['input'];
+      readonly id: CodecTypes['pg/text@1']['input'];
+      readonly isActive: CodecTypes['pg/bool@1']['input'];
+      readonly isDefault: CodecTypes['pg/bool@1']['input'];
+      readonly maskedIdentifier: CodecTypes['pg/text@1']['input'];
+      readonly organizationId: CodecTypes['pg/text@1']['input'];
+      readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly version: CodecTypes['pg/int4@1']['input'];
+    };
+    readonly BankingAuditEvent: {
+      readonly action: CodecTypes['pg/text@1']['input'];
+      readonly actorId: CodecTypes['pg/text@1']['input'];
+      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly details: CodecTypes['pg/text@1']['input'] | null;
+      readonly entityId: CodecTypes['pg/text@1']['input'];
+      readonly entityType: CodecTypes['pg/text@1']['input'];
+      readonly id: CodecTypes['pg/text@1']['input'];
+      readonly organizationId: CodecTypes['pg/text@1']['input'];
+    };
+    readonly BankReconciliation: {
+      readonly bankTransactionId: CodecTypes['pg/text@1']['input'];
+      readonly id: CodecTypes['pg/text@1']['input'];
+      readonly invoicePaymentId: CodecTypes['pg/text@1']['input'] | null;
+      readonly organizationId: CodecTypes['pg/text@1']['input'];
+      readonly payrollPaymentId: CodecTypes['pg/text@1']['input'] | null;
+      readonly reconciledAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly reconciledById: CodecTypes['pg/text@1']['input'];
+      readonly reversalReason: CodecTypes['pg/text@1']['input'] | null;
+      readonly reversedAt: CodecTypes['pg/timestamptz-temporal@1']['input'] | null;
+      readonly reversedById: CodecTypes['pg/text@1']['input'] | null;
+      readonly targetType: 'INVOICE_PAYMENT' | 'PAYROLL_PAYMENT';
+      readonly version: CodecTypes['pg/int4@1']['input'];
+    };
+    readonly BankTransaction: {
+      readonly amount: CodecTypes['pg/numeric@1']['input'];
+      readonly bankAccountId: CodecTypes['pg/text@1']['input'];
+      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly currency: CodecTypes['pg/text@1']['input'];
+      readonly description: CodecTypes['pg/text@1']['input'];
+      readonly direction: 'CREDIT' | 'DEBIT';
+      readonly fingerprint: CodecTypes['pg/text@1']['input'];
+      readonly id: CodecTypes['pg/text@1']['input'];
+      readonly importId: CodecTypes['pg/text@1']['input'];
+      readonly organizationId: CodecTypes['pg/text@1']['input'];
+      readonly reference: CodecTypes['pg/text@1']['input'] | null;
+      readonly transactionDate: CodecTypes['pg/timestamptz-temporal@1']['input'];
+    };
+    readonly BankTransactionImport: {
+      readonly bankAccountId: CodecTypes['pg/text@1']['input'];
+      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly duplicateCount: CodecTypes['pg/int4@1']['input'];
+      readonly fileName: CodecTypes['pg/text@1']['input'];
+      readonly id: CodecTypes['pg/text@1']['input'];
+      readonly importedCount: CodecTypes['pg/int4@1']['input'];
+      readonly organizationId: CodecTypes['pg/text@1']['input'];
+      readonly rowCount: CodecTypes['pg/int4@1']['input'];
+      readonly sourceHash: CodecTypes['pg/text@1']['input'];
+      readonly status: 'IMPORTED' | 'PARTIALLY_IMPORTED' | 'FAILED';
+      readonly uploadedById: CodecTypes['pg/text@1']['input'];
     };
     readonly CashFlowForecastAuditEvent: {
       readonly action: 'CONFIGURATION_UPDATED';
@@ -1436,6 +1597,33 @@ export type FieldInputTypes = {
       readonly recordedById: CodecTypes['pg/text@1']['input'];
       readonly reference: CodecTypes['pg/text@1']['input'];
     };
+    readonly PayrollPaymentBatch: {
+      readonly bankAccountId: CodecTypes['pg/text@1']['input'] | null;
+      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly createdById: CodecTypes['pg/text@1']['input'];
+      readonly currency: CodecTypes['pg/text@1']['input'];
+      readonly id: CodecTypes['pg/text@1']['input'];
+      readonly name: CodecTypes['pg/text@1']['input'];
+      readonly organizationId: CodecTypes['pg/text@1']['input'];
+      readonly payrollRunId: CodecTypes['pg/text@1']['input'];
+      readonly status: 'DRAFT' | 'PROCESSING' | 'COMPLETED' | 'CANCELLED';
+      readonly totalAmount: CodecTypes['pg/numeric@1']['input'];
+      readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly version: CodecTypes['pg/int4@1']['input'];
+    };
+    readonly PayrollPaymentBatchItem: {
+      readonly amount: CodecTypes['pg/numeric@1']['input'];
+      readonly attemptedAt: CodecTypes['pg/timestamptz-temporal@1']['input'] | null;
+      readonly batchId: CodecTypes['pg/text@1']['input'];
+      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly employeeName: CodecTypes['pg/text@1']['input'];
+      readonly id: CodecTypes['pg/text@1']['input'];
+      readonly organizationId: CodecTypes['pg/text@1']['input'];
+      readonly paymentReference: CodecTypes['pg/text@1']['input'] | null;
+      readonly payrollEntryId: CodecTypes['pg/text@1']['input'];
+      readonly status: 'PENDING' | 'ATTEMPTED' | 'PAID' | 'FAILED';
+      readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
+    };
     readonly PayrollRun: {
       readonly approvedAt: CodecTypes['pg/timestamptz-temporal@1']['input'] | null;
       readonly approvedById: CodecTypes['pg/text@1']['input'] | null;
@@ -1780,6 +1968,73 @@ export type StorageColumnTypes = {
       readonly version: CodecTypes['pg/int4@1']['output'];
       readonly workDate: CodecTypes['pg/timestamptz-temporal@1']['output'];
       readonly workedMinutes: CodecTypes['pg/int4@1']['output'] | null;
+    };
+    readonly bank_accounts: {
+      readonly accountHolder: CodecTypes['pg/text@1']['output'];
+      readonly bankName: CodecTypes['pg/text@1']['output'];
+      readonly countryCode: CodecTypes['pg/text@1']['output'];
+      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly createdById: CodecTypes['pg/text@1']['output'];
+      readonly currency: CodecTypes['pg/text@1']['output'];
+      readonly displayName: CodecTypes['pg/text@1']['output'];
+      readonly id: CodecTypes['pg/text@1']['output'];
+      readonly isActive: CodecTypes['pg/bool@1']['output'];
+      readonly isDefault: CodecTypes['pg/bool@1']['output'];
+      readonly maskedIdentifier: CodecTypes['pg/text@1']['output'];
+      readonly organizationId: CodecTypes['pg/text@1']['output'];
+      readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly version: CodecTypes['pg/int4@1']['output'];
+    };
+    readonly bank_reconciliations: {
+      readonly bankTransactionId: CodecTypes['pg/text@1']['output'];
+      readonly id: CodecTypes['pg/text@1']['output'];
+      readonly invoicePaymentId: CodecTypes['pg/text@1']['output'] | null;
+      readonly organizationId: CodecTypes['pg/text@1']['output'];
+      readonly payrollPaymentId: CodecTypes['pg/text@1']['output'] | null;
+      readonly reconciledAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly reconciledById: CodecTypes['pg/text@1']['output'];
+      readonly reversalReason: CodecTypes['pg/text@1']['output'] | null;
+      readonly reversedAt: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
+      readonly reversedById: CodecTypes['pg/text@1']['output'] | null;
+      readonly targetType: 'INVOICE_PAYMENT' | 'PAYROLL_PAYMENT';
+      readonly version: CodecTypes['pg/int4@1']['output'];
+    };
+    readonly bank_transaction_imports: {
+      readonly bankAccountId: CodecTypes['pg/text@1']['output'];
+      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly duplicateCount: CodecTypes['pg/int4@1']['output'];
+      readonly fileName: CodecTypes['pg/text@1']['output'];
+      readonly id: CodecTypes['pg/text@1']['output'];
+      readonly importedCount: CodecTypes['pg/int4@1']['output'];
+      readonly organizationId: CodecTypes['pg/text@1']['output'];
+      readonly rowCount: CodecTypes['pg/int4@1']['output'];
+      readonly sourceHash: CodecTypes['pg/text@1']['output'];
+      readonly status: 'IMPORTED' | 'PARTIALLY_IMPORTED' | 'FAILED';
+      readonly uploadedById: CodecTypes['pg/text@1']['output'];
+    };
+    readonly bank_transactions: {
+      readonly amount: Numeric<14, 2>;
+      readonly bankAccountId: CodecTypes['pg/text@1']['output'];
+      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly currency: CodecTypes['pg/text@1']['output'];
+      readonly description: CodecTypes['pg/text@1']['output'];
+      readonly direction: 'CREDIT' | 'DEBIT';
+      readonly fingerprint: CodecTypes['pg/text@1']['output'];
+      readonly id: CodecTypes['pg/text@1']['output'];
+      readonly importId: CodecTypes['pg/text@1']['output'];
+      readonly organizationId: CodecTypes['pg/text@1']['output'];
+      readonly reference: CodecTypes['pg/text@1']['output'] | null;
+      readonly transactionDate: CodecTypes['pg/timestamptz-temporal@1']['output'];
+    };
+    readonly banking_audit_events: {
+      readonly action: CodecTypes['pg/text@1']['output'];
+      readonly actorId: CodecTypes['pg/text@1']['output'];
+      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly details: CodecTypes['pg/text@1']['output'] | null;
+      readonly entityId: CodecTypes['pg/text@1']['output'];
+      readonly entityType: CodecTypes['pg/text@1']['output'];
+      readonly id: CodecTypes['pg/text@1']['output'];
+      readonly organizationId: CodecTypes['pg/text@1']['output'];
     };
     readonly cash_flow_forecast_audit_events: {
       readonly action: 'CONFIGURATION_UPDATED';
@@ -2170,6 +2425,33 @@ export type StorageColumnTypes = {
       readonly title: CodecTypes['pg/text@1']['output'];
       readonly type: 'DRAFT_READY' | 'APPROVAL_PENDING' | 'AUTOMATION_FAILED' | 'PAYSLIPS_READY';
     };
+    readonly payroll_payment_batch_items: {
+      readonly amount: Numeric<14, 2>;
+      readonly attemptedAt: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
+      readonly batchId: CodecTypes['pg/text@1']['output'];
+      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly employeeName: CodecTypes['pg/text@1']['output'];
+      readonly id: CodecTypes['pg/text@1']['output'];
+      readonly organizationId: CodecTypes['pg/text@1']['output'];
+      readonly paymentReference: CodecTypes['pg/text@1']['output'] | null;
+      readonly payrollEntryId: CodecTypes['pg/text@1']['output'];
+      readonly status: 'PENDING' | 'ATTEMPTED' | 'PAID' | 'FAILED';
+      readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+    };
+    readonly payroll_payment_batches: {
+      readonly bankAccountId: CodecTypes['pg/text@1']['output'] | null;
+      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly createdById: CodecTypes['pg/text@1']['output'];
+      readonly currency: CodecTypes['pg/text@1']['output'];
+      readonly id: CodecTypes['pg/text@1']['output'];
+      readonly name: CodecTypes['pg/text@1']['output'];
+      readonly organizationId: CodecTypes['pg/text@1']['output'];
+      readonly payrollRunId: CodecTypes['pg/text@1']['output'];
+      readonly status: 'DRAFT' | 'PROCESSING' | 'COMPLETED' | 'CANCELLED';
+      readonly totalAmount: Numeric<14, 2>;
+      readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly version: CodecTypes['pg/int4@1']['output'];
+    };
     readonly payroll_payments: {
       readonly amount: Numeric<14, 2>;
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
@@ -2526,6 +2808,73 @@ export type StorageColumnInputTypes = {
       readonly version: CodecTypes['pg/int4@1']['input'];
       readonly workDate: CodecTypes['pg/timestamptz-temporal@1']['input'];
       readonly workedMinutes: CodecTypes['pg/int4@1']['input'] | null;
+    };
+    readonly bank_accounts: {
+      readonly accountHolder: CodecTypes['pg/text@1']['input'];
+      readonly bankName: CodecTypes['pg/text@1']['input'];
+      readonly countryCode: CodecTypes['pg/text@1']['input'];
+      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly createdById: CodecTypes['pg/text@1']['input'];
+      readonly currency: CodecTypes['pg/text@1']['input'];
+      readonly displayName: CodecTypes['pg/text@1']['input'];
+      readonly id: CodecTypes['pg/text@1']['input'];
+      readonly isActive: CodecTypes['pg/bool@1']['input'];
+      readonly isDefault: CodecTypes['pg/bool@1']['input'];
+      readonly maskedIdentifier: CodecTypes['pg/text@1']['input'];
+      readonly organizationId: CodecTypes['pg/text@1']['input'];
+      readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly version: CodecTypes['pg/int4@1']['input'];
+    };
+    readonly bank_reconciliations: {
+      readonly bankTransactionId: CodecTypes['pg/text@1']['input'];
+      readonly id: CodecTypes['pg/text@1']['input'];
+      readonly invoicePaymentId: CodecTypes['pg/text@1']['input'] | null;
+      readonly organizationId: CodecTypes['pg/text@1']['input'];
+      readonly payrollPaymentId: CodecTypes['pg/text@1']['input'] | null;
+      readonly reconciledAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly reconciledById: CodecTypes['pg/text@1']['input'];
+      readonly reversalReason: CodecTypes['pg/text@1']['input'] | null;
+      readonly reversedAt: CodecTypes['pg/timestamptz-temporal@1']['input'] | null;
+      readonly reversedById: CodecTypes['pg/text@1']['input'] | null;
+      readonly targetType: 'INVOICE_PAYMENT' | 'PAYROLL_PAYMENT';
+      readonly version: CodecTypes['pg/int4@1']['input'];
+    };
+    readonly bank_transaction_imports: {
+      readonly bankAccountId: CodecTypes['pg/text@1']['input'];
+      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly duplicateCount: CodecTypes['pg/int4@1']['input'];
+      readonly fileName: CodecTypes['pg/text@1']['input'];
+      readonly id: CodecTypes['pg/text@1']['input'];
+      readonly importedCount: CodecTypes['pg/int4@1']['input'];
+      readonly organizationId: CodecTypes['pg/text@1']['input'];
+      readonly rowCount: CodecTypes['pg/int4@1']['input'];
+      readonly sourceHash: CodecTypes['pg/text@1']['input'];
+      readonly status: 'IMPORTED' | 'PARTIALLY_IMPORTED' | 'FAILED';
+      readonly uploadedById: CodecTypes['pg/text@1']['input'];
+    };
+    readonly bank_transactions: {
+      readonly amount: CodecTypes['pg/numeric@1']['input'];
+      readonly bankAccountId: CodecTypes['pg/text@1']['input'];
+      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly currency: CodecTypes['pg/text@1']['input'];
+      readonly description: CodecTypes['pg/text@1']['input'];
+      readonly direction: 'CREDIT' | 'DEBIT';
+      readonly fingerprint: CodecTypes['pg/text@1']['input'];
+      readonly id: CodecTypes['pg/text@1']['input'];
+      readonly importId: CodecTypes['pg/text@1']['input'];
+      readonly organizationId: CodecTypes['pg/text@1']['input'];
+      readonly reference: CodecTypes['pg/text@1']['input'] | null;
+      readonly transactionDate: CodecTypes['pg/timestamptz-temporal@1']['input'];
+    };
+    readonly banking_audit_events: {
+      readonly action: CodecTypes['pg/text@1']['input'];
+      readonly actorId: CodecTypes['pg/text@1']['input'];
+      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly details: CodecTypes['pg/text@1']['input'] | null;
+      readonly entityId: CodecTypes['pg/text@1']['input'];
+      readonly entityType: CodecTypes['pg/text@1']['input'];
+      readonly id: CodecTypes['pg/text@1']['input'];
+      readonly organizationId: CodecTypes['pg/text@1']['input'];
     };
     readonly cash_flow_forecast_audit_events: {
       readonly action: 'CONFIGURATION_UPDATED';
@@ -2915,6 +3264,33 @@ export type StorageColumnInputTypes = {
       readonly recipientId: CodecTypes['pg/text@1']['input'];
       readonly title: CodecTypes['pg/text@1']['input'];
       readonly type: 'DRAFT_READY' | 'APPROVAL_PENDING' | 'AUTOMATION_FAILED' | 'PAYSLIPS_READY';
+    };
+    readonly payroll_payment_batch_items: {
+      readonly amount: CodecTypes['pg/numeric@1']['input'];
+      readonly attemptedAt: CodecTypes['pg/timestamptz-temporal@1']['input'] | null;
+      readonly batchId: CodecTypes['pg/text@1']['input'];
+      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly employeeName: CodecTypes['pg/text@1']['input'];
+      readonly id: CodecTypes['pg/text@1']['input'];
+      readonly organizationId: CodecTypes['pg/text@1']['input'];
+      readonly paymentReference: CodecTypes['pg/text@1']['input'] | null;
+      readonly payrollEntryId: CodecTypes['pg/text@1']['input'];
+      readonly status: 'PENDING' | 'ATTEMPTED' | 'PAID' | 'FAILED';
+      readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
+    };
+    readonly payroll_payment_batches: {
+      readonly bankAccountId: CodecTypes['pg/text@1']['input'] | null;
+      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly createdById: CodecTypes['pg/text@1']['input'];
+      readonly currency: CodecTypes['pg/text@1']['input'];
+      readonly id: CodecTypes['pg/text@1']['input'];
+      readonly name: CodecTypes['pg/text@1']['input'];
+      readonly organizationId: CodecTypes['pg/text@1']['input'];
+      readonly payrollRunId: CodecTypes['pg/text@1']['input'];
+      readonly status: 'DRAFT' | 'PROCESSING' | 'COMPLETED' | 'CANCELLED';
+      readonly totalAmount: CodecTypes['pg/numeric@1']['input'];
+      readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly version: CodecTypes['pg/int4@1']['input'];
     };
     readonly payroll_payments: {
       readonly amount: CodecTypes['pg/numeric@1']['input'];
@@ -3286,6 +3662,106 @@ export namespace Models {
     updatedBy: public_User;
     readonly [RelationKeys]?:
       'corrections' | 'createdBy' | 'employee' | 'organization' | 'updatedBy';
+  };
+  export type public_BankAccount = {
+    accountHolder: CodecTypes['pg/text@1']['output'];
+    bankName: CodecTypes['pg/text@1']['output'];
+    countryCode: CodecTypes['pg/text@1']['output'];
+    createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+    createdById: CodecTypes['pg/text@1']['output'];
+    currency: CodecTypes['pg/text@1']['output'];
+    displayName: CodecTypes['pg/text@1']['output'];
+    id: CodecTypes['pg/text@1']['output'];
+    isActive: CodecTypes['pg/bool@1']['output'];
+    isDefault: CodecTypes['pg/bool@1']['output'];
+    maskedIdentifier: CodecTypes['pg/text@1']['output'];
+    organizationId: CodecTypes['pg/text@1']['output'];
+    updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+    version: CodecTypes['pg/int4@1']['output'];
+    createdBy: public_User;
+    imports: public_BankTransactionImport[];
+    organization: public_Organization;
+    paymentBatches: public_PayrollPaymentBatch[];
+    transactions: public_BankTransaction[];
+    readonly [RelationKeys]?:
+      'createdBy' | 'imports' | 'organization' | 'paymentBatches' | 'transactions';
+  };
+  export type public_BankReconciliation = {
+    bankTransactionId: CodecTypes['pg/text@1']['output'];
+    id: CodecTypes['pg/text@1']['output'];
+    invoicePaymentId: CodecTypes['pg/text@1']['output'] | null;
+    organizationId: CodecTypes['pg/text@1']['output'];
+    payrollPaymentId: CodecTypes['pg/text@1']['output'] | null;
+    reconciledAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+    reconciledById: CodecTypes['pg/text@1']['output'];
+    reversalReason: CodecTypes['pg/text@1']['output'] | null;
+    reversedAt: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
+    reversedById: CodecTypes['pg/text@1']['output'] | null;
+    targetType: 'INVOICE_PAYMENT' | 'PAYROLL_PAYMENT';
+    version: CodecTypes['pg/int4@1']['output'];
+    bankTransaction: public_BankTransaction;
+    invoicePayment: public_Payment | null;
+    organization: public_Organization;
+    payrollPayment: public_PayrollPayment | null;
+    reconciledBy: public_User;
+    reversedBy: public_User | null;
+    readonly [RelationKeys]?:
+      | 'bankTransaction'
+      | 'invoicePayment'
+      | 'organization'
+      | 'payrollPayment'
+      | 'reconciledBy'
+      | 'reversedBy';
+  };
+  export type public_BankTransaction = {
+    amount: Numeric<14, 2>;
+    bankAccountId: CodecTypes['pg/text@1']['output'];
+    createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+    currency: CodecTypes['pg/text@1']['output'];
+    description: CodecTypes['pg/text@1']['output'];
+    direction: 'CREDIT' | 'DEBIT';
+    fingerprint: CodecTypes['pg/text@1']['output'];
+    id: CodecTypes['pg/text@1']['output'];
+    importId: CodecTypes['pg/text@1']['output'];
+    organizationId: CodecTypes['pg/text@1']['output'];
+    reference: CodecTypes['pg/text@1']['output'] | null;
+    transactionDate: CodecTypes['pg/timestamptz-temporal@1']['output'];
+    bankAccount: public_BankAccount;
+    import: public_BankTransactionImport;
+    organization: public_Organization;
+    reconciliation: public_BankReconciliation | null;
+    readonly [RelationKeys]?: 'bankAccount' | 'import' | 'organization' | 'reconciliation';
+  };
+  export type public_BankTransactionImport = {
+    bankAccountId: CodecTypes['pg/text@1']['output'];
+    createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+    duplicateCount: CodecTypes['pg/int4@1']['output'];
+    fileName: CodecTypes['pg/text@1']['output'];
+    id: CodecTypes['pg/text@1']['output'];
+    importedCount: CodecTypes['pg/int4@1']['output'];
+    organizationId: CodecTypes['pg/text@1']['output'];
+    rowCount: CodecTypes['pg/int4@1']['output'];
+    sourceHash: CodecTypes['pg/text@1']['output'];
+    status: 'IMPORTED' | 'PARTIALLY_IMPORTED' | 'FAILED';
+    uploadedById: CodecTypes['pg/text@1']['output'];
+    bankAccount: public_BankAccount;
+    organization: public_Organization;
+    transactions: public_BankTransaction[];
+    uploadedBy: public_User;
+    readonly [RelationKeys]?: 'bankAccount' | 'organization' | 'transactions' | 'uploadedBy';
+  };
+  export type public_BankingAuditEvent = {
+    action: CodecTypes['pg/text@1']['output'];
+    actorId: CodecTypes['pg/text@1']['output'];
+    createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+    details: CodecTypes['pg/text@1']['output'] | null;
+    entityId: CodecTypes['pg/text@1']['output'];
+    entityType: CodecTypes['pg/text@1']['output'];
+    id: CodecTypes['pg/text@1']['output'];
+    organizationId: CodecTypes['pg/text@1']['output'];
+    actor: public_User;
+    organization: public_Organization;
+    readonly [RelationKeys]?: 'actor' | 'organization';
   };
   export type public_CashFlowForecastAuditEvent = {
     action: 'CONFIGURATION_UPDATED';
@@ -3668,6 +4144,11 @@ export namespace Models {
     website: CodecTypes['pg/text@1']['output'] | null;
     attendanceCorrections: public_AttendanceCorrectionRequest[];
     attendanceRecords: public_AttendanceRecord[];
+    bankAccounts: public_BankAccount[];
+    bankImports: public_BankTransactionImport[];
+    bankReconciliations: public_BankReconciliation[];
+    bankTransactions: public_BankTransaction[];
+    bankingAuditEvents: public_BankingAuditEvent[];
     cashFlowAuditEvents: public_CashFlowForecastAuditEvent[];
     cashFlowConfiguration: public_CashFlowForecastConfiguration | null;
     clients: public_Client[];
@@ -3690,6 +4171,8 @@ export namespace Models {
     payrollEntries: public_PayrollEntry[];
     payrollNotifications: public_PayrollNotification[];
     payrollOccurrences: public_PayrollScheduleOccurrence[];
+    payrollPaymentBatchItems: public_PayrollPaymentBatchItem[];
+    payrollPaymentBatches: public_PayrollPaymentBatch[];
     payrollPayments: public_PayrollPayment[];
     payrollRuns: public_PayrollRun[];
     payrollSchedule: public_PayrollSchedule | null;
@@ -3709,6 +4192,11 @@ export namespace Models {
     readonly [RelationKeys]?:
       | 'attendanceCorrections'
       | 'attendanceRecords'
+      | 'bankAccounts'
+      | 'bankImports'
+      | 'bankReconciliations'
+      | 'bankTransactions'
+      | 'bankingAuditEvents'
       | 'cashFlowAuditEvents'
       | 'cashFlowConfiguration'
       | 'clients'
@@ -3731,6 +4219,8 @@ export namespace Models {
       | 'payrollEntries'
       | 'payrollNotifications'
       | 'payrollOccurrences'
+      | 'payrollPaymentBatchItems'
+      | 'payrollPaymentBatches'
       | 'payrollPayments'
       | 'payrollRuns'
       | 'payrollSchedule'
@@ -3785,7 +4275,8 @@ export namespace Models {
     reference: CodecTypes['pg/text@1']['output'] | null;
     invoice: public_Invoice;
     organization: public_Organization;
-    readonly [RelationKeys]?: 'invoice' | 'organization';
+    reconciliation: public_BankReconciliation | null;
+    readonly [RelationKeys]?: 'invoice' | 'organization' | 'reconciliation';
   };
   export type public_PayrollAuditEvent = {
     action:
@@ -3838,6 +4329,7 @@ export namespace Models {
     components: public_PayrollEntryComponent[];
     employee: public_Employee;
     organization: public_Organization;
+    paymentBatchItems: public_PayrollPaymentBatchItem[];
     payments: public_PayrollPayment[];
     payrollRun: public_PayrollRun;
     salaryStructure: public_SalaryStructure;
@@ -3847,6 +4339,7 @@ export namespace Models {
       | 'components'
       | 'employee'
       | 'organization'
+      | 'paymentBatchItems'
       | 'payments'
       | 'payrollRun'
       | 'salaryStructure'
@@ -3906,8 +4399,46 @@ export namespace Models {
     reference: CodecTypes['pg/text@1']['output'];
     organization: public_Organization;
     payrollEntry: public_PayrollEntry;
+    reconciliation: public_BankReconciliation | null;
     recordedBy: public_User;
-    readonly [RelationKeys]?: 'organization' | 'payrollEntry' | 'recordedBy';
+    readonly [RelationKeys]?: 'organization' | 'payrollEntry' | 'reconciliation' | 'recordedBy';
+  };
+  export type public_PayrollPaymentBatch = {
+    bankAccountId: CodecTypes['pg/text@1']['output'] | null;
+    createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+    createdById: CodecTypes['pg/text@1']['output'];
+    currency: CodecTypes['pg/text@1']['output'];
+    id: CodecTypes['pg/text@1']['output'];
+    name: CodecTypes['pg/text@1']['output'];
+    organizationId: CodecTypes['pg/text@1']['output'];
+    payrollRunId: CodecTypes['pg/text@1']['output'];
+    status: 'DRAFT' | 'PROCESSING' | 'COMPLETED' | 'CANCELLED';
+    totalAmount: Numeric<14, 2>;
+    updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+    version: CodecTypes['pg/int4@1']['output'];
+    bankAccount: public_BankAccount | null;
+    createdBy: public_User;
+    items: public_PayrollPaymentBatchItem[];
+    organization: public_Organization;
+    payrollRun: public_PayrollRun;
+    readonly [RelationKeys]?: 'bankAccount' | 'createdBy' | 'items' | 'organization' | 'payrollRun';
+  };
+  export type public_PayrollPaymentBatchItem = {
+    amount: Numeric<14, 2>;
+    attemptedAt: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
+    batchId: CodecTypes['pg/text@1']['output'];
+    createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+    employeeName: CodecTypes['pg/text@1']['output'];
+    id: CodecTypes['pg/text@1']['output'];
+    organizationId: CodecTypes['pg/text@1']['output'];
+    paymentReference: CodecTypes['pg/text@1']['output'] | null;
+    payrollEntryId: CodecTypes['pg/text@1']['output'];
+    status: 'PENDING' | 'ATTEMPTED' | 'PAID' | 'FAILED';
+    updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+    batch: public_PayrollPaymentBatch;
+    organization: public_Organization;
+    payrollEntry: public_PayrollEntry;
+    readonly [RelationKeys]?: 'batch' | 'organization' | 'payrollEntry';
   };
   export type public_PayrollRun = {
     approvedAt: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
@@ -3939,6 +4470,7 @@ export namespace Models {
     entries: public_PayrollEntry[];
     finalizedBy: public_User | null;
     organization: public_Organization;
+    paymentBatches: public_PayrollPaymentBatch[];
     payrollSchedule: public_PayrollSchedule | null;
     scheduleOccurrence: public_PayrollScheduleOccurrence | null;
     readonly [RelationKeys]?:
@@ -3948,6 +4480,7 @@ export namespace Models {
       | 'entries'
       | 'finalizedBy'
       | 'organization'
+      | 'paymentBatches'
       | 'payrollSchedule'
       | 'scheduleOccurrence';
   };
@@ -4271,9 +4804,13 @@ export namespace Models {
     activatedStatutoryRules: public_PayrollStatutoryRuleSet[];
     appliedStatutoryCalculations: public_PayrollStatutoryApplication[];
     approvedPayrollRuns: public_PayrollRun[];
+    bankReconciliations: public_BankReconciliation[];
+    bankingAuditEvents: public_BankingAuditEvent[];
     cashFlowAuditEvents: public_CashFlowForecastAuditEvent[];
     createdAttendance: public_AttendanceRecord[];
+    createdBankAccounts: public_BankAccount[];
     createdExpenses: public_Expense[];
+    createdPaymentBatches: public_PayrollPaymentBatch[];
     createdPayrollRuns: public_PayrollRun[];
     createdPayrollSchedules: public_PayrollSchedule[];
     createdSalaryStructures: public_SalaryStructure[];
@@ -4291,6 +4828,7 @@ export namespace Models {
     recurringScheduleEvents: public_RecurringScheduleEvent[];
     recurringSchedules: public_RecurringInvoiceSchedule[];
     requestedAttendanceCorrections: public_AttendanceCorrectionRequest[];
+    reversedBankReconciliations: public_BankReconciliation[];
     reviewedAttendanceCorrections: public_AttendanceCorrectionRequest[];
     reviewedExpenses: public_Expense[];
     reviewedLeaveRequests: public_LeaveRequest[];
@@ -4299,14 +4837,19 @@ export namespace Models {
     submittedExpenses: public_Expense[];
     updatedAttendance: public_AttendanceRecord[];
     updatedCashFlowConfig: public_CashFlowForecastConfiguration[];
+    uploadedBankImports: public_BankTransactionImport[];
     workforceAuditEvents: public_WorkforceAuditEvent[];
     readonly [RelationKeys]?:
       | 'activatedStatutoryRules'
       | 'appliedStatutoryCalculations'
       | 'approvedPayrollRuns'
+      | 'bankReconciliations'
+      | 'bankingAuditEvents'
       | 'cashFlowAuditEvents'
       | 'createdAttendance'
+      | 'createdBankAccounts'
       | 'createdExpenses'
+      | 'createdPaymentBatches'
       | 'createdPayrollRuns'
       | 'createdPayrollSchedules'
       | 'createdSalaryStructures'
@@ -4324,6 +4867,7 @@ export namespace Models {
       | 'recurringScheduleEvents'
       | 'recurringSchedules'
       | 'requestedAttendanceCorrections'
+      | 'reversedBankReconciliations'
       | 'reviewedAttendanceCorrections'
       | 'reviewedExpenses'
       | 'reviewedLeaveRequests'
@@ -4332,6 +4876,7 @@ export namespace Models {
       | 'submittedExpenses'
       | 'updatedAttendance'
       | 'updatedCashFlowConfig'
+      | 'uploadedBankImports'
       | 'workforceAuditEvents';
   };
   export type public_WorkSchedule = {
@@ -4376,6 +4921,11 @@ export declare const models: {
   public: {
     AttendanceCorrectionRequest: Models.public_AttendanceCorrectionRequest;
     AttendanceRecord: Models.public_AttendanceRecord;
+    BankAccount: Models.public_BankAccount;
+    BankReconciliation: Models.public_BankReconciliation;
+    BankTransaction: Models.public_BankTransaction;
+    BankTransactionImport: Models.public_BankTransactionImport;
+    BankingAuditEvent: Models.public_BankingAuditEvent;
     CashFlowForecastAuditEvent: Models.public_CashFlowForecastAuditEvent;
     CashFlowForecastConfiguration: Models.public_CashFlowForecastConfiguration;
     Client: Models.public_Client;
@@ -4401,6 +4951,8 @@ export declare const models: {
     PayrollEntryComponent: Models.public_PayrollEntryComponent;
     PayrollNotification: Models.public_PayrollNotification;
     PayrollPayment: Models.public_PayrollPayment;
+    PayrollPaymentBatch: Models.public_PayrollPaymentBatch;
+    PayrollPaymentBatchItem: Models.public_PayrollPaymentBatchItem;
     PayrollRun: Models.public_PayrollRun;
     PayrollSchedule: Models.public_PayrollSchedule;
     PayrollScheduleEvent: Models.public_PayrollScheduleEvent;
@@ -4846,6 +5398,718 @@ type ContractBase = Omit<
                     readonly tableName: 'users';
                     readonly columns: readonly ['organizationId', 'id'];
                   };
+                },
+              ];
+            };
+            readonly bank_accounts: {
+              columns: {
+                readonly accountHolder: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly bankName: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly countryCode: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly createdAt: {
+                  readonly nativeType: 'timestamptz';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                  readonly nullable: false;
+                  readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
+                };
+                readonly createdById: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly currency: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly displayName: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly id: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly isActive: {
+                  readonly nativeType: 'bool';
+                  readonly codecId: 'pg/bool@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/bool@1', true>;
+                  };
+                };
+                readonly isDefault: {
+                  readonly nativeType: 'bool';
+                  readonly codecId: 'pg/bool@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/bool@1', false>;
+                  };
+                };
+                readonly maskedIdentifier: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly organizationId: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly updatedAt: {
+                  readonly nativeType: 'timestamptz';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                  readonly nullable: false;
+                };
+                readonly version: {
+                  readonly nativeType: 'int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/int4@1', 1>;
+                  };
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [
+                { readonly columns: readonly ['organizationId', 'id'] },
+                {
+                  readonly columns: readonly ['organizationId', 'displayName'];
+                  readonly name: 'bank_account_name_key';
+                },
+              ];
+              indexes: readonly [
+                {
+                  readonly name: 'bank_account_active_idx';
+                  readonly columns: readonly ['organizationId', 'isActive'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'bank_accounts_organizationId_createdById_idx_4fb80a04';
+                  readonly prefix: 'bank_accounts_organizationId_createdById_idx';
+                  readonly columns: readonly ['organizationId', 'createdById'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'bank_accounts_organizationId_idx_2e17ef41';
+                  readonly prefix: 'bank_accounts_organizationId_idx';
+                  readonly columns: readonly ['organizationId'];
+                  readonly unique: false;
+                },
+              ];
+              foreignKeys: readonly [
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'bank_accounts';
+                    readonly columns: readonly ['organizationId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'organizations';
+                    readonly columns: readonly ['id'];
+                  };
+                  readonly name: 'bank_account_org_fkey';
+                },
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'bank_accounts';
+                    readonly columns: readonly ['organizationId', 'createdById'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'users';
+                    readonly columns: readonly ['organizationId', 'id'];
+                  };
+                  readonly name: 'bank_account_creator_fkey';
+                },
+              ];
+            };
+            readonly bank_reconciliations: {
+              columns: {
+                readonly bankTransactionId: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly id: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly invoicePaymentId: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                };
+                readonly organizationId: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly payrollPaymentId: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                };
+                readonly reconciledAt: {
+                  readonly nativeType: 'timestamptz';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                  readonly nullable: false;
+                  readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
+                };
+                readonly reconciledById: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly reversalReason: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                };
+                readonly reversedAt: {
+                  readonly nativeType: 'timestamptz';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                  readonly nullable: true;
+                };
+                readonly reversedById: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                };
+                readonly targetType: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly version: {
+                  readonly nativeType: 'int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/int4@1', 1>;
+                  };
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [
+                {
+                  readonly columns: readonly ['organizationId', 'invoicePaymentId'];
+                  readonly name: 'bank_recon_invoice_key';
+                },
+                {
+                  readonly columns: readonly ['organizationId', 'payrollPaymentId'];
+                  readonly name: 'bank_recon_payroll_key';
+                },
+                {
+                  readonly columns: readonly ['organizationId', 'bankTransactionId'];
+                  readonly name: 'bank_recon_tx_key';
+                },
+              ];
+              indexes: readonly [
+                {
+                  readonly name: 'bank_recon_created_idx';
+                  readonly columns: readonly ['organizationId', 'reconciledAt'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'bank_reconciliations_organizationId_idx_2e17ef41';
+                  readonly prefix: 'bank_reconciliations_organizationId_idx';
+                  readonly columns: readonly ['organizationId'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'bank_reconciliations_organizationId_reconciledById_idx_65721104';
+                  readonly prefix: 'bank_reconciliations_organizationId_reconciledById_idx';
+                  readonly columns: readonly ['organizationId', 'reconciledById'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'bank_reconciliations_organizationId_reversedById_idx_d89ffd81';
+                  readonly prefix: 'bank_reconciliations_organizationId_reversedById_idx';
+                  readonly columns: readonly ['organizationId', 'reversedById'];
+                  readonly unique: false;
+                },
+              ];
+              foreignKeys: readonly [
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'bank_reconciliations';
+                    readonly columns: readonly ['organizationId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'organizations';
+                    readonly columns: readonly ['id'];
+                  };
+                  readonly name: 'bank_recon_org_fkey';
+                },
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'bank_reconciliations';
+                    readonly columns: readonly ['organizationId', 'bankTransactionId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'bank_transactions';
+                    readonly columns: readonly ['organizationId', 'id'];
+                  };
+                  readonly name: 'bank_recon_tx_fkey';
+                },
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'bank_reconciliations';
+                    readonly columns: readonly ['organizationId', 'invoicePaymentId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'payments';
+                    readonly columns: readonly ['organizationId', 'id'];
+                  };
+                  readonly name: 'bank_recon_invoice_fkey';
+                },
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'bank_reconciliations';
+                    readonly columns: readonly ['organizationId', 'payrollPaymentId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'payroll_payments';
+                    readonly columns: readonly ['organizationId', 'id'];
+                  };
+                  readonly name: 'bank_recon_payroll_fkey';
+                },
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'bank_reconciliations';
+                    readonly columns: readonly ['organizationId', 'reconciledById'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'users';
+                    readonly columns: readonly ['organizationId', 'id'];
+                  };
+                  readonly name: 'bank_recon_actor_fkey';
+                },
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'bank_reconciliations';
+                    readonly columns: readonly ['organizationId', 'reversedById'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'users';
+                    readonly columns: readonly ['organizationId', 'id'];
+                  };
+                  readonly name: 'bank_recon_reverser_fkey';
+                },
+              ];
+            };
+            readonly bank_transaction_imports: {
+              columns: {
+                readonly bankAccountId: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly createdAt: {
+                  readonly nativeType: 'timestamptz';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                  readonly nullable: false;
+                  readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
+                };
+                readonly duplicateCount: {
+                  readonly nativeType: 'int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/int4@1', 0>;
+                  };
+                };
+                readonly fileName: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly id: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly importedCount: {
+                  readonly nativeType: 'int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                };
+                readonly organizationId: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly rowCount: {
+                  readonly nativeType: 'int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                };
+                readonly sourceHash: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly status: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/text@1', 'IMPORTED'>;
+                  };
+                };
+                readonly uploadedById: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [
+                { readonly columns: readonly ['organizationId', 'id'] },
+                {
+                  readonly columns: readonly ['organizationId', 'bankAccountId', 'sourceHash'];
+                  readonly name: 'bank_import_source_key';
+                },
+              ];
+              indexes: readonly [
+                {
+                  readonly name: 'bank_import_created_idx';
+                  readonly columns: readonly ['organizationId', 'createdAt'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'bank_transaction_imports_organizationId_bankAccountId__c169eff6';
+                  readonly prefix: 'bank_transaction_imports_organizationId_bankAccountId_';
+                  readonly columns: readonly ['organizationId', 'bankAccountId'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'bank_transaction_imports_organizationId_idx_2e17ef41';
+                  readonly prefix: 'bank_transaction_imports_organizationId_idx';
+                  readonly columns: readonly ['organizationId'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'bank_transaction_imports_organizationId_uploadedById_i_a9dad1c2';
+                  readonly prefix: 'bank_transaction_imports_organizationId_uploadedById_i';
+                  readonly columns: readonly ['organizationId', 'uploadedById'];
+                  readonly unique: false;
+                },
+              ];
+              foreignKeys: readonly [
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'bank_transaction_imports';
+                    readonly columns: readonly ['organizationId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'organizations';
+                    readonly columns: readonly ['id'];
+                  };
+                  readonly name: 'bank_import_org_fkey';
+                },
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'bank_transaction_imports';
+                    readonly columns: readonly ['organizationId', 'bankAccountId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'bank_accounts';
+                    readonly columns: readonly ['organizationId', 'id'];
+                  };
+                  readonly name: 'bank_import_account_fkey';
+                },
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'bank_transaction_imports';
+                    readonly columns: readonly ['organizationId', 'uploadedById'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'users';
+                    readonly columns: readonly ['organizationId', 'id'];
+                  };
+                  readonly name: 'bank_import_uploader_fkey';
+                },
+              ];
+            };
+            readonly bank_transactions: {
+              columns: {
+                readonly amount: {
+                  readonly nativeType: 'numeric';
+                  readonly codecId: 'pg/numeric@1';
+                  readonly nullable: false;
+                  readonly typeParams: { readonly precision: 14; readonly scale: 2 };
+                };
+                readonly bankAccountId: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly createdAt: {
+                  readonly nativeType: 'timestamptz';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                  readonly nullable: false;
+                  readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
+                };
+                readonly currency: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly description: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly direction: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly fingerprint: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly id: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly importId: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly organizationId: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly reference: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                };
+                readonly transactionDate: {
+                  readonly nativeType: 'timestamptz';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                  readonly nullable: false;
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [
+                { readonly columns: readonly ['organizationId', 'id'] },
+                {
+                  readonly columns: readonly ['organizationId', 'bankAccountId', 'fingerprint'];
+                  readonly name: 'bank_tx_fingerprint_key';
+                },
+              ];
+              indexes: readonly [
+                {
+                  readonly name: 'bank_transactions_organizationId_bankAccountId_idx_c169eff6';
+                  readonly prefix: 'bank_transactions_organizationId_bankAccountId_idx';
+                  readonly columns: readonly ['organizationId', 'bankAccountId'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'bank_transactions_organizationId_idx_2e17ef41';
+                  readonly prefix: 'bank_transactions_organizationId_idx';
+                  readonly columns: readonly ['organizationId'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'bank_transactions_organizationId_importId_idx_ced03323';
+                  readonly prefix: 'bank_transactions_organizationId_importId_idx';
+                  readonly columns: readonly ['organizationId', 'importId'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'bank_tx_date_idx';
+                  readonly columns: readonly ['organizationId', 'transactionDate'];
+                  readonly unique: false;
+                },
+              ];
+              foreignKeys: readonly [
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'bank_transactions';
+                    readonly columns: readonly ['organizationId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'organizations';
+                    readonly columns: readonly ['id'];
+                  };
+                  readonly name: 'bank_tx_org_fkey';
+                },
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'bank_transactions';
+                    readonly columns: readonly ['organizationId', 'bankAccountId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'bank_accounts';
+                    readonly columns: readonly ['organizationId', 'id'];
+                  };
+                  readonly name: 'bank_tx_account_fkey';
+                },
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'bank_transactions';
+                    readonly columns: readonly ['organizationId', 'importId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'bank_transaction_imports';
+                    readonly columns: readonly ['organizationId', 'id'];
+                  };
+                  readonly name: 'bank_tx_import_fkey';
+                },
+              ];
+            };
+            readonly banking_audit_events: {
+              columns: {
+                readonly action: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly actorId: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly createdAt: {
+                  readonly nativeType: 'timestamptz';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                  readonly nullable: false;
+                  readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
+                };
+                readonly details: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                };
+                readonly entityId: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly entityType: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly id: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly organizationId: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [];
+              indexes: readonly [
+                {
+                  readonly name: 'bank_audit_entity_idx';
+                  readonly columns: readonly [
+                    'organizationId',
+                    'entityType',
+                    'entityId',
+                    'createdAt',
+                  ];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'banking_audit_events_organizationId_actorId_idx_327c2974';
+                  readonly prefix: 'banking_audit_events_organizationId_actorId_idx';
+                  readonly columns: readonly ['organizationId', 'actorId'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'banking_audit_events_organizationId_idx_2e17ef41';
+                  readonly prefix: 'banking_audit_events_organizationId_idx';
+                  readonly columns: readonly ['organizationId'];
+                  readonly unique: false;
+                },
+              ];
+              foreignKeys: readonly [
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'banking_audit_events';
+                    readonly columns: readonly ['organizationId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'organizations';
+                    readonly columns: readonly ['id'];
+                  };
+                  readonly name: 'bank_audit_org_fkey';
+                },
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'banking_audit_events';
+                    readonly columns: readonly ['organizationId', 'actorId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'users';
+                    readonly columns: readonly ['organizationId', 'id'];
+                  };
+                  readonly name: 'bank_audit_actor_fkey';
                 },
               ];
             };
@@ -8041,6 +9305,299 @@ type ContractBase = Omit<
                 },
               ];
             };
+            readonly payroll_payment_batch_items: {
+              columns: {
+                readonly amount: {
+                  readonly nativeType: 'numeric';
+                  readonly codecId: 'pg/numeric@1';
+                  readonly nullable: false;
+                  readonly typeParams: { readonly precision: 14; readonly scale: 2 };
+                };
+                readonly attemptedAt: {
+                  readonly nativeType: 'timestamptz';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                  readonly nullable: true;
+                };
+                readonly batchId: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly createdAt: {
+                  readonly nativeType: 'timestamptz';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                  readonly nullable: false;
+                  readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
+                };
+                readonly employeeName: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly id: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly organizationId: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly paymentReference: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                };
+                readonly payrollEntryId: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly status: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/text@1', 'PENDING'>;
+                  };
+                };
+                readonly updatedAt: {
+                  readonly nativeType: 'timestamptz';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                  readonly nullable: false;
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [
+                {
+                  readonly columns: readonly ['organizationId', 'payrollEntryId'];
+                  readonly name: 'pay_batch_item_entry_key';
+                },
+              ];
+              indexes: readonly [
+                {
+                  readonly name: 'pay_batch_entry_idx';
+                  readonly columns: readonly ['organizationId', 'payrollEntryId'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'payroll_payment_batch_items_organizationId_batchId_idx_f085c214';
+                  readonly prefix: 'payroll_payment_batch_items_organizationId_batchId_idx';
+                  readonly columns: readonly ['organizationId', 'batchId'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'payroll_payment_batch_items_organizationId_idx_2e17ef41';
+                  readonly prefix: 'payroll_payment_batch_items_organizationId_idx';
+                  readonly columns: readonly ['organizationId'];
+                  readonly unique: false;
+                },
+              ];
+              foreignKeys: readonly [
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'payroll_payment_batch_items';
+                    readonly columns: readonly ['organizationId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'organizations';
+                    readonly columns: readonly ['id'];
+                  };
+                  readonly name: 'pay_batch_item_org_fkey';
+                },
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'payroll_payment_batch_items';
+                    readonly columns: readonly ['organizationId', 'batchId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'payroll_payment_batches';
+                    readonly columns: readonly ['organizationId', 'id'];
+                  };
+                  readonly name: 'pay_batch_item_batch_fkey';
+                },
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'payroll_payment_batch_items';
+                    readonly columns: readonly ['organizationId', 'payrollEntryId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'payroll_entries';
+                    readonly columns: readonly ['organizationId', 'id'];
+                  };
+                  readonly name: 'pay_batch_item_entry_fkey';
+                },
+              ];
+            };
+            readonly payroll_payment_batches: {
+              columns: {
+                readonly bankAccountId: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                };
+                readonly createdAt: {
+                  readonly nativeType: 'timestamptz';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                  readonly nullable: false;
+                  readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
+                };
+                readonly createdById: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly currency: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly id: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly name: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly organizationId: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly payrollRunId: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly status: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/text@1', 'DRAFT'>;
+                  };
+                };
+                readonly totalAmount: {
+                  readonly nativeType: 'numeric';
+                  readonly codecId: 'pg/numeric@1';
+                  readonly nullable: false;
+                  readonly typeParams: { readonly precision: 14; readonly scale: 2 };
+                };
+                readonly updatedAt: {
+                  readonly nativeType: 'timestamptz';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                  readonly nullable: false;
+                };
+                readonly version: {
+                  readonly nativeType: 'int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/int4@1', 1>;
+                  };
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [{ readonly columns: readonly ['organizationId', 'id'] }];
+              indexes: readonly [
+                {
+                  readonly name: 'pay_batch_run_idx';
+                  readonly columns: readonly ['organizationId', 'payrollRunId', 'createdAt'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'payroll_payment_batches_organizationId_bankAccountId_i_c169eff6';
+                  readonly prefix: 'payroll_payment_batches_organizationId_bankAccountId_i';
+                  readonly columns: readonly ['organizationId', 'bankAccountId'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'payroll_payment_batches_organizationId_createdById_idx_4fb80a04';
+                  readonly prefix: 'payroll_payment_batches_organizationId_createdById_idx';
+                  readonly columns: readonly ['organizationId', 'createdById'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'payroll_payment_batches_organizationId_idx_2e17ef41';
+                  readonly prefix: 'payroll_payment_batches_organizationId_idx';
+                  readonly columns: readonly ['organizationId'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'payroll_payment_batches_organizationId_payrollRunId_id_81f419ba';
+                  readonly prefix: 'payroll_payment_batches_organizationId_payrollRunId_id';
+                  readonly columns: readonly ['organizationId', 'payrollRunId'];
+                  readonly unique: false;
+                },
+              ];
+              foreignKeys: readonly [
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'payroll_payment_batches';
+                    readonly columns: readonly ['organizationId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'organizations';
+                    readonly columns: readonly ['id'];
+                  };
+                  readonly name: 'pay_batch_org_fkey';
+                },
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'payroll_payment_batches';
+                    readonly columns: readonly ['organizationId', 'payrollRunId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'payroll_runs';
+                    readonly columns: readonly ['organizationId', 'id'];
+                  };
+                  readonly name: 'pay_batch_run_fkey';
+                },
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'payroll_payment_batches';
+                    readonly columns: readonly ['organizationId', 'bankAccountId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'bank_accounts';
+                    readonly columns: readonly ['organizationId', 'id'];
+                  };
+                  readonly name: 'pay_batch_account_fkey';
+                },
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'payroll_payment_batches';
+                    readonly columns: readonly ['organizationId', 'createdById'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'users';
+                    readonly columns: readonly ['organizationId', 'id'];
+                  };
+                  readonly name: 'pay_batch_creator_fkey';
+                },
+              ];
+            };
             readonly payroll_payments: {
               columns: {
                 readonly amount: {
@@ -8098,6 +9655,7 @@ type ContractBase = Omit<
               };
               primaryKey: { readonly columns: readonly ['id'] };
               uniques: readonly [
+                { readonly columns: readonly ['organizationId', 'id'] },
                 { readonly columns: readonly ['organizationId', 'idempotencyKey'] },
               ];
               indexes: readonly [
@@ -10779,6 +12337,14 @@ type ContractBase = Omit<
               readonly kind: 'valueSet';
               readonly values: readonly ['PRESENT', 'ABSENT', 'HALF_DAY', 'ON_LEAVE', 'HOLIDAY'];
             };
+            readonly BankImportStatus: {
+              readonly kind: 'valueSet';
+              readonly values: readonly ['IMPORTED', 'PARTIALLY_IMPORTED', 'FAILED'];
+            };
+            readonly BankTransactionDirection: {
+              readonly kind: 'valueSet';
+              readonly values: readonly ['CREDIT', 'DEBIT'];
+            };
             readonly CashFlowForecastAuditAction: {
               readonly kind: 'valueSet';
               readonly values: readonly ['CONFIGURATION_UPDATED'];
@@ -10898,6 +12464,14 @@ type ContractBase = Omit<
               readonly kind: 'valueSet';
               readonly values: readonly ['MONTHLY', 'BIWEEKLY', 'WEEKLY'];
             };
+            readonly PaymentBatchItemStatus: {
+              readonly kind: 'valueSet';
+              readonly values: readonly ['PENDING', 'ATTEMPTED', 'PAID', 'FAILED'];
+            };
+            readonly PaymentBatchStatus: {
+              readonly kind: 'valueSet';
+              readonly values: readonly ['DRAFT', 'PROCESSING', 'COMPLETED', 'CANCELLED'];
+            };
             readonly PaymentMethod: {
               readonly kind: 'valueSet';
               readonly values: readonly ['BANK_TRANSFER', 'CASH', 'CARD', 'CHEQUE', 'OTHER'];
@@ -10964,6 +12538,10 @@ type ContractBase = Omit<
             readonly PayslipStatus: {
               readonly kind: 'valueSet';
               readonly values: readonly ['PENDING', 'PROCESSING', 'COMPLETED', 'FAILED'];
+            };
+            readonly ReconciliationTargetType: {
+              readonly kind: 'valueSet';
+              readonly values: readonly ['INVOICE_PAYMENT', 'PAYROLL_PAYMENT'];
             };
             readonly RecurringFrequency: {
               readonly kind: 'valueSet';
@@ -11047,6 +12625,26 @@ type ContractBase = Omit<
       readonly namespace: 'public' & NamespaceId;
       readonly model: 'AttendanceRecord';
     };
+    readonly bank_accounts: {
+      readonly namespace: 'public' & NamespaceId;
+      readonly model: 'BankAccount';
+    };
+    readonly bank_reconciliations: {
+      readonly namespace: 'public' & NamespaceId;
+      readonly model: 'BankReconciliation';
+    };
+    readonly bank_transaction_imports: {
+      readonly namespace: 'public' & NamespaceId;
+      readonly model: 'BankTransactionImport';
+    };
+    readonly bank_transactions: {
+      readonly namespace: 'public' & NamespaceId;
+      readonly model: 'BankTransaction';
+    };
+    readonly banking_audit_events: {
+      readonly namespace: 'public' & NamespaceId;
+      readonly model: 'BankingAuditEvent';
+    };
     readonly cash_flow_forecast_audit_events: {
       readonly namespace: 'public' & NamespaceId;
       readonly model: 'CashFlowForecastAuditEvent';
@@ -11124,6 +12722,14 @@ type ContractBase = Omit<
     readonly payroll_notifications: {
       readonly namespace: 'public' & NamespaceId;
       readonly model: 'PayrollNotification';
+    };
+    readonly payroll_payment_batch_items: {
+      readonly namespace: 'public' & NamespaceId;
+      readonly model: 'PayrollPaymentBatchItem';
+    };
+    readonly payroll_payment_batches: {
+      readonly namespace: 'public' & NamespaceId;
+      readonly model: 'PayrollPaymentBatch';
     };
     readonly payroll_payments: {
       readonly namespace: 'public' & NamespaceId;
@@ -11541,6 +13147,612 @@ type ContractBase = Omit<
                 readonly version: { readonly column: 'version' };
                 readonly workDate: { readonly column: 'workDate' };
                 readonly workedMinutes: { readonly column: 'workedMinutes' };
+              };
+            };
+          };
+          readonly BankAccount: {
+            readonly fields: {
+              readonly accountHolder: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly bankName: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly countryCode: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly createdAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                };
+              };
+              readonly createdById: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly currency: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly displayName: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly isActive: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/bool@1' };
+              };
+              readonly isDefault: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/bool@1' };
+              };
+              readonly maskedIdentifier: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly organizationId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly updatedAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                };
+              };
+              readonly version: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+            };
+            readonly relations: {
+              readonly createdBy: {
+                readonly to: { readonly namespace: 'public' & NamespaceId; readonly model: 'User' };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['organizationId', 'createdById'];
+                  readonly targetFields: readonly ['organizationId', 'id'];
+                };
+              };
+              readonly imports: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'BankTransactionImport';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['organizationId', 'id'];
+                  readonly targetFields: readonly ['organizationId', 'bankAccountId'];
+                };
+              };
+              readonly organization: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'Organization';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['organizationId'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
+              readonly paymentBatches: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'PayrollPaymentBatch';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['organizationId', 'id'];
+                  readonly targetFields: readonly ['organizationId', 'bankAccountId'];
+                };
+              };
+              readonly transactions: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'BankTransaction';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['organizationId', 'id'];
+                  readonly targetFields: readonly ['organizationId', 'bankAccountId'];
+                };
+              };
+            };
+            readonly storage: {
+              readonly table: 'bank_accounts';
+              readonly namespaceId: 'public';
+              readonly fields: {
+                readonly accountHolder: { readonly column: 'accountHolder' };
+                readonly bankName: { readonly column: 'bankName' };
+                readonly countryCode: { readonly column: 'countryCode' };
+                readonly createdAt: { readonly column: 'createdAt' };
+                readonly createdById: { readonly column: 'createdById' };
+                readonly currency: { readonly column: 'currency' };
+                readonly displayName: { readonly column: 'displayName' };
+                readonly id: { readonly column: 'id' };
+                readonly isActive: { readonly column: 'isActive' };
+                readonly isDefault: { readonly column: 'isDefault' };
+                readonly maskedIdentifier: { readonly column: 'maskedIdentifier' };
+                readonly organizationId: { readonly column: 'organizationId' };
+                readonly updatedAt: { readonly column: 'updatedAt' };
+                readonly version: { readonly column: 'version' };
+              };
+            };
+          };
+          readonly BankingAuditEvent: {
+            readonly fields: {
+              readonly action: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly actorId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly createdAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                };
+              };
+              readonly details: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly entityId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly entityType: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly organizationId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+            };
+            readonly relations: {
+              readonly actor: {
+                readonly to: { readonly namespace: 'public' & NamespaceId; readonly model: 'User' };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['organizationId', 'actorId'];
+                  readonly targetFields: readonly ['organizationId', 'id'];
+                };
+              };
+              readonly organization: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'Organization';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['organizationId'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
+            };
+            readonly storage: {
+              readonly table: 'banking_audit_events';
+              readonly namespaceId: 'public';
+              readonly fields: {
+                readonly action: { readonly column: 'action' };
+                readonly actorId: { readonly column: 'actorId' };
+                readonly createdAt: { readonly column: 'createdAt' };
+                readonly details: { readonly column: 'details' };
+                readonly entityId: { readonly column: 'entityId' };
+                readonly entityType: { readonly column: 'entityType' };
+                readonly id: { readonly column: 'id' };
+                readonly organizationId: { readonly column: 'organizationId' };
+              };
+            };
+          };
+          readonly BankReconciliation: {
+            readonly fields: {
+              readonly bankTransactionId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly invoicePaymentId: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly organizationId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly payrollPaymentId: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly reconciledAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                };
+              };
+              readonly reconciledById: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly reversalReason: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly reversedAt: {
+                readonly nullable: true;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                };
+              };
+              readonly reversedById: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly targetType: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly version: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+            };
+            readonly relations: {
+              readonly bankTransaction: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'BankTransaction';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['organizationId', 'bankTransactionId'];
+                  readonly targetFields: readonly ['organizationId', 'id'];
+                };
+              };
+              readonly invoicePayment: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'Payment';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: true;
+                readonly on: {
+                  readonly localFields: readonly ['organizationId', 'invoicePaymentId'];
+                  readonly targetFields: readonly ['organizationId', 'id'];
+                };
+              };
+              readonly organization: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'Organization';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['organizationId'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
+              readonly payrollPayment: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'PayrollPayment';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: true;
+                readonly on: {
+                  readonly localFields: readonly ['organizationId', 'payrollPaymentId'];
+                  readonly targetFields: readonly ['organizationId', 'id'];
+                };
+              };
+              readonly reconciledBy: {
+                readonly to: { readonly namespace: 'public' & NamespaceId; readonly model: 'User' };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['organizationId', 'reconciledById'];
+                  readonly targetFields: readonly ['organizationId', 'id'];
+                };
+              };
+              readonly reversedBy: {
+                readonly to: { readonly namespace: 'public' & NamespaceId; readonly model: 'User' };
+                readonly cardinality: 'N:1';
+                readonly nullable: true;
+                readonly on: {
+                  readonly localFields: readonly ['organizationId', 'reversedById'];
+                  readonly targetFields: readonly ['organizationId', 'id'];
+                };
+              };
+            };
+            readonly storage: {
+              readonly table: 'bank_reconciliations';
+              readonly namespaceId: 'public';
+              readonly fields: {
+                readonly bankTransactionId: { readonly column: 'bankTransactionId' };
+                readonly id: { readonly column: 'id' };
+                readonly invoicePaymentId: { readonly column: 'invoicePaymentId' };
+                readonly organizationId: { readonly column: 'organizationId' };
+                readonly payrollPaymentId: { readonly column: 'payrollPaymentId' };
+                readonly reconciledAt: { readonly column: 'reconciledAt' };
+                readonly reconciledById: { readonly column: 'reconciledById' };
+                readonly reversalReason: { readonly column: 'reversalReason' };
+                readonly reversedAt: { readonly column: 'reversedAt' };
+                readonly reversedById: { readonly column: 'reversedById' };
+                readonly targetType: { readonly column: 'targetType' };
+                readonly version: { readonly column: 'version' };
+              };
+            };
+          };
+          readonly BankTransaction: {
+            readonly fields: {
+              readonly amount: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/numeric@1';
+                  readonly typeParams: { readonly precision: 14; readonly scale: 2 };
+                };
+              };
+              readonly bankAccountId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly createdAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                };
+              };
+              readonly currency: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly description: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly direction: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly fingerprint: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly importId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly organizationId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly reference: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly transactionDate: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                };
+              };
+            };
+            readonly relations: {
+              readonly bankAccount: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'BankAccount';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['organizationId', 'bankAccountId'];
+                  readonly targetFields: readonly ['organizationId', 'id'];
+                };
+              };
+              readonly import: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'BankTransactionImport';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['organizationId', 'importId'];
+                  readonly targetFields: readonly ['organizationId', 'id'];
+                };
+              };
+              readonly organization: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'Organization';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['organizationId'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
+              readonly reconciliation: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'BankReconciliation';
+                };
+                readonly cardinality: '1:1';
+                readonly nullable: true;
+                readonly on: {
+                  readonly localFields: readonly ['organizationId', 'id'];
+                  readonly targetFields: readonly ['organizationId', 'bankTransactionId'];
+                };
+              };
+            };
+            readonly storage: {
+              readonly table: 'bank_transactions';
+              readonly namespaceId: 'public';
+              readonly fields: {
+                readonly amount: { readonly column: 'amount' };
+                readonly bankAccountId: { readonly column: 'bankAccountId' };
+                readonly createdAt: { readonly column: 'createdAt' };
+                readonly currency: { readonly column: 'currency' };
+                readonly description: { readonly column: 'description' };
+                readonly direction: { readonly column: 'direction' };
+                readonly fingerprint: { readonly column: 'fingerprint' };
+                readonly id: { readonly column: 'id' };
+                readonly importId: { readonly column: 'importId' };
+                readonly organizationId: { readonly column: 'organizationId' };
+                readonly reference: { readonly column: 'reference' };
+                readonly transactionDate: { readonly column: 'transactionDate' };
+              };
+            };
+          };
+          readonly BankTransactionImport: {
+            readonly fields: {
+              readonly bankAccountId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly createdAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                };
+              };
+              readonly duplicateCount: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly fileName: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly importedCount: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly organizationId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly rowCount: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly sourceHash: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly status: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly uploadedById: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+            };
+            readonly relations: {
+              readonly bankAccount: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'BankAccount';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['organizationId', 'bankAccountId'];
+                  readonly targetFields: readonly ['organizationId', 'id'];
+                };
+              };
+              readonly organization: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'Organization';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['organizationId'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
+              readonly transactions: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'BankTransaction';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['organizationId', 'id'];
+                  readonly targetFields: readonly ['organizationId', 'importId'];
+                };
+              };
+              readonly uploadedBy: {
+                readonly to: { readonly namespace: 'public' & NamespaceId; readonly model: 'User' };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['organizationId', 'uploadedById'];
+                  readonly targetFields: readonly ['organizationId', 'id'];
+                };
+              };
+            };
+            readonly storage: {
+              readonly table: 'bank_transaction_imports';
+              readonly namespaceId: 'public';
+              readonly fields: {
+                readonly bankAccountId: { readonly column: 'bankAccountId' };
+                readonly createdAt: { readonly column: 'createdAt' };
+                readonly duplicateCount: { readonly column: 'duplicateCount' };
+                readonly fileName: { readonly column: 'fileName' };
+                readonly id: { readonly column: 'id' };
+                readonly importedCount: { readonly column: 'importedCount' };
+                readonly organizationId: { readonly column: 'organizationId' };
+                readonly rowCount: { readonly column: 'rowCount' };
+                readonly sourceHash: { readonly column: 'sourceHash' };
+                readonly status: { readonly column: 'status' };
+                readonly uploadedById: { readonly column: 'uploadedById' };
               };
             };
           };
@@ -13782,6 +15994,61 @@ type ContractBase = Omit<
                   readonly targetFields: readonly ['organizationId'];
                 };
               };
+              readonly bankAccounts: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'BankAccount';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['organizationId'];
+                };
+              };
+              readonly bankImports: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'BankTransactionImport';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['organizationId'];
+                };
+              };
+              readonly bankReconciliations: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'BankReconciliation';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['organizationId'];
+                };
+              };
+              readonly bankTransactions: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'BankTransaction';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['organizationId'];
+                };
+              };
+              readonly bankingAuditEvents: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'BankingAuditEvent';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['organizationId'];
+                };
+              };
               readonly cashFlowAuditEvents: {
                 readonly to: {
                   readonly namespace: 'public' & NamespaceId;
@@ -14018,6 +16285,28 @@ type ContractBase = Omit<
                 readonly to: {
                   readonly namespace: 'public' & NamespaceId;
                   readonly model: 'PayrollScheduleOccurrence';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['organizationId'];
+                };
+              };
+              readonly payrollPaymentBatchItems: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'PayrollPaymentBatchItem';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['organizationId'];
+                };
+              };
+              readonly payrollPaymentBatches: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'PayrollPaymentBatch';
                 };
                 readonly cardinality: '1:N';
                 readonly on: {
@@ -14463,6 +16752,18 @@ type ContractBase = Omit<
                   readonly targetFields: readonly ['id'];
                 };
               };
+              readonly reconciliation: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'BankReconciliation';
+                };
+                readonly cardinality: '1:1';
+                readonly nullable: true;
+                readonly on: {
+                  readonly localFields: readonly ['organizationId', 'id'];
+                  readonly targetFields: readonly ['organizationId', 'invoicePaymentId'];
+                };
+              };
             };
             readonly storage: {
               readonly table: 'payments';
@@ -14735,6 +17036,17 @@ type ContractBase = Omit<
                 readonly on: {
                   readonly localFields: readonly ['organizationId'];
                   readonly targetFields: readonly ['id'];
+                };
+              };
+              readonly paymentBatchItems: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'PayrollPaymentBatchItem';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['organizationId', 'id'];
+                  readonly targetFields: readonly ['organizationId', 'payrollEntryId'];
                 };
               };
               readonly payments: {
@@ -15134,6 +17446,18 @@ type ContractBase = Omit<
                   readonly targetFields: readonly ['organizationId', 'id'];
                 };
               };
+              readonly reconciliation: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'BankReconciliation';
+                };
+                readonly cardinality: '1:1';
+                readonly nullable: true;
+                readonly on: {
+                  readonly localFields: readonly ['organizationId', 'id'];
+                  readonly targetFields: readonly ['organizationId', 'payrollPaymentId'];
+                };
+              };
               readonly recordedBy: {
                 readonly to: { readonly namespace: 'public' & NamespaceId; readonly model: 'User' };
                 readonly cardinality: 'N:1';
@@ -15158,6 +17482,260 @@ type ContractBase = Omit<
                 readonly payrollEntryId: { readonly column: 'payrollEntryId' };
                 readonly recordedById: { readonly column: 'recordedById' };
                 readonly reference: { readonly column: 'reference' };
+              };
+            };
+          };
+          readonly PayrollPaymentBatch: {
+            readonly fields: {
+              readonly bankAccountId: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly createdAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                };
+              };
+              readonly createdById: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly currency: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly name: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly organizationId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly payrollRunId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly status: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly totalAmount: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/numeric@1';
+                  readonly typeParams: { readonly precision: 14; readonly scale: 2 };
+                };
+              };
+              readonly updatedAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                };
+              };
+              readonly version: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+            };
+            readonly relations: {
+              readonly bankAccount: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'BankAccount';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: true;
+                readonly on: {
+                  readonly localFields: readonly ['organizationId', 'bankAccountId'];
+                  readonly targetFields: readonly ['organizationId', 'id'];
+                };
+              };
+              readonly createdBy: {
+                readonly to: { readonly namespace: 'public' & NamespaceId; readonly model: 'User' };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['organizationId', 'createdById'];
+                  readonly targetFields: readonly ['organizationId', 'id'];
+                };
+              };
+              readonly items: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'PayrollPaymentBatchItem';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['organizationId', 'id'];
+                  readonly targetFields: readonly ['organizationId', 'batchId'];
+                };
+              };
+              readonly organization: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'Organization';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['organizationId'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
+              readonly payrollRun: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'PayrollRun';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['organizationId', 'payrollRunId'];
+                  readonly targetFields: readonly ['organizationId', 'id'];
+                };
+              };
+            };
+            readonly storage: {
+              readonly table: 'payroll_payment_batches';
+              readonly namespaceId: 'public';
+              readonly fields: {
+                readonly bankAccountId: { readonly column: 'bankAccountId' };
+                readonly createdAt: { readonly column: 'createdAt' };
+                readonly createdById: { readonly column: 'createdById' };
+                readonly currency: { readonly column: 'currency' };
+                readonly id: { readonly column: 'id' };
+                readonly name: { readonly column: 'name' };
+                readonly organizationId: { readonly column: 'organizationId' };
+                readonly payrollRunId: { readonly column: 'payrollRunId' };
+                readonly status: { readonly column: 'status' };
+                readonly totalAmount: { readonly column: 'totalAmount' };
+                readonly updatedAt: { readonly column: 'updatedAt' };
+                readonly version: { readonly column: 'version' };
+              };
+            };
+          };
+          readonly PayrollPaymentBatchItem: {
+            readonly fields: {
+              readonly amount: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/numeric@1';
+                  readonly typeParams: { readonly precision: 14; readonly scale: 2 };
+                };
+              };
+              readonly attemptedAt: {
+                readonly nullable: true;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                };
+              };
+              readonly batchId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly createdAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                };
+              };
+              readonly employeeName: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly organizationId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly paymentReference: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly payrollEntryId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly status: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly updatedAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                };
+              };
+            };
+            readonly relations: {
+              readonly batch: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'PayrollPaymentBatch';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['organizationId', 'batchId'];
+                  readonly targetFields: readonly ['organizationId', 'id'];
+                };
+              };
+              readonly organization: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'Organization';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['organizationId'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
+              readonly payrollEntry: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'PayrollEntry';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['organizationId', 'payrollEntryId'];
+                  readonly targetFields: readonly ['organizationId', 'id'];
+                };
+              };
+            };
+            readonly storage: {
+              readonly table: 'payroll_payment_batch_items';
+              readonly namespaceId: 'public';
+              readonly fields: {
+                readonly amount: { readonly column: 'amount' };
+                readonly attemptedAt: { readonly column: 'attemptedAt' };
+                readonly batchId: { readonly column: 'batchId' };
+                readonly createdAt: { readonly column: 'createdAt' };
+                readonly employeeName: { readonly column: 'employeeName' };
+                readonly id: { readonly column: 'id' };
+                readonly organizationId: { readonly column: 'organizationId' };
+                readonly paymentReference: { readonly column: 'paymentReference' };
+                readonly payrollEntryId: { readonly column: 'payrollEntryId' };
+                readonly status: { readonly column: 'status' };
+                readonly updatedAt: { readonly column: 'updatedAt' };
               };
             };
           };
@@ -15349,6 +17927,17 @@ type ContractBase = Omit<
                 readonly on: {
                   readonly localFields: readonly ['organizationId'];
                   readonly targetFields: readonly ['id'];
+                };
+              };
+              readonly paymentBatches: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'PayrollPaymentBatch';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['organizationId', 'id'];
+                  readonly targetFields: readonly ['organizationId', 'payrollRunId'];
                 };
               };
               readonly payrollSchedule: {
@@ -17373,6 +19962,28 @@ type ContractBase = Omit<
                   readonly targetFields: readonly ['organizationId', 'approvedById'];
                 };
               };
+              readonly bankReconciliations: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'BankReconciliation';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['organizationId', 'id'];
+                  readonly targetFields: readonly ['organizationId', 'reconciledById'];
+                };
+              };
+              readonly bankingAuditEvents: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'BankingAuditEvent';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['organizationId', 'id'];
+                  readonly targetFields: readonly ['organizationId', 'actorId'];
+                };
+              };
               readonly cashFlowAuditEvents: {
                 readonly to: {
                   readonly namespace: 'public' & NamespaceId;
@@ -17395,6 +20006,17 @@ type ContractBase = Omit<
                   readonly targetFields: readonly ['organizationId', 'createdById'];
                 };
               };
+              readonly createdBankAccounts: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'BankAccount';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['organizationId', 'id'];
+                  readonly targetFields: readonly ['organizationId', 'createdById'];
+                };
+              };
               readonly createdExpenses: {
                 readonly to: {
                   readonly namespace: 'public' & NamespaceId;
@@ -17404,6 +20026,17 @@ type ContractBase = Omit<
                 readonly on: {
                   readonly localFields: readonly ['organizationId', 'id'];
                   readonly targetFields: readonly ['organizationId', 'createdByUserId'];
+                };
+              };
+              readonly createdPaymentBatches: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'PayrollPaymentBatch';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['organizationId', 'id'];
+                  readonly targetFields: readonly ['organizationId', 'createdById'];
                 };
               };
               readonly createdPayrollRuns: {
@@ -17595,6 +20228,17 @@ type ContractBase = Omit<
                   readonly targetFields: readonly ['organizationId', 'requestedById'];
                 };
               };
+              readonly reversedBankReconciliations: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'BankReconciliation';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['organizationId', 'id'];
+                  readonly targetFields: readonly ['organizationId', 'reversedById'];
+                };
+              };
               readonly reviewedAttendanceCorrections: {
                 readonly to: {
                   readonly namespace: 'public' & NamespaceId;
@@ -17681,6 +20325,17 @@ type ContractBase = Omit<
                 readonly on: {
                   readonly localFields: readonly ['organizationId', 'id'];
                   readonly targetFields: readonly ['organizationId', 'updatedById'];
+                };
+              };
+              readonly uploadedBankImports: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'BankTransactionImport';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['organizationId', 'id'];
+                  readonly targetFields: readonly ['organizationId', 'uploadedById'];
                 };
               };
               readonly workforceAuditEvents: {
@@ -17965,6 +20620,21 @@ type ContractBase = Omit<
               { readonly name: 'HOLIDAY'; readonly value: 'HOLIDAY' },
             ];
           };
+          readonly BankImportStatus: {
+            readonly codecId: 'pg/text@1';
+            readonly members: readonly [
+              { readonly name: 'IMPORTED'; readonly value: 'IMPORTED' },
+              { readonly name: 'PARTIALLY_IMPORTED'; readonly value: 'PARTIALLY_IMPORTED' },
+              { readonly name: 'FAILED'; readonly value: 'FAILED' },
+            ];
+          };
+          readonly BankTransactionDirection: {
+            readonly codecId: 'pg/text@1';
+            readonly members: readonly [
+              { readonly name: 'CREDIT'; readonly value: 'CREDIT' },
+              { readonly name: 'DEBIT'; readonly value: 'DEBIT' },
+            ];
+          };
           readonly CashFlowForecastAuditAction: {
             readonly codecId: 'pg/text@1';
             readonly members: readonly [
@@ -18131,6 +20801,24 @@ type ContractBase = Omit<
               { readonly name: 'WEEKLY'; readonly value: 'WEEKLY' },
             ];
           };
+          readonly PaymentBatchItemStatus: {
+            readonly codecId: 'pg/text@1';
+            readonly members: readonly [
+              { readonly name: 'PENDING'; readonly value: 'PENDING' },
+              { readonly name: 'ATTEMPTED'; readonly value: 'ATTEMPTED' },
+              { readonly name: 'PAID'; readonly value: 'PAID' },
+              { readonly name: 'FAILED'; readonly value: 'FAILED' },
+            ];
+          };
+          readonly PaymentBatchStatus: {
+            readonly codecId: 'pg/text@1';
+            readonly members: readonly [
+              { readonly name: 'DRAFT'; readonly value: 'DRAFT' },
+              { readonly name: 'PROCESSING'; readonly value: 'PROCESSING' },
+              { readonly name: 'COMPLETED'; readonly value: 'COMPLETED' },
+              { readonly name: 'CANCELLED'; readonly value: 'CANCELLED' },
+            ];
+          };
           readonly PaymentMethod: {
             readonly codecId: 'pg/text@1';
             readonly members: readonly [
@@ -18232,6 +20920,13 @@ type ContractBase = Omit<
               { readonly name: 'PROCESSING'; readonly value: 'PROCESSING' },
               { readonly name: 'COMPLETED'; readonly value: 'COMPLETED' },
               { readonly name: 'FAILED'; readonly value: 'FAILED' },
+            ];
+          };
+          readonly ReconciliationTargetType: {
+            readonly codecId: 'pg/text@1';
+            readonly members: readonly [
+              { readonly name: 'INVOICE_PAYMENT'; readonly value: 'INVOICE_PAYMENT' },
+              { readonly name: 'PAYROLL_PAYMENT'; readonly value: 'PAYROLL_PAYMENT' },
             ];
           };
           readonly RecurringFrequency: {
@@ -18390,6 +21085,55 @@ type ContractBase = Omit<
           readonly ref: {
             readonly entry: 'attendance_records';
             readonly field: 'updatedAt';
+            readonly namespace: 'public';
+          };
+        },
+        {
+          readonly onCreate: { readonly id: 'uuidv4'; readonly kind: 'generator' };
+          readonly ref: {
+            readonly entry: 'bank_accounts';
+            readonly field: 'id';
+            readonly namespace: 'public';
+          };
+        },
+        {
+          readonly onCreate: { readonly id: 'instantNow'; readonly kind: 'generator' };
+          readonly onUpdate: { readonly id: 'instantNow'; readonly kind: 'generator' };
+          readonly ref: {
+            readonly entry: 'bank_accounts';
+            readonly field: 'updatedAt';
+            readonly namespace: 'public';
+          };
+        },
+        {
+          readonly onCreate: { readonly id: 'uuidv4'; readonly kind: 'generator' };
+          readonly ref: {
+            readonly entry: 'bank_reconciliations';
+            readonly field: 'id';
+            readonly namespace: 'public';
+          };
+        },
+        {
+          readonly onCreate: { readonly id: 'uuidv4'; readonly kind: 'generator' };
+          readonly ref: {
+            readonly entry: 'bank_transaction_imports';
+            readonly field: 'id';
+            readonly namespace: 'public';
+          };
+        },
+        {
+          readonly onCreate: { readonly id: 'uuidv4'; readonly kind: 'generator' };
+          readonly ref: {
+            readonly entry: 'bank_transactions';
+            readonly field: 'id';
+            readonly namespace: 'public';
+          };
+        },
+        {
+          readonly onCreate: { readonly id: 'uuidv4'; readonly kind: 'generator' };
+          readonly ref: {
+            readonly entry: 'banking_audit_events';
+            readonly field: 'id';
             readonly namespace: 'public';
           };
         },
@@ -18700,6 +21444,40 @@ type ContractBase = Omit<
           readonly ref: {
             readonly entry: 'payroll_notifications';
             readonly field: 'id';
+            readonly namespace: 'public';
+          };
+        },
+        {
+          readonly onCreate: { readonly id: 'uuidv4'; readonly kind: 'generator' };
+          readonly ref: {
+            readonly entry: 'payroll_payment_batch_items';
+            readonly field: 'id';
+            readonly namespace: 'public';
+          };
+        },
+        {
+          readonly onCreate: { readonly id: 'instantNow'; readonly kind: 'generator' };
+          readonly onUpdate: { readonly id: 'instantNow'; readonly kind: 'generator' };
+          readonly ref: {
+            readonly entry: 'payroll_payment_batch_items';
+            readonly field: 'updatedAt';
+            readonly namespace: 'public';
+          };
+        },
+        {
+          readonly onCreate: { readonly id: 'uuidv4'; readonly kind: 'generator' };
+          readonly ref: {
+            readonly entry: 'payroll_payment_batches';
+            readonly field: 'id';
+            readonly namespace: 'public';
+          };
+        },
+        {
+          readonly onCreate: { readonly id: 'instantNow'; readonly kind: 'generator' };
+          readonly onUpdate: { readonly id: 'instantNow'; readonly kind: 'generator' };
+          readonly ref: {
+            readonly entry: 'payroll_payment_batches';
+            readonly field: 'updatedAt';
             readonly namespace: 'public';
           };
         },

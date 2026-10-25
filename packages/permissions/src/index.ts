@@ -40,6 +40,9 @@ export const PERMISSIONS = [
   "payroll:payments:record",
   "cash-flow:read",
   "cash-flow:manage",
+  "banking:read",
+  "banking:manage",
+  "banking:reconcile",
   "attendance:read",
   "attendance:manage",
   "attendance:self",
@@ -92,6 +95,7 @@ export const ROLE_PERMISSIONS: Readonly<Record<Role, readonly Permission[]>> = O
   ] as Permission[]),
   FINANCE_VIEWER: Object.freeze([
     ...readPermissions,
+    "banking:read",
     "salaries:read",
     "payroll:read",
   ] as Permission[]),

@@ -1,0 +1,2759 @@
+[
+  {
+    "id": "table.bank_accounts",
+    "label": "Create table \"bank_accounts\"",
+    "summary": "Creates table \"bank_accounts\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "bank_accounts"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"bank_accounts\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"bank_accounts\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"bank_accounts\"",
+        "sql": "CREATE TABLE \"public\".\"bank_accounts\" (\n  \"accountHolder\" text NOT NULL,\n  \"bankName\" text NOT NULL,\n  \"countryCode\" text NOT NULL,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"createdById\" text NOT NULL,\n  \"currency\" text NOT NULL,\n  \"displayName\" text NOT NULL,\n  \"id\" text NOT NULL,\n  \"isActive\" bool DEFAULT true NOT NULL,\n  \"isDefault\" bool DEFAULT false NOT NULL,\n  \"maskedIdentifier\" text NOT NULL,\n  \"organizationId\" text NOT NULL,\n  \"updatedAt\" timestamptz NOT NULL,\n  \"version\" int4 DEFAULT 1 NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"bank_accounts\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"bank_accounts\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.bank_reconciliations",
+    "label": "Create table \"bank_reconciliations\"",
+    "summary": "Creates table \"bank_reconciliations\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "bank_reconciliations"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"bank_reconciliations\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"bank_reconciliations\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"bank_reconciliations\"",
+        "sql": "CREATE TABLE \"public\".\"bank_reconciliations\" (\n  \"bankTransactionId\" text NOT NULL,\n  \"id\" text NOT NULL,\n  \"invoicePaymentId\" text,\n  \"organizationId\" text NOT NULL,\n  \"payrollPaymentId\" text,\n  \"reconciledAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"reconciledById\" text NOT NULL,\n  \"reversalReason\" text,\n  \"reversedAt\" timestamptz,\n  \"reversedById\" text,\n  \"targetType\" text NOT NULL,\n  \"version\" int4 DEFAULT 1 NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"bank_reconciliations_targetType_check_8e3b2b9e\" CHECK (\"targetType\" IN ('INVOICE_PAYMENT', 'PAYROLL_PAYMENT'))\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"bank_reconciliations\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"bank_reconciliations\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.bank_transaction_imports",
+    "label": "Create table \"bank_transaction_imports\"",
+    "summary": "Creates table \"bank_transaction_imports\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "bank_transaction_imports"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"bank_transaction_imports\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"bank_transaction_imports\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"bank_transaction_imports\"",
+        "sql": "CREATE TABLE \"public\".\"bank_transaction_imports\" (\n  \"bankAccountId\" text NOT NULL,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"duplicateCount\" int4 DEFAULT 0 NOT NULL,\n  \"fileName\" text NOT NULL,\n  \"id\" text NOT NULL,\n  \"importedCount\" int4 NOT NULL,\n  \"organizationId\" text NOT NULL,\n  \"rowCount\" int4 NOT NULL,\n  \"sourceHash\" text NOT NULL,\n  \"status\" text DEFAULT 'IMPORTED' NOT NULL,\n  \"uploadedById\" text NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"bank_transaction_imports_status_check_5fccdc0a\" CHECK (\"status\" IN ('IMPORTED', 'PARTIALLY_IMPORTED', 'FAILED'))\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"bank_transaction_imports\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"bank_transaction_imports\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.bank_transactions",
+    "label": "Create table \"bank_transactions\"",
+    "summary": "Creates table \"bank_transactions\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "bank_transactions"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"bank_transactions\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"bank_transactions\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"bank_transactions\"",
+        "sql": "CREATE TABLE \"public\".\"bank_transactions\" (\n  \"amount\" numeric(14,2) NOT NULL,\n  \"bankAccountId\" text NOT NULL,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"currency\" text NOT NULL,\n  \"description\" text NOT NULL,\n  \"direction\" text NOT NULL,\n  \"fingerprint\" text NOT NULL,\n  \"id\" text NOT NULL,\n  \"importId\" text NOT NULL,\n  \"organizationId\" text NOT NULL,\n  \"reference\" text,\n  \"transactionDate\" timestamptz NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"bank_transactions_direction_check_e45d5490\" CHECK (\"direction\" IN ('CREDIT', 'DEBIT'))\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"bank_transactions\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"bank_transactions\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.banking_audit_events",
+    "label": "Create table \"banking_audit_events\"",
+    "summary": "Creates table \"banking_audit_events\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "banking_audit_events"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"banking_audit_events\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"banking_audit_events\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"banking_audit_events\"",
+        "sql": "CREATE TABLE \"public\".\"banking_audit_events\" (\n  \"action\" text NOT NULL,\n  \"actorId\" text NOT NULL,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"details\" text,\n  \"entityId\" text NOT NULL,\n  \"entityType\" text NOT NULL,\n  \"id\" text NOT NULL,\n  \"organizationId\" text NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"banking_audit_events\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"banking_audit_events\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.payroll_payment_batch_items",
+    "label": "Create table \"payroll_payment_batch_items\"",
+    "summary": "Creates table \"payroll_payment_batch_items\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "payroll_payment_batch_items"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"payroll_payment_batch_items\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payroll_payment_batch_items\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"payroll_payment_batch_items\"",
+        "sql": "CREATE TABLE \"public\".\"payroll_payment_batch_items\" (\n  \"amount\" numeric(14,2) NOT NULL,\n  \"attemptedAt\" timestamptz,\n  \"batchId\" text NOT NULL,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"employeeName\" text NOT NULL,\n  \"id\" text NOT NULL,\n  \"organizationId\" text NOT NULL,\n  \"paymentReference\" text,\n  \"payrollEntryId\" text NOT NULL,\n  \"status\" text DEFAULT 'PENDING' NOT NULL,\n  \"updatedAt\" timestamptz NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"payroll_payment_batch_items_status_check_66b410e6\" CHECK (\"status\" IN ('PENDING', 'ATTEMPTED', 'PAID', 'FAILED'))\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"payroll_payment_batch_items\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payroll_payment_batch_items\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.payroll_payment_batches",
+    "label": "Create table \"payroll_payment_batches\"",
+    "summary": "Creates table \"payroll_payment_batches\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "payroll_payment_batches"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"payroll_payment_batches\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payroll_payment_batches\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"payroll_payment_batches\"",
+        "sql": "CREATE TABLE \"public\".\"payroll_payment_batches\" (\n  \"bankAccountId\" text,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"createdById\" text NOT NULL,\n  \"currency\" text NOT NULL,\n  \"id\" text NOT NULL,\n  \"name\" text NOT NULL,\n  \"organizationId\" text NOT NULL,\n  \"payrollRunId\" text NOT NULL,\n  \"status\" text DEFAULT 'DRAFT' NOT NULL,\n  \"totalAmount\" numeric(14,2) NOT NULL,\n  \"updatedAt\" timestamptz NOT NULL,\n  \"version\" int4 DEFAULT 1 NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"payroll_payment_batches_status_check_391cf44f\" CHECK (\"status\" IN ('DRAFT', 'PROCESSING', 'COMPLETED', 'CANCELLED'))\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"payroll_payment_batches\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payroll_payment_batches\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.bank_accounts.bank_accounts_organizationId_id_key",
+    "label": "Add unique constraint on \"bank_accounts\" (organizationId, id)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "bank_accounts_organizationId_id_key",
+        "table": "bank_accounts"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"bank_accounts_organizationId_id_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "bank_accounts_organizationId_id_key",
+          "public",
+          "\"public\".\"bank_accounts\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"bank_accounts_organizationId_id_key\"",
+        "sql": "ALTER TABLE \"public\".\"bank_accounts\" ADD CONSTRAINT \"bank_accounts_organizationId_id_key\" UNIQUE (\"organizationId\", \"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"bank_accounts_organizationId_id_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "bank_accounts_organizationId_id_key",
+          "public",
+          "\"public\".\"bank_accounts\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.bank_accounts.bank_account_name_key",
+    "label": "Add unique constraint on \"bank_accounts\" (organizationId, displayName)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "bank_account_name_key",
+        "table": "bank_accounts"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"bank_account_name_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "bank_account_name_key",
+          "public",
+          "\"public\".\"bank_accounts\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"bank_account_name_key\"",
+        "sql": "ALTER TABLE \"public\".\"bank_accounts\" ADD CONSTRAINT \"bank_account_name_key\" UNIQUE (\"organizationId\", \"displayName\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"bank_account_name_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "bank_account_name_key",
+          "public",
+          "\"public\".\"bank_accounts\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.bank_reconciliations.bank_recon_invoice_key",
+    "label": "Add unique constraint on \"bank_reconciliations\" (organizationId, invoicePaymentId)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "bank_recon_invoice_key",
+        "table": "bank_reconciliations"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"bank_recon_invoice_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "bank_recon_invoice_key",
+          "public",
+          "\"public\".\"bank_reconciliations\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"bank_recon_invoice_key\"",
+        "sql": "ALTER TABLE \"public\".\"bank_reconciliations\" ADD CONSTRAINT \"bank_recon_invoice_key\" UNIQUE (\"organizationId\", \"invoicePaymentId\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"bank_recon_invoice_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "bank_recon_invoice_key",
+          "public",
+          "\"public\".\"bank_reconciliations\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.bank_reconciliations.bank_recon_payroll_key",
+    "label": "Add unique constraint on \"bank_reconciliations\" (organizationId, payrollPaymentId)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "bank_recon_payroll_key",
+        "table": "bank_reconciliations"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"bank_recon_payroll_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "bank_recon_payroll_key",
+          "public",
+          "\"public\".\"bank_reconciliations\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"bank_recon_payroll_key\"",
+        "sql": "ALTER TABLE \"public\".\"bank_reconciliations\" ADD CONSTRAINT \"bank_recon_payroll_key\" UNIQUE (\"organizationId\", \"payrollPaymentId\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"bank_recon_payroll_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "bank_recon_payroll_key",
+          "public",
+          "\"public\".\"bank_reconciliations\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.bank_reconciliations.bank_recon_tx_key",
+    "label": "Add unique constraint on \"bank_reconciliations\" (organizationId, bankTransactionId)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "bank_recon_tx_key",
+        "table": "bank_reconciliations"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"bank_recon_tx_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "bank_recon_tx_key",
+          "public",
+          "\"public\".\"bank_reconciliations\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"bank_recon_tx_key\"",
+        "sql": "ALTER TABLE \"public\".\"bank_reconciliations\" ADD CONSTRAINT \"bank_recon_tx_key\" UNIQUE (\"organizationId\", \"bankTransactionId\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"bank_recon_tx_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "bank_recon_tx_key",
+          "public",
+          "\"public\".\"bank_reconciliations\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.bank_transaction_imports.bank_transaction_imports_organizationId_id_key",
+    "label": "Add unique constraint on \"bank_transaction_imports\" (organizationId, id)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "bank_transaction_imports_organizationId_id_key",
+        "table": "bank_transaction_imports"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"bank_transaction_imports_organizationId_id_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "bank_transaction_imports_organizationId_id_key",
+          "public",
+          "\"public\".\"bank_transaction_imports\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"bank_transaction_imports_organizationId_id_key\"",
+        "sql": "ALTER TABLE \"public\".\"bank_transaction_imports\" ADD CONSTRAINT \"bank_transaction_imports_organizationId_id_key\" UNIQUE (\"organizationId\", \"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"bank_transaction_imports_organizationId_id_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "bank_transaction_imports_organizationId_id_key",
+          "public",
+          "\"public\".\"bank_transaction_imports\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.bank_transaction_imports.bank_import_source_key",
+    "label": "Add unique constraint on \"bank_transaction_imports\" (organizationId, bankAccountId, sourceHash)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "bank_import_source_key",
+        "table": "bank_transaction_imports"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"bank_import_source_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "bank_import_source_key",
+          "public",
+          "\"public\".\"bank_transaction_imports\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"bank_import_source_key\"",
+        "sql": "ALTER TABLE \"public\".\"bank_transaction_imports\" ADD CONSTRAINT \"bank_import_source_key\" UNIQUE (\"organizationId\", \"bankAccountId\", \"sourceHash\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"bank_import_source_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "bank_import_source_key",
+          "public",
+          "\"public\".\"bank_transaction_imports\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.bank_transactions.bank_transactions_organizationId_id_key",
+    "label": "Add unique constraint on \"bank_transactions\" (organizationId, id)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "bank_transactions_organizationId_id_key",
+        "table": "bank_transactions"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"bank_transactions_organizationId_id_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "bank_transactions_organizationId_id_key",
+          "public",
+          "\"public\".\"bank_transactions\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"bank_transactions_organizationId_id_key\"",
+        "sql": "ALTER TABLE \"public\".\"bank_transactions\" ADD CONSTRAINT \"bank_transactions_organizationId_id_key\" UNIQUE (\"organizationId\", \"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"bank_transactions_organizationId_id_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "bank_transactions_organizationId_id_key",
+          "public",
+          "\"public\".\"bank_transactions\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.bank_transactions.bank_tx_fingerprint_key",
+    "label": "Add unique constraint on \"bank_transactions\" (organizationId, bankAccountId, fingerprint)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "bank_tx_fingerprint_key",
+        "table": "bank_transactions"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"bank_tx_fingerprint_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "bank_tx_fingerprint_key",
+          "public",
+          "\"public\".\"bank_transactions\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"bank_tx_fingerprint_key\"",
+        "sql": "ALTER TABLE \"public\".\"bank_transactions\" ADD CONSTRAINT \"bank_tx_fingerprint_key\" UNIQUE (\"organizationId\", \"bankAccountId\", \"fingerprint\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"bank_tx_fingerprint_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "bank_tx_fingerprint_key",
+          "public",
+          "\"public\".\"bank_transactions\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.payroll_payment_batch_items.pay_batch_item_entry_key",
+    "label": "Add unique constraint on \"payroll_payment_batch_items\" (organizationId, payrollEntryId)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "pay_batch_item_entry_key",
+        "table": "payroll_payment_batch_items"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"pay_batch_item_entry_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "pay_batch_item_entry_key",
+          "public",
+          "\"public\".\"payroll_payment_batch_items\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"pay_batch_item_entry_key\"",
+        "sql": "ALTER TABLE \"public\".\"payroll_payment_batch_items\" ADD CONSTRAINT \"pay_batch_item_entry_key\" UNIQUE (\"organizationId\", \"payrollEntryId\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"pay_batch_item_entry_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "pay_batch_item_entry_key",
+          "public",
+          "\"public\".\"payroll_payment_batch_items\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.payroll_payment_batches.payroll_payment_batches_organizationId_id_key",
+    "label": "Add unique constraint on \"payroll_payment_batches\" (organizationId, id)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "payroll_payment_batches_organizationId_id_key",
+        "table": "payroll_payment_batches"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"payroll_payment_batches_organizationId_id_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "payroll_payment_batches_organizationId_id_key",
+          "public",
+          "\"public\".\"payroll_payment_batches\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"payroll_payment_batches_organizationId_id_key\"",
+        "sql": "ALTER TABLE \"public\".\"payroll_payment_batches\" ADD CONSTRAINT \"payroll_payment_batches_organizationId_id_key\" UNIQUE (\"organizationId\", \"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"payroll_payment_batches_organizationId_id_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "payroll_payment_batches_organizationId_id_key",
+          "public",
+          "\"public\".\"payroll_payment_batches\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.payroll_payments.payroll_payments_organizationId_id_key",
+    "label": "Add unique constraint on \"payroll_payments\" (organizationId, id)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "payroll_payments_organizationId_id_key",
+        "table": "payroll_payments"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"payroll_payments_organizationId_id_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "payroll_payments_organizationId_id_key",
+          "public",
+          "\"public\".\"payroll_payments\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"payroll_payments_organizationId_id_key\"",
+        "sql": "ALTER TABLE \"public\".\"payroll_payments\" ADD CONSTRAINT \"payroll_payments_organizationId_id_key\" UNIQUE (\"organizationId\", \"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"payroll_payments_organizationId_id_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "payroll_payments_organizationId_id_key",
+          "public",
+          "\"public\".\"payroll_payments\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.bank_accounts.bank_account_active_idx",
+    "label": "Create index \"bank_account_active_idx\" on \"bank_accounts\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "bank_account_active_idx",
+        "table": "bank_accounts"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"bank_account_active_idx\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"bank_account_active_idx\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"bank_account_active_idx\"",
+        "sql": "CREATE INDEX \"bank_account_active_idx\" ON \"public\".\"bank_accounts\" (\"organizationId\", \"isActive\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"bank_account_active_idx\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"bank_account_active_idx\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.bank_accounts.bank_accounts_organizationId_createdById_idx_4fb80a04",
+    "label": "Create index \"bank_accounts_organizationId_createdById_idx_4fb80a04\" on \"bank_accounts\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "bank_accounts_organizationId_createdById_idx_4fb80a04",
+        "table": "bank_accounts"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"bank_accounts_organizationId_createdById_idx_4fb80a04\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"bank_accounts_organizationId_createdById_idx_4fb80a04\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"bank_accounts_organizationId_createdById_idx_4fb80a04\"",
+        "sql": "CREATE INDEX \"bank_accounts_organizationId_createdById_idx_4fb80a04\" ON \"public\".\"bank_accounts\" (\"organizationId\", \"createdById\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"bank_accounts_organizationId_createdById_idx_4fb80a04\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"bank_accounts_organizationId_createdById_idx_4fb80a04\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.bank_accounts.bank_accounts_organizationId_idx_2e17ef41",
+    "label": "Create index \"bank_accounts_organizationId_idx_2e17ef41\" on \"bank_accounts\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "bank_accounts_organizationId_idx_2e17ef41",
+        "table": "bank_accounts"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"bank_accounts_organizationId_idx_2e17ef41\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"bank_accounts_organizationId_idx_2e17ef41\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"bank_accounts_organizationId_idx_2e17ef41\"",
+        "sql": "CREATE INDEX \"bank_accounts_organizationId_idx_2e17ef41\" ON \"public\".\"bank_accounts\" (\"organizationId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"bank_accounts_organizationId_idx_2e17ef41\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"bank_accounts_organizationId_idx_2e17ef41\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.bank_reconciliations.bank_recon_created_idx",
+    "label": "Create index \"bank_recon_created_idx\" on \"bank_reconciliations\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "bank_recon_created_idx",
+        "table": "bank_reconciliations"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"bank_recon_created_idx\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"bank_recon_created_idx\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"bank_recon_created_idx\"",
+        "sql": "CREATE INDEX \"bank_recon_created_idx\" ON \"public\".\"bank_reconciliations\" (\"organizationId\", \"reconciledAt\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"bank_recon_created_idx\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"bank_recon_created_idx\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.bank_reconciliations.bank_reconciliations_organizationId_idx_2e17ef41",
+    "label": "Create index \"bank_reconciliations_organizationId_idx_2e17ef41\" on \"bank_reconciliations\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "bank_reconciliations_organizationId_idx_2e17ef41",
+        "table": "bank_reconciliations"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"bank_reconciliations_organizationId_idx_2e17ef41\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"bank_reconciliations_organizationId_idx_2e17ef41\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"bank_reconciliations_organizationId_idx_2e17ef41\"",
+        "sql": "CREATE INDEX \"bank_reconciliations_organizationId_idx_2e17ef41\" ON \"public\".\"bank_reconciliations\" (\"organizationId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"bank_reconciliations_organizationId_idx_2e17ef41\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"bank_reconciliations_organizationId_idx_2e17ef41\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.bank_reconciliations.bank_reconciliations_organizationId_reconciledById_idx_65721104",
+    "label": "Create index \"bank_reconciliations_organizationId_reconciledById_idx_65721104\" on \"bank_reconciliations\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "bank_reconciliations_organizationId_reconciledById_idx_65721104",
+        "table": "bank_reconciliations"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"bank_reconciliations_organizationId_reconciledById_idx_65721104\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"bank_reconciliations_organizationId_reconciledById_idx_65721104\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"bank_reconciliations_organizationId_reconciledById_idx_65721104\"",
+        "sql": "CREATE INDEX \"bank_reconciliations_organizationId_reconciledById_idx_65721104\" ON \"public\".\"bank_reconciliations\" (\"organizationId\", \"reconciledById\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"bank_reconciliations_organizationId_reconciledById_idx_65721104\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"bank_reconciliations_organizationId_reconciledById_idx_65721104\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.bank_reconciliations.bank_reconciliations_organizationId_reversedById_idx_d89ffd81",
+    "label": "Create index \"bank_reconciliations_organizationId_reversedById_idx_d89ffd81\" on \"bank_reconciliations\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "bank_reconciliations_organizationId_reversedById_idx_d89ffd81",
+        "table": "bank_reconciliations"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"bank_reconciliations_organizationId_reversedById_idx_d89ffd81\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"bank_reconciliations_organizationId_reversedById_idx_d89ffd81\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"bank_reconciliations_organizationId_reversedById_idx_d89ffd81\"",
+        "sql": "CREATE INDEX \"bank_reconciliations_organizationId_reversedById_idx_d89ffd81\" ON \"public\".\"bank_reconciliations\" (\"organizationId\", \"reversedById\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"bank_reconciliations_organizationId_reversedById_idx_d89ffd81\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"bank_reconciliations_organizationId_reversedById_idx_d89ffd81\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.bank_transaction_imports.bank_import_created_idx",
+    "label": "Create index \"bank_import_created_idx\" on \"bank_transaction_imports\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "bank_import_created_idx",
+        "table": "bank_transaction_imports"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"bank_import_created_idx\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"bank_import_created_idx\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"bank_import_created_idx\"",
+        "sql": "CREATE INDEX \"bank_import_created_idx\" ON \"public\".\"bank_transaction_imports\" (\"organizationId\", \"createdAt\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"bank_import_created_idx\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"bank_import_created_idx\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.bank_transaction_imports.bank_transaction_imports_organizationId_bankAccountId__c169eff6",
+    "label": "Create index \"bank_transaction_imports_organizationId_bankAccountId__c169eff6\" on \"bank_transaction_imports\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "bank_transaction_imports_organizationId_bankAccountId__c169eff6",
+        "table": "bank_transaction_imports"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"bank_transaction_imports_organizationId_bankAccountId__c169eff6\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"bank_transaction_imports_organizationId_bankAccountId__c169eff6\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"bank_transaction_imports_organizationId_bankAccountId__c169eff6\"",
+        "sql": "CREATE INDEX \"bank_transaction_imports_organizationId_bankAccountId__c169eff6\" ON \"public\".\"bank_transaction_imports\" (\"organizationId\", \"bankAccountId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"bank_transaction_imports_organizationId_bankAccountId__c169eff6\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"bank_transaction_imports_organizationId_bankAccountId__c169eff6\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.bank_transaction_imports.bank_transaction_imports_organizationId_idx_2e17ef41",
+    "label": "Create index \"bank_transaction_imports_organizationId_idx_2e17ef41\" on \"bank_transaction_imports\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "bank_transaction_imports_organizationId_idx_2e17ef41",
+        "table": "bank_transaction_imports"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"bank_transaction_imports_organizationId_idx_2e17ef41\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"bank_transaction_imports_organizationId_idx_2e17ef41\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"bank_transaction_imports_organizationId_idx_2e17ef41\"",
+        "sql": "CREATE INDEX \"bank_transaction_imports_organizationId_idx_2e17ef41\" ON \"public\".\"bank_transaction_imports\" (\"organizationId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"bank_transaction_imports_organizationId_idx_2e17ef41\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"bank_transaction_imports_organizationId_idx_2e17ef41\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.bank_transaction_imports.bank_transaction_imports_organizationId_uploadedById_i_a9dad1c2",
+    "label": "Create index \"bank_transaction_imports_organizationId_uploadedById_i_a9dad1c2\" on \"bank_transaction_imports\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "bank_transaction_imports_organizationId_uploadedById_i_a9dad1c2",
+        "table": "bank_transaction_imports"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"bank_transaction_imports_organizationId_uploadedById_i_a9dad1c2\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"bank_transaction_imports_organizationId_uploadedById_i_a9dad1c2\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"bank_transaction_imports_organizationId_uploadedById_i_a9dad1c2\"",
+        "sql": "CREATE INDEX \"bank_transaction_imports_organizationId_uploadedById_i_a9dad1c2\" ON \"public\".\"bank_transaction_imports\" (\"organizationId\", \"uploadedById\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"bank_transaction_imports_organizationId_uploadedById_i_a9dad1c2\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"bank_transaction_imports_organizationId_uploadedById_i_a9dad1c2\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.bank_transactions.bank_transactions_organizationId_bankAccountId_idx_c169eff6",
+    "label": "Create index \"bank_transactions_organizationId_bankAccountId_idx_c169eff6\" on \"bank_transactions\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "bank_transactions_organizationId_bankAccountId_idx_c169eff6",
+        "table": "bank_transactions"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"bank_transactions_organizationId_bankAccountId_idx_c169eff6\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"bank_transactions_organizationId_bankAccountId_idx_c169eff6\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"bank_transactions_organizationId_bankAccountId_idx_c169eff6\"",
+        "sql": "CREATE INDEX \"bank_transactions_organizationId_bankAccountId_idx_c169eff6\" ON \"public\".\"bank_transactions\" (\"organizationId\", \"bankAccountId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"bank_transactions_organizationId_bankAccountId_idx_c169eff6\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"bank_transactions_organizationId_bankAccountId_idx_c169eff6\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.bank_transactions.bank_transactions_organizationId_idx_2e17ef41",
+    "label": "Create index \"bank_transactions_organizationId_idx_2e17ef41\" on \"bank_transactions\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "bank_transactions_organizationId_idx_2e17ef41",
+        "table": "bank_transactions"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"bank_transactions_organizationId_idx_2e17ef41\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"bank_transactions_organizationId_idx_2e17ef41\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"bank_transactions_organizationId_idx_2e17ef41\"",
+        "sql": "CREATE INDEX \"bank_transactions_organizationId_idx_2e17ef41\" ON \"public\".\"bank_transactions\" (\"organizationId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"bank_transactions_organizationId_idx_2e17ef41\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"bank_transactions_organizationId_idx_2e17ef41\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.bank_transactions.bank_transactions_organizationId_importId_idx_ced03323",
+    "label": "Create index \"bank_transactions_organizationId_importId_idx_ced03323\" on \"bank_transactions\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "bank_transactions_organizationId_importId_idx_ced03323",
+        "table": "bank_transactions"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"bank_transactions_organizationId_importId_idx_ced03323\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"bank_transactions_organizationId_importId_idx_ced03323\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"bank_transactions_organizationId_importId_idx_ced03323\"",
+        "sql": "CREATE INDEX \"bank_transactions_organizationId_importId_idx_ced03323\" ON \"public\".\"bank_transactions\" (\"organizationId\", \"importId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"bank_transactions_organizationId_importId_idx_ced03323\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"bank_transactions_organizationId_importId_idx_ced03323\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.bank_transactions.bank_tx_date_idx",
+    "label": "Create index \"bank_tx_date_idx\" on \"bank_transactions\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "bank_tx_date_idx",
+        "table": "bank_transactions"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"bank_tx_date_idx\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"bank_tx_date_idx\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"bank_tx_date_idx\"",
+        "sql": "CREATE INDEX \"bank_tx_date_idx\" ON \"public\".\"bank_transactions\" (\"organizationId\", \"transactionDate\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"bank_tx_date_idx\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"bank_tx_date_idx\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.banking_audit_events.bank_audit_entity_idx",
+    "label": "Create index \"bank_audit_entity_idx\" on \"banking_audit_events\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "bank_audit_entity_idx",
+        "table": "banking_audit_events"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"bank_audit_entity_idx\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"bank_audit_entity_idx\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"bank_audit_entity_idx\"",
+        "sql": "CREATE INDEX \"bank_audit_entity_idx\" ON \"public\".\"banking_audit_events\" (\"organizationId\", \"entityType\", \"entityId\", \"createdAt\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"bank_audit_entity_idx\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"bank_audit_entity_idx\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.banking_audit_events.banking_audit_events_organizationId_actorId_idx_327c2974",
+    "label": "Create index \"banking_audit_events_organizationId_actorId_idx_327c2974\" on \"banking_audit_events\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "banking_audit_events_organizationId_actorId_idx_327c2974",
+        "table": "banking_audit_events"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"banking_audit_events_organizationId_actorId_idx_327c2974\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"banking_audit_events_organizationId_actorId_idx_327c2974\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"banking_audit_events_organizationId_actorId_idx_327c2974\"",
+        "sql": "CREATE INDEX \"banking_audit_events_organizationId_actorId_idx_327c2974\" ON \"public\".\"banking_audit_events\" (\"organizationId\", \"actorId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"banking_audit_events_organizationId_actorId_idx_327c2974\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"banking_audit_events_organizationId_actorId_idx_327c2974\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.banking_audit_events.banking_audit_events_organizationId_idx_2e17ef41",
+    "label": "Create index \"banking_audit_events_organizationId_idx_2e17ef41\" on \"banking_audit_events\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "banking_audit_events_organizationId_idx_2e17ef41",
+        "table": "banking_audit_events"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"banking_audit_events_organizationId_idx_2e17ef41\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"banking_audit_events_organizationId_idx_2e17ef41\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"banking_audit_events_organizationId_idx_2e17ef41\"",
+        "sql": "CREATE INDEX \"banking_audit_events_organizationId_idx_2e17ef41\" ON \"public\".\"banking_audit_events\" (\"organizationId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"banking_audit_events_organizationId_idx_2e17ef41\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"banking_audit_events_organizationId_idx_2e17ef41\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.payroll_payment_batch_items.pay_batch_entry_idx",
+    "label": "Create index \"pay_batch_entry_idx\" on \"payroll_payment_batch_items\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "pay_batch_entry_idx",
+        "table": "payroll_payment_batch_items"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"pay_batch_entry_idx\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"pay_batch_entry_idx\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"pay_batch_entry_idx\"",
+        "sql": "CREATE INDEX \"pay_batch_entry_idx\" ON \"public\".\"payroll_payment_batch_items\" (\"organizationId\", \"payrollEntryId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"pay_batch_entry_idx\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"pay_batch_entry_idx\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.payroll_payment_batch_items.payroll_payment_batch_items_organizationId_batchId_idx_f085c214",
+    "label": "Create index \"payroll_payment_batch_items_organizationId_batchId_idx_f085c214\" on \"payroll_payment_batch_items\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "payroll_payment_batch_items_organizationId_batchId_idx_f085c214",
+        "table": "payroll_payment_batch_items"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"payroll_payment_batch_items_organizationId_batchId_idx_f085c214\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payroll_payment_batch_items_organizationId_batchId_idx_f085c214\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"payroll_payment_batch_items_organizationId_batchId_idx_f085c214\"",
+        "sql": "CREATE INDEX \"payroll_payment_batch_items_organizationId_batchId_idx_f085c214\" ON \"public\".\"payroll_payment_batch_items\" (\"organizationId\", \"batchId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"payroll_payment_batch_items_organizationId_batchId_idx_f085c214\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payroll_payment_batch_items_organizationId_batchId_idx_f085c214\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.payroll_payment_batch_items.payroll_payment_batch_items_organizationId_idx_2e17ef41",
+    "label": "Create index \"payroll_payment_batch_items_organizationId_idx_2e17ef41\" on \"payroll_payment_batch_items\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "payroll_payment_batch_items_organizationId_idx_2e17ef41",
+        "table": "payroll_payment_batch_items"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"payroll_payment_batch_items_organizationId_idx_2e17ef41\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payroll_payment_batch_items_organizationId_idx_2e17ef41\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"payroll_payment_batch_items_organizationId_idx_2e17ef41\"",
+        "sql": "CREATE INDEX \"payroll_payment_batch_items_organizationId_idx_2e17ef41\" ON \"public\".\"payroll_payment_batch_items\" (\"organizationId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"payroll_payment_batch_items_organizationId_idx_2e17ef41\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payroll_payment_batch_items_organizationId_idx_2e17ef41\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.payroll_payment_batches.pay_batch_run_idx",
+    "label": "Create index \"pay_batch_run_idx\" on \"payroll_payment_batches\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "pay_batch_run_idx",
+        "table": "payroll_payment_batches"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"pay_batch_run_idx\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"pay_batch_run_idx\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"pay_batch_run_idx\"",
+        "sql": "CREATE INDEX \"pay_batch_run_idx\" ON \"public\".\"payroll_payment_batches\" (\"organizationId\", \"payrollRunId\", \"createdAt\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"pay_batch_run_idx\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"pay_batch_run_idx\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.payroll_payment_batches.payroll_payment_batches_organizationId_bankAccountId_i_c169eff6",
+    "label": "Create index \"payroll_payment_batches_organizationId_bankAccountId_i_c169eff6\" on \"payroll_payment_batches\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "payroll_payment_batches_organizationId_bankAccountId_i_c169eff6",
+        "table": "payroll_payment_batches"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"payroll_payment_batches_organizationId_bankAccountId_i_c169eff6\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payroll_payment_batches_organizationId_bankAccountId_i_c169eff6\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"payroll_payment_batches_organizationId_bankAccountId_i_c169eff6\"",
+        "sql": "CREATE INDEX \"payroll_payment_batches_organizationId_bankAccountId_i_c169eff6\" ON \"public\".\"payroll_payment_batches\" (\"organizationId\", \"bankAccountId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"payroll_payment_batches_organizationId_bankAccountId_i_c169eff6\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payroll_payment_batches_organizationId_bankAccountId_i_c169eff6\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.payroll_payment_batches.payroll_payment_batches_organizationId_createdById_idx_4fb80a04",
+    "label": "Create index \"payroll_payment_batches_organizationId_createdById_idx_4fb80a04\" on \"payroll_payment_batches\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "payroll_payment_batches_organizationId_createdById_idx_4fb80a04",
+        "table": "payroll_payment_batches"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"payroll_payment_batches_organizationId_createdById_idx_4fb80a04\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payroll_payment_batches_organizationId_createdById_idx_4fb80a04\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"payroll_payment_batches_organizationId_createdById_idx_4fb80a04\"",
+        "sql": "CREATE INDEX \"payroll_payment_batches_organizationId_createdById_idx_4fb80a04\" ON \"public\".\"payroll_payment_batches\" (\"organizationId\", \"createdById\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"payroll_payment_batches_organizationId_createdById_idx_4fb80a04\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payroll_payment_batches_organizationId_createdById_idx_4fb80a04\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.payroll_payment_batches.payroll_payment_batches_organizationId_idx_2e17ef41",
+    "label": "Create index \"payroll_payment_batches_organizationId_idx_2e17ef41\" on \"payroll_payment_batches\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "payroll_payment_batches_organizationId_idx_2e17ef41",
+        "table": "payroll_payment_batches"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"payroll_payment_batches_organizationId_idx_2e17ef41\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payroll_payment_batches_organizationId_idx_2e17ef41\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"payroll_payment_batches_organizationId_idx_2e17ef41\"",
+        "sql": "CREATE INDEX \"payroll_payment_batches_organizationId_idx_2e17ef41\" ON \"public\".\"payroll_payment_batches\" (\"organizationId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"payroll_payment_batches_organizationId_idx_2e17ef41\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payroll_payment_batches_organizationId_idx_2e17ef41\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.payroll_payment_batches.payroll_payment_batches_organizationId_payrollRunId_id_81f419ba",
+    "label": "Create index \"payroll_payment_batches_organizationId_payrollRunId_id_81f419ba\" on \"payroll_payment_batches\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "payroll_payment_batches_organizationId_payrollRunId_id_81f419ba",
+        "table": "payroll_payment_batches"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"payroll_payment_batches_organizationId_payrollRunId_id_81f419ba\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payroll_payment_batches_organizationId_payrollRunId_id_81f419ba\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"payroll_payment_batches_organizationId_payrollRunId_id_81f419ba\"",
+        "sql": "CREATE INDEX \"payroll_payment_batches_organizationId_payrollRunId_id_81f419ba\" ON \"public\".\"payroll_payment_batches\" (\"organizationId\", \"payrollRunId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"payroll_payment_batches_organizationId_payrollRunId_id_81f419ba\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payroll_payment_batches_organizationId_payrollRunId_id_81f419ba\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.bank_accounts.bank_account_org_fkey",
+    "label": "Add foreign key \"bank_account_org_fkey\" on \"bank_accounts\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "bank_account_org_fkey",
+        "table": "bank_accounts"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"bank_account_org_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "bank_account_org_fkey",
+          "public",
+          "\"public\".\"bank_accounts\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"bank_account_org_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"bank_accounts\"\nADD CONSTRAINT \"bank_account_org_fkey\"\nFOREIGN KEY (\"organizationId\")\nREFERENCES \"public\".\"organizations\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"bank_account_org_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "bank_account_org_fkey",
+          "public",
+          "\"public\".\"bank_accounts\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.bank_accounts.bank_account_creator_fkey",
+    "label": "Add foreign key \"bank_account_creator_fkey\" on \"bank_accounts\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "bank_account_creator_fkey",
+        "table": "bank_accounts"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"bank_account_creator_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "bank_account_creator_fkey",
+          "public",
+          "\"public\".\"bank_accounts\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"bank_account_creator_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"bank_accounts\"\nADD CONSTRAINT \"bank_account_creator_fkey\"\nFOREIGN KEY (\"organizationId\", \"createdById\")\nREFERENCES \"public\".\"users\" (\"organizationId\", \"id\")\nON DELETE RESTRICT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"bank_account_creator_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "bank_account_creator_fkey",
+          "public",
+          "\"public\".\"bank_accounts\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.bank_reconciliations.bank_recon_org_fkey",
+    "label": "Add foreign key \"bank_recon_org_fkey\" on \"bank_reconciliations\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "bank_recon_org_fkey",
+        "table": "bank_reconciliations"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"bank_recon_org_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "bank_recon_org_fkey",
+          "public",
+          "\"public\".\"bank_reconciliations\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"bank_recon_org_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"bank_reconciliations\"\nADD CONSTRAINT \"bank_recon_org_fkey\"\nFOREIGN KEY (\"organizationId\")\nREFERENCES \"public\".\"organizations\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"bank_recon_org_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "bank_recon_org_fkey",
+          "public",
+          "\"public\".\"bank_reconciliations\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.bank_reconciliations.bank_recon_tx_fkey",
+    "label": "Add foreign key \"bank_recon_tx_fkey\" on \"bank_reconciliations\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "bank_recon_tx_fkey",
+        "table": "bank_reconciliations"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"bank_recon_tx_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "bank_recon_tx_fkey",
+          "public",
+          "\"public\".\"bank_reconciliations\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"bank_recon_tx_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"bank_reconciliations\"\nADD CONSTRAINT \"bank_recon_tx_fkey\"\nFOREIGN KEY (\"organizationId\", \"bankTransactionId\")\nREFERENCES \"public\".\"bank_transactions\" (\"organizationId\", \"id\")\nON DELETE RESTRICT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"bank_recon_tx_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "bank_recon_tx_fkey",
+          "public",
+          "\"public\".\"bank_reconciliations\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.bank_reconciliations.bank_recon_invoice_fkey",
+    "label": "Add foreign key \"bank_recon_invoice_fkey\" on \"bank_reconciliations\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "bank_recon_invoice_fkey",
+        "table": "bank_reconciliations"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"bank_recon_invoice_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "bank_recon_invoice_fkey",
+          "public",
+          "\"public\".\"bank_reconciliations\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"bank_recon_invoice_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"bank_reconciliations\"\nADD CONSTRAINT \"bank_recon_invoice_fkey\"\nFOREIGN KEY (\"organizationId\", \"invoicePaymentId\")\nREFERENCES \"public\".\"payments\" (\"organizationId\", \"id\")\nON DELETE RESTRICT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"bank_recon_invoice_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "bank_recon_invoice_fkey",
+          "public",
+          "\"public\".\"bank_reconciliations\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.bank_reconciliations.bank_recon_payroll_fkey",
+    "label": "Add foreign key \"bank_recon_payroll_fkey\" on \"bank_reconciliations\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "bank_recon_payroll_fkey",
+        "table": "bank_reconciliations"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"bank_recon_payroll_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "bank_recon_payroll_fkey",
+          "public",
+          "\"public\".\"bank_reconciliations\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"bank_recon_payroll_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"bank_reconciliations\"\nADD CONSTRAINT \"bank_recon_payroll_fkey\"\nFOREIGN KEY (\"organizationId\", \"payrollPaymentId\")\nREFERENCES \"public\".\"payroll_payments\" (\"organizationId\", \"id\")\nON DELETE RESTRICT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"bank_recon_payroll_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "bank_recon_payroll_fkey",
+          "public",
+          "\"public\".\"bank_reconciliations\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.bank_reconciliations.bank_recon_actor_fkey",
+    "label": "Add foreign key \"bank_recon_actor_fkey\" on \"bank_reconciliations\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "bank_recon_actor_fkey",
+        "table": "bank_reconciliations"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"bank_recon_actor_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "bank_recon_actor_fkey",
+          "public",
+          "\"public\".\"bank_reconciliations\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"bank_recon_actor_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"bank_reconciliations\"\nADD CONSTRAINT \"bank_recon_actor_fkey\"\nFOREIGN KEY (\"organizationId\", \"reconciledById\")\nREFERENCES \"public\".\"users\" (\"organizationId\", \"id\")\nON DELETE RESTRICT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"bank_recon_actor_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "bank_recon_actor_fkey",
+          "public",
+          "\"public\".\"bank_reconciliations\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.bank_reconciliations.bank_recon_reverser_fkey",
+    "label": "Add foreign key \"bank_recon_reverser_fkey\" on \"bank_reconciliations\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "bank_recon_reverser_fkey",
+        "table": "bank_reconciliations"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"bank_recon_reverser_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "bank_recon_reverser_fkey",
+          "public",
+          "\"public\".\"bank_reconciliations\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"bank_recon_reverser_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"bank_reconciliations\"\nADD CONSTRAINT \"bank_recon_reverser_fkey\"\nFOREIGN KEY (\"organizationId\", \"reversedById\")\nREFERENCES \"public\".\"users\" (\"organizationId\", \"id\")\nON DELETE RESTRICT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"bank_recon_reverser_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "bank_recon_reverser_fkey",
+          "public",
+          "\"public\".\"bank_reconciliations\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.bank_transaction_imports.bank_import_org_fkey",
+    "label": "Add foreign key \"bank_import_org_fkey\" on \"bank_transaction_imports\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "bank_import_org_fkey",
+        "table": "bank_transaction_imports"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"bank_import_org_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "bank_import_org_fkey",
+          "public",
+          "\"public\".\"bank_transaction_imports\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"bank_import_org_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"bank_transaction_imports\"\nADD CONSTRAINT \"bank_import_org_fkey\"\nFOREIGN KEY (\"organizationId\")\nREFERENCES \"public\".\"organizations\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"bank_import_org_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "bank_import_org_fkey",
+          "public",
+          "\"public\".\"bank_transaction_imports\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.bank_transaction_imports.bank_import_account_fkey",
+    "label": "Add foreign key \"bank_import_account_fkey\" on \"bank_transaction_imports\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "bank_import_account_fkey",
+        "table": "bank_transaction_imports"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"bank_import_account_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "bank_import_account_fkey",
+          "public",
+          "\"public\".\"bank_transaction_imports\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"bank_import_account_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"bank_transaction_imports\"\nADD CONSTRAINT \"bank_import_account_fkey\"\nFOREIGN KEY (\"organizationId\", \"bankAccountId\")\nREFERENCES \"public\".\"bank_accounts\" (\"organizationId\", \"id\")\nON DELETE RESTRICT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"bank_import_account_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "bank_import_account_fkey",
+          "public",
+          "\"public\".\"bank_transaction_imports\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.bank_transaction_imports.bank_import_uploader_fkey",
+    "label": "Add foreign key \"bank_import_uploader_fkey\" on \"bank_transaction_imports\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "bank_import_uploader_fkey",
+        "table": "bank_transaction_imports"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"bank_import_uploader_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "bank_import_uploader_fkey",
+          "public",
+          "\"public\".\"bank_transaction_imports\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"bank_import_uploader_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"bank_transaction_imports\"\nADD CONSTRAINT \"bank_import_uploader_fkey\"\nFOREIGN KEY (\"organizationId\", \"uploadedById\")\nREFERENCES \"public\".\"users\" (\"organizationId\", \"id\")\nON DELETE RESTRICT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"bank_import_uploader_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "bank_import_uploader_fkey",
+          "public",
+          "\"public\".\"bank_transaction_imports\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.bank_transactions.bank_tx_org_fkey",
+    "label": "Add foreign key \"bank_tx_org_fkey\" on \"bank_transactions\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "bank_tx_org_fkey",
+        "table": "bank_transactions"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"bank_tx_org_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "bank_tx_org_fkey",
+          "public",
+          "\"public\".\"bank_transactions\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"bank_tx_org_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"bank_transactions\"\nADD CONSTRAINT \"bank_tx_org_fkey\"\nFOREIGN KEY (\"organizationId\")\nREFERENCES \"public\".\"organizations\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"bank_tx_org_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "bank_tx_org_fkey",
+          "public",
+          "\"public\".\"bank_transactions\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.bank_transactions.bank_tx_account_fkey",
+    "label": "Add foreign key \"bank_tx_account_fkey\" on \"bank_transactions\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "bank_tx_account_fkey",
+        "table": "bank_transactions"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"bank_tx_account_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "bank_tx_account_fkey",
+          "public",
+          "\"public\".\"bank_transactions\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"bank_tx_account_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"bank_transactions\"\nADD CONSTRAINT \"bank_tx_account_fkey\"\nFOREIGN KEY (\"organizationId\", \"bankAccountId\")\nREFERENCES \"public\".\"bank_accounts\" (\"organizationId\", \"id\")\nON DELETE RESTRICT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"bank_tx_account_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "bank_tx_account_fkey",
+          "public",
+          "\"public\".\"bank_transactions\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.bank_transactions.bank_tx_import_fkey",
+    "label": "Add foreign key \"bank_tx_import_fkey\" on \"bank_transactions\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "bank_tx_import_fkey",
+        "table": "bank_transactions"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"bank_tx_import_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "bank_tx_import_fkey",
+          "public",
+          "\"public\".\"bank_transactions\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"bank_tx_import_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"bank_transactions\"\nADD CONSTRAINT \"bank_tx_import_fkey\"\nFOREIGN KEY (\"organizationId\", \"importId\")\nREFERENCES \"public\".\"bank_transaction_imports\" (\"organizationId\", \"id\")\nON DELETE RESTRICT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"bank_tx_import_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "bank_tx_import_fkey",
+          "public",
+          "\"public\".\"bank_transactions\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.banking_audit_events.bank_audit_org_fkey",
+    "label": "Add foreign key \"bank_audit_org_fkey\" on \"banking_audit_events\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "bank_audit_org_fkey",
+        "table": "banking_audit_events"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"bank_audit_org_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "bank_audit_org_fkey",
+          "public",
+          "\"public\".\"banking_audit_events\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"bank_audit_org_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"banking_audit_events\"\nADD CONSTRAINT \"bank_audit_org_fkey\"\nFOREIGN KEY (\"organizationId\")\nREFERENCES \"public\".\"organizations\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"bank_audit_org_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "bank_audit_org_fkey",
+          "public",
+          "\"public\".\"banking_audit_events\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.banking_audit_events.bank_audit_actor_fkey",
+    "label": "Add foreign key \"bank_audit_actor_fkey\" on \"banking_audit_events\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "bank_audit_actor_fkey",
+        "table": "banking_audit_events"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"bank_audit_actor_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "bank_audit_actor_fkey",
+          "public",
+          "\"public\".\"banking_audit_events\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"bank_audit_actor_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"banking_audit_events\"\nADD CONSTRAINT \"bank_audit_actor_fkey\"\nFOREIGN KEY (\"organizationId\", \"actorId\")\nREFERENCES \"public\".\"users\" (\"organizationId\", \"id\")\nON DELETE RESTRICT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"bank_audit_actor_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "bank_audit_actor_fkey",
+          "public",
+          "\"public\".\"banking_audit_events\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.payroll_payment_batch_items.pay_batch_item_org_fkey",
+    "label": "Add foreign key \"pay_batch_item_org_fkey\" on \"payroll_payment_batch_items\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "pay_batch_item_org_fkey",
+        "table": "payroll_payment_batch_items"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"pay_batch_item_org_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "pay_batch_item_org_fkey",
+          "public",
+          "\"public\".\"payroll_payment_batch_items\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"pay_batch_item_org_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"payroll_payment_batch_items\"\nADD CONSTRAINT \"pay_batch_item_org_fkey\"\nFOREIGN KEY (\"organizationId\")\nREFERENCES \"public\".\"organizations\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"pay_batch_item_org_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "pay_batch_item_org_fkey",
+          "public",
+          "\"public\".\"payroll_payment_batch_items\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.payroll_payment_batch_items.pay_batch_item_batch_fkey",
+    "label": "Add foreign key \"pay_batch_item_batch_fkey\" on \"payroll_payment_batch_items\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "pay_batch_item_batch_fkey",
+        "table": "payroll_payment_batch_items"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"pay_batch_item_batch_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "pay_batch_item_batch_fkey",
+          "public",
+          "\"public\".\"payroll_payment_batch_items\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"pay_batch_item_batch_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"payroll_payment_batch_items\"\nADD CONSTRAINT \"pay_batch_item_batch_fkey\"\nFOREIGN KEY (\"organizationId\", \"batchId\")\nREFERENCES \"public\".\"payroll_payment_batches\" (\"organizationId\", \"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"pay_batch_item_batch_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "pay_batch_item_batch_fkey",
+          "public",
+          "\"public\".\"payroll_payment_batch_items\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.payroll_payment_batch_items.pay_batch_item_entry_fkey",
+    "label": "Add foreign key \"pay_batch_item_entry_fkey\" on \"payroll_payment_batch_items\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "pay_batch_item_entry_fkey",
+        "table": "payroll_payment_batch_items"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"pay_batch_item_entry_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "pay_batch_item_entry_fkey",
+          "public",
+          "\"public\".\"payroll_payment_batch_items\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"pay_batch_item_entry_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"payroll_payment_batch_items\"\nADD CONSTRAINT \"pay_batch_item_entry_fkey\"\nFOREIGN KEY (\"organizationId\", \"payrollEntryId\")\nREFERENCES \"public\".\"payroll_entries\" (\"organizationId\", \"id\")\nON DELETE RESTRICT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"pay_batch_item_entry_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "pay_batch_item_entry_fkey",
+          "public",
+          "\"public\".\"payroll_payment_batch_items\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.payroll_payment_batches.pay_batch_org_fkey",
+    "label": "Add foreign key \"pay_batch_org_fkey\" on \"payroll_payment_batches\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "pay_batch_org_fkey",
+        "table": "payroll_payment_batches"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"pay_batch_org_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "pay_batch_org_fkey",
+          "public",
+          "\"public\".\"payroll_payment_batches\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"pay_batch_org_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"payroll_payment_batches\"\nADD CONSTRAINT \"pay_batch_org_fkey\"\nFOREIGN KEY (\"organizationId\")\nREFERENCES \"public\".\"organizations\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"pay_batch_org_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "pay_batch_org_fkey",
+          "public",
+          "\"public\".\"payroll_payment_batches\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.payroll_payment_batches.pay_batch_run_fkey",
+    "label": "Add foreign key \"pay_batch_run_fkey\" on \"payroll_payment_batches\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "pay_batch_run_fkey",
+        "table": "payroll_payment_batches"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"pay_batch_run_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "pay_batch_run_fkey",
+          "public",
+          "\"public\".\"payroll_payment_batches\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"pay_batch_run_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"payroll_payment_batches\"\nADD CONSTRAINT \"pay_batch_run_fkey\"\nFOREIGN KEY (\"organizationId\", \"payrollRunId\")\nREFERENCES \"public\".\"payroll_runs\" (\"organizationId\", \"id\")\nON DELETE RESTRICT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"pay_batch_run_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "pay_batch_run_fkey",
+          "public",
+          "\"public\".\"payroll_payment_batches\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.payroll_payment_batches.pay_batch_account_fkey",
+    "label": "Add foreign key \"pay_batch_account_fkey\" on \"payroll_payment_batches\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "pay_batch_account_fkey",
+        "table": "payroll_payment_batches"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"pay_batch_account_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "pay_batch_account_fkey",
+          "public",
+          "\"public\".\"payroll_payment_batches\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"pay_batch_account_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"payroll_payment_batches\"\nADD CONSTRAINT \"pay_batch_account_fkey\"\nFOREIGN KEY (\"organizationId\", \"bankAccountId\")\nREFERENCES \"public\".\"bank_accounts\" (\"organizationId\", \"id\")\nON DELETE RESTRICT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"pay_batch_account_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "pay_batch_account_fkey",
+          "public",
+          "\"public\".\"payroll_payment_batches\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.payroll_payment_batches.pay_batch_creator_fkey",
+    "label": "Add foreign key \"pay_batch_creator_fkey\" on \"payroll_payment_batches\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "pay_batch_creator_fkey",
+        "table": "payroll_payment_batches"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"pay_batch_creator_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "pay_batch_creator_fkey",
+          "public",
+          "\"public\".\"payroll_payment_batches\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"pay_batch_creator_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"payroll_payment_batches\"\nADD CONSTRAINT \"pay_batch_creator_fkey\"\nFOREIGN KEY (\"organizationId\", \"createdById\")\nREFERENCES \"public\".\"users\" (\"organizationId\", \"id\")\nON DELETE RESTRICT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"pay_batch_creator_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "pay_batch_creator_fkey",
+          "public",
+          "\"public\".\"payroll_payment_batches\""
+        ]
+      }
+    ]
+  }
+]

@@ -241,6 +241,36 @@ enum CashFlowForecastAuditAction {
   CONFIGURATION_UPDATED
 }
 
+enum BankTransactionDirection {
+  CREDIT
+  DEBIT
+}
+
+enum BankImportStatus {
+  IMPORTED
+  PARTIALLY_IMPORTED
+  FAILED
+}
+
+enum ReconciliationTargetType {
+  INVOICE_PAYMENT
+  PAYROLL_PAYMENT
+}
+
+enum PaymentBatchStatus {
+  DRAFT
+  PROCESSING
+  COMPLETED
+  CANCELLED
+}
+
+enum PaymentBatchItemStatus {
+  PENDING
+  ATTEMPTED
+  PAID
+  FAILED
+}
+
 enum AttendanceStatus {
   PRESENT
   ABSENT
@@ -357,6 +387,13 @@ model Organization {
   statutoryRuleSets            PayrollStatutoryRuleSet[]
   statutoryApplications        PayrollStatutoryApplication[]
   statutoryAuditEvents         PayrollStatutoryAuditEvent[]
+  bankAccounts                 BankAccount[]
+  bankImports                  BankTransactionImport[]
+  bankTransactions             BankTransaction[]
+  bankReconciliations          BankReconciliation[]
+  bankingAuditEvents           BankingAuditEvent[]
+  payrollPaymentBatches        PayrollPaymentBatch[]
+  payrollPaymentBatchItems     PayrollPaymentBatchItem[]
 
   @@map("organizations")
 }
@@ -475,6 +512,12 @@ model User {
   activatedStatutoryRules        PayrollStatutoryRuleSet[]       @relation("StatutoryRuleActivator")
   appliedStatutoryCalculations   PayrollStatutoryApplication[]   @relation("StatutoryApplicationActor")
   statutoryAuditEvents           PayrollStatutoryAuditEvent[]    @relation("StatutoryAuditActor")
+  createdBankAccounts            BankAccount[]                   @relation("BankAccountCreator")
+  uploadedBankImports            BankTransactionImport[]         @relation("BankImportUploader")
+  bankReconciliations            BankReconciliation[]            @relation("BankReconciliationActor")
+  reversedBankReconciliations    BankReconciliation[]            @relation("BankReconciliationReverser")
+  bankingAuditEvents             BankingAuditEvent[]             @relation("BankingAuditActor")
+  createdPaymentBatches          PayrollPaymentBatch[]           @relation("PaymentBatchCreator")
 
   @@unique([organizationId, id])
   @@unique([organizationId, email])
@@ -730,6 +773,7 @@ model PayrollRun {
   auditEvents        PayrollAuditEvent[]
   payrollSchedule    PayrollSchedule?           @relation(fields: [organizationId, payrollScheduleId], references: [organizationId, id], onDelete: Restrict)
   scheduleOccurrence PayrollScheduleOccurrence?
+  paymentBatches     PayrollPaymentBatch[]
 
   @@unique([organizationId, id])
   @@index([organizationId, periodStart, periodEnd], map: "payroll_run_period_idx")
@@ -863,6 +907,7 @@ model PayrollEntry {
   payments             PayrollPayment[]
   auditEvents          PayrollAuditEvent[]
   statutoryApplication PayrollStatutoryApplication?
+  paymentBatchItems    PayrollPaymentBatchItem[]
 
   @@unique([organizationId, id])
   @@unique([organizationId, payrollRunId, employeeId])
@@ -1221,7 +1266,7 @@ model WorkforceAuditEvent {
 }
 
 model PayrollPayment {
-  id             String         @id @default(uuid())
+  id             String              @id @default(uuid())
   organizationId String
   payrollEntryId String
   amount         Numeric(14, 2)
@@ -1230,12 +1275,14 @@ model PayrollPayment {
   notes          String?
   idempotencyKey String
   recordedById   String
-  createdAt      DateTime       @default(now())
+  createdAt      DateTime            @default(now())
 
-  organization   Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  payrollEntry   PayrollEntry   @relation(fields: [organizationId, payrollEntryId], references: [organizationId, id], onDelete: Restrict)
-  recordedBy     User           @relation("PayrollPaymentRecorder", fields: [organizationId, recordedById], references: [organizationId, id], onDelete: Restrict)
+  organization   Organization        @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  payrollEntry   PayrollEntry        @relation(fields: [organizationId, payrollEntryId], references: [organizationId, id], onDelete: Restrict)
+  recordedBy     User                @relation("PayrollPaymentRecorder", fields: [organizationId, recordedById], references: [organizationId, id], onDelete: Restrict)
+  reconciliation BankReconciliation?
 
+  @@unique([organizationId, id])
   @@unique([organizationId, idempotencyKey])
   @@index([organizationId, payrollEntryId], map: "payroll_payment_entry_idx")
   @@map("payroll_payments")
@@ -1437,7 +1484,7 @@ model InvoiceItem {
 }
 
 model Payment {
-  id               String         @id @default(uuid())
+  id               String              @id @default(uuid())
   organizationId   String
   invoiceId        String
   amount           Numeric(12, 2)
@@ -1446,15 +1493,185 @@ model Payment {
   reference        String?
   notes            String?
   recordedByUserId String
-  createdAt        DateTime       @default(now())
+  createdAt        DateTime            @default(now())
 
-  organization     Organization   @relation(fields: [organizationId], references: [id], onDelete: Restrict)
-  invoice          Invoice        @relation(fields: [organizationId, invoiceId], references: [organizationId, id], onDelete: Restrict)
+  organization     Organization        @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  invoice          Invoice             @relation(fields: [organizationId, invoiceId], references: [organizationId, id], onDelete: Restrict)
+  reconciliation   BankReconciliation?
 
   @@unique([organizationId, id])
   @@index([organizationId, invoiceId])
   @@index([organizationId, paymentDate])
   @@map("payments")
+}
+
+model BankAccount {
+  id               String                  @id @default(uuid())
+  organizationId   String
+  displayName      String
+  bankName         String
+  accountHolder    String
+  maskedIdentifier String
+  currency         String
+  countryCode      String
+  isActive         Boolean                 @default(true)
+  isDefault        Boolean                 @default(false)
+  createdById      String
+  version          Int                     @default(1)
+  createdAt        DateTime                @default(now())
+  updatedAt        temporal.updatedAt()
+
+  organization     Organization            @relation(fields: [organizationId], references: [id], onDelete: Cascade, map: "bank_account_org_fkey")
+  createdBy        User                    @relation("BankAccountCreator", fields: [organizationId, createdById], references: [organizationId, id], onDelete: Restrict, map: "bank_account_creator_fkey")
+  imports          BankTransactionImport[]
+  transactions     BankTransaction[]
+  paymentBatches   PayrollPaymentBatch[]
+
+  @@unique([organizationId, id])
+  @@unique([organizationId, displayName], map: "bank_account_name_key")
+  @@index([organizationId, isActive], map: "bank_account_active_idx")
+  @@map("bank_accounts")
+}
+
+model BankTransactionImport {
+  id             String            @id @default(uuid())
+  organizationId String
+  bankAccountId  String
+  uploadedById   String
+  fileName       String
+  sourceHash     String
+  status         BankImportStatus  @default(IMPORTED)
+  rowCount       Int
+  importedCount  Int
+  duplicateCount Int               @default(0)
+  createdAt      DateTime          @default(now())
+
+  organization   Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade, map: "bank_import_org_fkey")
+  bankAccount    BankAccount       @relation(fields: [organizationId, bankAccountId], references: [organizationId, id], onDelete: Restrict, map: "bank_import_account_fkey")
+  uploadedBy     User              @relation("BankImportUploader", fields: [organizationId, uploadedById], references: [organizationId, id], onDelete: Restrict, map: "bank_import_uploader_fkey")
+  transactions   BankTransaction[]
+
+  @@unique([organizationId, id])
+  @@unique([organizationId, bankAccountId, sourceHash], map: "bank_import_source_key")
+  @@index([organizationId, createdAt], map: "bank_import_created_idx")
+  @@map("bank_transaction_imports")
+}
+
+model BankTransaction {
+  id              String                   @id @default(uuid())
+  organizationId  String
+  bankAccountId   String
+  importId        String
+  transactionDate DateTime
+  amount          Numeric(14, 2)
+  currency        String
+  direction       BankTransactionDirection
+  description     String
+  reference       String?
+  fingerprint     String
+  createdAt       DateTime                 @default(now())
+
+  organization    Organization             @relation(fields: [organizationId], references: [id], onDelete: Cascade, map: "bank_tx_org_fkey")
+  bankAccount     BankAccount              @relation(fields: [organizationId, bankAccountId], references: [organizationId, id], onDelete: Restrict, map: "bank_tx_account_fkey")
+  import          BankTransactionImport    @relation(fields: [organizationId, importId], references: [organizationId, id], onDelete: Restrict, map: "bank_tx_import_fkey")
+  reconciliation  BankReconciliation?
+
+  @@unique([organizationId, id])
+  @@unique([organizationId, bankAccountId, fingerprint], map: "bank_tx_fingerprint_key")
+  @@index([organizationId, transactionDate], map: "bank_tx_date_idx")
+  @@map("bank_transactions")
+}
+
+model BankReconciliation {
+  id                String                   @id @default(uuid())
+  organizationId    String
+  bankTransactionId String
+  targetType        ReconciliationTargetType
+  invoicePaymentId  String?
+  payrollPaymentId  String?
+  reconciledById    String
+  reconciledAt      DateTime                 @default(now())
+  reversedById      String?
+  reversedAt        DateTime?
+  reversalReason    String?
+  version           Int                      @default(1)
+
+  organization      Organization             @relation(fields: [organizationId], references: [id], onDelete: Cascade, map: "bank_recon_org_fkey")
+  bankTransaction   BankTransaction          @relation(fields: [organizationId, bankTransactionId], references: [organizationId, id], onDelete: Restrict, map: "bank_recon_tx_fkey")
+  invoicePayment    Payment?                 @relation(fields: [organizationId, invoicePaymentId], references: [organizationId, id], onDelete: Restrict, map: "bank_recon_invoice_fkey")
+  payrollPayment    PayrollPayment?          @relation(fields: [organizationId, payrollPaymentId], references: [organizationId, id], onDelete: Restrict, map: "bank_recon_payroll_fkey")
+  reconciledBy      User                     @relation("BankReconciliationActor", fields: [organizationId, reconciledById], references: [organizationId, id], onDelete: Restrict, map: "bank_recon_actor_fkey")
+  reversedBy        User?                    @relation("BankReconciliationReverser", fields: [organizationId, reversedById], references: [organizationId, id], onDelete: Restrict, map: "bank_recon_reverser_fkey")
+
+  @@unique([organizationId, bankTransactionId], map: "bank_recon_tx_key")
+  @@unique([organizationId, invoicePaymentId], map: "bank_recon_invoice_key")
+  @@unique([organizationId, payrollPaymentId], map: "bank_recon_payroll_key")
+  @@index([organizationId, reconciledAt], map: "bank_recon_created_idx")
+  @@map("bank_reconciliations")
+}
+
+model PayrollPaymentBatch {
+  id             String                    @id @default(uuid())
+  organizationId String
+  payrollRunId   String
+  bankAccountId  String?
+  name           String
+  currency       String
+  totalAmount    Numeric(14, 2)
+  status         PaymentBatchStatus        @default(DRAFT)
+  createdById    String
+  version        Int                       @default(1)
+  createdAt      DateTime                  @default(now())
+  updatedAt      temporal.updatedAt()
+
+  organization   Organization              @relation(fields: [organizationId], references: [id], onDelete: Cascade, map: "pay_batch_org_fkey")
+  payrollRun     PayrollRun                @relation(fields: [organizationId, payrollRunId], references: [organizationId, id], onDelete: Restrict, map: "pay_batch_run_fkey")
+  bankAccount    BankAccount?              @relation(fields: [organizationId, bankAccountId], references: [organizationId, id], onDelete: Restrict, map: "pay_batch_account_fkey")
+  createdBy      User                      @relation("PaymentBatchCreator", fields: [organizationId, createdById], references: [organizationId, id], onDelete: Restrict, map: "pay_batch_creator_fkey")
+  items          PayrollPaymentBatchItem[]
+
+  @@unique([organizationId, id])
+  @@index([organizationId, payrollRunId, createdAt], map: "pay_batch_run_idx")
+  @@map("payroll_payment_batches")
+}
+
+model PayrollPaymentBatchItem {
+  id               String                 @id @default(uuid())
+  organizationId   String
+  batchId          String
+  payrollEntryId   String
+  employeeName     String
+  amount           Numeric(14, 2)
+  status           PaymentBatchItemStatus @default(PENDING)
+  paymentReference String?
+  attemptedAt      DateTime?
+  createdAt        DateTime               @default(now())
+  updatedAt        temporal.updatedAt()
+
+  organization     Organization           @relation(fields: [organizationId], references: [id], onDelete: Cascade, map: "pay_batch_item_org_fkey")
+  batch            PayrollPaymentBatch    @relation(fields: [organizationId, batchId], references: [organizationId, id], onDelete: Cascade, map: "pay_batch_item_batch_fkey")
+  payrollEntry     PayrollEntry           @relation(fields: [organizationId, payrollEntryId], references: [organizationId, id], onDelete: Restrict, map: "pay_batch_item_entry_fkey")
+
+  @@unique([organizationId, payrollEntryId], map: "pay_batch_item_entry_key")
+  @@index([organizationId, payrollEntryId], map: "pay_batch_entry_idx")
+  @@map("payroll_payment_batch_items")
+}
+
+model BankingAuditEvent {
+  id             String       @id @default(uuid())
+  organizationId String
+  actorId        String
+  entityType     String
+  entityId       String
+  action         String
+  details        String?
+  createdAt      DateTime     @default(now())
+
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade, map: "bank_audit_org_fkey")
+  actor          User         @relation("BankingAuditActor", fields: [organizationId, actorId], references: [organizationId, id], onDelete: Restrict, map: "bank_audit_actor_fkey")
+
+  @@index([organizationId, entityType, entityId, createdAt], map: "bank_audit_entity_idx")
+  @@map("banking_audit_events")
 }
 
 model Expense {

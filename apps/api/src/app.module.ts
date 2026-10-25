@@ -13,6 +13,7 @@ import { EmployeesModule } from "./employees/employees.module.js";
 import { PayrollModule } from "./payroll/payroll.module.js";
 import { WorkforceModule } from "./workforce/workforce.module.js";
 import { CashFlowModule } from "./cash-flow/cash-flow.module.js";
+import { BankingModule } from "./banking/banking.module.js";
 @Module({
   imports: [
     DatabaseModule,
@@ -28,6 +29,7 @@ import { CashFlowModule } from "./cash-flow/cash-flow.module.js";
     PayrollModule,
     WorkforceModule,
     CashFlowModule,
+    BankingModule,
   ],
   controllers: [HealthController],
 })

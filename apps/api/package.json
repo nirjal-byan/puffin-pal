@@ -22,7 +22,7 @@
     "prisma:plan": "prisma contract emit && prisma migration plan",
     "prisma:reset": "node scripts/reset-local-db.mjs",
     "database:seed": "pnpm --filter database build && pnpm run build && node dist/src/database/seed.js",
-    "test": "node --test test/password.test.mjs test/permissions.test.mjs test/account-settings.test.mjs test/session.test.mjs test/invoice-calculations.test.mjs test/organization-logo.test.mjs test/invoice-pdf.test.mjs test/onboarding.test.mjs test/profile-picture.test.mjs test/invoice-payments.test.mjs test/expenses.test.mjs",
+    "test": "node --test test/password.test.mjs test/permissions.test.mjs test/account-settings.test.mjs test/session.test.mjs test/invoice-calculations.test.mjs test/organization-logo.test.mjs test/invoice-pdf.test.mjs test/onboarding.test.mjs test/profile-picture.test.mjs test/invoice-payments.test.mjs test/expenses.test.mjs test/banking-csv.test.mjs",
     "test:expenses": "pnpm run build && node --test test/expenses.test.mjs && node scripts/test-auth-e2e.mjs test/expenses.e2e.test.mjs",
     "test:invoices": "pnpm --filter @puffinpal/permissions build && pnpm --filter database build && pnpm run build && node scripts/test-auth-e2e.mjs test/invoices.e2e.test.mjs test/invoice-drafts.e2e.test.mjs test/invoice-issuance.e2e.test.mjs",
     "test:e2e": "pnpm --filter @puffinpal/permissions build && pnpm --filter database build && pnpm run build && node scripts/test-auth-e2e.mjs",

@@ -12,7 +12,7 @@ import {
 test("navigation sections follow the primary product workflow and include every destination", () => {
   assert.deepEqual(
     NAV_SECTIONS.map((section) => section.key),
-    ["workspace", "cash-flow", "payroll", "people", "settings"],
+    ["workspace", "cash-flow", "banking", "payroll", "people", "settings"],
   );
   const destinations = NAV_SECTIONS.flatMap((section) => section.tabs);
   const tabs = new Set(destinations);
@@ -24,12 +24,24 @@ test("features belong to a single, predictable top-level section", () => {
   for (const tab of ["overview", "clients", "invoices", "retainers", "expenses"])
     assert.equal(sectionForTab(tab).key, "workspace");
   assert.equal(sectionForTab("cash-flow").key, "cash-flow");
+  assert.equal(sectionForTab("banking").key, "banking");
   assert.equal(sectionForTab("payroll").key, "payroll");
   assert.equal(sectionForTab("payroll-automation").key, "payroll");
   for (const tab of ["employees", "attendance", "leave", "overtime", "members"])
     assert.equal(sectionForTab(tab).key, "people");
   for (const tab of ["profile", "password", "access"])
     assert.equal(sectionForTab(tab).key, "settings");
+});
+
+test("banking navigation is visible only with banking access", () => {
+  assert.equal(
+    visibleNavigationSections(["profile:read"]).some((item) => item.key === "banking"),
+    false,
+  );
+  assert.equal(
+    visibleNavigationSections(["banking:read"]).some((item) => item.key === "banking"),
+    true,
+  );
 });
 
 test("legacy areas cannot move a destination into an unrelated section", () => {

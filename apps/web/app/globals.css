@@ -6808,3 +6808,286 @@ body:has(.workspace-layout[data-theme="dark"]) .country-picker-option.highlighte
     border-left: 0;
   }
 }
+/* Banking workspace */
+.banking-page {
+  display: grid;
+  gap: 16px;
+}
+.banking-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px;
+}
+.banking-tabs {
+  display: flex;
+  gap: 3px;
+  padding: 3px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface-muted, #f7f9f8);
+}
+.banking-tabs button {
+  border: 0;
+  border-radius: 7px;
+  padding: 9px 13px;
+  color: var(--muted);
+  background: transparent;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 600;
+}
+.banking-tabs button.active {
+  color: var(--text);
+  background: var(--surface, #fff);
+  box-shadow: 0 1px 3px rgb(15 23 42 / 10%);
+}
+.banking-actions {
+  display: flex;
+  gap: 8px;
+}
+.banking-card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 14px;
+}
+.banking-account-card {
+  padding: 20px;
+}
+.banking-account-card > div,
+.banking-account-card footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.banking-account-icon {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  color: #1559dc;
+  background: #eaf2ff;
+}
+.banking-account-card h3 {
+  margin: 18px 0 5px;
+}
+.banking-account-card p,
+.banking-account-card footer span {
+  color: var(--muted);
+}
+.banking-account-card footer {
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+.banking-table-panel {
+  overflow: hidden;
+}
+.banking-table-panel > header,
+.banking-batch > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 20px;
+  border-bottom: 1px solid var(--border);
+}
+.banking-table-panel h3,
+.banking-table-panel p,
+.banking-batch h3 {
+  margin: 0;
+}
+.banking-table-panel p {
+  margin-top: 4px;
+  color: var(--muted);
+}
+.banking-filters {
+  display: grid;
+  grid-template-columns: minmax(240px, 1fr) 220px;
+  gap: 10px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+}
+.table-scroll {
+  overflow-x: auto;
+}
+.banking-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.banking-table th {
+  padding: 10px 16px;
+  color: var(--muted);
+  background: var(--surface-muted, #f8faf9);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-align: left;
+  text-transform: uppercase;
+}
+.banking-table td {
+  padding: 14px 16px;
+  border-top: 1px solid var(--border);
+  vertical-align: middle;
+}
+.banking-table td small {
+  display: block;
+  margin-top: 3px;
+  color: var(--muted);
+}
+.banking-table td:last-child {
+  text-align: right;
+}
+.money-in {
+  color: #087a55;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.money-out {
+  color: var(--text);
+  font-weight: 700;
+  white-space: nowrap;
+}
+.status-pill {
+  display: inline-flex;
+  padding: 4px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: capitalize;
+}
+.status-pill.matched {
+  color: #087a55;
+  background: #e8f7f0;
+}
+.status-pill.pending {
+  color: #8a5a00;
+  background: #fff4d7;
+}
+.banking-batches {
+  display: grid;
+  gap: 14px;
+}
+.banking-batch {
+  overflow: hidden;
+}
+.banking-batch-item {
+  display: grid;
+  grid-template-columns: 1fr auto 100px auto;
+  align-items: center;
+  gap: 24px;
+  padding: 12px 20px;
+  border-top: 1px solid var(--border);
+}
+.batch-item-actions {
+  display: flex;
+  gap: 8px;
+}
+.import-preview {
+  margin-top: 16px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.import-mapping {
+  margin-top: 14px;
+}
+.import-mapping summary {
+  cursor: pointer;
+  font-weight: 700;
+}
+.import-mapping .standard-form-grid {
+  margin-top: 12px;
+}
+.import-preview > strong {
+  display: block;
+  padding: 12px;
+  background: var(--surface-muted, #f8faf9);
+}
+.import-preview > div {
+  display: grid;
+  grid-template-columns: 100px 1fr 100px auto;
+  gap: 10px;
+  padding: 9px 12px;
+  border-top: 1px solid var(--border);
+}
+.match-options,
+.obligation-list {
+  display: grid;
+  gap: 8px;
+}
+.match-options label,
+.obligation-list label {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  cursor: pointer;
+}
+.match-options label.selected {
+  border-color: #2470e8;
+  background: #f2f7ff;
+}
+.match-options small,
+.obligation-list small {
+  display: block;
+  margin-top: 3px;
+  color: var(--muted);
+}
+.file-input {
+  padding: 8px !important;
+}
+@media (max-width: 780px) {
+  .banking-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .banking-tabs {
+    overflow-x: auto;
+  }
+  .banking-actions {
+    justify-content: flex-end;
+  }
+  .banking-batch-item {
+    grid-template-columns: 1fr auto;
+  }
+  .banking-filters {
+    grid-template-columns: 1fr;
+  }
+  .banking-batch-item .status-pill {
+    grid-column: 1 / -1;
+    width: fit-content;
+  }
+}
+.workspace-layout[data-theme="dark"] .banking-tabs,
+.workspace-layout[data-theme="dark"] .banking-table th {
+  background: #111b19;
+}
+.workspace-layout[data-theme="dark"] .banking-tabs button.active {
+  background: #23302d;
+}
+.workspace-layout[data-theme="dark"] .match-options label.selected {
+  background: #102743;
+}
+.route-state-page {
+  min-height: 100vh;
+  display: grid;
+  place-content: center;
+  justify-items: start;
+  gap: 12px;
+  padding: 32px;
+  color: #1f2933;
+  background: #f8fafc;
+}
+.route-state-page h1,
+.route-state-page p {
+  margin: 0;
+}
+.route-state-page p {
+  max-width: 440px;
+  color: #66737a;
+}
