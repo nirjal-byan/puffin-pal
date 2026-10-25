@@ -9,10 +9,10 @@ import { test } from "node:test";
 import { NestFactory } from "@nestjs/core";
 import { Temporal } from "temporal-polyfill";
 import { createApplication } from "../dist/src/app.factory.js";
-import { DATABASE } from "../dist/src/database.module.js";
-import { InvoiceExportProcessor } from "../dist/src/background-jobs/invoice-export.processor.js";
-import { InvoiceExportQueue } from "../dist/src/background-jobs/invoice-export.queue.js";
-import { WorkerModule } from "../dist/src/background-jobs/worker.module.js";
+import { DATABASE } from "../dist/src/infrastructure/database/database.module.js";
+import { InvoiceExportProcessor } from "../dist/src/infrastructure/background-jobs/invoice-export.processor.js";
+import { InvoiceExportQueue } from "../dist/src/infrastructure/background-jobs/invoice-export.queue.js";
+import { WorkerModule } from "../dist/src/infrastructure/background-jobs/worker.module.js";
 
 test("bulk invoice exports are queued, tenant-scoped, durable, and downloadable", async () => {
   assert.match(new URL(process.env.DATABASE_URL).pathname, /^\/puffinpal_auth_test_/);

@@ -1,10 +1,10 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { canDownloadInvoicePdf } from "../features/invoices/schemas/invoice.schema.ts";
-import { downloadInvoicePdf } from "../features/invoices/api/invoices.ts";
+import { canDownloadInvoicePdf } from "../src/features/invoices/schemas/invoice.schema.ts";
+import { downloadInvoicePdf } from "../src/features/invoices/api/invoices.ts";
 
 let instance = 0;
-const load = () => import(`../lib/api.ts?pdf=${instance++}`);
+const load = () => import(`../src/lib/api.ts?pdf=${instance++}`);
 const session = (token) => ({ accessToken: token, user: { id: "user" }, organization: { id: "org" }, permissions: [] });
 const json = (body, status = 200) => new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json" } });
 

@@ -5,9 +5,9 @@ import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
-import { PayrollPdfService } from "../dist/src/payroll/payroll-pdf.service.js";
-import { PayrollController } from "../dist/src/payroll/payroll.controller.js";
-import { REQUIRED_PERMISSIONS } from "../dist/src/auth/auth.decorators.js";
+import { PayrollPdfService } from "../dist/src/modules/payroll/payroll-pdf.service.js";
+import { PayrollController } from "../dist/src/modules/payroll/payroll.controller.js";
+import { REQUIRED_PERMISSIONS } from "../dist/src/common/decorators/auth.decorators.js";
 
 const input = {
   runName: "October payroll",

@@ -3,18 +3,18 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { plainToInstance } from "class-transformer";
 import { validate } from "class-validator";
-import { REQUIRED_PERMISSIONS } from "../dist/src/auth/auth.decorators.js";
-import { CashFlowController } from "../dist/src/cash-flow/cash-flow.controller.js";
+import { REQUIRED_PERMISSIONS } from "../dist/src/common/decorators/auth.decorators.js";
+import { CashFlowController } from "../dist/src/modules/cash-flow/cash-flow.controller.js";
 import {
   CashFlowForecastQueryDto,
   UpdateCashFlowConfigurationDto,
-} from "../dist/src/cash-flow/cash-flow.dto.js";
+} from "../dist/src/modules/cash-flow/cash-flow.dto.js";
 import {
   addDays,
   buildCashFlowForecast,
   centsToMoney,
   moneyToCents,
-} from "../dist/src/cash-flow/cash-flow-forecast.engine.js";
+} from "../dist/src/modules/cash-flow/cash-flow-forecast.engine.js";
 
 const base = (overrides = {}) => ({
   from: "2026-10-20",

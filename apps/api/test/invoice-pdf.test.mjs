@@ -7,10 +7,10 @@ import { join } from "node:path";
 import { test } from "node:test";
 import { ConflictException, ForbiddenException } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
-import { InvoicePdfService, invoicePdfFilename } from "../dist/src/invoices/pdf/invoice-pdf.service.js";
-import { InvoicesController } from "../dist/src/invoices/invoices.controller.js";
-import { PermissionsGuard } from "../dist/src/auth/permissions.guard.js";
-import { REQUIRED_PERMISSIONS } from "../dist/src/auth/auth.decorators.js";
+import { InvoicePdfService, invoicePdfFilename } from "../dist/src/modules/invoices/pdf/invoice-pdf.service.js";
+import { InvoicesController } from "../dist/src/modules/invoices/invoices.controller.js";
+import { PermissionsGuard } from "../dist/src/common/guards/permissions.guard.js";
+import { REQUIRED_PERMISSIONS } from "../dist/src/common/decorators/auth.decorators.js";
 
 const fixture = () => ({
   status: "ISSUED", invoiceNumber: "INV-PDF-123", issuedAt: "2026-10-12T10:00:00Z",

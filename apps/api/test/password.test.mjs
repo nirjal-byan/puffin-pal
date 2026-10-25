@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { scryptSync } from "node:crypto";
-import { hashPassword, verifyPassword } from "../dist/src/auth/password.js";
+import { hashPassword, verifyPassword } from "../dist/src/modules/auth/password.js";
 
 test("password hashes use unique salts and verify without accepting incorrect passwords", async () => {
   const first = await hashPassword("a-long-test-password");

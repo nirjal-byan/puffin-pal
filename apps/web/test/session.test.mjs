@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 let instance = 0;
-const load = () => import(`../lib/api.ts?test=${instance++}`);
+const load = () => import(`../src/lib/api.ts?test=${instance++}`);
 const session = (token) => ({
   accessToken: token,
   user: { id: "user-1" },

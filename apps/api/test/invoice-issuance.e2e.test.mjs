@@ -3,10 +3,10 @@ import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { test } from "node:test";
 import { createApplication } from "../dist/src/app.factory.js";
-import { DATABASE } from "../dist/src/database.module.js";
+import { DATABASE } from "../dist/src/infrastructure/database/database.module.js";
 import { ListObjectsV2Command, S3Client } from "@aws-sdk/client-s3";
-import { InvoicePdfService } from "../dist/src/invoices/pdf/invoice-pdf.service.js";
-import { InvoicePdfStorageService } from "../dist/src/invoices/pdf/invoice-pdf-storage.service.js";
+import { InvoicePdfService } from "../dist/src/modules/invoices/pdf/invoice-pdf.service.js";
+import { InvoicePdfStorageService } from "../dist/src/modules/invoices/pdf/invoice-pdf-storage.service.js";
 
 // This suite only runs against the disposable database owned by the runner.
 test("invoice issuance", async (t) => {

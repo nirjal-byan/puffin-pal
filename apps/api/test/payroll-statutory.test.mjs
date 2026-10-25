@@ -4,7 +4,7 @@ import {
   calculateStatutory,
   progressiveTax,
   validateBrackets,
-} from "../dist/src/payroll/statutory-calculations.js";
+} from "../dist/src/modules/payroll/statutory-calculations.js";
 
 const brackets = [
   { lowerBound: "0.00", upperBound: "500000.00", rate: "0" },

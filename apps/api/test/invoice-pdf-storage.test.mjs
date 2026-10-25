@@ -3,8 +3,8 @@ import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { test } from "node:test";
 import { ServiceUnavailableException } from "@nestjs/common";
-import { InvoicePdfStorageService } from "../dist/src/invoices/pdf/invoice-pdf-storage.service.js";
-import { InvoicesService } from "../dist/src/invoices/invoices.service.js";
+import { InvoicePdfStorageService } from "../dist/src/modules/invoices/pdf/invoice-pdf-storage.service.js";
+import { InvoicesService } from "../dist/src/modules/invoices/invoices.service.js";
 
 const pdf = Buffer.from("%PDF-immutable-test");
 const organizationId = "org-1";

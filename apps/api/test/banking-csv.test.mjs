@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { csvSourceHash, parseBankCsv } from "../dist/src/banking/banking-csv.js";
+import { csvSourceHash, parseBankCsv } from "../dist/src/modules/banking/banking-csv.js";
 
 const mapping = {
   date: "date",

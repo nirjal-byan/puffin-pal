@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { nextOccurrence } from "../dist/src/recurring-invoices/recurring-schedule.js";
+import { nextOccurrence } from "../dist/src/modules/recurring-invoices/recurring-schedule.js";
 
 test("monthly schedules preserve their anchor and cap at month end", () => {
   assert.equal(nextOccurrence("2027-01-31T00:00:00Z", "2027-01-31T00:00:00Z", "MONTHLY", 1).toString(), "2027-02-28T00:00:00Z");

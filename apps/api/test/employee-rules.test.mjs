@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { assertManagerChain, rangesOverlap } from "../dist/src/employees/employee-rules.js";
+import { assertManagerChain, rangesOverlap } from "../dist/src/modules/employees/employee-rules.js";
 
 test("salary effective date ranges reject open and closed overlaps", () => {
   assert.equal(rangesOverlap("2026-01-01", null, "2027-01-01", null), true);

@@ -6,9 +6,9 @@ import { validate } from "class-validator";
 import {
   OrganizationLogoDto,
   validOrganizationLogo,
-} from "../dist/src/auth/organization-logo.dto.js";
-import { SignupDto } from "../dist/src/auth/auth.dto.js";
-import { AuthService } from "../dist/src/auth/auth.service.js";
+} from "../dist/src/modules/auth/organization-logo.dto.js";
+import { SignupDto } from "../dist/src/modules/auth/auth.dto.js";
+import { AuthService } from "../dist/src/modules/auth/auth.service.js";
 
 const logo =
   "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jRZkAAAAASUVORK5CYII=";

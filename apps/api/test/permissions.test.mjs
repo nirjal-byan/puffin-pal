@@ -4,8 +4,8 @@ import { test } from "node:test";
 import { Reflector } from "@nestjs/core";
 import { ForbiddenException } from "@nestjs/common";
 import { hasPermission, canAssignRole, isRole } from "@puffinpal/permissions";
-import { PermissionsGuard } from "../dist/src/auth/permissions.guard.js";
-import { REQUIRED_PERMISSIONS } from "../dist/src/auth/auth.decorators.js";
+import { PermissionsGuard } from "../dist/src/common/guards/permissions.guard.js";
+import { REQUIRED_PERMISSIONS } from "../dist/src/common/decorators/auth.decorators.js";
 
 test("operational roles cannot delete records or manage members; viewers cannot write", () => {
   assert.equal(hasPermission("OWNER", "members:manage"), true);

@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { Temporal } from "temporal-polyfill";
 import { createApplication } from "../dist/src/app.factory.js";
-import { DATABASE } from "../dist/src/database.module.js";
+import { DATABASE } from "../dist/src/infrastructure/database/database.module.js";
 
 test("cash flow API enforces tenant ownership, RBAC, balances and optimistic updates", async () => {
   assert.match(new URL(process.env.DATABASE_URL).pathname, /^\/puffinpal_auth_test_/);

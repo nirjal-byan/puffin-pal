@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { readPhoneInput, PHONE_COUNTRIES } from "../lib/phone.ts";
+import { readPhoneInput, PHONE_COUNTRIES } from "../src/lib/phone.ts";
 
 test("international input detects the country and normalizes the number", () => {
   for (const [input, country, normalized] of [

@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { JwtService } from "@nestjs/jwt";
 import { createApplication } from "../dist/src/app.factory.js";
-import { DATABASE } from "../dist/src/database.module.js";
+import { DATABASE } from "../dist/src/infrastructure/database/database.module.js";
 
 const password = "PuffinPal-test-password-123";
 test("authentication, tenant isolation, live roles and credential abuse protections", async (t) => {

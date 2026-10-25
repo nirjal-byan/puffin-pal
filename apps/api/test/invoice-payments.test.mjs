@@ -3,8 +3,8 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { plainToInstance } from "class-transformer";
 import { validate } from "class-validator";
-import { CreatePaymentDto } from "../dist/src/invoices/dto/create-payment.dto.js";
-import { invoicePaymentSummary, paymentCents, receivedPaymentDate } from "../dist/src/invoices/utils/invoice-payments.js";
+import { CreatePaymentDto } from "../dist/src/modules/invoices/dto/create-payment.dto.js";
+import { invoicePaymentSummary, paymentCents, receivedPaymentDate } from "../dist/src/modules/invoices/utils/invoice-payments.js";
 import { hasPermission } from "@puffinpal/permissions";
 
 const invoice = { status: "ISSUED", total: "0.30", dueDate: "2026-10-13T00:00:00Z", issuedAt: "2026-10-12T00:00:00Z" };

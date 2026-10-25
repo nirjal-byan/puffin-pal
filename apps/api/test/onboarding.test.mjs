@@ -3,8 +3,8 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { plainToInstance } from "class-transformer";
 import { validate } from "class-validator";
-import { AuthService } from "../dist/src/auth/auth.service.js";
-import { UpdateOnboardingDto } from "../dist/src/auth/onboarding.dto.js";
+import { AuthService } from "../dist/src/modules/auth/auth.service.js";
+import { UpdateOnboardingDto } from "../dist/src/modules/auth/onboarding.dto.js";
 
 test("onboarding accepts payment steps while preserving all existing step identifiers", async () => {
   for (const step of ["welcome", "dashboard", "clients", "invoices", "create-invoice", "issuance", "team", "settings", "finish",

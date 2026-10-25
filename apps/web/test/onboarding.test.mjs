@@ -8,7 +8,7 @@ import {
   tourSteps,
   tourStorageKey,
   visibleTourTarget,
-} from "../features/onboarding/tour.ts";
+} from "../src/features/onboarding/tour.ts";
 
 test("only newly registered users automatically start onboarding", () => {
   assert.equal(initialTour({ onboardingStatus: "PENDING" }, null).active, true);

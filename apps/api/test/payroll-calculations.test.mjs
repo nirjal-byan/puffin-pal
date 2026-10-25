@@ -5,7 +5,7 @@ import {
   centsToMoney,
   moneyToCents,
   validatePayPeriod,
-} from "../dist/src/payroll/payroll-calculations.js";
+} from "../dist/src/modules/payroll/payroll-calculations.js";
 
 test("fixed salary payroll uses exact decimal calculations", () => {
   assert.deepEqual(

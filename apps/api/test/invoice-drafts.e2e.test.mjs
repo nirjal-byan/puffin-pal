@@ -4,7 +4,7 @@ import { randomUUID } from "node:crypto";
 import { spawnSync } from "node:child_process";
 import { test } from "node:test";
 import { createApplication } from "../dist/src/app.factory.js";
-import { DATABASE } from "../dist/src/database.module.js";
+import { DATABASE } from "../dist/src/infrastructure/database/database.module.js";
 
 test("invoice details, draft editing, safe deletion and concurrency", async (t) => {
   const url = new URL(process.env.DATABASE_URL);

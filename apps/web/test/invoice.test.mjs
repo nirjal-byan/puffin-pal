@@ -9,13 +9,13 @@ import {
   validateInvoice,
   invoicePayload,
   canCreateInvoice,
-} from "../features/invoices/schemas/invoice.schema.ts";
-import { submissionGate } from "../features/invoices/hooks/submission-gate.ts";
+} from "../src/features/invoices/schemas/invoice.schema.ts";
+import { submissionGate } from "../src/features/invoices/hooks/submission-gate.ts";
 import {
   createInvoice,
   rememberCreatedInvoice,
   recentlyCreatedInvoice,
-} from "../features/invoices/api/invoices.ts";
+} from "../src/features/invoices/api/invoices.ts";
 const draft = () => ({
   clientId: "client-a",
   issueDate: "2026-10-10",
@@ -168,7 +168,7 @@ test("permissions and a synchronous gate prevent forbidden or duplicated submiss
 
 test("edit prepopulation keeps decimal strings, notes, dates and item order", async () => {
   const { invoiceDraft, draftActions } =
-    await import("../features/invoices/schemas/invoice.schema.ts");
+    await import("../src/features/invoices/schemas/invoice.schema.ts");
   const invoice = {
     clientId: "client-a",
     issueDate: "2026-10-10T00:00:00Z",
@@ -207,7 +207,7 @@ test("edit prepopulation keeps decimal strings, notes, dates and item order", as
 
 test("edit/delete API contracts include version and invalidate snapshots only after success", async () => {
   const { updateInvoice, deleteInvoice, clearRecentInvoice } =
-    await import("../features/invoices/api/invoices.ts");
+    await import("../src/features/invoices/api/invoices.ts");
   const result = { id: "inv-a", organizationId: "org-a" };
   rememberCreatedInvoice(result);
   const failure = Object.assign(new Error("Invoice changed. Reload."), {
@@ -249,7 +249,7 @@ test("edit/delete API contracts include version and invalidate snapshots only af
 
 test("issuance requires a draft and dedicated permission", async () => {
   const { canIssueInvoice, draftActions } =
-    await import("../features/invoices/schemas/invoice.schema.ts");
+    await import("../src/features/invoices/schemas/invoice.schema.ts");
   assert.equal(canIssueInvoice("DRAFT", ["invoices:issue"]), true);
   assert.equal(canIssueInvoice("DRAFT", ["invoices:update"]), false);
   for (const status of ["ISSUED", "PENDING", "PAID", "OVERDUE", "CANCELLED"]) {
@@ -263,7 +263,7 @@ test("issuance requires a draft and dedicated permission", async () => {
 
 test("issuance sends only expectedVersion and invalidates remembered drafts on success", async () => {
   const { issueInvoice, clearRecentInvoice } =
-    await import("../features/invoices/api/invoices.ts");
+    await import("../src/features/invoices/api/invoices.ts");
   const draft = { id: "inv-a", organizationId: "org-a" };
   rememberCreatedInvoice(draft);
   await assert.rejects(

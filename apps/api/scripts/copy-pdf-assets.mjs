@@ -1,7 +1,7 @@
 import { cp, mkdir } from "node:fs/promises";
 
-const destination = new URL("../dist/src/invoices/pdf/assets/", import.meta.url);
+const destination = new URL("../dist/src/modules/invoices/pdf/assets/", import.meta.url);
 await mkdir(destination, { recursive: true });
-await cp(new URL("../src/invoices/pdf/assets/", import.meta.url), destination, {
+await cp(new URL("../assets/invoice-pdf/", import.meta.url), destination, {
   recursive: true,
 });

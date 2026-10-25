@@ -5,7 +5,7 @@ import {
   minutesBetween,
   overtimePay,
   workingLeaveUnits,
-} from "../dist/src/workforce/workforce-rules.js";
+} from "../dist/src/modules/workforce/workforce-rules.js";
 
 test("leave units exclude weekends and configured holidays", () => {
   assert.equal(

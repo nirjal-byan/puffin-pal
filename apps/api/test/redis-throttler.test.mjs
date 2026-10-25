@@ -5,8 +5,8 @@ import { setTimeout as delay } from "node:timers/promises";
 import { test } from "node:test";
 import { ServiceUnavailableException } from "@nestjs/common";
 import { createClient } from "redis";
-import { AuthController } from "../dist/src/auth/auth.controller.js";
-import { RedisThrottlerStorage } from "../dist/src/redis/redis-throttler.storage.js";
+import { AuthController } from "../dist/src/modules/auth/auth.controller.js";
+import { RedisThrottlerStorage } from "../dist/src/infrastructure/redis/redis-throttler.storage.js";
 
 const redisUrl =
   process.env.REDIS_TEST_URL ??

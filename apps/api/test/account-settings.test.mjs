@@ -7,9 +7,9 @@ import {
   SignupDto,
   ChangePasswordDto,
   UpdateProfileDto,
-} from "../dist/src/auth/auth.dto.js";
-import { AuthService } from "../dist/src/auth/auth.service.js";
-import { hashPassword, verifyPassword } from "../dist/src/auth/password.js";
+} from "../dist/src/modules/auth/auth.dto.js";
+import { AuthService } from "../dist/src/modules/auth/auth.service.js";
+import { hashPassword, verifyPassword } from "../dist/src/modules/auth/password.js";
 
 const tenant = { userId: "user-1", organizationId: "org-1", role: "OWNER" };
 function setup(user) {

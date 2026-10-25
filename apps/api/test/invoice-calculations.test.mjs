@@ -3,9 +3,9 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { plainToInstance } from "class-transformer";
 import { validate } from "class-validator";
-import { calculateInvoice } from "../dist/src/invoices/utils/invoice-calculations.js";
-import { invoiceDates } from "../dist/src/invoices/utils/invoice-dates.js";
-import { CreateInvoiceDto } from "../dist/src/invoices/dto/create-invoice.dto.js";
+import { calculateInvoice } from "../dist/src/modules/invoices/utils/invoice-calculations.js";
+import { invoiceDates } from "../dist/src/modules/invoices/utils/invoice-dates.js";
+import { CreateInvoiceDto } from "../dist/src/modules/invoices/dto/create-invoice.dto.js";
 const item = (quantity, unitPrice) => ({
   description: "Work",
   quantity,

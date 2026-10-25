@@ -1,69 +1,77 @@
 # PuffinPal architecture
 
-PuffinPal is a pnpm/Turborepo monorepo. The current architecture deliberately keeps existing URLs and session behavior stable while organizing business code by feature.
+PuffinPal is a pnpm/Turborepo monorepo. The web app is organized by product feature, while the API separates domain modules from shared infrastructure.
 
 ```text
 apps/
 ├── web/
-│   ├── app/                 # Next.js App Router, root layout, route boundaries
-│   ├── components/          # Shared UI and application-shell components
-│   ├── features/            # Business features and interactive page composition
-│   │   ├── banking/
-│   │   ├── invoices/
-│   │   ├── onboarding/
-│   │   └── pages/           # Existing query-driven workspace destinations
-│   └── lib/                 # API client, navigation, and cross-feature helpers
+│   ├── src/
+│   │   ├── app/
+│   │   │   ├── (auth)/          # Public authentication routes
+│   │   │   └── (dashboard)/     # Authenticated product routes
+│   │   ├── components/
+│   │   │   ├── ui/              # Reusable controls and feedback
+│   │   │   ├── layout/          # Navigation and application chrome
+│   │   │   └── shared/          # Cross-feature composites
+│   │   ├── features/            # Feature-owned UI, types, and services
+│   │   ├── lib/                 # Cross-cutting clients and helpers
+│   │   └── providers/           # Root React providers
+│   ├── public/
+│   └── test/
 └── api/
-    ├── prisma/              # Contract schema and immutable migration packages
+    ├── prisma/                  # Contract schema and immutable migrations
     └── src/
-        ├── banking/         # Banking controller, DTOs, CSV parser, service
-        ├── auth/            # JWT authentication and permission guards
-        ├── database/        # Shared PostgreSQL access
-        ├── redis/           # Shared Redis access
-        ├── storage/         # S3-compatible storage
-        └── <feature>/       # NestJS feature modules
+        ├── common/              # Guards, decorators, and shared types
+        ├── infrastructure/      # Database, Redis, queues, and storage
+        └── modules/             # NestJS business modules
 packages/
-├── database/                # Database package
-├── permissions/             # Shared RBAC contract
-└── ui/                      # Shared package-level UI primitives
+├── database/                    # Database contract tooling
+├── permissions/                 # Shared RBAC contract
+└── ui/                          # Package-level UI primitives
 ```
 
-## Frontend conventions
+The web font lives with the root layout in `apps/web/src/app/fonts`. Invoice PDF fonts live in `apps/api/assets/invoice-pdf` because they are static build inputs rather than API source; the build copies them into the compiled invoice module path.
 
-- `app/layout.tsx` is the only root document layout and owns metadata, fonts, and global CSS.
-- App Router files compose routes; interactive business UI lives under `features/`.
-- The existing authenticated workspace remains query-driven to preserve public URLs and session behavior. A broad route-group migration should be a separate, tested project rather than a blind directory move.
-- Shared modal, field, dropdown, date, snackbar, shell, and navigation components live in `components/`. Feature-specific UI stays with its feature.
-- Requests go through the typed `WorkspaceApi`/`apiRequest` client so authentication expiry and errors behave consistently.
-- Client Components are used where browser state or interaction is required. The root layout remains a Server Component.
+## Frontend boundaries
 
-## Backend conventions
+- `src/app/layout.tsx` owns the document, metadata, font, global CSS, and root providers.
+- Route groups organize public and authenticated routes without changing their URLs.
+- Route files stay small and compose feature components. Interactive business behavior belongs to the owning folder under `src/features`.
+- `components/ui` contains generic controls, `components/layout` owns application chrome, and `components/shared` contains cross-feature composites. Shared layers must not import a feature.
+- Feature code may import shared components and `src/lib`; one feature should not reach into another feature's internals unless it is an explicit composition boundary.
+- Use the `@/*` alias for imports rooted at `apps/web/src`. Relative imports are appropriate inside one local feature folder.
+- `AppProviders` is the root client-provider boundary. Notifications and snackbars use `NotificationProvider` rather than page-local duplicate state.
+- The current workspace uses a query-backed section switcher for compatibility. The dashboard shell is composed once by the workspace feature, while invoice detail routes remain first-class App Router routes.
 
-- Each domain is a NestJS module containing its transport, DTO validation, and business workflows.
-- Controllers authorize and delegate. Services own transaction boundaries and invariants.
-- Shared database, Redis, queue, and storage modules remain infrastructure boundaries; they are not duplicated inside features.
-- Tenant-owned reads and writes always include `organizationId`. Cross-tenant identifiers must return not found or fail validation.
-- Money uses fixed-scale PostgreSQL numeric values and integer minor-unit calculations, never floating point.
-- Public request shapes use validated DTOs. Database uniqueness backs concurrency-sensitive invariants.
+## Backend boundaries
 
-## Naming and imports
+- `src/modules/<domain>` owns controllers, DTOs, services, and domain-specific helpers.
+- `src/infrastructure` owns technical adapters: PostgreSQL access, Redis, BullMQ workers, and object storage.
+- `src/common` contains framework concerns shared by modules, currently authentication decorators, guards, and request types.
+- Controllers authorize, validate, and delegate. Services own business invariants and transaction boundaries.
+- Domain modules may depend on common and infrastructure layers. Infrastructure must not depend on HTTP controllers.
+- Tenant-owned reads and writes include `organizationId`; cross-tenant identifiers fail validation or resolve as not found.
+- Money uses fixed-scale database values and integer minor-unit calculations rather than floating point.
 
-- Use descriptive domain names and kebab-case files.
-- Keep types close to the owning feature. Promote code to shared components only after it has a genuine cross-feature responsibility.
-- Prefer existing TypeScript aliases/packages; use relative imports only within a nearby feature.
-- Avoid generic repositories that merely mirror the ORM and avoid catch-all utility folders.
+## Naming and placement
 
-## Testing
+- Use kebab-case file names and descriptive domain names.
+- Keep a type, helper, or component inside its owning feature until it has a real cross-feature responsibility.
+- Avoid catch-all `utils` or repository layers that only mirror the database client.
+- Add web requests through the existing typed client. Add API capabilities as domain modules registered in `app.module.ts`.
 
-- Unit tests live under each app's `test/` directory.
-- Database-backed flows use the existing authenticated E2E harness and a disposable database.
-- Every feature change should run type checks, lint, production builds, focused unit/E2E tests, and `git diff --check`.
-- Migration plans are generated offline, reviewed for destructive operations, then verified against a disposable database before deployment.
+## Validation
+
+- Unit tests live in each app's `test` directory.
+- Database-backed flows use the authenticated E2E harness and a disposable database.
+- Structural changes must pass lint, type checking, production builds, focused tests, and `git diff --check`.
+- Migration history is immutable. Generate and review new additive migration packages separately from source-code refactors.
 
 ## Adding a feature
 
-1. Add the validated DTO, service, controller, and NestJS module; register the module in `app.module.ts`.
-2. Add tenant-scoped schema changes and generate one migration from the actual current contract head.
-3. Add feature-local frontend types/API helpers/components, then compose them into an App Router destination or the existing workspace shell.
-4. Add shared permissions to `packages/permissions`, enforce them in the controller, and hide unavailable navigation/actions in the UI.
-5. Add focused unit tests plus database-backed tests for tenancy and concurrency-sensitive behavior.
+1. Create `apps/api/src/modules/<feature>` with validated DTOs, a service, a controller, and a NestJS module.
+2. Register the module in `apps/api/src/app.module.ts`; use existing infrastructure adapters rather than duplicating clients.
+3. Create `apps/web/src/features/<feature>` and keep its components, types, and API helpers together.
+4. Compose the feature from a small App Router page or the compatible workspace section map.
+5. Add permissions to `packages/permissions`, enforce them in the API, and mirror visibility in the UI.
+6. Add focused unit tests and tenant-isolation E2E coverage where persistence is involved.

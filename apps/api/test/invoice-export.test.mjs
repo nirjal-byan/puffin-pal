@@ -3,8 +3,8 @@ import assert from "node:assert/strict";
 import { Readable } from "node:stream";
 import { test } from "node:test";
 import { ServiceUnavailableException } from "@nestjs/common";
-import { InvoiceExportStorageService } from "../dist/src/background-jobs/invoice-export-storage.service.js";
-import { InvoicePdfResolverService } from "../dist/src/invoices/pdf/invoice-pdf-resolver.service.js";
+import { InvoiceExportStorageService } from "../dist/src/infrastructure/background-jobs/invoice-export-storage.service.js";
+import { InvoicePdfResolverService } from "../dist/src/modules/invoices/pdf/invoice-pdf-resolver.service.js";
 
 test("export storage uses immutable tenant-scoped streaming uploads", async () => {
   let call;

@@ -6,7 +6,7 @@ import {
   assertTimezone,
   payrollPeriod,
   schedulePeriod,
-} from "../dist/src/payroll/payroll-schedule.js";
+} from "../dist/src/modules/payroll/payroll-schedule.js";
 
 test("weekly and biweekly periods use exact calendar boundaries", () => {
   const weekly = payrollPeriod("2026-10-05", "WEEKLY");

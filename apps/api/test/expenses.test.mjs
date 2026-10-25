@@ -5,10 +5,10 @@ import { readFile } from "node:fs/promises";
 import { plainToInstance } from "class-transformer";
 import { validate } from "class-validator";
 import { hasPermission } from "@puffinpal/permissions";
-import { CreateExpenseDto, ExpenseQueryDto, ExpenseTransitionDto, RejectExpenseDto } from "../dist/src/expenses/expense.dto.js";
-import { expenseAmount } from "../dist/src/expenses/expense-money.js";
-import { validateReceipt } from "../dist/src/expenses/receipt-validation.js";
-import { ExpensesService } from "../dist/src/expenses/expenses.service.js";
+import { CreateExpenseDto, ExpenseQueryDto, ExpenseTransitionDto, RejectExpenseDto } from "../dist/src/modules/expenses/expense.dto.js";
+import { expenseAmount } from "../dist/src/modules/expenses/expense-money.js";
+import { validateReceipt } from "../dist/src/modules/expenses/receipt-validation.js";
+import { ExpensesService } from "../dist/src/modules/expenses/expenses.service.js";
 
 test("expense amounts remain exact and reject invalid values", () => {
   assert.equal(expenseAmount("0.10"), "0.10");

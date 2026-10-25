@@ -5,8 +5,8 @@ import {
   cappedAccrual,
   carryForwardMinutes,
   expirableCarryForward,
-} from "../dist/src/workforce/leave-accrual.js";
-import { calculateUnpaidLeaveDeduction } from "../dist/src/payroll/payroll-calculations.js";
+} from "../dist/src/modules/workforce/leave-accrual.js";
+import { calculateUnpaidLeaveDeduction } from "../dist/src/modules/payroll/payroll-calculations.js";
 
 test("annual accrual prorates a midyear joiner deterministically", () => {
   const rows = accrualPeriods(

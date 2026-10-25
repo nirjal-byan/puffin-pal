@@ -1,6 +1,6 @@
 # Onboarding tutorial
 
-The guided tutorial is defined in `apps/web/features/onboarding/tour.ts` and rendered by
+The guided tutorial is defined in `apps/web/src/features/onboarding/tour.ts` and rendered by
 `product-tour.tsx`. It is deliberately capped at nine permission-filtered steps: welcome,
 overview, billing, spending, cash flow, people, payroll, payroll automation, and finish.
 

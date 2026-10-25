@@ -3,10 +3,10 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { plainToInstance } from "class-transformer";
 import { validate } from "class-validator";
-import { AuthService } from "../dist/src/auth/auth.service.js";
-import { AuthController } from "../dist/src/auth/auth.controller.js";
-import { ProfilePictureDto } from "../dist/src/auth/profile-picture.dto.js";
-import { REQUIRED_PERMISSIONS } from "../dist/src/auth/auth.decorators.js";
+import { AuthService } from "../dist/src/modules/auth/auth.service.js";
+import { AuthController } from "../dist/src/modules/auth/auth.controller.js";
+import { ProfilePictureDto } from "../dist/src/modules/auth/profile-picture.dto.js";
+import { REQUIRED_PERMISSIONS } from "../dist/src/common/decorators/auth.decorators.js";
 import { hasPermission } from "@puffinpal/permissions";
 
 const picture = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jRZkAAAAASUVORK5CYII=";

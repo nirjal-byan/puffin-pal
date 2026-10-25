@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { canRecordPayment, validatePayment } from "../features/invoices/schemas/payment.schema.ts";
-import { recordInvoicePayment } from "../features/invoices/api/invoices.ts";
+import { canRecordPayment, validatePayment } from "../src/features/invoices/schemas/payment.schema.ts";
+import { recordInvoicePayment } from "../src/features/invoices/api/invoices.ts";
 const input = { amount: "0.10", paymentDate: "2026-01-01", method: "CASH", reference: "", notes: "" };
 test("payment validation handles exact balances, dates, methods and field limits", () => {
   assert.equal(validatePayment(input, "0.30"), "");

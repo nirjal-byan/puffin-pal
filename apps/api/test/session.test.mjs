@@ -2,9 +2,9 @@ import "reflect-metadata";
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { JwtService } from "@nestjs/jwt";
-import { AuthService } from "../dist/src/auth/auth.service.js";
-import { AuthController } from "../dist/src/auth/auth.controller.js";
-import { hashPassword } from "../dist/src/auth/password.js";
+import { AuthService } from "../dist/src/modules/auth/auth.service.js";
+import { AuthController } from "../dist/src/modules/auth/auth.controller.js";
+import { hashPassword } from "../dist/src/modules/auth/password.js";
 
 const secret = "test-session-secret-at-least-32-bytes-long";
 process.env.JWT_SECRET = secret;

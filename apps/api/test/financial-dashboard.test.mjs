@@ -3,10 +3,10 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { plainToInstance } from "class-transformer";
 import { validate } from "class-validator";
-import { REQUIRED_PERMISSIONS } from "../dist/src/auth/auth.decorators.js";
-import { FinancialSummaryController } from "../dist/src/dashboard/financial-summary.controller.js";
-import { FinancialSummaryQueryDto } from "../dist/src/dashboard/financial-summary.dto.js";
-import { FinancialSummaryService, reportingRange } from "../dist/src/dashboard/financial-summary.service.js";
+import { REQUIRED_PERMISSIONS } from "../dist/src/common/decorators/auth.decorators.js";
+import { FinancialSummaryController } from "../dist/src/modules/dashboard/financial-summary.controller.js";
+import { FinancialSummaryQueryDto } from "../dist/src/modules/dashboard/financial-summary.dto.js";
+import { FinancialSummaryService, reportingRange } from "../dist/src/modules/dashboard/financial-summary.service.js";
 
 test("dashboard reporting ranges validate and choose bounded granularity", async () => {
   assert.equal(reportingRange("2026-10-01", "2026-10-16").granularity, "day");

@@ -1,11 +1,11 @@
 import "reflect-metadata";
 import { config } from "dotenv";
 import { NestFactory } from "@nestjs/core";
-import { InvoiceExportProcessor } from "./background-jobs/invoice-export.processor.js";
-import { WorkerModule } from "./background-jobs/worker.module.js";
-import { RecurringInvoiceProcessor } from "./recurring-invoices/recurring-invoice.processor.js";
-import { PayrollPayslipProcessor } from "./payroll/payroll-payslip.processor.js";
-import { PayrollAutomationProcessor } from "./payroll/payroll-automation.processor.js";
+import { InvoiceExportProcessor } from "./infrastructure/background-jobs/invoice-export.processor.js";
+import { WorkerModule } from "./infrastructure/background-jobs/worker.module.js";
+import { RecurringInvoiceProcessor } from "./modules/recurring-invoices/recurring-invoice.processor.js";
+import { PayrollPayslipProcessor } from "./modules/payroll/payroll-payslip.processor.js";
+import { PayrollAutomationProcessor } from "./modules/payroll/payroll-automation.processor.js";
 
 async function bootstrap() {
   config({ quiet: true });

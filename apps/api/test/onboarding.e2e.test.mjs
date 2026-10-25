@@ -2,7 +2,7 @@ import "reflect-metadata";
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { createApplication } from "../dist/src/app.factory.js";
-import { DATABASE } from "../dist/src/database.module.js";
+import { DATABASE } from "../dist/src/infrastructure/database/database.module.js";
 
 test("onboarding registration, persistence, authentication and tenant isolation", async () => {
   assert.match(new URL(process.env.DATABASE_URL).pathname, /^\/puffinpal_auth_test_/);

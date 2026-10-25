@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { prepareCompanyLogo } from "../lib/company-logo.ts";
+import { prepareCompanyLogo } from "../src/lib/company-logo.ts";
 
 test("company logo rejects unsupported and oversized files before decoding", async () => {
   await assert.rejects(

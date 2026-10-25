@@ -7,7 +7,7 @@ import {
   sectionForTab,
   tabHref,
   visibleNavigationSections,
-} from "../lib/navigation.ts";
+} from "../src/lib/navigation.ts";
 
 test("navigation sections follow the primary product workflow and include every destination", () => {
   assert.deepEqual(
