@@ -57,6 +57,7 @@ import OvertimePage from "@/features/workforce/components/overtime-page";
 import CashFlowPage from "@/features/cash-flow/components/cash-flow-page";
 import WorkforcePage from "@/features/workforce/components/workforce-page";
 import BankingPage from "@/features/banking/banking-page";
+import FinancialReportsPage from "@/features/financial-reports/components/financial-reports-page";
 
 export default function WorkspacePage({
   session,
@@ -174,6 +175,7 @@ export default function WorkspacePage({
       tab === "payroll-automation" ||
       tab === "cash-flow" ||
       tab === "banking" ||
+      tab === "reports" ||
       !allowed
     )
       return;
@@ -429,6 +431,13 @@ export default function WorkspacePage({
             />
           ) : tab === "banking" ? (
             <BankingPage api={api} permissions={session.permissions} onSaved={recordNotification} />
+          ) : tab === "reports" ? (
+            <FinancialReportsPage
+              api={api}
+              currency={session.organization.currency}
+              permissions={session.permissions}
+              onError={(failure) => setError(errorMessage(failure))}
+            />
           ) : loading ? (
             <section className="panel loading" role="status">
               <span className="spinner" />

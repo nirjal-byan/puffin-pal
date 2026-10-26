@@ -43,6 +43,9 @@ export const PERMISSIONS = [
   "banking:read",
   "banking:manage",
   "banking:reconcile",
+  "financial-reports:read",
+  "financial-reports:export",
+  "financial-reports:payroll-read",
   "attendance:read",
   "attendance:manage",
   "attendance:self",
@@ -74,6 +77,7 @@ const readPermissions: readonly Permission[] = [
   "overtime:request",
   "workforce:calendar:read",
   "cash-flow:read",
+  "financial-reports:read",
 ];
 export const ROLE_PERMISSIONS: Readonly<Record<Role, readonly Permission[]>> = Object.freeze({
   OWNER: Object.freeze([...PERMISSIONS]),
@@ -98,6 +102,8 @@ export const ROLE_PERMISSIONS: Readonly<Record<Role, readonly Permission[]>> = O
     "banking:read",
     "salaries:read",
     "payroll:read",
+    "financial-reports:export",
+    "financial-reports:payroll-read",
   ] as Permission[]),
 });
 export function isRole(value: unknown): value is Role {

@@ -46,6 +46,7 @@ The web font lives with the root layout in `apps/web/src/app/fonts`. Invoice PDF
 ## Backend boundaries
 
 - `src/modules/<domain>` owns controllers, DTOs, services, and domain-specific helpers.
+- Financial reporting lives in `src/modules/financial-reports` and derives read-only aggregates from authoritative domain tables; it does not own duplicate financial records.
 - `src/infrastructure` owns technical adapters: PostgreSQL access, Redis, BullMQ workers, and object storage.
 - `src/common` contains framework concerns shared by modules, currently authentication decorators, guards, and request types.
 - Controllers authorize, validate, and delegate. Services own business invariants and transaction boundaries.

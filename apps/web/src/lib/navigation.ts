@@ -16,6 +16,7 @@ export type Tab =
   | "payroll-automation"
   | "cash-flow"
   | "banking"
+  | "reports"
   | "access"
   | "profile"
   | "password";
@@ -59,6 +60,13 @@ export const NAV: {
     sidebarLabel: "Accounts & reconciliation",
     icon: "▰",
     permission: "banking:read",
+  },
+  {
+    key: "reports",
+    label: "Reports",
+    sidebarLabel: "Financial reports",
+    icon: "▥",
+    permission: "financial-reports:read",
   },
   {
     key: "payroll",
@@ -106,7 +114,7 @@ export const NAV: {
   },
 ];
 export type NavigationSection =
-  "workspace" | "cash-flow" | "banking" | "payroll" | "people" | "settings";
+  "workspace" | "cash-flow" | "banking" | "reports" | "payroll" | "people" | "settings";
 export const NAV_SECTIONS: {
   key: NavigationSection;
   label: string;
@@ -130,6 +138,12 @@ export const NAV_SECTIONS: {
     label: "Banking",
     sidebarLabel: "Money movement",
     tabs: ["banking"],
+  },
+  {
+    key: "reports",
+    label: "Reports",
+    sidebarLabel: "Analytics",
+    tabs: ["reports"],
   },
   {
     key: "payroll",
@@ -197,6 +211,7 @@ export const ICON_PATHS: Record<Tab, string> = {
   "payroll-automation": "M16 7a6 6 0 0 0-10-2L3 8 M3 3v5h5 M4 13a6 6 0 0 0 10 2l3-3 M17 17v-5h-5",
   "cash-flow": "M2 14l4-4 4 3 7-8 M13 5h4v4",
   banking: "M2 7h16 M4 7v8 M8 7v8 M12 7v8 M16 7v8 M2 16h16 M10 2l8 4H2z",
+  reports: "M3 17V9h3v8 M9 17V3h3v14 M15 17V6h3v11 M2 17h17",
   members:
     "M7 9a3 3 0 1 0 0-6a3 3 0 1 0 0 6 M2 17v-2a5 5 0 0 1 10 0v2 M14 4a3 3 0 0 1 0 6 M15 12a4 4 0 0 1 3 4v1",
   employees: "M10 10a4 4 0 1 0 0-8a4 4 0 1 0 0 8 M3 18v-1a7 7 0 0 1 14 0v1 M15 3h3 M16.5 1.5v3",
@@ -225,5 +240,6 @@ export const DESCRIPTION: Record<Tab, string> = {
   "payroll-automation": "Schedule payroll drafts and manage statutory calculation rules.",
   "cash-flow": "Plan expected cash movement from your existing financial records.",
   banking: "Import statements, reconcile payments, and prepare payroll payment batches.",
+  reports: "Understand revenue, costs, profitability, receivables, and cash movement.",
   access: "Your account and permissions in this organization.",
 };

@@ -12,7 +12,7 @@ import {
 test("navigation sections follow the primary product workflow and include every destination", () => {
   assert.deepEqual(
     NAV_SECTIONS.map((section) => section.key),
-    ["workspace", "cash-flow", "banking", "payroll", "people", "settings"],
+    ["workspace", "cash-flow", "banking", "reports", "payroll", "people", "settings"],
   );
   const destinations = NAV_SECTIONS.flatMap((section) => section.tabs);
   const tabs = new Set(destinations);
@@ -25,6 +25,7 @@ test("features belong to a single, predictable top-level section", () => {
     assert.equal(sectionForTab(tab).key, "workspace");
   assert.equal(sectionForTab("cash-flow").key, "cash-flow");
   assert.equal(sectionForTab("banking").key, "banking");
+  assert.equal(sectionForTab("reports").key, "reports");
   assert.equal(sectionForTab("payroll").key, "payroll");
   assert.equal(sectionForTab("payroll-automation").key, "payroll");
   for (const tab of ["employees", "attendance", "leave", "overtime", "members"])

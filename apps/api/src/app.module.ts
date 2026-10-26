@@ -14,6 +14,7 @@ import { PayrollModule } from "./modules/payroll/payroll.module.js";
 import { WorkforceModule } from "./modules/workforce/workforce.module.js";
 import { CashFlowModule } from "./modules/cash-flow/cash-flow.module.js";
 import { BankingModule } from "./modules/banking/banking.module.js";
+import { FinancialReportsModule } from "./modules/financial-reports/financial-reports.module.js";
 @Module({
   imports: [
     DatabaseModule,
@@ -30,6 +31,7 @@ import { BankingModule } from "./modules/banking/banking.module.js";
     WorkforceModule,
     CashFlowModule,
     BankingModule,
+    FinancialReportsModule,
   ],
   controllers: [HealthController],
 })

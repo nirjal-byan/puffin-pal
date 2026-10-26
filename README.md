@@ -12,6 +12,7 @@ PuffinPal is a multi-tenant business workspace for invoicing, expenses, recurrin
 - Attendance, leave, holidays, overtime, and payroll automation
 - Configurable payroll tax and statutory deductions
 - Financial dashboards and cash-flow forecasts
+- Operational financial reports, receivables aging, and CSV/PDF summaries
 - Role-based access, tenant isolation, audit history, and guided onboarding
 
 ## Architecture
@@ -125,4 +126,5 @@ See [Docker deployment](knowledge/docker-deployment.md) for migration, backup, T
 - [Attendance, leave, and overtime](knowledge/attendance-leave-overtime.md)
 - [Payroll](knowledge/payroll-management.md)
 - [Payroll statutory deductions](knowledge/payroll-statutory-deductions.md)
+- [Financial reporting](knowledge/financial-reporting.md)
 - [Background jobs](knowledge/background-jobs.md)
