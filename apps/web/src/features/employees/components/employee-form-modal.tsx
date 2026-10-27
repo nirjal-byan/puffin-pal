@@ -1,7 +1,12 @@
 import { FormModal } from "@/components/ui/form-modal";
 import { DatePicker } from "@/components/ui/date-picker";
 import { Dropdown } from "@/components/ui/dropdown";
-import type { Department, Employee, EmployeeFormValues, MemberSummary } from "../types/employee.types";
+import type {
+  Department,
+  Employee,
+  EmployeeFormValues,
+  MemberSummary,
+} from "../types/employee.types";
 
 interface EmployeeFormModalProps {
   employee?: Employee;

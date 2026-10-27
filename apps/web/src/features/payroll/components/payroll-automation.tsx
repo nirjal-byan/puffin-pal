@@ -5,12 +5,7 @@ import { useCallback, useEffect, useState } from "react";
 import { AppModal } from "@/components/ui/app-modal";
 import { DatePicker } from "@/components/ui/date-picker";
 import { Dropdown } from "@/components/ui/dropdown";
-import {
-  FormField,
-  FormModal,
-  FormModalIntro,
-  FormModalSection,
-} from "@/components/ui/form-modal";
+import { FormField, FormModal, FormModalIntro, FormModalSection } from "@/components/ui/form-modal";
 import { errorMessage, type WorkspaceApi } from "@/lib/api";
 
 type Schedule = {

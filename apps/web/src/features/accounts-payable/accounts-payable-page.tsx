@@ -5,52 +5,17 @@ import type { Permission } from "@puffinpal/permissions";
 import { DatePicker } from "@/components/ui/date-picker";
 import { Dropdown } from "@/components/ui/dropdown";
 import { FormField, FormModal, FormModalIntro, FormModalSection } from "@/components/ui/form-modal";
-
-type Api = <T>(
-  path: string,
-  options?: { method?: string; body?: unknown; signal?: AbortSignal },
-) => Promise<T>;
-type Vendor = {
-  id: string;
-  name: string;
-  displayName: string | null;
-  email: string | null;
-  defaultCurrency: string;
-  paymentTermsDays: number;
-  active: boolean;
-  version: number;
-};
-type Bill = {
-  id: string;
-  vendorId: string;
-  billNumber: string;
-  issueDate: string;
-  dueDate: string;
-  currency: string;
-  totalAmount: string;
-  paidAmount: string;
-  balance: string;
-  status: string;
-  settlementStatus: string;
-  version: number;
-  overdue: boolean;
-};
-type Summary = { outstanding: string; overdue: string; aging: Record<string, string> };
-const emptySummary: Summary = {
-  outstanding: "0.00",
-  overdue: "0.00",
-  aging: {
-    current: "0.00",
-    days1to30: "0.00",
-    days31to60: "0.00",
-    days61to90: "0.00",
-    over90: "0.00",
-  },
-};
-const currencyOptions = ["USD", "EUR", "GBP", "CAD", "AUD", "NPR", "INR"].map((value) => ({
-  value,
-  label: value,
-}));
+import { EMPTY_PAYABLES_SUMMARY, PAYABLE_CURRENCY_OPTIONS, PAYABLE_PAGE_SIZE } from "./constants";
+import type {
+  AccountsPayableApi,
+  PayablesModal,
+  PayablesSummary,
+  PayablesView,
+  Vendor,
+  VendorBill,
+} from "./types";
+import { filterAndSortBills, filterVendors } from "./utils";
+import { VendorGrid } from "./vendor-grid";
 
 export default function AccountsPayablePage({
   api,
@@ -58,19 +23,19 @@ export default function AccountsPayablePage({
   initialView,
   onSaved,
 }: {
-  api: Api;
+  api: AccountsPayableApi;
   permissions: readonly Permission[];
-  initialView: "vendors" | "bills";
+  initialView: PayablesView;
   onSaved: (message: string) => void;
 }) {
   const [view, setView] = useState(initialView);
   const [vendors, setVendors] = useState<Vendor[]>([]);
-  const [bills, setBills] = useState<Bill[]>([]);
-  const [summary, setSummary] = useState(emptySummary);
+  const [bills, setBills] = useState<VendorBill[]>([]);
+  const [summary, setSummary] = useState(EMPTY_PAYABLES_SUMMARY);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [modal, setModal] = useState<"vendor" | "bill" | "payment" | null>(null);
-  const [selected, setSelected] = useState<Bill | null>(null);
+  const [modal, setModal] = useState<PayablesModal>(null);
+  const [selected, setSelected] = useState<VendorBill | null>(null);
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("ALL");
   const [sort, setSort] = useState("DUE_ASC");
@@ -107,8 +72,8 @@ export default function AccountsPayablePage({
     try {
       const [vendorResult, billResult, totals] = await Promise.all([
         api<{ items: Vendor[] }>("/vendors?limit=100&offset=0"),
-        api<{ items: Bill[] }>("/accounts-payable/bills?limit=100&offset=0"),
-        api<Summary>("/accounts-payable/summary"),
+        api<{ items: VendorBill[] }>("/accounts-payable/bills?limit=100&offset=0"),
+        api<PayablesSummary>("/accounts-payable/summary"),
       ]);
       setVendors(vendorResult.items);
       setBills(billResult.items);
@@ -126,34 +91,15 @@ export default function AccountsPayablePage({
     () => new Map(vendors.map((vendor) => [vendor.id, vendor.displayName || vendor.name])),
     [vendors],
   );
-  const filteredBills = useMemo(() => {
-    const term = search.trim().toLowerCase();
-    return bills
-      .filter(
-        (bill) =>
-          (!term ||
-            bill.billNumber.toLowerCase().includes(term) ||
-            vendorNames.get(bill.vendorId)?.toLowerCase().includes(term)) &&
-          (status === "ALL" || bill.status === status),
-      )
-      .sort((left, right) => {
-        if (sort === "DUE_DESC") return right.dueDate.localeCompare(left.dueDate);
-        if (sort === "BALANCE_DESC") return Number(right.balance) - Number(left.balance);
-        return left.dueDate.localeCompare(right.dueDate);
-      });
-  }, [bills, search, sort, status, vendorNames]);
-  const filteredVendors = useMemo(() => {
-    const term = search.trim().toLowerCase();
-    return vendors.filter(
-      (vendor) =>
-        !term ||
-        vendor.name.toLowerCase().includes(term) ||
-        vendor.displayName?.toLowerCase().includes(term) ||
-        vendor.email?.toLowerCase().includes(term),
-    );
-  }, [search, vendors]);
-  const pageSize = 10;
-  const visibleBills = filteredBills.slice(page * pageSize, (page + 1) * pageSize);
+  const filteredBills = useMemo(
+    () => filterAndSortBills(bills, vendorNames, search, status, sort),
+    [bills, search, sort, status, vendorNames],
+  );
+  const filteredVendors = useMemo(() => filterVendors(vendors, search), [search, vendors]);
+  const visibleBills = filteredBills.slice(
+    page * PAYABLE_PAGE_SIZE,
+    (page + 1) * PAYABLE_PAGE_SIZE,
+  );
   async function createVendor() {
     await api("/vendors", {
       method: "POST",
@@ -198,7 +144,7 @@ export default function AccountsPayablePage({
     onSaved("Vendor bill saved as a draft.");
     await load();
   }
-  async function transition(bill: Bill, action: string) {
+  async function transition(bill: VendorBill, action: string) {
     if (!window.confirm(`${action === "submit" ? "Submit" : "Approve"} bill ${bill.billNumber}?`))
       return;
     await api(`/accounts-payable/bills/${bill.id}/${action}`, {
@@ -434,10 +380,11 @@ export default function AccountsPayablePage({
                 </tbody>
               </table>
             </div>
-            {filteredBills.length > pageSize && (
+            {filteredBills.length > PAYABLE_PAGE_SIZE && (
               <footer className="ap-pagination">
                 <span>
-                  {page * pageSize + 1}–{Math.min((page + 1) * pageSize, filteredBills.length)} of{" "}
+                  {page * PAYABLE_PAGE_SIZE + 1}–
+                  {Math.min((page + 1) * PAYABLE_PAGE_SIZE, filteredBills.length)} of{" "}
                   {filteredBills.length}
                 </span>
                 <div className="row-actions">
@@ -450,7 +397,7 @@ export default function AccountsPayablePage({
                   </button>
                   <button
                     className="button secondary compact"
-                    disabled={(page + 1) * pageSize >= filteredBills.length}
+                    disabled={(page + 1) * PAYABLE_PAGE_SIZE >= filteredBills.length}
                     onClick={() => setPage((value) => value + 1)}
                   >
                     Next
@@ -462,37 +409,12 @@ export default function AccountsPayablePage({
         </>
       )}
       {view === "vendors" && (
-        <section className="ap-vendor-grid">
-          {filteredVendors.map((vendor) => (
-            <article className="panel ap-vendor-card" key={vendor.id}>
-              <div className="ap-avatar">{vendor.name.slice(0, 2).toUpperCase()}</div>
-              <div>
-                <h3>{vendor.displayName || vendor.name}</h3>
-                <p>{vendor.email || "No email added"}</p>
-                <span>
-                  {vendor.defaultCurrency} · Net {vendor.paymentTermsDays}
-                </span>
-              </div>
-              <span className={`status-pill ${vendor.active ? "" : "neutral"}`}>
-                {vendor.active ? "Active" : "Archived"}
-              </span>
-            </article>
-          ))}
-          {!filteredVendors.length && !loading && (
-            <section className="panel empty-state ap-vendor-empty">
-              <span className="empty-state-icon" aria-hidden="true">
-                ◉
-              </span>
-              <h3>No vendors yet</h3>
-              <p>Add your first supplier to start recording and tracking bills.</p>
-              {canManage && (
-                <button className="button primary" type="button" onClick={() => setModal("vendor")}>
-                  + Add vendor
-                </button>
-              )}
-            </section>
-          )}
-        </section>
+        <VendorGrid
+          vendors={filteredVendors}
+          loading={loading}
+          canManage={canManage}
+          onAdd={() => setModal("vendor")}
+        />
       )}
       {modal === "vendor" && (
         <FormModal
@@ -531,7 +453,7 @@ export default function AccountsPayablePage({
                   searchable={false}
                   value={vendorForm.defaultCurrency}
                   onChange={(value) => setVendorForm({ ...vendorForm, defaultCurrency: value })}
-                  options={currencyOptions}
+                  options={PAYABLE_CURRENCY_OPTIONS}
                 />
               </FormField>
               <FormField label="Payment terms">
@@ -610,7 +532,7 @@ export default function AccountsPayablePage({
                   searchable={false}
                   value={billForm.currency}
                   onChange={(value) => setBillForm({ ...billForm, currency: value })}
-                  options={currencyOptions}
+                  options={PAYABLE_CURRENCY_OPTIONS}
                 />
               </FormField>
               <FormField label="Issue date">

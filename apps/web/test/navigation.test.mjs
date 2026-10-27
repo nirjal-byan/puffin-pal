@@ -12,7 +12,7 @@ import {
 test("navigation sections follow the primary product workflow and include every destination", () => {
   assert.deepEqual(
     NAV_SECTIONS.map((section) => section.key),
-    ["workspace", "cash-flow", "banking", "reports", "payroll", "people", "settings"],
+    ["workspace", "cash-flow", "payroll", "people", "settings"],
   );
   const destinations = NAV_SECTIONS.flatMap((section) => section.tabs);
   const tabs = new Set(destinations);
@@ -23,9 +23,8 @@ test("navigation sections follow the primary product workflow and include every 
 test("features belong to a single, predictable top-level section", () => {
   for (const tab of ["overview", "clients", "invoices", "retainers", "expenses"])
     assert.equal(sectionForTab(tab).key, "workspace");
-  assert.equal(sectionForTab("cash-flow").key, "cash-flow");
-  assert.equal(sectionForTab("banking").key, "banking");
-  assert.equal(sectionForTab("reports").key, "reports");
+  for (const tab of ["cash-flow", "banking", "vendors", "accounts-payable", "reports"])
+    assert.equal(sectionForTab(tab).key, "cash-flow");
   assert.equal(sectionForTab("payroll").key, "payroll");
   assert.equal(sectionForTab("payroll-automation").key, "payroll");
   for (const tab of ["employees", "attendance", "leave", "overtime", "members"])
@@ -34,13 +33,13 @@ test("features belong to a single, predictable top-level section", () => {
     assert.equal(sectionForTab(tab).key, "settings");
 });
 
-test("banking navigation is visible only with banking access", () => {
+test("finance navigation is visible when any finance destination is permitted", () => {
   assert.equal(
-    visibleNavigationSections(["profile:read"]).some((item) => item.key === "banking"),
+    visibleNavigationSections(["profile:read"]).some((item) => item.key === "cash-flow"),
     false,
   );
   assert.equal(
-    visibleNavigationSections(["banking:read"]).some((item) => item.key === "banking"),
+    visibleNavigationSections(["banking:read"]).some((item) => item.key === "cash-flow"),
     true,
   );
 });

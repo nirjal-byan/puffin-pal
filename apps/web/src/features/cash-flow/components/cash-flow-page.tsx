@@ -18,61 +18,9 @@ import { FormModal } from "@/components/ui/form-modal";
 import { DatePicker } from "@/components/ui/date-picker";
 import { Dropdown } from "@/components/ui/dropdown";
 import { errorMessage, type WorkspaceApi } from "@/lib/api";
-
-type Scenario = "CONSERVATIVE" | "EXPECTED" | "OPTIMISTIC";
-interface Configuration {
-  openingBalance: string | null;
-  openingBalanceDate: string | null;
-  defaultHorizonDays: number;
-  expectedInvoiceCollectionDelay: number;
-  conservativeDelayAdjustmentDays: number;
-  optimisticDelayAdjustmentDays: number;
-  includeRecurringInvoices: boolean;
-  includeApprovedPayroll: boolean;
-  includeSalaryEstimates: boolean;
-  includeApprovedExpenses: boolean;
-  version: number;
-}
-interface Forecast {
-  currency: string;
-  scenario: Scenario;
-  range: { from: string; to: string; horizonDays: number };
-  summary: Record<
-    | "openingBalance"
-    | "projectedInflows"
-    | "projectedOutflows"
-    | "projectedNet"
-    | "projectedClosingBalance"
-    | "overdueReceivables",
-    string | null
-  >;
-  daily: {
-    date: string;
-    inflows: string;
-    outflows: string;
-    net: string;
-    closingBalance: string | null;
-  }[];
-  breakdown: { source: string; amount: string; direction: string }[];
-  events: {
-    id: string;
-    source: string;
-    direction: string;
-    date: string;
-    amount: string;
-    label: string;
-    assumption: string | null;
-    overdue: boolean;
-  }[];
-  configuration: Configuration;
-  warnings: string[];
-}
-
-const sourceLabel = (value: string) =>
-  value
-    .toLowerCase()
-    .replaceAll("_", " ")
-    .replace(/\b\w/g, (letter) => letter.toUpperCase());
+import { CashFlowKpi } from "./cash-flow-kpi";
+import type { CashFlowConfiguration, CashFlowForecast, CashFlowScenario } from "../types";
+import { cashFlowChartData, cashFlowSourceLabel } from "../utils";
 
 export default function CashFlowPage({
   api,
@@ -83,17 +31,17 @@ export default function CashFlowPage({
   permissions: readonly Permission[];
   onSaved: (message: string) => void;
 }) {
-  const [scenario, setScenario] = useState<Scenario>("EXPECTED");
+  const [scenario, setScenario] = useState<CashFlowScenario>("EXPECTED");
   const [horizon, setHorizon] = useState(30);
   const [customHorizon, setCustomHorizon] = useState(false);
-  const [forecast, setForecast] = useState<Forecast | null>(null);
+  const [forecast, setForecast] = useState<CashFlowForecast | null>(null);
   const [loading, setLoading] = useState(true);
   const [failure, setFailure] = useState("");
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [revision, setRevision] = useState(0);
   useEffect(() => {
     const controller = new AbortController();
-    api<Forecast>(`/cash-flow/forecast?horizonDays=${horizon}&scenario=${scenario}`, {
+    api<CashFlowForecast>(`/cash-flow/forecast?horizonDays=${horizon}&scenario=${scenario}`, {
       signal: controller.signal,
     })
       .then((result) => {
@@ -119,12 +67,7 @@ export default function CashFlowPage({
   );
   const amount = (value: string | null) =>
     value === null ? "Not configured" : money.format(Number(value));
-  const chart = forecast?.daily.map((point) => ({
-    ...point,
-    inflows: Number(point.inflows),
-    outflows: Number(point.outflows),
-    closingBalance: point.closingBalance === null ? undefined : Number(point.closingBalance),
-  }));
+  const chart = forecast ? cashFlowChartData(forecast.daily) : [];
 
   if (loading && !forecast)
     return (
@@ -148,7 +91,7 @@ export default function CashFlowPage({
                 className={`button ${scenario === value ? "primary" : "secondary"}`}
                 onClick={() => setScenario(value)}
               >
-                {sourceLabel(value)}
+                {cashFlowSourceLabel(value)}
               </button>
             ))}
           </div>
@@ -207,22 +150,22 @@ export default function CashFlowPage({
       {forecast && (
         <>
           <div className="dashboard-kpi-grid cash-flow-kpis">
-            <Kpi
+            <CashFlowKpi
               label="Expected inflows"
               value={amount(forecast.summary.projectedInflows)}
               detail={`${forecast.range.horizonDays}-day horizon`}
             />
-            <Kpi
+            <CashFlowKpi
               label="Expected outflows"
               value={amount(forecast.summary.projectedOutflows)}
               detail="Payroll and enabled assumptions"
             />
-            <Kpi
+            <CashFlowKpi
               label="Net movement"
               value={amount(forecast.summary.projectedNet)}
-              detail={sourceLabel(forecast.scenario)}
+              detail={cashFlowSourceLabel(forecast.scenario)}
             />
-            <Kpi
+            <CashFlowKpi
               label="Closing balance"
               value={amount(forecast.summary.projectedClosingBalance)}
               detail={
@@ -231,7 +174,7 @@ export default function CashFlowPage({
                   : `Starts at ${amount(forecast.summary.openingBalance)}`
               }
             />
-            <Kpi
+            <CashFlowKpi
               label="Overdue receivables"
               value={amount(forecast.summary.overdueReceivables)}
               detail="Outstanding invoices already past due"
@@ -307,7 +250,7 @@ export default function CashFlowPage({
               {forecast.breakdown.length ? (
                 forecast.breakdown.map((item) => (
                   <div className="cash-flow-breakdown-row" key={item.source}>
-                    <span>{sourceLabel(item.source)}</span>
+                    <span>{cashFlowSourceLabel(item.source)}</span>
                     <strong>
                       {item.direction === "OUTFLOW" ? "−" : "+"}
                       {amount(item.amount)}
@@ -350,7 +293,7 @@ export default function CashFlowPage({
                           <strong>{event.label}</strong>
                           {event.overdue && <span className="cash-flow-risk">Overdue</span>}
                         </td>
-                        <td>{sourceLabel(event.source)}</td>
+                        <td>{cashFlowSourceLabel(event.source)}</td>
                         <td className="muted">{event.assumption ?? "Recorded obligation"}</td>
                         <td className={event.direction === "OUTFLOW" ? "negative" : "positive"}>
                           {event.direction === "OUTFLOW" ? "−" : "+"}
@@ -392,16 +335,6 @@ export default function CashFlowPage({
   );
 }
 
-function Kpi({ label, value, detail }: { label: string; value: string; detail: string }) {
-  return (
-    <article className="dashboard-kpi">
-      <span>{label}</span>
-      <strong>{value}</strong>
-      <small>{detail}</small>
-    </article>
-  );
-}
-
 function ConfigurationModal({
   api,
   configuration,
@@ -409,7 +342,7 @@ function ConfigurationModal({
   onSaved,
 }: {
   api: WorkspaceApi;
-  configuration: Configuration;
+  configuration: CashFlowConfiguration;
   onClose: () => void;
   onSaved: () => void;
 }) {

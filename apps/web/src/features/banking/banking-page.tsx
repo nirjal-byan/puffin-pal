@@ -13,82 +13,21 @@ import {
   FormModalIntro,
   FormModalSection,
 } from "@/components/ui/form-modal";
-
-type Account = {
-  id: string;
-  displayName: string;
-  bankName: string;
-  accountHolder: string;
-  maskedIdentifier: string;
-  currency: string;
-  countryCode: string;
-  isActive: boolean;
-  isDefault: boolean;
-  version: number;
-};
-type Reconciliation = { id: string; targetType: string; version: number };
-type Transaction = {
-  id: string;
-  bankAccountId: string;
-  transactionDate: string;
-  amount: string;
-  currency: string;
-  direction: "CREDIT" | "DEBIT";
-  description: string;
-  reference: string | null;
-  reconciliation: Reconciliation | null;
-};
-type ImportRow = {
-  id: string;
-  fileName: string;
-  status: string;
-  rowCount: number;
-  importedCount: number;
-  duplicateCount: number;
-  createdAt: string;
-};
-type Candidate = {
-  targetType: "INVOICE_PAYMENT" | "PAYROLL_PAYMENT" | "PAYABLE_PAYMENT";
-  targetId: string;
-  amount: string;
-  date: string;
-  reference: string | null;
-  label: string;
-};
-type Obligation = {
-  id: string;
-  payrollRunId: string;
-  payrollRunName: string;
-  employeeName: string;
-  currency: string;
-  amount: string;
-  paymentDate: string;
-};
-type BatchItem = {
-  id: string;
-  employeeName: string;
-  amount: string;
-  status: "PENDING" | "ATTEMPTED" | "PAID" | "FAILED";
-};
-type Batch = {
-  id: string;
-  name: string;
-  currency: string;
-  totalAmount: string;
-  status: string;
-  version: number;
-  items: BatchItem[];
-};
-
-const CURRENCIES = ["USD", "EUR", "GBP", "CAD", "AUD", "NPR", "INR", "JPY"];
-const defaultMapping = {
-  date: "date",
-  amount: "amount",
-  description: "description",
-  reference: "reference",
-  direction: "direction",
-  currency: "currency",
-};
+import {
+  BANKING_CURRENCIES as CURRENCIES,
+  DEFAULT_IMPORT_MAPPING as defaultMapping,
+} from "./constants";
+import type {
+  BankAccount as Account,
+  BankImport as ImportRow,
+  BankingView,
+  BankTransaction as Transaction,
+  PaymentBatch as Batch,
+  PaymentBatchItem as BatchItem,
+  PayrollObligation as Obligation,
+  ReconciliationCandidate as Candidate,
+} from "./types";
+import { BankAccountGrid } from "./bank-account-grid";
 
 export default function BankingPage({
   api,
@@ -101,9 +40,7 @@ export default function BankingPage({
 }) {
   const canManage = permissions.includes("banking:manage");
   const canReconcile = permissions.includes("banking:reconcile");
-  const [view, setView] = useState<"transactions" | "accounts" | "imports" | "batches">(
-    "transactions",
-  );
+  const [view, setView] = useState<BankingView>("transactions");
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [imports, setImports] = useState<ImportRow[]>([]);
@@ -393,35 +330,7 @@ export default function BankingPage({
           Loading banking records…
         </section>
       ) : view === "accounts" ? (
-        <section className="banking-card-grid">
-          {accounts.map((item) => (
-            <article className="panel banking-account-card" key={item.id}>
-              <div>
-                <span className="banking-account-icon">▰</span>
-                <span className={`role-badge ${item.isActive ? "" : "muted"}`}>
-                  {item.isActive ? "Active" : "Inactive"}
-                </span>
-              </div>
-              <h3>{item.displayName}</h3>
-              <p>
-                {item.bankName} · {item.maskedIdentifier}
-              </p>
-              <footer>
-                <strong>{item.currency}</strong>
-                <span>
-                  {item.accountHolder}
-                  {item.isDefault ? " · Default" : ""}
-                </span>
-              </footer>
-            </article>
-          ))}
-          {!accounts.length && (
-            <section className="panel empty-state">
-              <h3>No bank accounts</h3>
-              <p>Add a masked account before importing a statement.</p>
-            </section>
-          )}
-        </section>
+        <BankAccountGrid accounts={accounts} />
       ) : view === "transactions" ? (
         <section className="panel banking-table-panel">
           <header>

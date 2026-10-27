@@ -9,7 +9,7 @@
     "start": "next start",
     "lint": "eslint --max-warnings 0",
     "check-types": "next typegen && tsc --noEmit",
-    "test": "node --experimental-transform-types --test test/session.test.mjs test/phone.test.mjs test/invoice.test.mjs test/navigation.test.mjs test/company-logo.test.mjs test/invoice-pdf.test.mjs test/onboarding.test.mjs test/invoice-payments.test.mjs test/expenses.test.mjs test/financial-dashboard.test.mjs test/financial-reports.test.mjs",
+    "test": "node --experimental-transform-types --test test/session.test.mjs test/phone.test.mjs test/invoice.test.mjs test/navigation.test.mjs test/company-logo.test.mjs test/invoice-pdf.test.mjs test/onboarding.test.mjs test/invoice-payments.test.mjs test/expenses.test.mjs test/financial-dashboard.test.mjs test/financial-reports.test.mjs test/finance-utils.test.mjs",
     "lint:fix": "eslint --fix --max-warnings 0"
   },
   "dependencies": {
