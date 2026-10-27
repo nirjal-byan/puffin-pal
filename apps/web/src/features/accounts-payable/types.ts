@@ -38,3 +38,27 @@ export interface PayablesSummary {
 
 export type PayablesView = "vendors" | "bills";
 export type PayablesModal = "vendor" | "bill" | "payment" | null;
+export interface VendorFormValue {
+  name: string;
+  email: string;
+  defaultCurrency: string;
+  paymentTermsDays: number;
+}
+export interface BillFormValue {
+  vendorId: string;
+  billNumber: string;
+  issueDate: string;
+  dueDate: string;
+  currency: string;
+  description: string;
+  itemDescription: string;
+  quantity: string;
+  unitPrice: string;
+  taxAmount: string;
+}
+export interface VendorPaymentFormValue {
+  amount: string;
+  paymentDate: string;
+  method: string;
+  reference: string;
+}

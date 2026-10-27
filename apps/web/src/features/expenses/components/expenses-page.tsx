@@ -3,12 +3,14 @@ import type { Permission } from "@puffinpal/permissions";
 import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
 import { errorMessage, type WorkspaceApi } from "@/lib/api";
 import { validateExpense, validateReceiptFile } from "../../expenses/schemas/expense.schema";
-import { AppModal } from "@/components/ui/app-modal";
-import { Dropdown } from "@/components/ui/dropdown";
 import { FormModal } from "@/components/ui/form-modal";
-import { EXPENSE_CATEGORIES, type Expense, type ExpensePage } from "../../expenses/types";
+import type { Expense, ExpensePage } from "../../expenses/types";
 import { expensePeriodRange, formatExpenseMoney } from "../../expenses/utils";
+import { ExpenseDetails } from "./expense-details";
+import { ExpenseFilters, type ExpenseFiltersValue } from "./expense-filters";
 import { ExpenseForm } from "./expense-form";
+import { ExpenseWorkflowDialog, type ExpenseWorkflow } from "./expense-workflow-dialog";
+import { ExpensesTable } from "./expenses-table";
 
 export default function ExpensesPage({
   api,
@@ -36,7 +38,7 @@ export default function ExpensesPage({
     offset: 0,
   });
   const [offset, setOffset] = useState(0);
-  const [filters, setFilters] = useState({
+  const [filters, setFilters] = useState<ExpenseFiltersValue>({
     search: "",
     category: "",
     approvalStatus: "",
@@ -49,10 +51,7 @@ export default function ExpensesPage({
     [creating, setCreating] = useState(false),
     [deleting, setDeleting] = useState<Expense | null>(null);
   const [selected, setSelected] = useState<Expense | null>(null);
-  const [workflow, setWorkflow] = useState<{
-    expense: Expense;
-    action: "submit" | "approve" | "reject" | "reopen";
-  } | null>(null);
+  const [workflow, setWorkflow] = useState<ExpenseWorkflow | null>(null);
   const [rejectionReason, setRejectionReason] = useState("");
   const [busy, setBusy] = useState(false),
     [loading, setLoading] = useState(true),
@@ -227,108 +226,19 @@ export default function ExpensesPage({
   const money = (value: string) => formatExpenseMoney(value, currency);
   return (
     <div className="expense-manager">
-      <section className="panel expense-filters">
-        <form
-          onSubmit={(event) => {
-            event.preventDefault();
-            setOffset(0);
-            setApplied(filters);
-          }}
-        >
-          <label>
-            Search
-            <input
-              value={filters.search}
-              onChange={(e) => setFilters({ ...filters, search: e.target.value })}
-              placeholder="Title, vendor or notes"
-            />
-          </label>
-          <label>
-            Category
-            <Dropdown
-              name="categoryFilter"
-              label="Category"
-              value={filters.category}
-              onChange={(category) => setFilters({ ...filters, category })}
-              searchable={false}
-              options={[
-                { value: "", label: "All categories" },
-                ...EXPENSE_CATEGORIES.map((value) => ({ value, label: value })),
-              ]}
-            />
-          </label>
-          <label>
-            Status
-            <Dropdown
-              name="statusFilter"
-              label="Status"
-              value={filters.approvalStatus}
-              onChange={(approvalStatus) => setFilters({ ...filters, approvalStatus })}
-              searchable={false}
-              options={[
-                { value: "", label: "All statuses" },
-                { value: "DRAFT", label: "Draft" },
-                { value: "PENDING_APPROVAL", label: "Pending approval" },
-                { value: "APPROVED", label: "Approved" },
-                { value: "REJECTED", label: "Rejected" },
-              ]}
-            />
-          </label>
-          <label>
-            Period
-            <Dropdown
-              name="periodFilter"
-              label="Period"
-              value={filters.period}
-              onChange={(period) => setFilters({ ...filters, period })}
-              searchable={false}
-              options={[
-                { value: "", label: "All time" },
-                { value: "last7", label: "Last 7 days" },
-                { value: "last30", label: "Last 30 days" },
-                { value: "thisMonth", label: "This month" },
-                { value: "lastMonth", label: "Last month" },
-                { value: "thisYear", label: "This year" },
-              ]}
-            />
-          </label>
-          <label>
-            Sort
-            <Dropdown
-              name="sortFilter"
-              label="Sort"
-              value={`${filters.sort}:${filters.order}`}
-              onChange={(value) => {
-                const [sort, order] = value.split(":");
-                setFilters({ ...filters, sort: sort!, order: order! });
-              }}
-              searchable={false}
-              options={[
-                { value: "date:desc", label: "Newest expense" },
-                { value: "date:asc", label: "Oldest expense" },
-                { value: "amount:desc", label: "Highest amount" },
-                { value: "amount:asc", label: "Lowest amount" },
-                { value: "title:asc", label: "Title A–Z" },
-              ]}
-            />
-          </label>
-          <button className="button secondary" type="submit">
-            Apply filters
-          </button>
-          {canCreate && (
-            <button
-              className="button primary"
-              type="button"
-              onClick={() => {
-                setEditing(null);
-                setCreating(true);
-              }}
-            >
-              + Create Expense
-            </button>
-          )}
-        </form>
-      </section>
+      <ExpenseFilters
+        value={filters}
+        canCreate={canCreate}
+        onChange={setFilters}
+        onApply={() => {
+          setOffset(0);
+          setApplied(filters);
+        }}
+        onCreate={() => {
+          setEditing(null);
+          setCreating(true);
+        }}
+      />
       {(creating || editing) && (
         <FormModal
           title={editing ? "Edit expense" : "Create expense"}
@@ -358,301 +268,56 @@ export default function ExpensesPage({
           {failure}
         </p>
       )}
-      <section className="panel" data-tour="expense-list">
-        <div className="panel-heading">
-          <h3>
-            {applied.approvalStatus === "PENDING_APPROVAL" ? "Pending approvals" : "Your expenses"}
-          </h3>
-          <span className="expense-heading-meta">
-            <span className="muted">{page.total} total</span>
-            {canApprove && page.pendingCount > 0 && (
-              <button
-                className="text-button"
-                onClick={() => {
-                  const next = { ...filters, approvalStatus: "PENDING_APPROVAL" };
-                  setFilters(next);
-                  setApplied(next);
-                  setOffset(0);
-                }}
-              >
-                {page.pendingCount} pending
-              </button>
-            )}
-          </span>
-        </div>
-        {loading ? (
-          <div className="loading" role="status">
-            <span className="spinner" />
-            Loading expenses…
-          </div>
-        ) : page.items.length === 0 ? (
-          <div className="empty-state">
-            <span className="empty-symbol">▤</span>
-            <h3>No expenses found</h3>
-            <p>
-              {canCreate
-                ? "Create an expense or adjust your filters."
-                : "No matching expenses are available."}
-            </p>
-          </div>
-        ) : (
-          <div className="table-scroll">
-            <table>
-              <thead>
-                <tr>
-                  <th>Expense</th>
-                  <th>Status</th>
-                  <th>Category</th>
-                  <th>Date</th>
-                  <th>Amount</th>
-                  <th>
-                    <span className="sr-only">Actions</span>
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {page.items.map((expense) => (
-                  <tr key={expense.id}>
-                    <td>
-                      <strong>{expense.title}</strong>
-                      <small>{expense.submittedBy?.fullName ?? expense.vendor ?? "—"}</small>
-                    </td>
-                    <td>
-                      <span className={`expense-status ${expense.approvalStatus.toLowerCase()}`}>
-                        {expense.approvalStatus.replaceAll("_", " ").toLowerCase()}
-                      </span>
-                    </td>
-                    <td>
-                      <span className="role-badge">{expense.category.toLowerCase()}</span>
-                    </td>
-                    <td>{expense.date.slice(0, 10)}</td>
-                    <td>
-                      <strong>{money(expense.amount)}</strong>
-                    </td>
-                    <td>
-                      <div className="client-row-actions">
-                        <button className="text-button" onClick={() => void openDetails(expense)}>
-                          View
-                        </button>
-                        {expense.receiptName && (
-                          <button
-                            className="text-button"
-                            disabled={busy}
-                            onClick={() => void openReceipt(expense)}
-                          >
-                            Receipt
-                          </button>
-                        )}
-                        {canSubmit && expense.approvalStatus === "DRAFT" && (
-                          <button
-                            className="text-button"
-                            disabled={busy}
-                            onClick={() => setWorkflow({ expense, action: "submit" })}
-                          >
-                            Submit
-                          </button>
-                        )}
-                        {canApprove && expense.approvalStatus === "PENDING_APPROVAL" && (
-                          <>
-                            <button
-                              className="text-button"
-                              disabled={busy}
-                              onClick={() => setWorkflow({ expense, action: "approve" })}
-                            >
-                              Approve
-                            </button>
-                            <button
-                              className="text-button danger-text"
-                              disabled={busy}
-                              onClick={() => setWorkflow({ expense, action: "reject" })}
-                            >
-                              Reject
-                            </button>
-                          </>
-                        )}
-                        {canSubmit && expense.approvalStatus === "REJECTED" && (
-                          <button
-                            className="text-button"
-                            disabled={busy}
-                            onClick={() => setWorkflow({ expense, action: "reopen" })}
-                          >
-                            Revise
-                          </button>
-                        )}
-                        {canUpdate && expense.approvalStatus === "DRAFT" && (
-                          <button
-                            className="text-button"
-                            disabled={busy}
-                            onClick={() => {
-                              setCreating(false);
-                              setEditing(expense);
-                            }}
-                          >
-                            Edit
-                          </button>
-                        )}
-                        {canDelete && expense.approvalStatus === "DRAFT" && (
-                          <button
-                            className="text-button danger-text"
-                            disabled={busy}
-                            onClick={() => setDeleting(expense)}
-                          >
-                            Delete
-                          </button>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </section>
+      <ExpensesTable
+        page={page}
+        loading={loading}
+        busy={busy}
+        pendingOnly={applied.approvalStatus === "PENDING_APPROVAL"}
+        permissions={{
+          create: canCreate,
+          update: canUpdate,
+          delete: canDelete,
+          submit: canSubmit,
+          approve: canApprove,
+        }}
+        money={money}
+        onPending={() => {
+          const next = { ...filters, approvalStatus: "PENDING_APPROVAL" };
+          setFilters(next);
+          setApplied(next);
+          setOffset(0);
+        }}
+        onDetails={(expense) => void openDetails(expense)}
+        onReceipt={(expense) => void openReceipt(expense)}
+        onWorkflow={(expense, action) => setWorkflow({ expense, action })}
+        onEdit={(expense) => {
+          setCreating(false);
+          setEditing(expense);
+        }}
+        onDelete={setDeleting}
+      />
       {selected && (
-        <section className="panel expense-details">
-          <div className="panel-heading">
-            <div>
-              <span className="eyebrow">Expense details</span>
-              <h3>{selected.title}</h3>
-            </div>
-            <button
-              className="text-button"
-              onClick={() => setSelected(null)}
-              aria-label="Close expense details"
-            >
-              ×
-            </button>
-          </div>
-          <dl>
-            <dt>Status</dt>
-            <dd>
-              <span className={`expense-status ${selected.approvalStatus.toLowerCase()}`}>
-                {selected.approvalStatus.replaceAll("_", " ").toLowerCase()}
-              </span>
-            </dd>
-            <dt>Amount</dt>
-            <dd>{money(selected.amount)}</dd>
-            <dt>Date</dt>
-            <dd>{selected.date.slice(0, 10)}</dd>
-            <dt>Category</dt>
-            <dd>{selected.category.toLowerCase()}</dd>
-            <dt>Vendor</dt>
-            <dd>{selected.vendor || "—"}</dd>
-            <dt>Description</dt>
-            <dd>{selected.description || "—"}</dd>
-            <dt>Notes</dt>
-            <dd>{selected.notes || "—"}</dd>
-            <dt>Submitted by</dt>
-            <dd>{selected.submittedBy?.fullName ?? "—"}</dd>
-            <dt>Submitted</dt>
-            <dd>{selected.submittedAt ? new Date(selected.submittedAt).toLocaleString() : "—"}</dd>
-            <dt>Reviewed by</dt>
-            <dd>{selected.reviewedBy?.fullName ?? "—"}</dd>
-            <dt>Reviewed</dt>
-            <dd>{selected.reviewedAt ? new Date(selected.reviewedAt).toLocaleString() : "—"}</dd>
-            {selected.rejectionReason && (
-              <>
-                <dt>Rejection reason</dt>
-                <dd className="expense-rejection">{selected.rejectionReason}</dd>
-              </>
-            )}
-            <dt>Receipt</dt>
-            <dd>
-              {selected.receiptName ? (
-                <span className="receipt-actions">
-                  <button className="text-button" onClick={() => void openReceipt(selected)}>
-                    Preview
-                  </button>
-                  <button className="text-button" onClick={() => void openReceipt(selected, true)}>
-                    Download
-                  </button>
-                </span>
-              ) : (
-                "None"
-              )}
-            </dd>
-          </dl>
-          {selected.approvalHistory && selected.approvalHistory.length > 0 && (
-            <div className="expense-history">
-              <h4>Approval history</h4>
-              <ol>
-                {selected.approvalHistory.map((event) => (
-                  <li key={event.id}>
-                    <span />
-                    <div>
-                      <strong>{event.action.replaceAll("_", " ").toLowerCase()}</strong>
-                      <small>
-                        {event.actor?.fullName ?? "Former member"} ·{" "}
-                        {new Date(event.createdAt).toLocaleString()}
-                      </small>
-                      {event.rejectionReason && <p>{event.rejectionReason}</p>}
-                    </div>
-                  </li>
-                ))}
-              </ol>
-            </div>
-          )}
-        </section>
+        <ExpenseDetails
+          expense={selected}
+          money={money}
+          onClose={() => setSelected(null)}
+          onReceipt={(expense, download) => void openReceipt(expense, download)}
+        />
       )}
       {workflow && (
-        <AppModal
-          title={
-            workflow.action === "reject"
-              ? "Reject expense"
-              : workflow.action === "approve"
-                ? "Approve expense"
-                : workflow.action === "reopen"
-                  ? "Revise expense"
-                  : "Submit expense"
-          }
+        <ExpenseWorkflowDialog
+          workflow={workflow}
+          reason={rejectionReason}
+          busy={busy}
+          onReasonChange={setRejectionReason}
           onClose={() => {
             if (!busy) {
               setWorkflow(null);
               setRejectionReason("");
             }
           }}
-        >
-          <div className="expense-workflow-dialog">
-            <p>
-              {workflow.action === "submit"
-                ? "Send this expense for review? It cannot be edited while pending."
-                : workflow.action === "approve"
-                  ? "Approve this expense for financial reporting?"
-                  : workflow.action === "reopen"
-                    ? "Reopen this rejected expense as an editable draft?"
-                    : "Explain what needs to be corrected."}
-            </p>
-            {workflow.action === "reject" && (
-              <label>
-                Reason
-                <textarea
-                  autoFocus
-                  required
-                  maxLength={1000}
-                  value={rejectionReason}
-                  onChange={(event) => setRejectionReason(event.target.value)}
-                />
-              </label>
-            )}
-            <div className="invoice-actions">
-              <button
-                className="button secondary"
-                disabled={busy}
-                onClick={() => setWorkflow(null)}
-              >
-                Cancel
-              </button>
-              <button
-                className={workflow.action === "reject" ? "button danger" : "button primary"}
-                disabled={busy || (workflow.action === "reject" && !rejectionReason.trim())}
-                onClick={() => void runWorkflow()}
-              >
-                {busy ? "Saving…" : "Confirm"}
-              </button>
-            </div>
-          </div>
-        </AppModal>
+          onConfirm={() => void runWorkflow()}
+        />
       )}
       <div className="pagination">
         <span>
