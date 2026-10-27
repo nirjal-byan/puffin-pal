@@ -56,8 +56,8 @@ export class BankingPageDto {
 }
 
 export class ReconcileDto {
-  @IsIn(["INVOICE_PAYMENT", "PAYROLL_PAYMENT"])
-  targetType!: "INVOICE_PAYMENT" | "PAYROLL_PAYMENT";
+  @IsIn(["INVOICE_PAYMENT", "PAYROLL_PAYMENT", "PAYABLE_PAYMENT"])
+  targetType!: "INVOICE_PAYMENT" | "PAYROLL_PAYMENT" | "PAYABLE_PAYMENT";
   @IsUUID() targetId!: string;
 }
 

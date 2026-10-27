@@ -1,0 +1,2150 @@
+[
+  {
+    "id": "dropCheckConstraint.bank_reconciliations.bank_reconciliations_targetType_check_8e3b2b9e",
+    "label": "Drop check constraint \"bank_reconciliations_targetType_check_8e3b2b9e\" on \"bank_reconciliations\"",
+    "operationClass": "destructive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "checkConstraint",
+        "name": "bank_reconciliations_targetType_check_8e3b2b9e",
+        "table": "bank_reconciliations"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"bank_reconciliations_targetType_check_8e3b2b9e\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "bank_reconciliations_targetType_check_8e3b2b9e",
+          "public",
+          "\"public\".\"bank_reconciliations\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "drop check constraint \"bank_reconciliations_targetType_check_8e3b2b9e\"",
+        "sql": "ALTER TABLE \"public\".\"bank_reconciliations\" DROP CONSTRAINT \"bank_reconciliations_targetType_check_8e3b2b9e\""
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"bank_reconciliations_targetType_check_8e3b2b9e\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "bank_reconciliations_targetType_check_8e3b2b9e",
+          "public",
+          "\"public\".\"bank_reconciliations\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.payable_audit_events",
+    "label": "Create table \"payable_audit_events\"",
+    "summary": "Creates table \"payable_audit_events\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "payable_audit_events"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"payable_audit_events\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payable_audit_events\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"payable_audit_events\"",
+        "sql": "CREATE TABLE \"public\".\"payable_audit_events\" (\n  \"action\" text NOT NULL,\n  \"actorId\" text NOT NULL,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"details\" text,\n  \"entityId\" text NOT NULL,\n  \"entityType\" text NOT NULL,\n  \"id\" text NOT NULL,\n  \"organizationId\" text NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"payable_audit_events_action_check_15487a95\" CHECK (\"action\" IN ('VENDOR_CREATED', 'VENDOR_UPDATED', 'VENDOR_ARCHIVED', 'BILL_CREATED', 'BILL_UPDATED', 'BILL_SUBMITTED', 'BILL_APPROVED', 'BILL_REJECTED', 'BILL_VOIDED', 'PAYMENT_RECORDED', 'PAYMENT_REVERSED'))\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"payable_audit_events\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payable_audit_events\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.payable_payments",
+    "label": "Create table \"payable_payments\"",
+    "summary": "Creates table \"payable_payments\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "payable_payments"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"payable_payments\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payable_payments\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"payable_payments\"",
+        "sql": "CREATE TABLE \"public\".\"payable_payments\" (\n  \"amount\" numeric(14,2) NOT NULL,\n  \"bankAccountId\" text,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"currency\" text NOT NULL,\n  \"expenseId\" text,\n  \"id\" text NOT NULL,\n  \"idempotencyKey\" text NOT NULL,\n  \"method\" text NOT NULL,\n  \"notes\" text,\n  \"organizationId\" text NOT NULL,\n  \"paymentDate\" timestamptz NOT NULL,\n  \"recordedById\" text NOT NULL,\n  \"reference\" text,\n  \"reversalReason\" text,\n  \"reversedAt\" timestamptz,\n  \"reversedById\" text,\n  \"targetType\" text NOT NULL,\n  \"vendorBillId\" text,\n  \"version\" int4 DEFAULT 1 NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"payable_payments_method_check_4d18df7c\" CHECK (\"method\" IN ('BANK_TRANSFER', 'CASH', 'CARD', 'CHEQUE', 'OTHER')),\n  CONSTRAINT \"payable_payments_targetType_check_f438a128\" CHECK (\"targetType\" IN ('VENDOR_BILL', 'EXPENSE'))\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"payable_payments\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payable_payments\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.vendor_bill_items",
+    "label": "Create table \"vendor_bill_items\"",
+    "summary": "Creates table \"vendor_bill_items\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "vendor_bill_items"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"vendor_bill_items\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"vendor_bill_items\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"vendor_bill_items\"",
+        "sql": "CREATE TABLE \"public\".\"vendor_bill_items\" (\n  \"description\" text NOT NULL,\n  \"discountAmount\" numeric(14,2) DEFAULT '0.00'::numeric(14,2) NOT NULL,\n  \"id\" text NOT NULL,\n  \"lineTotal\" numeric(14,2) NOT NULL,\n  \"organizationId\" text NOT NULL,\n  \"position\" int4 DEFAULT 0 NOT NULL,\n  \"quantity\" numeric(12,4) NOT NULL,\n  \"taxAmount\" numeric(14,2) DEFAULT '0.00'::numeric(14,2) NOT NULL,\n  \"unitPrice\" numeric(14,2) NOT NULL,\n  \"vendorBillId\" text NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"vendor_bill_items\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"vendor_bill_items\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.vendor_bills",
+    "label": "Create table \"vendor_bills\"",
+    "summary": "Creates table \"vendor_bills\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "vendor_bills"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"vendor_bills\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"vendor_bills\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"vendor_bills\"",
+        "sql": "CREATE TABLE \"public\".\"vendor_bills\" (\n  \"approvedAt\" timestamptz,\n  \"approvedById\" text,\n  \"attachmentKey\" text,\n  \"attachmentMime\" text,\n  \"attachmentName\" text,\n  \"attachmentSize\" int4,\n  \"billNumber\" text NOT NULL,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"createdById\" text NOT NULL,\n  \"currency\" text NOT NULL,\n  \"description\" text,\n  \"discountAmount\" numeric(14,2) DEFAULT '0.00'::numeric(14,2) NOT NULL,\n  \"dueDate\" timestamptz NOT NULL,\n  \"expenseId\" text,\n  \"id\" text NOT NULL,\n  \"issueDate\" timestamptz NOT NULL,\n  \"organizationId\" text NOT NULL,\n  \"rejectedAt\" timestamptz,\n  \"rejectionReason\" text,\n  \"status\" text DEFAULT 'DRAFT' NOT NULL,\n  \"submittedAt\" timestamptz,\n  \"subtotal\" numeric(14,2) NOT NULL,\n  \"taxAmount\" numeric(14,2) DEFAULT '0.00'::numeric(14,2) NOT NULL,\n  \"totalAmount\" numeric(14,2) NOT NULL,\n  \"updatedAt\" timestamptz NOT NULL,\n  \"vendorId\" text NOT NULL,\n  \"vendorReference\" text,\n  \"version\" int4 DEFAULT 1 NOT NULL,\n  \"voidedAt\" timestamptz,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"vendor_bills_status_check_947a77c7\" CHECK (\"status\" IN ('DRAFT', 'PENDING_APPROVAL', 'APPROVED', 'REJECTED', 'VOIDED'))\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"vendor_bills\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"vendor_bills\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.vendors",
+    "label": "Create table \"vendors\"",
+    "summary": "Creates table \"vendors\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "vendors"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"vendors\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"vendors\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"vendors\"",
+        "sql": "CREATE TABLE \"public\".\"vendors\" (\n  \"active\" bool DEFAULT true NOT NULL,\n  \"address\" text,\n  \"archivedAt\" timestamptz,\n  \"country\" text,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"defaultCurrency\" text NOT NULL,\n  \"displayName\" text,\n  \"email\" text,\n  \"id\" text NOT NULL,\n  \"name\" text NOT NULL,\n  \"notes\" text,\n  \"organizationId\" text NOT NULL,\n  \"paymentTermsDays\" int4 DEFAULT 30 NOT NULL,\n  \"phone\" text,\n  \"taxId\" text,\n  \"updatedAt\" timestamptz NOT NULL,\n  \"version\" int4 DEFAULT 1 NOT NULL,\n  \"website\" text,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"vendors\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"vendors\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.bank_reconciliations.payablePaymentId",
+    "label": "Add column \"payablePaymentId\" to \"bank_reconciliations\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "payablePaymentId",
+        "table": "bank_reconciliations"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"payablePaymentId\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "bank_reconciliations",
+          "payablePaymentId"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"payablePaymentId\"",
+        "sql": "ALTER TABLE \"public\".\"bank_reconciliations\" ADD COLUMN \"payablePaymentId\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"payablePaymentId\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "bank_reconciliations",
+          "payablePaymentId"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "checkConstraint.bank_reconciliations.bank_reconciliations_targetType_check_694f4f01",
+    "label": "Add check constraint \"bank_reconciliations_targetType_check_694f4f01\" on \"bank_reconciliations\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "checkConstraint",
+        "name": "bank_reconciliations_targetType_check_694f4f01",
+        "table": "bank_reconciliations"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"bank_reconciliations_targetType_check_694f4f01\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "bank_reconciliations_targetType_check_694f4f01",
+          "public",
+          "\"public\".\"bank_reconciliations\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add check constraint \"bank_reconciliations_targetType_check_694f4f01\"",
+        "sql": "ALTER TABLE \"public\".\"bank_reconciliations\" ADD CONSTRAINT \"bank_reconciliations_targetType_check_694f4f01\" CHECK (\"targetType\" IN ('INVOICE_PAYMENT', 'PAYROLL_PAYMENT', 'PAYABLE_PAYMENT'))"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"bank_reconciliations_targetType_check_694f4f01\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "bank_reconciliations_targetType_check_694f4f01",
+          "public",
+          "\"public\".\"bank_reconciliations\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.bank_reconciliations.bank_recon_payable_key",
+    "label": "Add unique constraint on \"bank_reconciliations\" (organizationId, payablePaymentId)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "bank_recon_payable_key",
+        "table": "bank_reconciliations"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"bank_recon_payable_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "bank_recon_payable_key",
+          "public",
+          "\"public\".\"bank_reconciliations\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"bank_recon_payable_key\"",
+        "sql": "ALTER TABLE \"public\".\"bank_reconciliations\" ADD CONSTRAINT \"bank_recon_payable_key\" UNIQUE (\"organizationId\", \"payablePaymentId\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"bank_recon_payable_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "bank_recon_payable_key",
+          "public",
+          "\"public\".\"bank_reconciliations\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.payable_payments.payable_payments_organizationId_id_key",
+    "label": "Add unique constraint on \"payable_payments\" (organizationId, id)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "payable_payments_organizationId_id_key",
+        "table": "payable_payments"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"payable_payments_organizationId_id_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "payable_payments_organizationId_id_key",
+          "public",
+          "\"public\".\"payable_payments\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"payable_payments_organizationId_id_key\"",
+        "sql": "ALTER TABLE \"public\".\"payable_payments\" ADD CONSTRAINT \"payable_payments_organizationId_id_key\" UNIQUE (\"organizationId\", \"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"payable_payments_organizationId_id_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "payable_payments_organizationId_id_key",
+          "public",
+          "\"public\".\"payable_payments\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.payable_payments.payable_payment_idempotency_key",
+    "label": "Add unique constraint on \"payable_payments\" (organizationId, idempotencyKey)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "payable_payment_idempotency_key",
+        "table": "payable_payments"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"payable_payment_idempotency_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "payable_payment_idempotency_key",
+          "public",
+          "\"public\".\"payable_payments\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"payable_payment_idempotency_key\"",
+        "sql": "ALTER TABLE \"public\".\"payable_payments\" ADD CONSTRAINT \"payable_payment_idempotency_key\" UNIQUE (\"organizationId\", \"idempotencyKey\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"payable_payment_idempotency_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "payable_payment_idempotency_key",
+          "public",
+          "\"public\".\"payable_payments\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.vendor_bills.vendor_bills_organizationId_id_key",
+    "label": "Add unique constraint on \"vendor_bills\" (organizationId, id)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "vendor_bills_organizationId_id_key",
+        "table": "vendor_bills"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"vendor_bills_organizationId_id_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "vendor_bills_organizationId_id_key",
+          "public",
+          "\"public\".\"vendor_bills\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"vendor_bills_organizationId_id_key\"",
+        "sql": "ALTER TABLE \"public\".\"vendor_bills\" ADD CONSTRAINT \"vendor_bills_organizationId_id_key\" UNIQUE (\"organizationId\", \"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"vendor_bills_organizationId_id_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "vendor_bills_organizationId_id_key",
+          "public",
+          "\"public\".\"vendor_bills\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.vendor_bills.vendor_bill_expense_key",
+    "label": "Add unique constraint on \"vendor_bills\" (organizationId, expenseId)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "vendor_bill_expense_key",
+        "table": "vendor_bills"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"vendor_bill_expense_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "vendor_bill_expense_key",
+          "public",
+          "\"public\".\"vendor_bills\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"vendor_bill_expense_key\"",
+        "sql": "ALTER TABLE \"public\".\"vendor_bills\" ADD CONSTRAINT \"vendor_bill_expense_key\" UNIQUE (\"organizationId\", \"expenseId\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"vendor_bill_expense_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "vendor_bill_expense_key",
+          "public",
+          "\"public\".\"vendor_bills\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.vendor_bills.vendor_bill_number_key",
+    "label": "Add unique constraint on \"vendor_bills\" (organizationId, billNumber)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "vendor_bill_number_key",
+        "table": "vendor_bills"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"vendor_bill_number_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "vendor_bill_number_key",
+          "public",
+          "\"public\".\"vendor_bills\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"vendor_bill_number_key\"",
+        "sql": "ALTER TABLE \"public\".\"vendor_bills\" ADD CONSTRAINT \"vendor_bill_number_key\" UNIQUE (\"organizationId\", \"billNumber\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"vendor_bill_number_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "vendor_bill_number_key",
+          "public",
+          "\"public\".\"vendor_bills\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.vendors.vendors_organizationId_id_key",
+    "label": "Add unique constraint on \"vendors\" (organizationId, id)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "vendors_organizationId_id_key",
+        "table": "vendors"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"vendors_organizationId_id_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "vendors_organizationId_id_key",
+          "public",
+          "\"public\".\"vendors\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"vendors_organizationId_id_key\"",
+        "sql": "ALTER TABLE \"public\".\"vendors\" ADD CONSTRAINT \"vendors_organizationId_id_key\" UNIQUE (\"organizationId\", \"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"vendors_organizationId_id_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "vendors_organizationId_id_key",
+          "public",
+          "\"public\".\"vendors\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.vendors.vendor_name_key",
+    "label": "Add unique constraint on \"vendors\" (organizationId, name)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "vendor_name_key",
+        "table": "vendors"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"vendor_name_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "vendor_name_key",
+          "public",
+          "\"public\".\"vendors\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"vendor_name_key\"",
+        "sql": "ALTER TABLE \"public\".\"vendors\" ADD CONSTRAINT \"vendor_name_key\" UNIQUE (\"organizationId\", \"name\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"vendor_name_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "vendor_name_key",
+          "public",
+          "\"public\".\"vendors\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.payable_audit_events.payable_audit_entity_idx",
+    "label": "Create index \"payable_audit_entity_idx\" on \"payable_audit_events\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "payable_audit_entity_idx",
+        "table": "payable_audit_events"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"payable_audit_entity_idx\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payable_audit_entity_idx\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"payable_audit_entity_idx\"",
+        "sql": "CREATE INDEX \"payable_audit_entity_idx\" ON \"public\".\"payable_audit_events\" (\"organizationId\", \"entityType\", \"entityId\", \"createdAt\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"payable_audit_entity_idx\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payable_audit_entity_idx\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.payable_audit_events.payable_audit_events_organizationId_actorId_idx_327c2974",
+    "label": "Create index \"payable_audit_events_organizationId_actorId_idx_327c2974\" on \"payable_audit_events\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "payable_audit_events_organizationId_actorId_idx_327c2974",
+        "table": "payable_audit_events"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"payable_audit_events_organizationId_actorId_idx_327c2974\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payable_audit_events_organizationId_actorId_idx_327c2974\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"payable_audit_events_organizationId_actorId_idx_327c2974\"",
+        "sql": "CREATE INDEX \"payable_audit_events_organizationId_actorId_idx_327c2974\" ON \"public\".\"payable_audit_events\" (\"organizationId\", \"actorId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"payable_audit_events_organizationId_actorId_idx_327c2974\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payable_audit_events_organizationId_actorId_idx_327c2974\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.payable_audit_events.payable_audit_events_organizationId_idx_2e17ef41",
+    "label": "Create index \"payable_audit_events_organizationId_idx_2e17ef41\" on \"payable_audit_events\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "payable_audit_events_organizationId_idx_2e17ef41",
+        "table": "payable_audit_events"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"payable_audit_events_organizationId_idx_2e17ef41\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payable_audit_events_organizationId_idx_2e17ef41\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"payable_audit_events_organizationId_idx_2e17ef41\"",
+        "sql": "CREATE INDEX \"payable_audit_events_organizationId_idx_2e17ef41\" ON \"public\".\"payable_audit_events\" (\"organizationId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"payable_audit_events_organizationId_idx_2e17ef41\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payable_audit_events_organizationId_idx_2e17ef41\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.payable_payments.payable_payment_bill_idx",
+    "label": "Create index \"payable_payment_bill_idx\" on \"payable_payments\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "payable_payment_bill_idx",
+        "table": "payable_payments"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"payable_payment_bill_idx\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payable_payment_bill_idx\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"payable_payment_bill_idx\"",
+        "sql": "CREATE INDEX \"payable_payment_bill_idx\" ON \"public\".\"payable_payments\" (\"organizationId\", \"vendorBillId\", \"paymentDate\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"payable_payment_bill_idx\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payable_payment_bill_idx\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.payable_payments.payable_payment_expense_idx",
+    "label": "Create index \"payable_payment_expense_idx\" on \"payable_payments\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "payable_payment_expense_idx",
+        "table": "payable_payments"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"payable_payment_expense_idx\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payable_payment_expense_idx\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"payable_payment_expense_idx\"",
+        "sql": "CREATE INDEX \"payable_payment_expense_idx\" ON \"public\".\"payable_payments\" (\"organizationId\", \"expenseId\", \"paymentDate\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"payable_payment_expense_idx\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payable_payment_expense_idx\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.payable_payments.payable_payments_organizationId_bankAccountId_idx_c169eff6",
+    "label": "Create index \"payable_payments_organizationId_bankAccountId_idx_c169eff6\" on \"payable_payments\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "payable_payments_organizationId_bankAccountId_idx_c169eff6",
+        "table": "payable_payments"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"payable_payments_organizationId_bankAccountId_idx_c169eff6\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payable_payments_organizationId_bankAccountId_idx_c169eff6\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"payable_payments_organizationId_bankAccountId_idx_c169eff6\"",
+        "sql": "CREATE INDEX \"payable_payments_organizationId_bankAccountId_idx_c169eff6\" ON \"public\".\"payable_payments\" (\"organizationId\", \"bankAccountId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"payable_payments_organizationId_bankAccountId_idx_c169eff6\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payable_payments_organizationId_bankAccountId_idx_c169eff6\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.payable_payments.payable_payments_organizationId_expenseId_idx_5740def0",
+    "label": "Create index \"payable_payments_organizationId_expenseId_idx_5740def0\" on \"payable_payments\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "payable_payments_organizationId_expenseId_idx_5740def0",
+        "table": "payable_payments"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"payable_payments_organizationId_expenseId_idx_5740def0\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payable_payments_organizationId_expenseId_idx_5740def0\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"payable_payments_organizationId_expenseId_idx_5740def0\"",
+        "sql": "CREATE INDEX \"payable_payments_organizationId_expenseId_idx_5740def0\" ON \"public\".\"payable_payments\" (\"organizationId\", \"expenseId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"payable_payments_organizationId_expenseId_idx_5740def0\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payable_payments_organizationId_expenseId_idx_5740def0\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.payable_payments.payable_payments_organizationId_idx_2e17ef41",
+    "label": "Create index \"payable_payments_organizationId_idx_2e17ef41\" on \"payable_payments\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "payable_payments_organizationId_idx_2e17ef41",
+        "table": "payable_payments"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"payable_payments_organizationId_idx_2e17ef41\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payable_payments_organizationId_idx_2e17ef41\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"payable_payments_organizationId_idx_2e17ef41\"",
+        "sql": "CREATE INDEX \"payable_payments_organizationId_idx_2e17ef41\" ON \"public\".\"payable_payments\" (\"organizationId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"payable_payments_organizationId_idx_2e17ef41\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payable_payments_organizationId_idx_2e17ef41\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.payable_payments.payable_payments_organizationId_recordedById_idx_c8e2f022",
+    "label": "Create index \"payable_payments_organizationId_recordedById_idx_c8e2f022\" on \"payable_payments\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "payable_payments_organizationId_recordedById_idx_c8e2f022",
+        "table": "payable_payments"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"payable_payments_organizationId_recordedById_idx_c8e2f022\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payable_payments_organizationId_recordedById_idx_c8e2f022\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"payable_payments_organizationId_recordedById_idx_c8e2f022\"",
+        "sql": "CREATE INDEX \"payable_payments_organizationId_recordedById_idx_c8e2f022\" ON \"public\".\"payable_payments\" (\"organizationId\", \"recordedById\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"payable_payments_organizationId_recordedById_idx_c8e2f022\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payable_payments_organizationId_recordedById_idx_c8e2f022\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.payable_payments.payable_payments_organizationId_reversedById_idx_d89ffd81",
+    "label": "Create index \"payable_payments_organizationId_reversedById_idx_d89ffd81\" on \"payable_payments\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "payable_payments_organizationId_reversedById_idx_d89ffd81",
+        "table": "payable_payments"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"payable_payments_organizationId_reversedById_idx_d89ffd81\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payable_payments_organizationId_reversedById_idx_d89ffd81\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"payable_payments_organizationId_reversedById_idx_d89ffd81\"",
+        "sql": "CREATE INDEX \"payable_payments_organizationId_reversedById_idx_d89ffd81\" ON \"public\".\"payable_payments\" (\"organizationId\", \"reversedById\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"payable_payments_organizationId_reversedById_idx_d89ffd81\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payable_payments_organizationId_reversedById_idx_d89ffd81\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.payable_payments.payable_payments_organizationId_vendorBillId_idx_36296573",
+    "label": "Create index \"payable_payments_organizationId_vendorBillId_idx_36296573\" on \"payable_payments\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "payable_payments_organizationId_vendorBillId_idx_36296573",
+        "table": "payable_payments"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"payable_payments_organizationId_vendorBillId_idx_36296573\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payable_payments_organizationId_vendorBillId_idx_36296573\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"payable_payments_organizationId_vendorBillId_idx_36296573\"",
+        "sql": "CREATE INDEX \"payable_payments_organizationId_vendorBillId_idx_36296573\" ON \"public\".\"payable_payments\" (\"organizationId\", \"vendorBillId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"payable_payments_organizationId_vendorBillId_idx_36296573\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"payable_payments_organizationId_vendorBillId_idx_36296573\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.vendor_bill_items.vendor_bill_item_position_idx",
+    "label": "Create index \"vendor_bill_item_position_idx\" on \"vendor_bill_items\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "vendor_bill_item_position_idx",
+        "table": "vendor_bill_items"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"vendor_bill_item_position_idx\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"vendor_bill_item_position_idx\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"vendor_bill_item_position_idx\"",
+        "sql": "CREATE INDEX \"vendor_bill_item_position_idx\" ON \"public\".\"vendor_bill_items\" (\"organizationId\", \"vendorBillId\", \"position\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"vendor_bill_item_position_idx\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"vendor_bill_item_position_idx\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.vendor_bill_items.vendor_bill_items_organizationId_vendorBillId_idx_36296573",
+    "label": "Create index \"vendor_bill_items_organizationId_vendorBillId_idx_36296573\" on \"vendor_bill_items\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "vendor_bill_items_organizationId_vendorBillId_idx_36296573",
+        "table": "vendor_bill_items"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"vendor_bill_items_organizationId_vendorBillId_idx_36296573\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"vendor_bill_items_organizationId_vendorBillId_idx_36296573\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"vendor_bill_items_organizationId_vendorBillId_idx_36296573\"",
+        "sql": "CREATE INDEX \"vendor_bill_items_organizationId_vendorBillId_idx_36296573\" ON \"public\".\"vendor_bill_items\" (\"organizationId\", \"vendorBillId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"vendor_bill_items_organizationId_vendorBillId_idx_36296573\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"vendor_bill_items_organizationId_vendorBillId_idx_36296573\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.vendor_bills.vendor_bill_status_due_idx",
+    "label": "Create index \"vendor_bill_status_due_idx\" on \"vendor_bills\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "vendor_bill_status_due_idx",
+        "table": "vendor_bills"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"vendor_bill_status_due_idx\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"vendor_bill_status_due_idx\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"vendor_bill_status_due_idx\"",
+        "sql": "CREATE INDEX \"vendor_bill_status_due_idx\" ON \"public\".\"vendor_bills\" (\"organizationId\", \"status\", \"dueDate\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"vendor_bill_status_due_idx\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"vendor_bill_status_due_idx\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.vendor_bills.vendor_bill_vendor_status_idx",
+    "label": "Create index \"vendor_bill_vendor_status_idx\" on \"vendor_bills\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "vendor_bill_vendor_status_idx",
+        "table": "vendor_bills"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"vendor_bill_vendor_status_idx\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"vendor_bill_vendor_status_idx\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"vendor_bill_vendor_status_idx\"",
+        "sql": "CREATE INDEX \"vendor_bill_vendor_status_idx\" ON \"public\".\"vendor_bills\" (\"organizationId\", \"vendorId\", \"status\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"vendor_bill_vendor_status_idx\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"vendor_bill_vendor_status_idx\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.vendor_bills.vendor_bills_organizationId_approvedById_idx_9cb35474",
+    "label": "Create index \"vendor_bills_organizationId_approvedById_idx_9cb35474\" on \"vendor_bills\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "vendor_bills_organizationId_approvedById_idx_9cb35474",
+        "table": "vendor_bills"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"vendor_bills_organizationId_approvedById_idx_9cb35474\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"vendor_bills_organizationId_approvedById_idx_9cb35474\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"vendor_bills_organizationId_approvedById_idx_9cb35474\"",
+        "sql": "CREATE INDEX \"vendor_bills_organizationId_approvedById_idx_9cb35474\" ON \"public\".\"vendor_bills\" (\"organizationId\", \"approvedById\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"vendor_bills_organizationId_approvedById_idx_9cb35474\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"vendor_bills_organizationId_approvedById_idx_9cb35474\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.vendor_bills.vendor_bills_organizationId_createdById_idx_4fb80a04",
+    "label": "Create index \"vendor_bills_organizationId_createdById_idx_4fb80a04\" on \"vendor_bills\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "vendor_bills_organizationId_createdById_idx_4fb80a04",
+        "table": "vendor_bills"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"vendor_bills_organizationId_createdById_idx_4fb80a04\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"vendor_bills_organizationId_createdById_idx_4fb80a04\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"vendor_bills_organizationId_createdById_idx_4fb80a04\"",
+        "sql": "CREATE INDEX \"vendor_bills_organizationId_createdById_idx_4fb80a04\" ON \"public\".\"vendor_bills\" (\"organizationId\", \"createdById\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"vendor_bills_organizationId_createdById_idx_4fb80a04\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"vendor_bills_organizationId_createdById_idx_4fb80a04\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.vendor_bills.vendor_bills_organizationId_idx_2e17ef41",
+    "label": "Create index \"vendor_bills_organizationId_idx_2e17ef41\" on \"vendor_bills\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "vendor_bills_organizationId_idx_2e17ef41",
+        "table": "vendor_bills"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"vendor_bills_organizationId_idx_2e17ef41\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"vendor_bills_organizationId_idx_2e17ef41\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"vendor_bills_organizationId_idx_2e17ef41\"",
+        "sql": "CREATE INDEX \"vendor_bills_organizationId_idx_2e17ef41\" ON \"public\".\"vendor_bills\" (\"organizationId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"vendor_bills_organizationId_idx_2e17ef41\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"vendor_bills_organizationId_idx_2e17ef41\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.vendor_bills.vendor_bills_organizationId_vendorId_idx_633a4102",
+    "label": "Create index \"vendor_bills_organizationId_vendorId_idx_633a4102\" on \"vendor_bills\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "vendor_bills_organizationId_vendorId_idx_633a4102",
+        "table": "vendor_bills"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"vendor_bills_organizationId_vendorId_idx_633a4102\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"vendor_bills_organizationId_vendorId_idx_633a4102\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"vendor_bills_organizationId_vendorId_idx_633a4102\"",
+        "sql": "CREATE INDEX \"vendor_bills_organizationId_vendorId_idx_633a4102\" ON \"public\".\"vendor_bills\" (\"organizationId\", \"vendorId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"vendor_bills_organizationId_vendorId_idx_633a4102\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"vendor_bills_organizationId_vendorId_idx_633a4102\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.vendors.vendor_active_name_idx",
+    "label": "Create index \"vendor_active_name_idx\" on \"vendors\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "vendor_active_name_idx",
+        "table": "vendors"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"vendor_active_name_idx\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"vendor_active_name_idx\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"vendor_active_name_idx\"",
+        "sql": "CREATE INDEX \"vendor_active_name_idx\" ON \"public\".\"vendors\" (\"organizationId\", \"active\", \"name\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"vendor_active_name_idx\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"vendor_active_name_idx\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.vendors.vendors_organizationId_idx_2e17ef41",
+    "label": "Create index \"vendors_organizationId_idx_2e17ef41\" on \"vendors\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "vendors_organizationId_idx_2e17ef41",
+        "table": "vendors"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"vendors_organizationId_idx_2e17ef41\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"vendors_organizationId_idx_2e17ef41\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"vendors_organizationId_idx_2e17ef41\"",
+        "sql": "CREATE INDEX \"vendors_organizationId_idx_2e17ef41\" ON \"public\".\"vendors\" (\"organizationId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"vendors_organizationId_idx_2e17ef41\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"vendors_organizationId_idx_2e17ef41\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.payable_audit_events.payable_audit_org_fkey",
+    "label": "Add foreign key \"payable_audit_org_fkey\" on \"payable_audit_events\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "payable_audit_org_fkey",
+        "table": "payable_audit_events"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"payable_audit_org_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "payable_audit_org_fkey",
+          "public",
+          "\"public\".\"payable_audit_events\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"payable_audit_org_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"payable_audit_events\"\nADD CONSTRAINT \"payable_audit_org_fkey\"\nFOREIGN KEY (\"organizationId\")\nREFERENCES \"public\".\"organizations\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"payable_audit_org_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "payable_audit_org_fkey",
+          "public",
+          "\"public\".\"payable_audit_events\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.payable_audit_events.payable_audit_actor_fkey",
+    "label": "Add foreign key \"payable_audit_actor_fkey\" on \"payable_audit_events\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "payable_audit_actor_fkey",
+        "table": "payable_audit_events"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"payable_audit_actor_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "payable_audit_actor_fkey",
+          "public",
+          "\"public\".\"payable_audit_events\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"payable_audit_actor_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"payable_audit_events\"\nADD CONSTRAINT \"payable_audit_actor_fkey\"\nFOREIGN KEY (\"organizationId\", \"actorId\")\nREFERENCES \"public\".\"users\" (\"organizationId\", \"id\")\nON DELETE RESTRICT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"payable_audit_actor_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "payable_audit_actor_fkey",
+          "public",
+          "\"public\".\"payable_audit_events\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.payable_payments.payable_payment_org_fkey",
+    "label": "Add foreign key \"payable_payment_org_fkey\" on \"payable_payments\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "payable_payment_org_fkey",
+        "table": "payable_payments"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"payable_payment_org_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "payable_payment_org_fkey",
+          "public",
+          "\"public\".\"payable_payments\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"payable_payment_org_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"payable_payments\"\nADD CONSTRAINT \"payable_payment_org_fkey\"\nFOREIGN KEY (\"organizationId\")\nREFERENCES \"public\".\"organizations\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"payable_payment_org_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "payable_payment_org_fkey",
+          "public",
+          "\"public\".\"payable_payments\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.payable_payments.payable_payment_bill_fkey",
+    "label": "Add foreign key \"payable_payment_bill_fkey\" on \"payable_payments\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "payable_payment_bill_fkey",
+        "table": "payable_payments"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"payable_payment_bill_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "payable_payment_bill_fkey",
+          "public",
+          "\"public\".\"payable_payments\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"payable_payment_bill_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"payable_payments\"\nADD CONSTRAINT \"payable_payment_bill_fkey\"\nFOREIGN KEY (\"organizationId\", \"vendorBillId\")\nREFERENCES \"public\".\"vendor_bills\" (\"organizationId\", \"id\")\nON DELETE RESTRICT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"payable_payment_bill_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "payable_payment_bill_fkey",
+          "public",
+          "\"public\".\"payable_payments\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.payable_payments.payable_payment_expense_fkey",
+    "label": "Add foreign key \"payable_payment_expense_fkey\" on \"payable_payments\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "payable_payment_expense_fkey",
+        "table": "payable_payments"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"payable_payment_expense_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "payable_payment_expense_fkey",
+          "public",
+          "\"public\".\"payable_payments\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"payable_payment_expense_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"payable_payments\"\nADD CONSTRAINT \"payable_payment_expense_fkey\"\nFOREIGN KEY (\"organizationId\", \"expenseId\")\nREFERENCES \"public\".\"expenses\" (\"organizationId\", \"id\")\nON DELETE RESTRICT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"payable_payment_expense_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "payable_payment_expense_fkey",
+          "public",
+          "\"public\".\"payable_payments\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.payable_payments.payable_payment_account_fkey",
+    "label": "Add foreign key \"payable_payment_account_fkey\" on \"payable_payments\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "payable_payment_account_fkey",
+        "table": "payable_payments"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"payable_payment_account_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "payable_payment_account_fkey",
+          "public",
+          "\"public\".\"payable_payments\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"payable_payment_account_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"payable_payments\"\nADD CONSTRAINT \"payable_payment_account_fkey\"\nFOREIGN KEY (\"organizationId\", \"bankAccountId\")\nREFERENCES \"public\".\"bank_accounts\" (\"organizationId\", \"id\")\nON DELETE RESTRICT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"payable_payment_account_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "payable_payment_account_fkey",
+          "public",
+          "\"public\".\"payable_payments\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.payable_payments.payable_payment_recorder_fkey",
+    "label": "Add foreign key \"payable_payment_recorder_fkey\" on \"payable_payments\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "payable_payment_recorder_fkey",
+        "table": "payable_payments"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"payable_payment_recorder_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "payable_payment_recorder_fkey",
+          "public",
+          "\"public\".\"payable_payments\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"payable_payment_recorder_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"payable_payments\"\nADD CONSTRAINT \"payable_payment_recorder_fkey\"\nFOREIGN KEY (\"organizationId\", \"recordedById\")\nREFERENCES \"public\".\"users\" (\"organizationId\", \"id\")\nON DELETE RESTRICT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"payable_payment_recorder_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "payable_payment_recorder_fkey",
+          "public",
+          "\"public\".\"payable_payments\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.payable_payments.payable_payment_reverser_fkey",
+    "label": "Add foreign key \"payable_payment_reverser_fkey\" on \"payable_payments\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "payable_payment_reverser_fkey",
+        "table": "payable_payments"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"payable_payment_reverser_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "payable_payment_reverser_fkey",
+          "public",
+          "\"public\".\"payable_payments\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"payable_payment_reverser_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"payable_payments\"\nADD CONSTRAINT \"payable_payment_reverser_fkey\"\nFOREIGN KEY (\"organizationId\", \"reversedById\")\nREFERENCES \"public\".\"users\" (\"organizationId\", \"id\")\nON DELETE RESTRICT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"payable_payment_reverser_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "payable_payment_reverser_fkey",
+          "public",
+          "\"public\".\"payable_payments\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.bank_reconciliations.bank_recon_payable_fkey",
+    "label": "Add foreign key \"bank_recon_payable_fkey\" on \"bank_reconciliations\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "bank_recon_payable_fkey",
+        "table": "bank_reconciliations"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"bank_recon_payable_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "bank_recon_payable_fkey",
+          "public",
+          "\"public\".\"bank_reconciliations\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"bank_recon_payable_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"bank_reconciliations\"\nADD CONSTRAINT \"bank_recon_payable_fkey\"\nFOREIGN KEY (\"organizationId\", \"payablePaymentId\")\nREFERENCES \"public\".\"payable_payments\" (\"organizationId\", \"id\")\nON DELETE RESTRICT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"bank_recon_payable_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "bank_recon_payable_fkey",
+          "public",
+          "\"public\".\"bank_reconciliations\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.vendor_bill_items.vendor_bill_item_bill_fkey",
+    "label": "Add foreign key \"vendor_bill_item_bill_fkey\" on \"vendor_bill_items\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "vendor_bill_item_bill_fkey",
+        "table": "vendor_bill_items"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"vendor_bill_item_bill_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "vendor_bill_item_bill_fkey",
+          "public",
+          "\"public\".\"vendor_bill_items\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"vendor_bill_item_bill_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"vendor_bill_items\"\nADD CONSTRAINT \"vendor_bill_item_bill_fkey\"\nFOREIGN KEY (\"organizationId\", \"vendorBillId\")\nREFERENCES \"public\".\"vendor_bills\" (\"organizationId\", \"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"vendor_bill_item_bill_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "vendor_bill_item_bill_fkey",
+          "public",
+          "\"public\".\"vendor_bill_items\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.vendor_bills.vendor_bill_org_fkey",
+    "label": "Add foreign key \"vendor_bill_org_fkey\" on \"vendor_bills\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "vendor_bill_org_fkey",
+        "table": "vendor_bills"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"vendor_bill_org_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "vendor_bill_org_fkey",
+          "public",
+          "\"public\".\"vendor_bills\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"vendor_bill_org_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"vendor_bills\"\nADD CONSTRAINT \"vendor_bill_org_fkey\"\nFOREIGN KEY (\"organizationId\")\nREFERENCES \"public\".\"organizations\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"vendor_bill_org_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "vendor_bill_org_fkey",
+          "public",
+          "\"public\".\"vendor_bills\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.vendor_bills.vendor_bill_vendor_fkey",
+    "label": "Add foreign key \"vendor_bill_vendor_fkey\" on \"vendor_bills\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "vendor_bill_vendor_fkey",
+        "table": "vendor_bills"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"vendor_bill_vendor_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "vendor_bill_vendor_fkey",
+          "public",
+          "\"public\".\"vendor_bills\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"vendor_bill_vendor_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"vendor_bills\"\nADD CONSTRAINT \"vendor_bill_vendor_fkey\"\nFOREIGN KEY (\"organizationId\", \"vendorId\")\nREFERENCES \"public\".\"vendors\" (\"organizationId\", \"id\")\nON DELETE RESTRICT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"vendor_bill_vendor_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "vendor_bill_vendor_fkey",
+          "public",
+          "\"public\".\"vendor_bills\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.vendor_bills.vendor_bill_expense_fkey",
+    "label": "Add foreign key \"vendor_bill_expense_fkey\" on \"vendor_bills\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "vendor_bill_expense_fkey",
+        "table": "vendor_bills"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"vendor_bill_expense_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "vendor_bill_expense_fkey",
+          "public",
+          "\"public\".\"vendor_bills\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"vendor_bill_expense_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"vendor_bills\"\nADD CONSTRAINT \"vendor_bill_expense_fkey\"\nFOREIGN KEY (\"organizationId\", \"expenseId\")\nREFERENCES \"public\".\"expenses\" (\"organizationId\", \"id\")\nON DELETE RESTRICT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"vendor_bill_expense_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "vendor_bill_expense_fkey",
+          "public",
+          "\"public\".\"vendor_bills\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.vendor_bills.vendor_bill_creator_fkey",
+    "label": "Add foreign key \"vendor_bill_creator_fkey\" on \"vendor_bills\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "vendor_bill_creator_fkey",
+        "table": "vendor_bills"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"vendor_bill_creator_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "vendor_bill_creator_fkey",
+          "public",
+          "\"public\".\"vendor_bills\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"vendor_bill_creator_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"vendor_bills\"\nADD CONSTRAINT \"vendor_bill_creator_fkey\"\nFOREIGN KEY (\"organizationId\", \"createdById\")\nREFERENCES \"public\".\"users\" (\"organizationId\", \"id\")\nON DELETE RESTRICT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"vendor_bill_creator_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "vendor_bill_creator_fkey",
+          "public",
+          "\"public\".\"vendor_bills\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.vendor_bills.vendor_bill_approver_fkey",
+    "label": "Add foreign key \"vendor_bill_approver_fkey\" on \"vendor_bills\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "vendor_bill_approver_fkey",
+        "table": "vendor_bills"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"vendor_bill_approver_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "vendor_bill_approver_fkey",
+          "public",
+          "\"public\".\"vendor_bills\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"vendor_bill_approver_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"vendor_bills\"\nADD CONSTRAINT \"vendor_bill_approver_fkey\"\nFOREIGN KEY (\"organizationId\", \"approvedById\")\nREFERENCES \"public\".\"users\" (\"organizationId\", \"id\")\nON DELETE RESTRICT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"vendor_bill_approver_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "vendor_bill_approver_fkey",
+          "public",
+          "\"public\".\"vendor_bills\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.vendors.vendor_org_fkey",
+    "label": "Add foreign key \"vendor_org_fkey\" on \"vendors\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "vendor_org_fkey",
+        "table": "vendors"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"vendor_org_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "vendor_org_fkey",
+          "public",
+          "\"public\".\"vendors\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"vendor_org_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"vendors\"\nADD CONSTRAINT \"vendor_org_fkey\"\nFOREIGN KEY (\"organizationId\")\nREFERENCES \"public\".\"organizations\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"vendor_org_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "vendor_org_fkey",
+          "public",
+          "\"public\".\"vendors\""
+        ]
+      }
+    ]
+  }
+]

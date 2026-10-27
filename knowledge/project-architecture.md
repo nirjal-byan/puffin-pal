@@ -1,5 +1,9 @@
 # PuffinPal architecture
 
+## Purchasing and payables
+
+The `accounts-payable` API module owns vendors, bill approval, exact line calculations, private attachments, payments, reversals, aging, and audit history. It extends the existing banking reconciliation record rather than creating a separate matching system. The web feature is composed inside the existing query-driven workspace shell as the Vendors and Accounts Payable pages. See [accounts-payable-and-expense-payments.md](./accounts-payable-and-expense-payments.md).
+
 PuffinPal is a pnpm/Turborepo monorepo. The web app is organized by product feature, while the API separates domain modules from shared infrastructure.
 
 ```text

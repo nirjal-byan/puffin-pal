@@ -1,4 +1,10 @@
-import { BadRequestException, Inject, Injectable, Scope, UnauthorizedException } from "@nestjs/common";
+import {
+  BadRequestException,
+  Inject,
+  Injectable,
+  Scope,
+  UnauthorizedException,
+} from "@nestjs/common";
 import { REQUEST } from "@nestjs/core";
 import { DATABASE } from "../../infrastructure/database/database.module.js";
 import type { Database } from "../../infrastructure/database/client.js";
@@ -31,10 +37,7 @@ export class FinancialReportsService {
     if (!this.request.auth) throw new UnauthorizedException();
     validateReportRange(input.from, input.to);
     const organizationId = this.request.auth.organizationId;
-    const canReadPayroll = hasPermission(
-      this.request.auth.role,
-      "financial-reports:payroll-read",
-    );
+    const canReadPayroll = hasPermission(this.request.auth.role, "financial-reports:payroll-read");
     const plan = this.db.raw.sql`
       WITH bounds AS (
         SELECT ${input.from}::date from_date, ${input.to}::date to_date,
@@ -78,6 +81,27 @@ export class FinancialReportsService {
         SELECT e.* FROM expenses e, bounds b
         WHERE e."organizationId" = ${organizationId}
           AND e.date >= b.from_date AND e.date < b.end_exclusive
+      ),
+      payable_payment_period AS (
+        SELECT pp.*, EXISTS (SELECT 1 FROM bank_reconciliations r
+          WHERE r."organizationId" = pp."organizationId" AND r."payablePaymentId" = pp.id
+            AND r."reversedAt" IS NULL) reconciled
+        FROM payable_payments pp, bounds b
+        WHERE pp."organizationId" = ${organizationId} AND pp."reversedAt" IS NULL
+          AND pp.currency = b.currency
+          AND pp."paymentDate" >= b.from_date AND pp."paymentDate" < b.end_exclusive
+      ),
+      payable_bills AS (
+        SELECT vb.*, v.name vendor_name, COALESCE(p.paid,0) paid,
+          GREATEST(vb."totalAmount" - COALESCE(p.paid,0),0) outstanding
+        FROM vendor_bills vb
+        JOIN vendors v ON v."organizationId"=vb."organizationId" AND v.id=vb."vendorId"
+        CROSS JOIN bounds b
+        LEFT JOIN LATERAL (SELECT SUM(amount) paid FROM payable_payments pp
+          WHERE pp."organizationId"=vb."organizationId" AND pp."vendorBillId"=vb.id
+            AND pp."reversedAt" IS NULL AND pp."paymentDate" < b.end_exclusive) p ON true
+        WHERE vb."organizationId"=${organizationId} AND vb.status='APPROVED'
+          AND vb.currency=b.currency AND vb."issueDate" < b.end_exclusive
       ),
       finalized_payroll AS (
         SELECT pr.* FROM payroll_runs pr, bounds b
@@ -132,8 +156,8 @@ export class FinancialReportsService {
         'basis', json_build_object('name','Operational Profitability Report','disclosures',json_build_array(
           'This is an operational report, not a GAAP or IFRS financial statement.',
           'Issued revenue uses invoice issue dates; collected revenue uses recorded payment dates.',
-          'Approved expenses are not known to be paid because expense payment records do not exist.',
-          'Accounts payable is unavailable because vendor bills are not modeled.',
+          'Approved costs are reported once; bills linked to expenses do not create a second operating expense.',
+          'Paid and cash-movement totals use active payable payment records; reversed payments are excluded.',
           'No foreign-exchange conversion is performed.'
         )),
         'revenue', json_build_object(
@@ -147,7 +171,18 @@ export class FinancialReportsService {
         'expenses', json_build_object(
           'recorded', to_char(COALESCE((SELECT SUM(amount) FROM expense_period),0),'FM999999999999990.00'),
           'approved', to_char(COALESCE((SELECT SUM(amount) FROM expense_period WHERE "approvalStatus"='APPROVED'),0),'FM999999999999990.00'),
-          'paid', NULL,
+          'paid', to_char(COALESCE((SELECT SUM(LEAST(ep.amount,paid.total_paid)) FROM expense_period ep LEFT JOIN LATERAL (
+            SELECT COALESCE(SUM(pp.amount),0) total_paid FROM payable_payments pp
+            LEFT JOIN vendor_bills vb ON vb."organizationId"=ep."organizationId" AND vb."expenseId"=ep.id
+            WHERE pp."organizationId"=ep."organizationId" AND pp."reversedAt" IS NULL
+              AND (pp."expenseId"=ep.id OR pp."vendorBillId"=vb.id) AND pp."paymentDate" < (SELECT end_exclusive FROM bounds)
+          ) paid ON true WHERE ep."approvalStatus"='APPROVED'),0),'FM999999999999990.00'),
+          'unpaid', to_char(COALESCE((SELECT SUM(GREATEST(ep.amount-paid.total_paid,0)) FROM expense_period ep LEFT JOIN LATERAL (
+            SELECT COALESCE(SUM(pp.amount),0) total_paid FROM payable_payments pp
+            LEFT JOIN vendor_bills vb ON vb."organizationId"=ep."organizationId" AND vb."expenseId"=ep.id
+            WHERE pp."organizationId"=ep."organizationId" AND pp."reversedAt" IS NULL
+              AND (pp."expenseId"=ep.id OR pp."vendorBillId"=vb.id) AND pp."paymentDate" < (SELECT end_exclusive FROM bounds)
+          ) paid ON true WHERE ep."approvalStatus"='APPROVED'),0),'FM999999999999990.00'),
           'byCategory', COALESCE((SELECT json_agg(json_build_object('category',category,'amount',to_char(amount,'FM999999999999990.00')) ORDER BY amount DESC) FROM (SELECT category,SUM(amount) amount FROM expense_period WHERE "approvalStatus"='APPROVED' GROUP BY category) q),'[]'::json),
           'byVendor', COALESCE((SELECT json_agg(json_build_object('vendor',vendor,'amount',to_char(amount,'FM999999999999990.00')) ORDER BY amount DESC) FROM (SELECT COALESCE(vendor,'Unspecified') vendor,SUM(amount) amount FROM expense_period WHERE "approvalStatus"='APPROVED' GROUP BY vendor LIMIT 10) q),'[]'::json),
           'largest', COALESCE((SELECT json_agg(json_build_object('title',title,'vendor',vendor,'date',date::date::text,'amount',to_char(amount,'FM999999999999990.00')) ORDER BY amount DESC) FROM (SELECT * FROM expense_period WHERE "approvalStatus"='APPROVED' ORDER BY amount DESC LIMIT 10) q),'[]'::json)
@@ -183,18 +218,30 @@ export class FinancialReportsService {
           ) q),'[]'::json),
           'byClient', COALESCE((SELECT json_agg(json_build_object('client',client_name,'amount',to_char(amount,'FM999999999999990.00')) ORDER BY amount DESC) FROM (SELECT client_name,SUM(outstanding) amount FROM issued WHERE outstanding>0 GROUP BY client_name) q),'[]'::json)
         ),
-        'payables', json_build_object('available',false,'reason','Vendor bills and payable payments are not modeled.'),
+        'payables', json_build_object(
+          'available',true,
+          'outstanding',to_char(COALESCE((SELECT SUM(outstanding) FROM payable_bills),0),'FM999999999999990.00'),
+          'overdue',to_char(COALESCE((SELECT SUM(outstanding) FROM payable_bills, bounds WHERE outstanding>0 AND "dueDate"::date < to_date),0),'FM999999999999990.00'),
+          'payments',to_char(COALESCE((SELECT SUM(amount) FROM payable_payment_period),0),'FM999999999999990.00'),
+          'aging',COALESCE((SELECT json_agg(json_build_object('bucket',bucket,'amount',to_char(amount,'FM999999999999990.00')) ORDER BY ord) FROM (
+            SELECT bucket,ord,COALESCE(SUM(outstanding),0) amount FROM (VALUES ('CURRENT',1),('1_30',2),('31_60',3),('61_90',4),('OVER_90',5)) b(bucket,ord)
+            LEFT JOIN payable_bills pb ON outstanding>0 AND bucket=CASE WHEN pb."dueDate"::date >= (SELECT to_date FROM bounds) THEN 'CURRENT' WHEN (SELECT to_date FROM bounds)-pb."dueDate"::date<=30 THEN '1_30' WHEN (SELECT to_date FROM bounds)-pb."dueDate"::date<=60 THEN '31_60' WHEN (SELECT to_date FROM bounds)-pb."dueDate"::date<=90 THEN '61_90' ELSE 'OVER_90' END GROUP BY bucket,ord
+          ) q),'[]'::json),
+          'byVendor',COALESCE((SELECT json_agg(json_build_object('vendor',vendor_name,'amount',to_char(amount,'FM999999999999990.00')) ORDER BY amount DESC) FROM (SELECT vendor_name,SUM(outstanding) amount FROM payable_bills WHERE outstanding>0 GROUP BY vendor_name) q),'[]'::json)
+        ),
         'cashMovement', json_build_object(
           'inflows',to_char(COALESCE((SELECT SUM(amount) FROM payment_period),0),'FM999999999999990.00'),
-          'outflows',to_char(COALESCE((SELECT SUM(amount) FROM payroll_paid),0),'FM999999999999990.00'),
-          'net',to_char(COALESCE((SELECT SUM(amount) FROM payment_period),0)-COALESCE((SELECT SUM(amount) FROM payroll_paid),0),'FM999999999999990.00'),
+          'outflows',to_char(COALESCE((SELECT SUM(amount) FROM payroll_paid),0)+COALESCE((SELECT SUM(amount) FROM payable_payment_period),0),'FM999999999999990.00'),
+          'net',to_char(COALESCE((SELECT SUM(amount) FROM payment_period),0)-COALESCE((SELECT SUM(amount) FROM payroll_paid),0)-COALESCE((SELECT SUM(amount) FROM payable_payment_period),0),'FM999999999999990.00'),
           'reconciledInflows',to_char(COALESCE((SELECT SUM(amount) FROM payment_period WHERE reconciled),0),'FM999999999999990.00'),
-          'reconciledOutflows',to_char(COALESCE((SELECT SUM(amount) FROM payroll_paid WHERE reconciled),0),'FM999999999999990.00'),
+          'reconciledOutflows',to_char(COALESCE((SELECT SUM(amount) FROM payroll_paid WHERE reconciled),0)+COALESCE((SELECT SUM(amount) FROM payable_payment_period WHERE reconciled),0),'FM999999999999990.00'),
           'forecastIncluded',false
         ),
         'trend', COALESCE((SELECT json_agg(json_build_object('period',bucket::text,'invoiced',to_char(invoiced,'FM999999999999990.00'),'collected',to_char(collected,'FM999999999999990.00'),'expenses',to_char(expenses,'FM999999999999990.00'),'payroll',to_char(payroll,'FM999999999999990.00'),'profit',to_char(invoiced-expenses-payroll,'FM999999999999990.00')) ORDER BY bucket) FROM trend),'[]'::json)
       )::text payload
-    `.returnsRow({ payload: "pg/text@1" }).build();
+    `
+      .returnsRow({ payload: "pg/text@1" })
+      .build();
     const row = (await this.db.runtime().query(plan))[0];
     if (!row) throw new BadRequestException("Reporting data is unavailable");
     return JSON.parse(row.payload) as FinancialReport;

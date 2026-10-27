@@ -11,6 +11,8 @@ export type Tab =
   | "overtime"
   | "invoices"
   | "expenses"
+  | "vendors"
+  | "accounts-payable"
   | "retainers"
   | "payroll"
   | "payroll-automation"
@@ -46,6 +48,14 @@ export const NAV: {
     label: "Expenses",
     icon: "↗",
     permission: "expenses:read",
+  },
+  { key: "vendors", label: "Vendors", icon: "◉", permission: "vendors:read" },
+  {
+    key: "accounts-payable",
+    label: "Accounts Payable",
+    sidebarLabel: "Bills & payments",
+    icon: "▧",
+    permission: "accounts-payable:read",
   },
   {
     key: "cash-flow",
@@ -125,7 +135,15 @@ export const NAV_SECTIONS: {
     key: "workspace",
     label: "Workspace",
     sidebarLabel: "Business",
-    tabs: ["overview", "clients", "invoices", "retainers", "expenses"],
+    tabs: [
+      "overview",
+      "clients",
+      "invoices",
+      "retainers",
+      "expenses",
+      "vendors",
+      "accounts-payable",
+    ],
   },
   {
     key: "cash-flow",
@@ -206,6 +224,8 @@ export const ICON_PATHS: Record<Tab, string> = {
   clients: "M4 3h12v14H4z M8 7a2 2 0 1 0 4 0a2 2 0 1 0-4 0 M7 14v-1a3 3 0 0 1 6 0v1",
   invoices: "M5 2h10v16l-2-1-3 1-3-1-2 1z M8 6h4 M8 10h4",
   expenses: "M3 14l5-5 3 3 6-8 M12 4h5v5",
+  vendors: "M3 5h14v12H3z M6 2h8v3 M6 9h8 M6 13h5",
+  "accounts-payable": "M4 2h12v16H4z M7 6h6 M7 10h6 M7 14h3",
   retainers: "M16 7a6 6 0 0 0-10-2L3 8 M3 3v5h5 M4 13a6 6 0 0 0 10 2l3-3 M17 17v-5h-5",
   payroll: "M10 2v16 M14 5H8a3 3 0 0 0 0 6h4a3 3 0 0 1 0 6H6",
   "payroll-automation": "M16 7a6 6 0 0 0-10-2L3 8 M3 3v5h5 M4 13a6 6 0 0 0 10 2l3-3 M17 17v-5h-5",
@@ -235,6 +255,8 @@ export const DESCRIPTION: Record<Tab, string> = {
   overtime: "Review requested and approved overtime.",
   invoices: "Your organization’s invoice records.",
   expenses: "Keep an eye on your business spending.",
+  vendors: "Manage suppliers, terms, and outstanding balances.",
+  "accounts-payable": "Approve vendor bills and track every settlement.",
   retainers: "Your recurring client relationships.",
   payroll: "Calculate, approve, and pay your team with an auditable workflow.",
   "payroll-automation": "Schedule payroll drafts and manage statutory calculation rules.",

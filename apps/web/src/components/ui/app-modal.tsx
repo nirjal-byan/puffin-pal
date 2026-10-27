@@ -8,12 +8,14 @@ export function AppModal({
   onClose,
   wide = false,
   badge,
+  open = true,
 }: {
   title: string;
   children: ReactNode;
   onClose: () => void;
   wide?: boolean;
   badge?: string;
+  open?: boolean;
 }) {
   const dialog = useRef<HTMLDialogElement>(null);
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -27,12 +29,14 @@ export function AppModal({
 
   useEffect(() => {
     const element = dialog.current;
-    if (element && !element.open) element.showModal();
+    if (open && element && !element.open) element.showModal();
     return () => {
       if (closeTimer.current) clearTimeout(closeTimer.current);
       if (element?.open) element.close();
     };
-  }, []);
+  }, [open]);
+
+  if (!open) return null;
 
   return (
     <dialog

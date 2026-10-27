@@ -21,14 +21,7 @@ import {
   type Session,
 } from "@/lib/api";
 import type { WorkspaceApi } from "@/lib/api";
-import {
-  NAV,
-  DESCRIPTION,
-  sectionForTab,
-  resolveTab,
-  tabHref,
-  type Tab,
-} from "@/lib/navigation";
+import { NAV, DESCRIPTION, sectionForTab, resolveTab, tabHref, type Tab } from "@/lib/navigation";
 import { CompanyLogoSettings } from "@/components/shared/company-logo-settings";
 import { Navbar } from "@/components/layout/navbar";
 import { Sidebar } from "@/components/layout/sidebar";
@@ -58,6 +51,7 @@ import CashFlowPage from "@/features/cash-flow/components/cash-flow-page";
 import WorkforcePage from "@/features/workforce/components/workforce-page";
 import BankingPage from "@/features/banking/banking-page";
 import FinancialReportsPage from "@/features/financial-reports/components/financial-reports-page";
+import AccountsPayablePage from "@/features/accounts-payable/accounts-payable-page";
 
 export default function WorkspacePage({
   session,
@@ -176,6 +170,8 @@ export default function WorkspacePage({
       tab === "cash-flow" ||
       tab === "banking" ||
       tab === "reports" ||
+      tab === "vendors" ||
+      tab === "accounts-payable" ||
       !allowed
     )
       return;
@@ -268,33 +264,40 @@ export default function WorkspacePage({
               description={DESCRIPTION[tab]}
               actions={
                 <>
-                {!creatingInvoice && !invoiceId && tab === "invoices" && can("invoices:create") && (
-                  <Link className="button primary" href="/invoices/new" data-tour="create-invoice">
-                    + Create Invoice
-                  </Link>
-                )}
-                {!creatingInvoice &&
-                  !invoiceId &&
-                  ![
-                    "overview",
-                    "access",
-                    "profile",
-                    "password",
-                    "cash-flow",
-                    "banking",
-                    "payroll",
-                    "payroll-automation",
-                  ].includes(tab) &&
-                  allowed && (
-                    <button
-                      className="button secondary"
-                      type="button"
-                      onClick={reload}
-                      disabled={loading}
-                    >
-                      ↻ Refresh
-                    </button>
-                  )}
+                  {!creatingInvoice &&
+                    !invoiceId &&
+                    tab === "invoices" &&
+                    can("invoices:create") && (
+                      <Link
+                        className="button primary"
+                        href="/invoices/new"
+                        data-tour="create-invoice"
+                      >
+                        + Create Invoice
+                      </Link>
+                    )}
+                  {!creatingInvoice &&
+                    !invoiceId &&
+                    ![
+                      "overview",
+                      "access",
+                      "profile",
+                      "password",
+                      "cash-flow",
+                      "banking",
+                      "payroll",
+                      "payroll-automation",
+                    ].includes(tab) &&
+                    allowed && (
+                      <button
+                        className="button secondary"
+                        type="button"
+                        onClick={reload}
+                        disabled={loading}
+                      >
+                        ↻ Refresh
+                      </button>
+                    )}
                 </>
               }
             />
@@ -324,9 +327,7 @@ export default function WorkspacePage({
               <span className="role-badge">Draft</span>
             </section>
           )}
-          {toast && (
-            <Snackbar key={toast.id} message={toast.message} onDismiss={dismissToast} />
-          )}
+          {toast && <Snackbar key={toast.id} message={toast.message} onDismiss={dismissToast} />}
           {invoiceId ? (
             <InvoiceDetailPage
               key={`${invoiceId}-${editingInvoice}`}
@@ -437,6 +438,14 @@ export default function WorkspacePage({
               currency={session.organization.currency}
               permissions={session.permissions}
               onError={(failure) => setError(errorMessage(failure))}
+            />
+          ) : tab === "vendors" || tab === "accounts-payable" ? (
+            <AccountsPayablePage
+              key={tab}
+              api={api}
+              permissions={session.permissions}
+              initialView={tab === "vendors" ? "vendors" : "bills"}
+              onSaved={recordNotification}
             />
           ) : loading ? (
             <section className="panel loading" role="status">

@@ -1,5 +1,9 @@
 # Financial reporting
 
+## Accounts payable integration
+
+Payables reporting is backed by approved vendor bills and active payable payments. Aging uses each bill's remaining balance, and cash movement uses payment dates rather than approval dates. A bill linked to an expense does not create a second operating cost; its payment supplies settlement and cash-movement evidence for that expense. Reversed payments are excluded, while bank reconciliation is reported as confirmation rather than another cash event.
+
 PuffinPal's financial reporting module aggregates existing tenant-owned records. It does not create a ledger or duplicate financial transactions.
 
 ## Architecture
@@ -11,18 +15,18 @@ PuffinPal's financial reporting module aggregates existing tenant-owned records.
 
 ## Authoritative sources
 
-| Metric | Source and recognition date |
-| --- | --- |
-| Issued revenue | Issued/paid/overdue invoice snapshots, by invoice issue date |
-| Collected revenue | Invoice payment records, by payment date |
-| Receivables | Issued invoice total less recorded payments, as of the report end date |
-| Recorded expenses | Expense records, by expense date |
-| Operating expenses | Approved expense records, by expense date |
-| Payroll cost | Finalized payroll-run snapshots, by payment date |
-| Payroll paid | Payroll payment records, by payment date |
-| Cash inflow | Recorded invoice payments |
-| Cash outflow | Recorded payroll payments |
-| Reconciled movement | Recorded payments linked to a non-reversed bank reconciliation |
+| Metric              | Source and recognition date                                            |
+| ------------------- | ---------------------------------------------------------------------- |
+| Issued revenue      | Issued/paid/overdue invoice snapshots, by invoice issue date           |
+| Collected revenue   | Invoice payment records, by payment date                               |
+| Receivables         | Issued invoice total less recorded payments, as of the report end date |
+| Recorded expenses   | Expense records, by expense date                                       |
+| Operating expenses  | Approved expense records, by expense date                              |
+| Payroll cost        | Finalized payroll-run snapshots, by payment date                       |
+| Payroll paid        | Payroll payment records, by payment date                               |
+| Cash inflow         | Recorded invoice payments                                              |
+| Cash outflow        | Recorded payroll payments                                              |
+| Reconciled movement | Recorded payments linked to a non-reversed bank reconciliation         |
 
 Draft invoices are excluded. Partial invoice and payroll payments are summed once. Bank imports do not create additional cash movement; reconciliation only confirms an existing payment.
 

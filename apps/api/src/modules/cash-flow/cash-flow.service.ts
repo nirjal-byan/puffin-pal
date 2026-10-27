@@ -165,7 +165,7 @@ export class CashFlowService {
     const events: ForecastEvent[] = [];
     const warnings = [
       "Forecasts are deterministic planning estimates, not guarantees.",
-      "Past approved expenses are excluded because expenses do not track payment state.",
+      "Approved vendor bills use their due date; recorded payable payments use their payment date.",
     ];
     if (statutoryApplications.some((row) => moneyToCents(row.employerContributions) > 0n))
       warnings.push(
@@ -193,7 +193,7 @@ export class CashFlowService {
     ]);
     if (configuration.includeApprovedExpenses)
       warnings.push(
-        "Approved future-dated expenses use their expense date as an assumed cash date.",
+        "Standalone approved expenses use their expense date; linked bills are counted only through accounts payable.",
       );
     if (configuration.includeSalaryEstimates)
       warnings.push(
@@ -419,22 +419,59 @@ export class CashFlowService {
     to: string,
     events: ForecastEvent[],
   ) {
-    const expenses = await this.db.orm.public.Expense.where({
-      organizationId,
-      approvalStatus: "APPROVED",
-    }).all();
+    const [expenses, bills, payments] = await Promise.all([
+      this.db.orm.public.Expense.where({ organizationId, approvalStatus: "APPROVED" }).all(),
+      this.db.orm.public.VendorBill.where({ organizationId, status: "APPROVED" }).all(),
+      this.db.orm.public.PayablePayment.where({ organizationId }).all(),
+    ]);
+    const linkedExpenseIds = new Set(bills.map((bill) => bill.expenseId).filter(Boolean));
+    const activePayments = payments.filter((payment) => !payment.reversedAt);
+    for (const payment of activePayments) {
+      const paymentDate = date(payment.paymentDate);
+      if (paymentDate < from || paymentDate > to) continue;
+      events.push({
+        id: `payable-payment:${payment.id}`,
+        source: "APPROVED_EXPENSE",
+        direction: "OUTFLOW",
+        date: paymentDate,
+        amountCents: moneyToCents(payment.amount),
+        label: payment.vendorBillId ? "Vendor bill payment" : "Expense payment",
+        assumption: "Recorded payable payment.",
+      });
+    }
+    for (const bill of bills) {
+      const paid = activePayments
+        .filter((payment) => payment.vendorBillId === bill.id)
+        .reduce((sum, payment) => sum + moneyToCents(payment.amount), 0n);
+      const balance = moneyToCents(bill.totalAmount) - paid;
+      const dueDate = date(bill.dueDate);
+      if (balance <= 0n || dueDate < from || dueDate > to) continue;
+      events.push({
+        id: `vendor-bill:${bill.id}`,
+        source: "APPROVED_EXPENSE",
+        direction: "OUTFLOW",
+        date: dueDate,
+        amountCents: balance,
+        label: bill.billNumber,
+        assumption: "Outstanding approved vendor bill balance at its due date.",
+      });
+    }
     for (const expense of expenses) {
+      if (linkedExpenseIds.has(expense.id)) continue;
+      const paid = activePayments
+        .filter((payment) => payment.expenseId === expense.id)
+        .reduce((sum, payment) => sum + moneyToCents(payment.amount), 0n);
+      const balance = moneyToCents(expense.amount) - paid;
       const expenseDate = date(expense.date);
-      if (expenseDate < from || expenseDate > to) continue;
+      if (balance <= 0n || expenseDate < from || expenseDate > to) continue;
       events.push({
         id: `expense:${expense.id}`,
         source: "APPROVED_EXPENSE",
         direction: "OUTFLOW",
         date: expenseDate,
-        amountCents: moneyToCents(expense.amount),
+        amountCents: balance,
         label: expense.title,
-        assumption:
-          "The expense date is used as the planned cash date; payment state is unavailable.",
+        assumption: "The expense date is used for its unpaid standalone balance.",
       });
     }
   }

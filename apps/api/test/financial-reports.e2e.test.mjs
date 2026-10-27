@@ -14,7 +14,10 @@ test("financial reports aggregate authoritative tenant records without cross-ten
   async function request(path, token, body, method = "POST", expected = 200) {
     const response = await fetch(base + path, {
       method,
-      headers: { ...(token ? { authorization: `Bearer ${token}` } : {}), ...(body === undefined ? {} : { "content-type": "application/json" }) },
+      headers: {
+        ...(token ? { authorization: `Bearer ${token}` } : {}),
+        ...(body === undefined ? {} : { "content-type": "application/json" }),
+      },
       ...(body === undefined ? {} : { body: JSON.stringify(body) }),
     });
     const value = await response.json();
@@ -23,24 +26,132 @@ test("financial reports aggregate authoritative tenant records without cross-ten
   }
   try {
     const password = "Financial-report-password-123";
-    const owner = await request("/auth/signup", null, { organizationName: "Reports", organizationSlug: "reports-owner", fullName: "Owner", email: "owner@reports.test", password }, "POST", 201);
-    const other = await request("/auth/signup", null, { organizationName: "Other", organizationSlug: "reports-other", fullName: "Other", email: "other@reports.test", password }, "POST", 201);
+    const owner = await request(
+      "/auth/signup",
+      null,
+      {
+        organizationName: "Reports",
+        organizationSlug: "reports-owner",
+        fullName: "Owner",
+        email: "owner@reports.test",
+        password,
+      },
+      "POST",
+      201,
+    );
+    const other = await request(
+      "/auth/signup",
+      null,
+      {
+        organizationName: "Other",
+        organizationSlug: "reports-other",
+        fullName: "Other",
+        email: "other@reports.test",
+        password,
+      },
+      "POST",
+      201,
+    );
     const day = Temporal.PlainDate.from("2026-06-15");
     const instant = Temporal.Instant.from(`${day}T00:00:00Z`);
-    const client = await db.orm.public.Client.create({ organizationId: owner.organization.id, name: "Report client", email: "client@reports.test" });
-    const invoice = await db.orm.public.Invoice.create({ organizationId: owner.organization.id, clientId: client.id, invoiceNumber: "REPORT-1", status: "ISSUED", issueDate: instant, dueDate: Temporal.Instant.from("2026-06-20T00:00:00Z"), issuedAt: instant, subtotal: "100.00", tax: "0.00", total: "100.00", currency: "USD" });
-    await db.orm.public.Payment.create({ organizationId: owner.organization.id, invoiceId: invoice.id, amount: "25.00", paymentDate: instant, method: "BANK_TRANSFER", recordedByUserId: owner.user.id });
-    await db.orm.public.Expense.create({ organizationId: owner.organization.id, title: "Approved cost", amount: "10.00", category: "SOFTWARE", date: instant, approvalStatus: "APPROVED", createdByUserId: owner.user.id });
-    await db.orm.public.Expense.create({ organizationId: owner.organization.id, title: "Rejected cost", amount: "99.00", category: "OTHER", date: instant, approvalStatus: "REJECTED", createdByUserId: owner.user.id });
+    const client = await db.orm.public.Client.create({
+      organizationId: owner.organization.id,
+      name: "Report client",
+      email: "client@reports.test",
+    });
+    const invoice = await db.orm.public.Invoice.create({
+      organizationId: owner.organization.id,
+      clientId: client.id,
+      invoiceNumber: "REPORT-1",
+      status: "ISSUED",
+      issueDate: instant,
+      dueDate: Temporal.Instant.from("2026-06-20T00:00:00Z"),
+      issuedAt: instant,
+      subtotal: "100.00",
+      tax: "0.00",
+      total: "100.00",
+      currency: "USD",
+    });
+    await db.orm.public.Payment.create({
+      organizationId: owner.organization.id,
+      invoiceId: invoice.id,
+      amount: "25.00",
+      paymentDate: instant,
+      method: "BANK_TRANSFER",
+      recordedByUserId: owner.user.id,
+    });
+    const expense = await db.orm.public.Expense.create({
+      organizationId: owner.organization.id,
+      title: "Approved cost",
+      amount: "10.00",
+      category: "SOFTWARE",
+      date: instant,
+      approvalStatus: "APPROVED",
+      createdByUserId: owner.user.id,
+    });
+    await db.orm.public.Expense.create({
+      organizationId: owner.organization.id,
+      title: "Rejected cost",
+      amount: "99.00",
+      category: "OTHER",
+      date: instant,
+      approvalStatus: "REJECTED",
+      createdByUserId: owner.user.id,
+    });
+    const vendor = await db.orm.public.Vendor.create({
+      organizationId: owner.organization.id,
+      name: "Report vendor",
+      defaultCurrency: "USD",
+      paymentTermsDays: 30,
+    });
+    const bill = await db.orm.public.VendorBill.create({
+      organizationId: owner.organization.id,
+      vendorId: vendor.id,
+      expenseId: expense.id,
+      billNumber: "BILL-1",
+      issueDate: instant,
+      dueDate: Temporal.Instant.from("2026-06-10T00:00:00Z"),
+      currency: "USD",
+      subtotal: "10.00",
+      totalAmount: "10.00",
+      status: "APPROVED",
+      createdById: owner.user.id,
+    });
+    await db.orm.public.PayablePayment.create({
+      organizationId: owner.organization.id,
+      targetType: "VENDOR_BILL",
+      vendorBillId: bill.id,
+      amount: "4.00",
+      currency: "USD",
+      paymentDate: instant,
+      method: "BANK_TRANSFER",
+      idempotencyKey: "report-payment-1",
+      recordedById: owner.user.id,
+    });
     const query = "from=2026-06-01&to=2026-06-30&currency=USD&groupBy=month";
-    const report = await request(`/financial-reports/overview?${query}`, owner.accessToken, undefined, "GET");
+    const report = await request(
+      `/financial-reports/overview?${query}`,
+      owner.accessToken,
+      undefined,
+      "GET",
+    );
     assert.equal(report.revenue.issued, "100.00");
     assert.equal(report.revenue.collected, "25.00");
     assert.equal(report.revenue.outstanding, "75.00");
     assert.equal(report.expenses.approved, "10.00");
+    assert.equal(report.expenses.paid, "4.00");
+    assert.equal(report.expenses.unpaid, "6.00");
     assert.equal(report.profitability.profit, "90.00");
-    assert.equal(report.payables.available, false);
-    const isolated = await request(`/financial-reports/overview?${query}`, other.accessToken, undefined, "GET");
+    assert.equal(report.payables.available, true);
+    assert.equal(report.payables.outstanding, "6.00");
+    assert.equal(report.payables.payments, "4.00");
+    assert.equal(report.cashMovement.outflows, "4.00");
+    const isolated = await request(
+      `/financial-reports/overview?${query}`,
+      other.accessToken,
+      undefined,
+      "GET",
+    );
     assert.equal(isolated.revenue.issued, "0.00");
     assert.equal(isolated.expenses.approved, "0.00");
   } finally {

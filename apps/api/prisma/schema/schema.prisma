@@ -255,6 +255,34 @@ enum BankImportStatus {
 enum ReconciliationTargetType {
   INVOICE_PAYMENT
   PAYROLL_PAYMENT
+  PAYABLE_PAYMENT
+}
+
+enum VendorBillStatus {
+  DRAFT
+  PENDING_APPROVAL
+  APPROVED
+  REJECTED
+  VOIDED
+}
+
+enum PayablePaymentTarget {
+  VENDOR_BILL
+  EXPENSE
+}
+
+enum PayableAuditAction {
+  VENDOR_CREATED
+  VENDOR_UPDATED
+  VENDOR_ARCHIVED
+  BILL_CREATED
+  BILL_UPDATED
+  BILL_SUBMITTED
+  BILL_APPROVED
+  BILL_REJECTED
+  BILL_VOIDED
+  PAYMENT_RECORDED
+  PAYMENT_REVERSED
 }
 
 enum PaymentBatchStatus {
@@ -394,6 +422,10 @@ model Organization {
   bankingAuditEvents           BankingAuditEvent[]
   payrollPaymentBatches        PayrollPaymentBatch[]
   payrollPaymentBatchItems     PayrollPaymentBatchItem[]
+  vendors                      Vendor[]
+  vendorBills                  VendorBill[]
+  payablePayments              PayablePayment[]
+  payableAuditEvents           PayableAuditEvent[]
 
   @@map("organizations")
 }
@@ -518,6 +550,11 @@ model User {
   reversedBankReconciliations    BankReconciliation[]            @relation("BankReconciliationReverser")
   bankingAuditEvents             BankingAuditEvent[]             @relation("BankingAuditActor")
   createdPaymentBatches          PayrollPaymentBatch[]           @relation("PaymentBatchCreator")
+  createdVendorBills             VendorBill[]                    @relation("VendorBillCreator")
+  approvedVendorBills            VendorBill[]                    @relation("VendorBillApprover")
+  recordedPayablePayments        PayablePayment[]                @relation("PayablePaymentRecorder")
+  reversedPayablePayments        PayablePayment[]                @relation("PayablePaymentReverser")
+  payableAuditEvents             PayableAuditEvent[]             @relation("PayableAuditActor")
 
   @@unique([organizationId, id])
   @@unique([organizationId, email])
@@ -1526,6 +1563,7 @@ model BankAccount {
   imports          BankTransactionImport[]
   transactions     BankTransaction[]
   paymentBatches   PayrollPaymentBatch[]
+  payablePayments  PayablePayment[]
 
   @@unique([organizationId, id])
   @@unique([organizationId, displayName], map: "bank_account_name_key")
@@ -1589,6 +1627,7 @@ model BankReconciliation {
   targetType        ReconciliationTargetType
   invoicePaymentId  String?
   payrollPaymentId  String?
+  payablePaymentId  String?
   reconciledById    String
   reconciledAt      DateTime                 @default(now())
   reversedById      String?
@@ -1600,12 +1639,14 @@ model BankReconciliation {
   bankTransaction   BankTransaction          @relation(fields: [organizationId, bankTransactionId], references: [organizationId, id], onDelete: Restrict, map: "bank_recon_tx_fkey")
   invoicePayment    Payment?                 @relation(fields: [organizationId, invoicePaymentId], references: [organizationId, id], onDelete: Restrict, map: "bank_recon_invoice_fkey")
   payrollPayment    PayrollPayment?          @relation(fields: [organizationId, payrollPaymentId], references: [organizationId, id], onDelete: Restrict, map: "bank_recon_payroll_fkey")
+  payablePayment    PayablePayment?          @relation(fields: [organizationId, payablePaymentId], references: [organizationId, id], onDelete: Restrict, map: "bank_recon_payable_fkey")
   reconciledBy      User                     @relation("BankReconciliationActor", fields: [organizationId, reconciledById], references: [organizationId, id], onDelete: Restrict, map: "bank_recon_actor_fkey")
   reversedBy        User?                    @relation("BankReconciliationReverser", fields: [organizationId, reversedById], references: [organizationId, id], onDelete: Restrict, map: "bank_recon_reverser_fkey")
 
   @@unique([organizationId, bankTransactionId], map: "bank_recon_tx_key")
   @@unique([organizationId, invoicePaymentId], map: "bank_recon_invoice_key")
   @@unique([organizationId, payrollPaymentId], map: "bank_recon_payroll_key")
+  @@unique([organizationId, payablePaymentId], map: "bank_recon_payable_key")
   @@index([organizationId, reconciledAt], map: "bank_recon_created_idx")
   @@map("bank_reconciliations")
 }
@@ -1674,6 +1715,153 @@ model BankingAuditEvent {
   @@map("banking_audit_events")
 }
 
+model Vendor {
+  id               String               @id @default(uuid())
+  organizationId   String
+  name             String
+  displayName      String?
+  email            String?
+  phone            String?
+  website          String?
+  address          String?
+  country          String?
+  defaultCurrency  String
+  taxId            String?
+  paymentTermsDays Int                  @default(30)
+  notes            String?
+  active           Boolean              @default(true)
+  version          Int                  @default(1)
+  archivedAt       DateTime?
+  createdAt        DateTime             @default(now())
+  updatedAt        temporal.updatedAt()
+
+  organization     Organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade, map: "vendor_org_fkey")
+  bills            VendorBill[]
+
+  @@unique([organizationId, id])
+  @@unique([organizationId, name], map: "vendor_name_key")
+  @@index([organizationId, active, name], map: "vendor_active_name_idx")
+  @@map("vendors")
+}
+
+model VendorBill {
+  id              String               @id @default(uuid())
+  organizationId  String
+  vendorId        String
+  expenseId       String?
+  billNumber      String
+  vendorReference String?
+  issueDate       DateTime
+  dueDate         DateTime
+  currency        String
+  description     String?
+  subtotal        Numeric(14, 2)
+  taxAmount       Numeric(14, 2)       @default(0.00)
+  discountAmount  Numeric(14, 2)       @default(0.00)
+  totalAmount     Numeric(14, 2)
+  status          VendorBillStatus     @default(DRAFT)
+  rejectionReason String?
+  attachmentKey   String?
+  attachmentName  String?
+  attachmentMime  String?
+  attachmentSize  Int?
+  createdById     String
+  submittedAt     DateTime?
+  approvedById    String?
+  approvedAt      DateTime?
+  rejectedAt      DateTime?
+  voidedAt        DateTime?
+  version         Int                  @default(1)
+  createdAt       DateTime             @default(now())
+  updatedAt       temporal.updatedAt()
+
+  organization    Organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade, map: "vendor_bill_org_fkey")
+  vendor          Vendor               @relation(fields: [organizationId, vendorId], references: [organizationId, id], onDelete: Restrict, map: "vendor_bill_vendor_fkey")
+  expense         Expense?             @relation(fields: [organizationId, expenseId], references: [organizationId, id], onDelete: Restrict, map: "vendor_bill_expense_fkey")
+  createdBy       User                 @relation("VendorBillCreator", fields: [organizationId, createdById], references: [organizationId, id], onDelete: Restrict, map: "vendor_bill_creator_fkey")
+  approvedBy      User?                @relation("VendorBillApprover", fields: [organizationId, approvedById], references: [organizationId, id], onDelete: Restrict, map: "vendor_bill_approver_fkey")
+  items           VendorBillItem[]
+  payments        PayablePayment[]
+
+  @@unique([organizationId, id])
+  @@unique([organizationId, billNumber], map: "vendor_bill_number_key")
+  @@unique([organizationId, expenseId], map: "vendor_bill_expense_key")
+  @@index([organizationId, vendorId, status], map: "vendor_bill_vendor_status_idx")
+  @@index([organizationId, status, dueDate], map: "vendor_bill_status_due_idx")
+  @@map("vendor_bills")
+}
+
+model VendorBillItem {
+  id             String         @id @default(uuid())
+  organizationId String
+  vendorBillId   String
+  description    String
+  quantity       Numeric(12, 4)
+  unitPrice      Numeric(14, 2)
+  taxAmount      Numeric(14, 2) @default(0.00)
+  discountAmount Numeric(14, 2) @default(0.00)
+  lineTotal      Numeric(14, 2)
+  position       Int            @default(0)
+
+  bill           VendorBill     @relation(fields: [organizationId, vendorBillId], references: [organizationId, id], onDelete: Cascade, map: "vendor_bill_item_bill_fkey")
+
+  @@index([organizationId, vendorBillId, position], map: "vendor_bill_item_position_idx")
+  @@map("vendor_bill_items")
+}
+
+model PayablePayment {
+  id             String               @id @default(uuid())
+  organizationId String
+  targetType     PayablePaymentTarget
+  vendorBillId   String?
+  expenseId      String?
+  bankAccountId  String?
+  amount         Numeric(14, 2)
+  currency       String
+  paymentDate    DateTime
+  method         PaymentMethod
+  reference      String?
+  notes          String?
+  idempotencyKey String
+  recordedById   String
+  reversedAt     DateTime?
+  reversedById   String?
+  reversalReason String?
+  version        Int                  @default(1)
+  createdAt      DateTime             @default(now())
+
+  organization   Organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade, map: "payable_payment_org_fkey")
+  vendorBill     VendorBill?          @relation(fields: [organizationId, vendorBillId], references: [organizationId, id], onDelete: Restrict, map: "payable_payment_bill_fkey")
+  expense        Expense?             @relation(fields: [organizationId, expenseId], references: [organizationId, id], onDelete: Restrict, map: "payable_payment_expense_fkey")
+  bankAccount    BankAccount?         @relation(fields: [organizationId, bankAccountId], references: [organizationId, id], onDelete: Restrict, map: "payable_payment_account_fkey")
+  recordedBy     User                 @relation("PayablePaymentRecorder", fields: [organizationId, recordedById], references: [organizationId, id], onDelete: Restrict, map: "payable_payment_recorder_fkey")
+  reversedBy     User?                @relation("PayablePaymentReverser", fields: [organizationId, reversedById], references: [organizationId, id], onDelete: Restrict, map: "payable_payment_reverser_fkey")
+  reconciliation BankReconciliation?
+
+  @@unique([organizationId, id])
+  @@unique([organizationId, idempotencyKey], map: "payable_payment_idempotency_key")
+  @@index([organizationId, vendorBillId, paymentDate], map: "payable_payment_bill_idx")
+  @@index([organizationId, expenseId, paymentDate], map: "payable_payment_expense_idx")
+  @@map("payable_payments")
+}
+
+model PayableAuditEvent {
+  id             String             @id @default(uuid())
+  organizationId String
+  actorId        String
+  entityType     String
+  entityId       String
+  action         PayableAuditAction
+  details        String?
+  createdAt      DateTime           @default(now())
+
+  organization   Organization       @relation(fields: [organizationId], references: [id], onDelete: Cascade, map: "payable_audit_org_fkey")
+  actor          User               @relation("PayableAuditActor", fields: [organizationId, actorId], references: [organizationId, id], onDelete: Restrict, map: "payable_audit_actor_fkey")
+
+  @@index([organizationId, entityType, entityId, createdAt], map: "payable_audit_entity_idx")
+  @@map("payable_audit_events")
+}
+
 model Expense {
   id              String                   @id @default(uuid())
   organizationId  String
@@ -1705,6 +1893,8 @@ model Expense {
   submittedBy     User?                    @relation("ExpenseSubmitter", fields: [organizationId, submittedById], references: [organizationId, id], onDelete: Restrict)
   reviewedBy      User?                    @relation("ExpenseReviewer", fields: [organizationId, reviewedById], references: [organizationId, id], onDelete: Restrict)
   approvalHistory ExpenseApprovalHistory[]
+  vendorBill      VendorBill?
+  payments        PayablePayment[]
 
   @@unique([organizationId, id])
   @@index([organizationId, date])

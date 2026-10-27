@@ -8,6 +8,7 @@ import {
 } from "@nestjs/common";
 import { REQUEST } from "@nestjs/core";
 import type { Numeric } from "@prisma/orm-postgres/target/codec-types";
+import { Temporal } from "temporal-polyfill";
 import { DATABASE } from "../../infrastructure/database/database.module.js";
 import type { Database } from "../../infrastructure/database/client.js";
 import type { AuthenticatedRequest } from "../../common/types/auth.types.js";
@@ -25,10 +26,13 @@ import { csvSourceHash, parseBankCsv } from "./banking-csv.js";
 type OrmDatabase = Pick<Database, "orm">;
 
 function instant(date: string) {
-  return new Date(`${date}T00:00:00.000Z`);
+  return Temporal.Instant.from(`${date}T00:00:00Z`);
 }
-function day(value: Date | string) {
-  return new Date(value).toISOString().slice(0, 10);
+function day(value: { toString(): string } | string) {
+  return value.toString().slice(0, 10);
+}
+function millis(value: { toString(): string }) {
+  return Number(Temporal.Instant.from(value.toString()).epochMilliseconds);
 }
 function cents(value: unknown) {
   const normalized = String(value);
@@ -43,12 +47,12 @@ function money(value: bigint) {
 }
 const bankAmount = (value: string) => value as Numeric<14, 2>;
 function matchScore(
-  transactionDate: Date,
-  paymentDate: Date,
+  transactionDate: { toString(): string },
+  paymentDate: { toString(): string },
   bankReference: string | null,
   paymentReference: string | null,
 ) {
-  const days = Math.abs(transactionDate.getTime() - paymentDate.getTime()) / 86_400_000;
+  const days = Math.abs(millis(transactionDate) - millis(paymentDate)) / 86_400_000;
   const referenceMatches =
     bankReference && paymentReference
       ? bankReference.trim().toLowerCase() === paymentReference.trim().toLowerCase()
@@ -317,14 +321,16 @@ export class BankingService {
         }))
         .sort((left, right) => right.score - left.score);
     }
-    const [payments, entries, reconciled] = await Promise.all([
+    const [payments, payablePayments, entries, reconciled] = await Promise.all([
       this.db.orm.public.PayrollPayment.where({ organizationId }).all(),
+      this.db.orm.public.PayablePayment.where({ organizationId }).all(),
       this.db.orm.public.PayrollEntry.where({ organizationId }).all(),
       this.db.orm.public.BankReconciliation.where({ organizationId }).all(),
     ]);
     const used = new Set(reconciled.map((row) => row.payrollPaymentId).filter(Boolean));
+    const usedPayables = new Set(reconciled.map((row) => row.payablePaymentId).filter(Boolean));
     const entryById = new Map(entries.map((row) => [row.id, row]));
-    return payments
+    const payrollSuggestions = payments
       .filter(
         (payment) => !used.has(payment.id) && cents(payment.amount) === cents(transaction.amount),
       )
@@ -341,8 +347,32 @@ export class BankingService {
           transaction.reference,
           payment.reference,
         ),
-      }))
-      .sort((left, right) => right.score - left.score);
+      }));
+    const payableSuggestions = payablePayments
+      .filter(
+        (payment) =>
+          !payment.reversedAt &&
+          !usedPayables.has(payment.id) &&
+          payment.currency === transaction.currency &&
+          cents(payment.amount) === cents(transaction.amount),
+      )
+      .map((payment) => ({
+        targetType: "PAYABLE_PAYMENT",
+        targetId: payment.id,
+        amount: String(payment.amount),
+        date: day(payment.paymentDate),
+        reference: payment.reference,
+        label: payment.vendorBillId ? "Vendor bill payment" : "Expense payment",
+        score: matchScore(
+          transaction.transactionDate,
+          payment.paymentDate,
+          transaction.reference,
+          payment.reference,
+        ),
+      }));
+    return [...payrollSuggestions, ...payableSuggestions].sort(
+      (left, right) => right.score - left.score,
+    );
   }
 
   async reconcile(transactionId: string, input: ReconcileDto) {
@@ -395,7 +425,7 @@ export class BankingService {
           if (invoice?.currency !== transaction.currency)
             throw new BadRequestException("Payment and bank currencies must match");
         }
-      } else {
+      } else if (input.targetType === "PAYROLL_PAYMENT") {
         const row = await tx.orm.public.PayrollPayment.where({
           organizationId,
           id: input.targetId,
@@ -424,6 +454,25 @@ export class BankingService {
           if (run?.currency !== transaction.currency)
             throw new BadRequestException("Payment and bank currencies must match");
         }
+      } else {
+        const row = await tx.orm.public.PayablePayment.where({
+          organizationId,
+          id: input.targetId,
+        }).first();
+        payment = row
+          ? {
+              id: row.id,
+              amount: row.amount,
+              paymentDate: row.paymentDate,
+              reference: row.reference,
+            }
+          : null;
+        if (transaction.direction !== "DEBIT")
+          throw new BadRequestException("Payable payments require a debit transaction");
+        if (row?.reversedAt)
+          throw new ConflictException("Reversed payable payments cannot be reconciled");
+        if (row?.currency !== transaction.currency)
+          throw new BadRequestException("Payment and bank currencies must match");
       }
       if (!payment) throw new NotFoundException("Payment record not found");
       if (cents(payment.amount) !== cents(transaction.amount))
@@ -434,6 +483,7 @@ export class BankingService {
         targetType: input.targetType,
         invoicePaymentId: input.targetType === "INVOICE_PAYMENT" ? input.targetId : null,
         payrollPaymentId: input.targetType === "PAYROLL_PAYMENT" ? input.targetId : null,
+        payablePaymentId: input.targetType === "PAYABLE_PAYMENT" ? input.targetId : null,
         reconciledById: this.tenant.userId,
       });
       await this.audit(
@@ -604,7 +654,7 @@ export class BankingService {
       }).update({
         status: input.status,
         paymentReference: input.paymentReference?.trim() || null,
-        attemptedAt: new Date(),
+        attemptedAt: Temporal.Now.instant(),
       });
       const items = await tx.orm.public.PayrollPaymentBatchItem.where({
         organizationId,
