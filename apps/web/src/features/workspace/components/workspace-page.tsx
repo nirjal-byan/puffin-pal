@@ -3,9 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { flushSync } from "react-dom";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
-import Link from "next/link";
 import { InvoiceDetailPage } from "@/features/invoices/components/invoice-detail-page";
-import { InvoiceForm } from "@/features/invoices/components/invoice-form";
 import { ProductTour } from "@/features/onboarding/product-tour";
 import { recentlyCreatedInvoice } from "@/features/invoices/api/invoices";
 import type { Permission } from "@puffinpal/permissions";
@@ -21,37 +19,17 @@ import {
   type Session,
 } from "@/lib/api";
 import type { WorkspaceApi } from "@/lib/api";
-import { NAV, DESCRIPTION, sectionForTab, resolveTab, tabHref, type Tab } from "@/lib/navigation";
-import { CompanyLogoSettings } from "@/components/shared/company-logo-settings";
+import { NAV, sectionForTab, resolveTab, tabHref, type Tab } from "@/lib/navigation";
 import { Navbar } from "@/components/layout/navbar";
 import { Sidebar } from "@/components/layout/sidebar";
 import { Footer } from "@/components/layout/footer";
-import { AppModal } from "@/components/ui/app-modal";
 import { DocumentTitle } from "@/components/layout/document-title";
 import { Snackbar } from "@/components/ui/snackbar";
-import { PageHeader } from "@/components/shared/page-header";
 import { useNotifications } from "@/providers/notification-provider";
 import WorkspaceLayout from "./workspace-layout";
-import OverviewPage from "@/features/dashboard/components/overview-page";
-import ClientsPage from "@/features/clients/components/clients-page";
-import TeamPage from "@/features/team/components/team-page";
-import AccessPage from "@/features/settings/components/access-page";
-import EditProfilePage from "@/features/settings/components/edit-profile-page";
-import ChangePasswordPage from "@/features/settings/components/change-password-page";
-import InvoicesPage from "@/features/invoices/components/invoices-page";
-import ExpensesPage from "@/features/expenses/components/expenses-page";
-import RetainersPage from "@/features/recurring-invoices/components/retainers-page";
-import EmployeesPage from "@/features/employees/components/employees-page";
-import PayrollPage from "@/features/payroll/components/payroll-page";
-import PayrollAutomationPage from "@/features/payroll/components/automation-page";
-import AttendancePage from "@/features/workforce/components/attendance-page";
-import LeavePage from "@/features/workforce/components/leave-page";
-import OvertimePage from "@/features/workforce/components/overtime-page";
-import CashFlowPage from "@/features/cash-flow/components/cash-flow-page";
-import WorkforcePage from "@/features/workforce/components/workforce-page";
-import BankingPage from "@/features/banking/banking-page";
-import FinancialReportsPage from "@/features/financial-reports/components/financial-reports-page";
-import AccountsPayablePage from "@/features/accounts-payable/accounts-payable-page";
+import { WorkspaceContent } from "./workspace-content";
+import { WorkspaceInvoiceModals } from "./workspace-invoice-modals";
+import { WorkspacePageHeader } from "./workspace-page-header";
 
 export default function WorkspacePage({
   session,
@@ -228,7 +206,6 @@ export default function WorkspacePage({
       setRefreshing(false);
     }
   }
-  const CurrentSettingsPage = tab === "password" ? ChangePasswordPage : EditProfilePage;
   return (
     <WorkspaceLayout theme={theme}>
       <DocumentTitle title={pageTitle} />
@@ -251,57 +228,17 @@ export default function WorkspacePage({
           </span>
         </header>
         <div key={`${tab}-${creatingInvoice}`} className="workspace-content page-transition">
-          {tab !== "overview" && (
-            <PageHeader
-              eyebrow={session.organization.name}
-              title={
-                invoiceId
-                  ? "Invoice Details"
-                  : currentNav.label === "My access"
-                    ? "Your workspace access"
-                    : currentNav.label
-              }
-              description={DESCRIPTION[tab]}
-              actions={
-                <>
-                  {!creatingInvoice &&
-                    !invoiceId &&
-                    tab === "invoices" &&
-                    can("invoices:create") && (
-                      <Link
-                        className="button primary"
-                        href="/invoices/new"
-                        data-tour="create-invoice"
-                      >
-                        + Create Invoice
-                      </Link>
-                    )}
-                  {!creatingInvoice &&
-                    !invoiceId &&
-                    ![
-                      "overview",
-                      "access",
-                      "profile",
-                      "password",
-                      "cash-flow",
-                      "banking",
-                      "payroll",
-                      "payroll-automation",
-                    ].includes(tab) &&
-                    allowed && (
-                      <button
-                        className="button secondary"
-                        type="button"
-                        onClick={reload}
-                        disabled={loading}
-                      >
-                        ↻ Refresh
-                      </button>
-                    )}
-                </>
-              }
-            />
-          )}
+          <WorkspacePageHeader
+            tab={tab}
+            invoiceId={invoiceId}
+            creatingInvoice={creatingInvoice}
+            title={currentNav.label}
+            organizationName={session.organization.name}
+            permissions={session.permissions}
+            allowed={allowed}
+            loading={loading}
+            onReload={reload}
+          />
           {error && (
             <div className="alert" role="alert">
               {error}
@@ -346,226 +283,97 @@ export default function WorkspacePage({
                 or administrator if you need access.
               </p>
             </section>
-          ) : tab === "overview" ? (
-            <OverviewPage session={session} navigate={navigate} api={api} />
-          ) : tab === "profile" || tab === "password" ? (
-            <div
-              className={
-                tab === "profile" && can("organization:update")
-                  ? "profile-settings-columns"
-                  : undefined
-              }
-            >
-              <CurrentSettingsPage
-                key={tab}
-                user={session.user}
-                api={api}
-                onProfileChange={onProfileChange}
-                onSaved={recordNotification}
-              />
-              {tab === "profile" && session.permissions.includes("organization:update") && (
-                <CompanyLogoSettings
-                  organization={session.organization}
-                  api={api}
-                  onProfileChange={onProfileChange}
-                  onSaved={recordNotification}
-                />
-              )}
-            </div>
-          ) : tab === "access" ? (
-            <AccessPage session={session} refreshAccess={refreshAccess} refreshing={refreshing} />
-          ) : tab === "expenses" ? (
-            <ExpensesPage
-              api={api}
-              currency={session.organization.currency}
-              permissions={session.permissions}
-              onSaved={recordNotification}
-              onError={(failure) => setError(errorMessage(failure))}
-            />
-          ) : tab === "retainers" ? (
-            <RetainersPage
-              api={api}
-              currency={session.organization.currency}
-              permissions={session.permissions}
-              onSaved={recordNotification}
-            />
-          ) : tab === "employees" ? (
-            <EmployeesPage
-              api={api}
-              currency={session.organization.currency}
-              permissions={session.permissions}
-              onSaved={recordNotification}
-            />
-          ) : tab === "workforce" ? (
-            <WorkforcePage
-              api={api}
-              permissions={session.permissions}
-              onSaved={recordNotification}
-            />
-          ) : tab === "payroll" ? (
-            <PayrollPage api={api} permissions={session.permissions} onSaved={recordNotification} />
-          ) : tab === "payroll-automation" ? (
-            <PayrollAutomationPage
-              api={api}
-              permissions={session.permissions}
-              onSaved={recordNotification}
-            />
-          ) : tab === "attendance" ? (
-            <AttendancePage
-              api={api}
-              permissions={session.permissions}
-              onSaved={recordNotification}
-            />
-          ) : tab === "leave" ? (
-            <LeavePage api={api} permissions={session.permissions} onSaved={recordNotification} />
-          ) : tab === "overtime" ? (
-            <OvertimePage
-              api={api}
-              permissions={session.permissions}
-              onSaved={recordNotification}
-            />
-          ) : tab === "cash-flow" ? (
-            <CashFlowPage
-              api={api}
-              permissions={session.permissions}
-              onSaved={recordNotification}
-            />
-          ) : tab === "banking" ? (
-            <BankingPage api={api} permissions={session.permissions} onSaved={recordNotification} />
-          ) : tab === "reports" ? (
-            <FinancialReportsPage
-              api={api}
-              currency={session.organization.currency}
-              permissions={session.permissions}
-              onError={(failure) => setError(errorMessage(failure))}
-            />
-          ) : tab === "vendors" || tab === "accounts-payable" ? (
-            <AccountsPayablePage
-              key={tab}
-              api={api}
-              permissions={session.permissions}
-              initialView={tab === "vendors" ? "vendors" : "bills"}
-              onSaved={recordNotification}
-            />
-          ) : loading ? (
-            <section className="panel loading" role="status">
-              <span className="spinner" />
-              Loading {currentNav.label.toLowerCase()}…
-            </section>
-          ) : loadFailed ? (
-            <section className="panel empty-state">
-              <h3>We couldn’t load these records</h3>
-              <p>Check the message above and try again.</p>
-              <button type="button" className="button secondary" onClick={reload}>
-                Try again
-              </button>
-            </section>
           ) : (
             <>
-              {tab === "clients" && (
-                <ClientsPage
-                  key={`${revision}-${offset}`}
-                  clients={rows as Client[]}
-                  canCreate={can("clients:create")}
-                  canUpdate={can("clients:update")}
-                  canDelete={can("clients:delete")}
-                  api={api}
-                  onSaved={saved}
-                  onError={(failure) => setError(errorMessage(failure))}
-                />
-              )}
-              {tab === "members" && (
-                <TeamPage
-                  members={rows as Member[]}
-                  role={session.role}
-                  api={api}
-                  onSaved={saved}
-                  onError={(failure) => setError(errorMessage(failure))}
-                />
-              )}
-              {tab === "invoices" && (
-                <InvoicesPage
-                  key={`${tab}-${revision}-${offset}`}
-                  rows={rows as FinancialRecord[]}
-                  currency={session.organization.currency}
-                  permissions={session.permissions}
-                  onDeleted={() => {
-                    reload();
-                    router.push("/invoices");
-                  }}
-                  api={api}
-                />
-              )}
-              <div className="pagination">
-                <span>
-                  {rows.length
-                    ? `Showing ${offset + 1}–${offset + rows.length}`
-                    : "No records on this page"}
-                </span>
-                <div>
-                  <button
-                    className="button secondary compact"
-                    type="button"
-                    disabled={offset === 0}
-                    onClick={() => {
-                      setOffset((value) => value - 20);
-                      setLoading(true);
-                      setError("");
-                    }}
-                  >
-                    ← Previous
-                  </button>
-                  <button
-                    className="button secondary compact"
-                    type="button"
-                    disabled={rows.length < 20}
-                    onClick={() => {
-                      setOffset((value) => value + 20);
-                      setLoading(true);
-                      setError("");
-                    }}
-                  >
-                    Next →
-                  </button>
+              <WorkspaceContent
+                session={session}
+                tab={tab}
+                currentLabel={currentNav.label}
+                api={api}
+                rows={rows}
+                loading={loading}
+                loadFailed={loadFailed}
+                revision={revision}
+                offset={offset}
+                refreshing={refreshing}
+                navigate={navigate}
+                reload={reload}
+                saved={saved}
+                notify={recordNotification}
+                refreshAccess={() => void refreshAccess()}
+                onProfileChange={onProfileChange}
+                onError={(failure) => setError(errorMessage(failure))}
+                onInvoicesDeleted={() => {
+                  reload();
+                  router.push("/invoices");
+                }}
+              />
+              {![
+                "overview",
+                "profile",
+                "password",
+                "access",
+                "expenses",
+                "retainers",
+                "employees",
+                "workforce",
+                "payroll",
+                "payroll-automation",
+                "attendance",
+                "leave",
+                "overtime",
+                "cash-flow",
+                "banking",
+                "reports",
+                "vendors",
+                "accounts-payable",
+              ].includes(tab) && (
+                <div className="pagination">
+                  <span>
+                    {rows.length
+                      ? `Showing ${offset + 1}–${offset + rows.length}`
+                      : "No records on this page"}
+                  </span>
+                  <div>
+                    <button
+                      className="button secondary compact"
+                      type="button"
+                      disabled={offset === 0}
+                      onClick={() => {
+                        setOffset((value) => value - 20);
+                        setLoading(true);
+                        setError("");
+                      }}
+                    >
+                      ← Previous
+                    </button>
+                    <button
+                      className="button secondary compact"
+                      type="button"
+                      disabled={rows.length < 20}
+                      onClick={() => {
+                        setOffset((value) => value + 20);
+                        setLoading(true);
+                        setError("");
+                      }}
+                    >
+                      Next →
+                    </button>
+                  </div>
                 </div>
-              </div>
+              )}
             </>
           )}
-          {creatingInvoice && can("invoices:create") && (
-            <AppModal
-              title="Create invoice"
-              badge="Draft"
-              wide
-              onClose={() => router.push("/invoices")}
-            >
-              <InvoiceForm
-                api={api}
-                modalActions
-                onCreated={(invoice) =>
-                  router.push(
-                    searchParams.has("tutorialClient") ? `/invoices/${invoice.id}` : "/invoices",
-                  )
-                }
-              />
-            </AppModal>
-          )}
-          {editingInvoice && invoiceId && (
-            <AppModal
-              title="Edit draft invoice"
-              badge="Draft"
-              wide
-              onClose={() => router.push(`/invoices/${invoiceId}`)}
-            >
-              <InvoiceDetailPage
-                id={invoiceId}
-                editing
-                modal
-                api={api}
-                permissions={session.permissions}
-                currency={session.organization.currency}
-              />
-            </AppModal>
-          )}
+          <WorkspaceInvoiceModals
+            creating={creatingInvoice}
+            editing={editingInvoice}
+            invoiceId={invoiceId}
+            tutorialClient={searchParams.has("tutorialClient")}
+            api={api}
+            permissions={session.permissions}
+            currency={session.organization.currency}
+            onNavigate={(href) => router.push(href)}
+          />
           <Footer />
         </div>
       </main>
