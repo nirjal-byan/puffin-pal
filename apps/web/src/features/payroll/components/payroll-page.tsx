@@ -7,78 +7,14 @@ import { DatePicker } from "@/components/ui/date-picker";
 import { FormModal } from "@/components/ui/form-modal";
 import { errorMessage, type WorkspaceApi } from "@/lib/api";
 import { PayrollStatutory } from "./payroll-statutory";
-
-type PayrollRun = {
-  id: string;
-  name: string;
-  periodStart: string;
-  periodEnd: string;
-  paymentDate: string;
-  status: "DRAFT" | "PENDING_APPROVAL" | "APPROVED" | "FINALIZED";
-  currency: string;
-  totalGross: string;
-  totalDeductions: string;
-  totalNet: string;
-  employeeCount: number;
-  version: number;
-  payrollScheduleId?: string | null;
-};
-type PayrollEntry = {
-  id: string;
-  employeeId: string;
-  employeeName: string;
-  employeeCode: string;
-  jobTitle: string;
-  grossPay: string;
-  totalDeductions: string;
-  netPay: string;
-  paidAmount: string;
-  outstandingAmount: string;
-  paymentStatus: string;
-  payslipStatus: string;
-  payments: Array<{ id: string; amount: string; paymentDate: string; reference: string }>;
-};
-type PayrollDetails = PayrollRun & { entries: PayrollEntry[] };
-type WorkforceReview = {
-  employeeId: string;
-  employeeName: string;
-  recordedAttendanceDays: number;
-  workedMinutes: number;
-  scheduledWorkdays: number;
-  missingAttendanceRecords: number;
-  approvedPaidLeaveUnits: number;
-  approvedUnpaidLeaveUnits: number;
-  unresolvedLeaveRequests: number;
-  unresolvedOvertimeRequests: number;
-  approvedOvertime: Array<{ id: string; minutes?: number; rate?: string; imported: boolean }>;
-  unpaidLeaveDeductionsEnabled: boolean;
-  approvedUnpaidLeave: Array<{
-    id: string;
-    startDate: string;
-    endDate: string;
-    minutes?: number;
-    imported: boolean;
-  }>;
-};
-type EmployeeOption = {
-  id: string;
-  employeeCode: string;
-  firstName: string;
-  lastName: string;
-  status: string;
-};
-
-function initialDates() {
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = now.getMonth();
-  const iso = (date: Date) => date.toISOString().slice(0, 10);
-  return {
-    periodStart: iso(new Date(Date.UTC(year, month, 1))),
-    periodEnd: iso(new Date(Date.UTC(year, month + 1, 0))),
-    paymentDate: iso(new Date(Date.UTC(year, month + 1, 1))),
-  };
-}
+import type {
+  PayrollDetails,
+  PayrollEmployeeOption as EmployeeOption,
+  PayrollEntry,
+  PayrollRun,
+  WorkforceReview,
+} from "../types";
+import { initialPayrollDates } from "../utils";
 
 export default function PayrollPage({
   api,
@@ -95,7 +31,7 @@ export default function PayrollPage({
   const [creating, setCreating] = useState(false);
   const [employees, setEmployees] = useState<EmployeeOption[]>([]);
   const [employeeIds, setEmployeeIds] = useState<string[]>([]);
-  const [form, setForm] = useState(() => ({ name: "", ...initialDates() }));
+  const [form, setForm] = useState(() => ({ name: "", ...initialPayrollDates() }));
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const can = (permission: Permission) => permissions.includes(permission);

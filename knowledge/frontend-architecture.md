@@ -96,20 +96,27 @@ Start with the smallest real structure. Add `types.ts`, `constants.ts`, `utils.t
 
 The route files were already thin before this audit. The remaining work is concentrated in client-side feature controllers.
 
-| Feature implementation      | Baseline lines | Current lines | Extracted modules                                         | Status                                                      |
-| --------------------------- | -------------: | ------------: | --------------------------------------------------------- | ----------------------------------------------------------- |
-| Banking page                |            920 |           829 | `types.ts`, `constants.ts`, `bank-account-grid.tsx`       | Partial; transaction/import/batch tables and dialogs remain |
-| Expenses page               |            836 |           710 | `expense-form.tsx` (existing schemas/utils retained)      | Partial; filters, workflow dialogs and list remain          |
-| Workforce page              |            728 |           728 | Existing `types.ts`, `api.ts`, `workforce-ui.tsx`         | Pending further decomposition                               |
-| Accounts Payable page       |            723 |           645 | `types.ts`, `constants.ts`, `utils.ts`, `vendor-grid.tsx` | Partial; bills table and three dialogs remain               |
-| Payroll page                |            718 |           718 | Existing automation/statutory components                  | Pending further decomposition                               |
-| Cash Flow page              |            607 |           540 | `types.ts`, `utils.ts`, `cash-flow-kpi.tsx`               | Partial; charts/events/settings dialog remain               |
-| Workspace controller        |            574 |           574 | Existing layout/dashboard entry components                | Pending controller/hook extraction                          |
-| Retainers page              |            525 |           525 | Existing API/types modules                                | Pending form/list extraction                                |
-| Payroll statutory           |            471 |           471 | Existing payroll domain ownership                         | Pending form extraction                                     |
-| Payroll automation          |            460 |           460 | Existing payroll domain ownership                         | Pending dialog extraction                                   |
-| Attendance page             |            450 |           450 | Existing workforce API/types/UI                           | Pending table/form extraction                               |
-| Employee management dialogs |            446 |           446 | Existing employee services/types                          | Pending dialog split                                        |
-| Leave page                  |            436 |           436 | Existing workforce API/types/UI                           | Pending table/form extraction                               |
+| Feature implementation      | Baseline lines | Current lines | Extracted modules                                                     | Status                                                      |
+| --------------------------- | -------------: | ------------: | --------------------------------------------------------------------- | ----------------------------------------------------------- |
+| Banking page                |            920 |           829 | `types.ts`, `constants.ts`, `bank-account-grid.tsx`                   | Partial; transaction/import/batch tables and dialogs remain |
+| Expenses page               |            836 |           710 | `expense-form.tsx` (existing schemas/utils retained)                  | Partial; filters, workflow dialogs and list remain          |
+| Workforce page              |            728 |           677 | `calendar-types.ts`, `calendar-utils.ts` plus existing API/UI modules | Partial; calendar panels and management dialogs remain      |
+| Accounts Payable page       |            723 |           645 | `types.ts`, `constants.ts`, `utils.ts`, `vendor-grid.tsx`             | Partial; bills table and three dialogs remain               |
+| Payroll page                |            718 |           654 | `types.ts`, `utils.ts` plus existing automation/statutory components  | Partial; run tables and workflow dialogs remain             |
+| Cash Flow page              |            607 |           540 | `types.ts`, `utils.ts`, `cash-flow-kpi.tsx`                           | Partial; charts/events/settings dialog remain               |
+| Workspace controller        |            574 |           574 | Existing layout/dashboard entry components                            | Pending controller/hook extraction                          |
+| Retainers page              |            525 |           494 | `constants.ts`, `utils.ts` plus existing API/types modules            | Partial; schedule form and list remain                      |
+| Payroll statutory           |            471 |           471 | Existing payroll domain ownership                                     | Pending form extraction                                     |
+| Payroll automation          |            460 |           455 | Existing payroll domain ownership                                     | Reviewed; schedule editor remains a candidate               |
+| Attendance page             |            450 |           450 | Existing workforce API/types/UI                                       | Pending table/form extraction                               |
+| Employee management dialogs |            446 |           446 | Existing employee services/types                                      | Pending dialog split                                        |
+| Leave page                  |            436 |           441 | Existing workforce API/types/UI                                       | Pending table/form extraction                               |
+| Leave policy management     |            371 |           371 | Existing workforce API/types/UI                                       | Reviewed; policy forms remain candidates                    |
+| Financial dashboard         |            370 |           307 | `types.ts`, `utils.ts`, `hooks/use-financial-summary.ts`              | Reviewed; chart sections remain candidates for extraction   |
+| Employees page              |            337 |           337 | Existing employee service/types/directory/form modules                | Reviewed; orchestration remains                             |
+| Overtime page               |            307 |           307 | Existing workforce API/types/UI                                       | Reviewed; cohesive request workflow                         |
+| Login page                  |            301 |           301 | Existing auth layout/registration components                          | Reviewed; cohesive authentication form                      |
+
+Phase 2 pure-utility coverage includes payables filtering/sorting, cash-flow chart conversion, dashboard date ranges/labels, payroll period defaults, workforce calendar ranges and recurring-invoice cadence labels.
 
 Line counts are a navigation aid, not a quality metric. A file is complete only when its remaining responsibilities are cohesive. This inventory must be updated as the remaining controllers are decomposed.

@@ -2,6 +2,10 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { filterAndSortBills, filterVendors } from "../src/features/accounts-payable/utils.ts";
 import { cashFlowChartData, cashFlowSourceLabel } from "../src/features/cash-flow/utils.ts";
+import { dashboardPresetRange, dashboardLabel } from "../src/features/dashboard/utils.ts";
+import { initialPayrollDates } from "../src/features/payroll/utils.ts";
+import { recurringFrequencyLabel } from "../src/features/recurring-invoices/utils.ts";
+import { workforceCalendarRange } from "../src/features/workforce/calendar-utils.ts";
 
 test("accounts payable helpers filter and sort without mutating API concerns", () => {
   const bills = [
@@ -45,4 +49,20 @@ test("cash flow helpers create display labels and numeric chart values", () => {
     ]),
     [{ date: "2026-10-27", inflows: 10.5, outflows: 2.25, closingBalance: undefined }],
   );
+});
+
+test("date and label helpers remain deterministic at domain boundaries", () => {
+  const now = new Date("2026-10-27T12:00:00.000Z");
+  assert.deepEqual(dashboardPresetRange("30", now), { from: "2026-09-28", to: "2026-10-27" });
+  assert.equal(dashboardLabel("PENDING_APPROVAL"), "Pending Approval");
+  assert.deepEqual(initialPayrollDates(now), {
+    periodStart: "2026-10-01",
+    periodEnd: "2026-10-31",
+    paymentDate: "2026-11-01",
+  });
+  assert.deepEqual(workforceCalendarRange(now, "month"), {
+    from: "2026-10-01",
+    to: "2026-10-31",
+  });
+  assert.equal(recurringFrequencyLabel("MONTHLY", 2), "Every 2 months");
 });

@@ -8,48 +8,11 @@ import { FormModal } from "@/components/ui/form-modal";
 import { errorMessage, type WorkspaceApi } from "@/lib/api";
 import { loadEmployees } from "@/features/workforce/api";
 import type { EmployeeOption } from "@/features/workforce/types";
-
-type Settings = { timezone: string; unpaidLeaveDeductionsEnabled: boolean };
-type CalendarData = {
-  timezone: string;
-  employees: Array<{ id: string; name: string }>;
-  attendance: Array<{ id: string; employeeId: string; workDate: string; status: string }>;
-  leave: Array<{
-    id: string;
-    employeeId: string;
-    startDate: string;
-    endDate: string;
-    status: string;
-  }>;
-  overtime: Array<{ id: string; employeeId: string; workDate: string }>;
-  holidays: Array<{
-    id: string;
-    name: string;
-    date: string;
-    isRecurring: boolean;
-    durationMinutes?: number;
-    version: number;
-  }>;
-  schedules: Array<{
-    id: string;
-    employeeId: string;
-    name: string;
-    timezone: string;
-    workdays: string;
-    scheduledStartTime: string;
-    scheduledEndTime: string;
-    expectedDailyMinutes: number;
-    breakMinutes: number;
-    isActive: boolean;
-    effectiveFrom: string;
-    effectiveTo?: string;
-    version: number;
-  }>;
-};
-
-function iso(date: Date) {
-  return date.toISOString().slice(0, 10);
-}
+import type {
+  WorkforceCalendarData as CalendarData,
+  WorkforceSettings as Settings,
+} from "../calendar-types";
+import { workforceCalendarRange, workforceIsoDate as iso } from "../calendar-utils";
 
 export default function WorkforcePage({
   api,
@@ -94,21 +57,7 @@ export default function WorkforcePage({
   });
   const canManage = permissions.includes("attendance:manage");
   const canConfigure = permissions.includes("organization:update");
-  const range = useMemo(() => {
-    if (view === "week") {
-      const anchor = new Date(
-        Date.UTC(month.getUTCFullYear(), month.getUTCMonth(), month.getUTCDate()),
-      );
-      const from = new Date(anchor);
-      from.setUTCDate(anchor.getUTCDate() - anchor.getUTCDay());
-      const to = new Date(from);
-      to.setUTCDate(from.getUTCDate() + 6);
-      return { from: iso(from), to: iso(to) };
-    }
-    const from = new Date(Date.UTC(month.getUTCFullYear(), month.getUTCMonth(), 1));
-    const to = new Date(Date.UTC(month.getUTCFullYear(), month.getUTCMonth() + 1, 0));
-    return { from: iso(from), to: iso(to) };
-  }, [month, view]);
+  const range = useMemo(() => workforceCalendarRange(month, view), [month, view]);
   const load = useCallback(async () => {
     const [calendar, configuration, people] = await Promise.all([
       api<CalendarData>(`/workforce/calendar?from=${range.from}&to=${range.to}`),

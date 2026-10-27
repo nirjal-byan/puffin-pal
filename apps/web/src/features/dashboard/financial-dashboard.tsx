@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import {
   Bar,
   BarChart,
@@ -15,84 +15,25 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { errorMessage, type WorkspaceApi } from "@/lib/api";
-
-type Summary = {
-  currency: string;
-  range: { from: string; to: string; granularity: "day" | "week" | "month" };
-  metrics: {
-    invoicedRevenue: string;
-    paymentsReceived: string;
-    outstandingBalance: string;
-    overdueBalance: string;
-    expenses: string;
-    netCashFlow: string;
-  };
-  trend: { date: string; revenue: string; collections: string; expenses: string }[];
-  invoiceStatuses: { status: string; count: number }[];
-  expenseCategories: { category: string; amount: string }[];
-  aging: { bucket: string; amount: string; count: number }[];
-};
-
-type Preset = "month" | "30" | "90" | "year" | "custom";
-const COLORS = ["#478d6d", "#3178c6", "#e0a73d", "#d16a62", "#8c70b8"];
-
-function iso(date: Date) {
-  return date.toISOString().slice(0, 10);
-}
-function presetRange(preset: Exclude<Preset, "custom">) {
-  const end = new Date();
-  const start = new Date(end);
-  if (preset === "month") start.setUTCDate(1);
-  if (preset === "30") start.setUTCDate(start.getUTCDate() - 29);
-  if (preset === "90") start.setUTCDate(start.getUTCDate() - 89);
-  if (preset === "year") start.setUTCMonth(0, 1);
-  return { from: iso(start), to: iso(end) };
-}
-function money(value: string, currency: string) {
-  return new Intl.NumberFormat(undefined, {
-    style: "currency",
-    currency,
-    minimumFractionDigits: 2,
-  }).format(Number(value));
-}
-function title(value: string) {
-  return value
-    .toLowerCase()
-    .replaceAll("_", " ")
-    .replace(/\b\w/g, (c) => c.toUpperCase());
-}
+import type { WorkspaceApi } from "@/lib/api";
+import type { DashboardPreset as Preset } from "./types";
+import {
+  DASHBOARD_CHART_COLORS as COLORS,
+  dashboardLabel as title,
+  dashboardPresetRange as presetRange,
+  formatDashboardMoney as money,
+} from "./utils";
+import { useFinancialSummary } from "./hooks/use-financial-summary";
 
 export function FinancialDashboard({ api }: { api: WorkspaceApi }) {
   const initial = useMemo(() => presetRange("30"), []);
   const [preset, setPreset] = useState<Preset>("30");
   const [draftRange, setDraftRange] = useState(initial);
   const [range, setRange] = useState(initial);
-  const [summary, setSummary] = useState<Summary | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-  const [revision, setRevision] = useState(0);
-
-  useEffect(() => {
-    const controller = new AbortController();
-    api<Summary>(`/dashboard/financial-summary?from=${range.from}&to=${range.to}`, {
-      signal: controller.signal,
-    })
-      .then(setSummary)
-      .catch((failure: unknown) => {
-        if (!(failure instanceof Error && failure.name === "AbortError"))
-          setError(errorMessage(failure));
-      })
-      .finally(() => {
-        if (!controller.signal.aborted) setLoading(false);
-      });
-    return () => controller.abort();
-  }, [api, range, revision]);
+  const { summary, loading, error, reload } = useFinancialSummary(api, range);
 
   function choosePreset(next: Exclude<Preset, "custom">) {
     const nextRange = presetRange(next);
-    setLoading(true);
-    setError("");
     setPreset(next);
     setDraftRange(nextRange);
     setRange(nextRange);
@@ -182,8 +123,6 @@ export function FinancialDashboard({ api }: { api: WorkspaceApi }) {
                 className="button primary compact"
                 disabled={!draftRange.from || !draftRange.to || draftRange.from > draftRange.to}
                 onClick={() => {
-                  setLoading(true);
-                  setError("");
                   setRange(draftRange);
                 }}
               >
@@ -201,9 +140,7 @@ export function FinancialDashboard({ api }: { api: WorkspaceApi }) {
             type="button"
             className="button secondary"
             onClick={() => {
-              setLoading(true);
-              setError("");
-              setRevision((value) => value + 1);
+              reload();
             }}
           >
             Try again
