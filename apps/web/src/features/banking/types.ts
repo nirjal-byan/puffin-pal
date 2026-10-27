@@ -76,3 +76,29 @@ export interface PaymentBatch {
 }
 
 export type BankingView = "transactions" | "accounts" | "imports" | "batches";
+
+export interface BankAccountForm {
+  displayName: string;
+  bankName: string;
+  accountHolder: string;
+  maskedIdentifier: string;
+  currency: string;
+  countryCode: string;
+  isActive: boolean;
+  isDefault: boolean;
+}
+
+export interface BankImportPreview {
+  rowCount: number;
+  duplicateCount: number;
+  rows: Array<{ date: string; description: string; amount: string; duplicate: boolean }>;
+}
+
+export interface BankImportMapping {
+  date: string;
+  amount: string;
+  description: string;
+  reference: string;
+  direction: string;
+  currency: string;
+}

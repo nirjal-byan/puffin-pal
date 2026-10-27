@@ -4,22 +4,11 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import type { Permission } from "@puffinpal/permissions";
 import type { WorkspaceApi } from "@/lib/api";
 import { errorMessage } from "@/lib/api";
-import { Dropdown } from "@/components/ui/dropdown";
-import {
-  FormCheckbox,
-  FormField,
-  FormFilePicker,
-  FormModal,
-  FormModalIntro,
-  FormModalSection,
-} from "@/components/ui/form-modal";
-import {
-  BANKING_CURRENCIES as CURRENCIES,
-  DEFAULT_IMPORT_MAPPING as defaultMapping,
-} from "./constants";
+import { DEFAULT_IMPORT_MAPPING as defaultMapping } from "./constants";
 import type {
   BankAccount as Account,
   BankImport as ImportRow,
+  BankImportPreview,
   BankingView,
   BankTransaction as Transaction,
   PaymentBatch as Batch,
@@ -28,6 +17,14 @@ import type {
   ReconciliationCandidate as Candidate,
 } from "./types";
 import { BankAccountGrid } from "./bank-account-grid";
+import { BankAccountDialog } from "./bank-account-dialog";
+import { BankImportsTable } from "./bank-imports-table";
+import { BankingToolbar } from "./banking-toolbar";
+import { BankTransactionsTable } from "./bank-transactions-table";
+import { ImportStatementDialog } from "./import-statement-dialog";
+import { PaymentBatchDialog } from "./payment-batch-dialog";
+import { PaymentBatchesPanel } from "./payment-batches-panel";
+import { ReconciliationDialog } from "./reconciliation-dialog";
 
 export default function BankingPage({
   api,
@@ -67,11 +64,7 @@ export default function BankingPage({
   });
   const [importAccount, setImportAccount] = useState("");
   const [csv, setCsv] = useState<{ name: string; content: string } | null>(null);
-  const [preview, setPreview] = useState<{
-    rowCount: number;
-    duplicateCount: number;
-    rows: Array<{ date: string; description: string; amount: string; duplicate: boolean }>;
-  } | null>(null);
+  const [preview, setPreview] = useState<BankImportPreview | null>(null);
   const [importMapping, setImportMapping] = useState(defaultMapping);
   const [batchName, setBatchName] = useState("");
   const [selectedEntries, setSelectedEntries] = useState<string[]>([]);
@@ -289,41 +282,16 @@ export default function BankingPage({
           </button>
         </div>
       )}
-      <section className="panel banking-toolbar">
-        <div className="banking-tabs" role="tablist" aria-label="Banking views">
-          {(["transactions", "accounts", "imports", "batches"] as const).map((item) => (
-            <button
-              key={item}
-              className={view === item ? "active" : ""}
-              type="button"
-              onClick={() => setView(item)}
-            >
-              {item === "batches" ? "Payment batches" : item[0]!.toUpperCase() + item.slice(1)}
-            </button>
-          ))}
-        </div>
-        <div className="banking-actions">
-          {canManage && view === "accounts" && (
-            <button className="button primary" onClick={() => setAccountModal(true)}>
-              + Add account
-            </button>
-          )}
-          {canManage && (view === "transactions" || view === "imports") && (
-            <button className="button primary" onClick={() => setImportModal(true)}>
-              Import statement
-            </button>
-          )}
-          {canManage && view === "batches" && (
-            <button className="button primary" onClick={openBatch}>
-              + Payment batch
-            </button>
-          )}
-          <button className="button secondary" onClick={load} disabled={loading}>
-            ↻ Refresh
-          </button>
-        </div>
-      </section>
-
+      <BankingToolbar
+        view={view}
+        canManage={canManage}
+        loading={loading}
+        onViewChange={setView}
+        onAddAccount={() => setAccountModal(true)}
+        onImport={() => setImportModal(true)}
+        onCreateBatch={() => void openBatch()}
+        onRefresh={() => void load()}
+      />
       {loading ? (
         <section className="panel loading">
           <span className="spinner" />
@@ -332,497 +300,86 @@ export default function BankingPage({
       ) : view === "accounts" ? (
         <BankAccountGrid accounts={accounts} />
       ) : view === "transactions" ? (
-        <section className="panel banking-table-panel">
-          <header>
-            <div>
-              <h3>Statement transactions</h3>
-              <p>Imported bank activity and its reconciliation status.</p>
-            </div>
-            <span>{transactions.length} records</span>
-          </header>
-          <div className="banking-filters">
-            <input
-              aria-label="Search transactions"
-              placeholder="Search description, reference, or account"
-              value={transactionSearch}
-              onChange={(event) => setTransactionSearch(event.target.value)}
-            />
-            <Dropdown
-              name="transaction-status"
-              label="Reconciliation status"
-              searchable={false}
-              value={transactionStatus}
-              onChange={setTransactionStatus}
-              options={[
-                { value: "ALL", label: "All statuses" },
-                { value: "MATCHED", label: "Matched" },
-                { value: "UNMATCHED", label: "Unmatched" },
-              ]}
-            />
-          </div>
-          <div className="table-scroll">
-            <table className="banking-table">
-              <thead>
-                <tr>
-                  <th>Date</th>
-                  <th>Description</th>
-                  <th>Account</th>
-                  <th>Amount</th>
-                  <th>Status</th>
-                  <th aria-label="Actions" />
-                </tr>
-              </thead>
-              <tbody>
-                {visibleTransactions.map((row) => (
-                  <tr key={row.id}>
-                    <td>{new Date(row.transactionDate).toLocaleDateString()}</td>
-                    <td>
-                      <strong>{row.description}</strong>
-                      <small>{row.reference || "No reference"}</small>
-                    </td>
-                    <td>{accountById.get(row.bankAccountId)?.displayName ?? "Bank account"}</td>
-                    <td className={row.direction === "CREDIT" ? "money-in" : "money-out"}>
-                      {row.direction === "CREDIT" ? "+" : "−"}
-                      {row.currency} {row.amount}
-                    </td>
-                    <td>
-                      <span className={`status-pill ${row.reconciliation ? "matched" : "pending"}`}>
-                        {row.reconciliation ? "Matched" : "Unmatched"}
-                      </span>
-                    </td>
-                    <td>
-                      {canReconcile &&
-                        (row.reconciliation ? (
-                          <button className="text-button" onClick={() => reverse(row)}>
-                            Reverse
-                          </button>
-                        ) : (
-                          <button
-                            className="button secondary compact"
-                            onClick={() => openMatch(row)}
-                          >
-                            Match
-                          </button>
-                        ))}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          {!transactions.length && (
-            <div className="empty-state">
-              <h3>No imported transactions</h3>
-              <p>Import a CSV bank statement to begin reconciliation.</p>
-            </div>
-          )}
-        </section>
+        <BankTransactionsTable
+          transactions={visibleTransactions}
+          total={transactions.length}
+          accounts={accountById}
+          search={transactionSearch}
+          status={transactionStatus}
+          canReconcile={canReconcile}
+          onSearchChange={setTransactionSearch}
+          onStatusChange={setTransactionStatus}
+          onMatch={(row) => void openMatch(row)}
+          onReverse={(row) => void reverse(row)}
+        />
       ) : view === "imports" ? (
-        <section className="panel banking-table-panel">
-          <header>
-            <div>
-              <h3>Import history</h3>
-              <p>Every confirmed file is retained as an auditable batch.</p>
-            </div>
-          </header>
-          <div className="table-scroll">
-            <table className="banking-table">
-              <thead>
-                <tr>
-                  <th>File</th>
-                  <th>Date</th>
-                  <th>Rows</th>
-                  <th>Imported</th>
-                  <th>Duplicates</th>
-                  <th>Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {imports.map((row) => (
-                  <tr key={row.id}>
-                    <td>
-                      <strong>{row.fileName}</strong>
-                    </td>
-                    <td>{new Date(row.createdAt).toLocaleString()}</td>
-                    <td>{row.rowCount}</td>
-                    <td>{row.importedCount}</td>
-                    <td>{row.duplicateCount}</td>
-                    <td>
-                      <span className="status-pill matched">{row.status.replaceAll("_", " ")}</span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </section>
+        <BankImportsTable imports={imports} />
       ) : (
-        <section className="banking-batches">
-          {batches.map((batch) => (
-            <article className="panel banking-batch" key={batch.id}>
-              <header>
-                <div>
-                  <span className="eyebrow">{batch.status}</span>
-                  <h3>{batch.name}</h3>
-                </div>
-                <strong>
-                  {batch.currency} {batch.totalAmount}
-                </strong>
-              </header>
-              <div>
-                {batch.items.map((item) => (
-                  <div className="banking-batch-item" key={item.id}>
-                    <span>{item.employeeName}</span>
-                    <span>
-                      {batch.currency} {item.amount}
-                    </span>
-                    <span
-                      className={`status-pill ${item.status === "PAID" ? "matched" : "pending"}`}
-                    >
-                      {item.status}
-                    </span>
-                    {canManage && item.status !== "PAID" && (
-                      <div className="batch-item-actions">
-                        <button
-                          className="text-button"
-                          onClick={() => updateBatchItem(batch, item, "ATTEMPTED")}
-                        >
-                          Attempted
-                        </button>
-                        <button
-                          className="text-button"
-                          onClick={() => updateBatchItem(batch, item, "PAID")}
-                        >
-                          Mark paid
-                        </button>
-                        <button
-                          className="text-button"
-                          onClick={() => updateBatchItem(batch, item, "FAILED")}
-                        >
-                          Failed
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </article>
-          ))}
-          {!batches.length && (
-            <section className="panel empty-state">
-              <h3>No payment batches</h3>
-              <p>Group finalized payroll obligations into a controlled payment checklist.</p>
-            </section>
-          )}
-        </section>
+        <PaymentBatchesPanel
+          batches={batches}
+          canManage={canManage}
+          onUpdateItem={(batch, item, status) => void updateBatchItem(batch, item, status)}
+        />
       )}
-
       {accountModal && (
-        <FormModal
-          title="Add bank account"
-          badge="Banking"
-          wide
+        <BankAccountDialog
+          account={account}
+          busy={busy}
+          onChange={setAccount}
           onClose={() => setAccountModal(false)}
           onSubmit={saveAccount}
-          submitLabel="Add account"
-          submitting={busy}
-        >
-          <FormModalIntro icon="▰" title="Account details">
-            Store only a recognizable name and masked identifier. PuffinPal never asks for
-            online-banking credentials.
-          </FormModalIntro>
-          <FormModalSection
-            title="Identification"
-            description="Visible to authorized finance users"
-          >
-            <div className="standard-form-grid">
-              <FormField label="Account name">
-                <input
-                  required
-                  value={account.displayName}
-                  onChange={(e) => setAccount({ ...account, displayName: e.target.value })}
-                  placeholder="Operating account"
-                />
-              </FormField>
-              <FormField label="Bank">
-                <input
-                  required
-                  value={account.bankName}
-                  onChange={(e) => setAccount({ ...account, bankName: e.target.value })}
-                  placeholder="Bank name"
-                />
-              </FormField>
-              <FormField label="Account holder">
-                <input
-                  required
-                  value={account.accountHolder}
-                  onChange={(e) => setAccount({ ...account, accountHolder: e.target.value })}
-                />
-              </FormField>
-              <FormField label="Masked identifier" hint="Example: •••• 4821">
-                <input
-                  required
-                  value={account.maskedIdentifier}
-                  onChange={(e) => setAccount({ ...account, maskedIdentifier: e.target.value })}
-                  placeholder="•••• 4821"
-                />
-              </FormField>
-              <FormField label="Currency">
-                <Dropdown
-                  name="account-currency"
-                  label="Currency"
-                  searchable={false}
-                  value={account.currency}
-                  onChange={(currency) => setAccount({ ...account, currency })}
-                  options={CURRENCIES.map((value) => ({ value, label: value }))}
-                />
-              </FormField>
-              <FormField label="Country code">
-                <input
-                  required
-                  maxLength={2}
-                  value={account.countryCode}
-                  onChange={(e) =>
-                    setAccount({ ...account, countryCode: e.target.value.toUpperCase() })
-                  }
-                />
-              </FormField>
-            </div>
-          </FormModalSection>
-          <FormCheckbox
-            checked={account.isDefault}
-            onChange={(isDefault) => setAccount({ ...account, isDefault })}
-            label="Use as the default bank account"
-            description="New statement imports will select this account first."
-          />
-        </FormModal>
+        />
       )}
-
       {importModal && (
-        <FormModal
-          title="Import bank statement"
-          badge="CSV"
-          wide
+        <ImportStatementDialog
+          accounts={accounts}
+          accountId={importAccount}
+          csv={csv}
+          preview={preview}
+          mapping={importMapping}
+          busy={busy}
+          onAccountChange={setImportAccount}
+          onCsvChange={(nextCsv) => {
+            setCsv(nextCsv);
+            setPreview(null);
+          }}
+          onMappingChange={(mapping) => {
+            setImportMapping(mapping);
+            setPreview(null);
+          }}
+          onError={setError}
           onClose={() => {
             setImportModal(false);
             setPreview(null);
           }}
           onSubmit={preview ? confirmCsv : previewCsv}
-          submitLabel={preview ? "Confirm import" : "Preview statement"}
-          submitting={busy}
-          submitDisabled={!csv || !importAccount}
-        >
-          <FormModalIntro icon="⇧" title="Review before importing">
-            CSV rows are validated and duplicates are detected before anything is stored.
-          </FormModalIntro>
-          <FormModalSection title="Statement file" description="Maximum 2 MB · up to 5,000 rows">
-            <div className="standard-form-grid">
-              <FormField label="Bank account">
-                <Dropdown
-                  name="import-account"
-                  label="Bank account"
-                  value={importAccount}
-                  onChange={setImportAccount}
-                  options={accounts
-                    .filter((a) => a.isActive)
-                    .map((a) => ({ value: a.id, label: `${a.displayName} · ${a.currency}` }))}
-                />
-              </FormField>
-              <FormField label="CSV file">
-                <FormFilePicker
-                  accept=".csv,text/csv"
-                  fileName={csv?.name}
-                  title="Upload bank statement"
-                  hint="CSV only · maximum 2 MB"
-                  onChange={async (file) => {
-                    if (!file) return;
-                    if (file.size > 2_000_000) {
-                      setError("CSV files must be 2 MB or smaller");
-                      return;
-                    }
-                    setCsv({ name: file.name, content: await file.text() });
-                    setPreview(null);
-                  }}
-                />
-              </FormField>
-            </div>
-            {preview && (
-              <div className="import-preview">
-                <strong>
-                  {preview.rowCount} rows ready · {preview.duplicateCount} duplicates will be
-                  skipped
-                </strong>
-                {preview.rows.slice(0, 5).map((row, index) => (
-                  <div key={`${row.date}-${index}`}>
-                    <span>{row.date}</span>
-                    <span>{row.description}</span>
-                    <span>{row.amount}</span>
-                    {row.duplicate && <small>Duplicate</small>}
-                  </div>
-                ))}
-              </div>
-            )}
-            <details className="import-mapping">
-              <summary>Column mapping</summary>
-              <p className="muted">Enter the header used by your CSV for each field.</p>
-              <div className="standard-form-grid">
-                {(Object.keys(defaultMapping) as Array<keyof typeof defaultMapping>).map(
-                  (field) => (
-                    <FormField
-                      key={field}
-                      label={`${field[0]!.toUpperCase()}${field.slice(1)} column`}
-                      optional={
-                        field === "reference" || field === "direction" || field === "currency"
-                      }
-                    >
-                      <input
-                        required={field === "date" || field === "amount" || field === "description"}
-                        value={importMapping[field]}
-                        onChange={(event) => {
-                          setImportMapping({ ...importMapping, [field]: event.target.value });
-                          setPreview(null);
-                        }}
-                      />
-                    </FormField>
-                  ),
-                )}
-              </div>
-            </details>
-          </FormModalSection>
-        </FormModal>
+        />
       )}
-
       {matching && (
-        <FormModal
-          title="Match bank transaction"
-          badge="Reconciliation"
+        <ReconciliationDialog
+          transaction={matching}
+          candidates={candidates}
+          selected={selectedCandidate}
+          busy={busy}
+          onSelected={setSelectedCandidate}
           onClose={() => setMatching(null)}
           onSubmit={reconcile}
-          submitLabel="Confirm match"
-          submitting={busy}
-          submitDisabled={!selectedCandidate}
-        >
-          <FormModalIntro
-            icon="✓"
-            title={`${matching.currency} ${matching.amount} · ${matching.description}`}
-          >
-            Only unreconciled payment records with the same amount, direction, and currency are
-            shown.
-          </FormModalIntro>
-          <FormModalSection title="Suggested records">
-            {candidates.length ? (
-              <div className="match-options">
-                {candidates.map((item) => (
-                  <label
-                    key={item.targetId}
-                    className={selectedCandidate === item.targetId ? "selected" : ""}
-                  >
-                    <input
-                      type="radio"
-                      name="candidate"
-                      checked={selectedCandidate === item.targetId}
-                      onChange={() => setSelectedCandidate(item.targetId)}
-                    />
-                    <span>
-                      <strong>{item.label}</strong>
-                      <small>
-                        {item.date} · {item.reference || "No reference"}
-                      </small>
-                    </span>
-                    <b>{item.amount}</b>
-                  </label>
-                ))}
-              </div>
-            ) : (
-              <div className="empty-state">
-                <h3>No exact matches</h3>
-                <p>Record the corresponding payment first, or verify the amount and currency.</p>
-              </div>
-            )}
-          </FormModalSection>
-        </FormModal>
+        />
       )}
-
       {batchModal && (
-        <FormModal
-          title="Create payroll payment batch"
-          badge="Payroll"
-          wide
+        <PaymentBatchDialog
+          accounts={accounts}
+          obligations={obligations}
+          accountId={importAccount}
+          name={batchName}
+          selected={selectedEntries}
+          busy={busy}
+          onAccountChange={setImportAccount}
+          onNameChange={setBatchName}
+          onSelectedChange={setSelectedEntries}
           onClose={() => setBatchModal(false)}
           onSubmit={createBatch}
-          submitLabel="Create batch"
-          submitting={busy}
-          submitDisabled={!batchName.trim() || !selectedEntries.length}
-        >
-          <FormModalIntro icon="$" title="Prepare a payment checklist">
-            This does not move money. It groups finalized, unpaid payroll entries for controlled
-            processing.
-          </FormModalIntro>
-          <FormModalSection title="Batch details">
-            <div className="standard-form-grid">
-              <FormField label="Batch name">
-                <input
-                  required
-                  value={batchName}
-                  onChange={(e) => setBatchName(e.target.value)}
-                  placeholder="October payroll payments"
-                />
-              </FormField>
-              <FormField label="Bank account" optional>
-                <Dropdown
-                  name="batch-account"
-                  label="Bank account"
-                  value={importAccount}
-                  onChange={setImportAccount}
-                  options={accounts
-                    .filter((a) => a.isActive)
-                    .map((a) => ({ value: a.id, label: a.displayName }))}
-                />
-              </FormField>
-            </div>
-          </FormModalSection>
-          <FormModalSection
-            title="Eligible obligations"
-            description="Select entries from one finalized pay run"
-          >
-            <div className="obligation-list">
-              {obligations.map((item) => {
-                const incompatible =
-                  selectedEntries.length > 0 &&
-                  obligations.find((row) => row.id === selectedEntries[0])?.payrollRunId !==
-                    item.payrollRunId;
-                return (
-                  <label key={item.id}>
-                    <input
-                      type="checkbox"
-                      disabled={incompatible}
-                      checked={selectedEntries.includes(item.id)}
-                      onChange={(e) =>
-                        setSelectedEntries((rows) =>
-                          e.target.checked
-                            ? [...rows, item.id]
-                            : rows.filter((id) => id !== item.id),
-                        )
-                      }
-                    />
-                    <span>
-                      <strong>{item.employeeName}</strong>
-                      <small>
-                        {item.payrollRunName} · due {item.paymentDate}
-                      </small>
-                    </span>
-                    <b>
-                      {item.currency} {item.amount}
-                    </b>
-                  </label>
-                );
-              })}
-              {!obligations.length && (
-                <p className="muted">No finalized unpaid payroll entries are available.</p>
-              )}
-            </div>
-          </FormModalSection>
-        </FormModal>
+        />
       )}
     </div>
   );

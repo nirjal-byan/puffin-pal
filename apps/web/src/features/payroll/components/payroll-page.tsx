@@ -2,11 +2,7 @@
 
 import type { Permission } from "@puffinpal/permissions";
 import { useCallback, useEffect, useState } from "react";
-import { AppModal } from "@/components/ui/app-modal";
-import { DatePicker } from "@/components/ui/date-picker";
-import { FormModal } from "@/components/ui/form-modal";
 import { errorMessage, type WorkspaceApi } from "@/lib/api";
-import { PayrollStatutory } from "./payroll-statutory";
 import type {
   PayrollDetails,
   PayrollEmployeeOption as EmployeeOption,
@@ -15,6 +11,9 @@ import type {
   WorkforceReview,
 } from "../types";
 import { initialPayrollDates } from "../utils";
+import { CreatePayrollDialog } from "./create-payroll-dialog";
+import { PayrollRunDetails } from "./payroll-run-details";
+import { PayrollRunsTable } from "./payroll-runs-table";
 
 export default function PayrollPage({
   api,
@@ -285,369 +284,39 @@ export default function PayrollPage({
           {error}
         </p>
       )}
-      <section className="panel">
-        <div className="panel-heading">
-          <h3>Payroll history</h3>
-          <span className="muted">{runs.length} total</span>
-        </div>
-        {runs.length === 0 ? (
-          <div className="empty-state">
-            <span className="empty-symbol">$</span>
-            <h3>No pay runs yet</h3>
-            <p>Create a draft when your team’s salary structures are ready.</p>
-          </div>
-        ) : (
-          <div className="table-scroll">
-            <table>
-              <thead>
-                <tr>
-                  <th>Run</th>
-                  <th>Period</th>
-                  <th>Employees</th>
-                  <th>Net payroll</th>
-                  <th>Status</th>
-                  <th />
-                </tr>
-              </thead>
-              <tbody>
-                {runs.map((run) => (
-                  <tr key={run.id}>
-                    <td>
-                      <strong>{run.name}</strong>
-                      {run.payrollScheduleId && (
-                        <small className="payroll-subtitle muted">Automated draft</small>
-                      )}
-                    </td>
-                    <td>
-                      {run.periodStart.slice(0, 10)} – {run.periodEnd.slice(0, 10)}
-                    </td>
-                    <td>{run.employeeCount}</td>
-                    <td>
-                      {run.currency} {run.totalNet}
-                    </td>
-                    <td>
-                      <span className="role-badge">{run.status.replaceAll("_", " ")}</span>
-                    </td>
-                    <td>
-                      <button className="text-button" onClick={() => void open(run)}>
-                        View
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </section>
+      <PayrollRunsTable runs={runs} onOpen={(run) => void open(run)} />
       {creating && (
-        <FormModal title="New pay run" onClose={() => setCreating(false)}>
-          <div className="payroll-form">
-            <label>
-              Name
-              <input
-                value={form.name}
-                onChange={(event) => setForm({ ...form, name: event.target.value })}
-                placeholder="October payroll"
-              />
-            </label>
-            <div className="payroll-date-grid">
-              <label>
-                Period start
-                <DatePicker
-                  value={form.periodStart}
-                  onChange={(periodStart) => setForm({ ...form, periodStart })}
-                  ariaLabel="Payroll period start"
-                />
-              </label>
-              <label>
-                Period end
-                <DatePicker
-                  value={form.periodEnd}
-                  onChange={(periodEnd) => setForm({ ...form, periodEnd })}
-                  min={form.periodStart || undefined}
-                  ariaLabel="Payroll period end"
-                />
-              </label>
-            </div>
-            <label>
-              Payment date
-              <DatePicker
-                value={form.paymentDate}
-                onChange={(paymentDate) => setForm({ ...form, paymentDate })}
-                min={form.periodEnd || undefined}
-                ariaLabel="Payroll payment date"
-              />
-            </label>
-            <fieldset className="payroll-employees">
-              <legend>Employees</legend>
-              {employees.length === 0 ? (
-                <p className="muted">No eligible employees found.</p>
-              ) : (
-                employees.map((employee) => (
-                  <label key={employee.id}>
-                    <input
-                      type="checkbox"
-                      checked={employeeIds.includes(employee.id)}
-                      onChange={(event) =>
-                        setEmployeeIds((current) =>
-                          event.target.checked
-                            ? [...current, employee.id]
-                            : current.filter((id) => id !== employee.id),
-                        )
-                      }
-                    />
-                    <span>
-                      {employee.firstName} {employee.lastName}{" "}
-                      <small className="muted">{employee.employeeCode}</small>
-                    </span>
-                  </label>
-                ))
-              )}
-            </fieldset>
-            <div className="form-actions">
-              <button className="button secondary" onClick={() => setCreating(false)}>
-                Cancel
-              </button>
-              <button
-                className="button primary"
-                disabled={busy || !form.name.trim() || employeeIds.length === 0}
-                onClick={() => void create()}
-              >
-                Create draft
-              </button>
-            </div>
-          </div>
-        </FormModal>
+        <CreatePayrollDialog
+          form={form}
+          employees={employees}
+          employeeIds={employeeIds}
+          busy={busy}
+          onFormChange={setForm}
+          onEmployeeIdsChange={setEmployeeIds}
+          onClose={() => setCreating(false)}
+          onCreate={() => void create()}
+        />
       )}
       {selected && (
-        <AppModal
-          wide
-          title={selected.name}
-          badge={selected.status.replaceAll("_", " ")}
+        <PayrollRunDetails
+          api={api}
+          run={selected}
+          reviews={workforceReview}
+          permissions={permissions}
+          busy={busy}
           onClose={() => setSelected(null)}
-        >
-          <div className="payroll-detail">
-            <div className="payroll-summary">
-              <div>
-                <small>Gross</small>
-                <strong>
-                  {selected.currency} {selected.totalGross}
-                </strong>
-              </div>
-              <div>
-                <small>Deductions</small>
-                <strong>
-                  {selected.currency} {selected.totalDeductions}
-                </strong>
-              </div>
-              <div>
-                <small>Net pay</small>
-                <strong>
-                  {selected.currency} {selected.totalNet}
-                </strong>
-              </div>
-            </div>
-            <div className="form-actions payroll-actions">
-              {selected.status === "DRAFT" && can("payroll:manage") && (
-                <>
-                  <button
-                    className="button secondary"
-                    disabled={busy}
-                    onClick={() => void action("calculate")}
-                  >
-                    Calculate
-                  </button>
-                  <button
-                    className="button primary"
-                    disabled={busy || selected.employeeCount < 1}
-                    onClick={() => void action("submit")}
-                  >
-                    Submit for approval
-                  </button>
-                </>
-              )}
-              {selected.status === "PENDING_APPROVAL" && can("payroll:approve") && (
-                <>
-                  <button
-                    className="button secondary"
-                    disabled={busy}
-                    onClick={() => void reject()}
-                  >
-                    Return to draft
-                  </button>
-                  <button
-                    className="button primary"
-                    disabled={busy}
-                    onClick={() => void action("approve")}
-                  >
-                    Approve
-                  </button>
-                </>
-              )}
-              {selected.status === "APPROVED" && can("payroll:finalize") && (
-                <button
-                  className="button primary"
-                  disabled={busy}
-                  onClick={() => void action("finalize")}
-                >
-                  Finalize payroll
-                </button>
-              )}
-            </div>
-            {can("payroll:manage") && selected.status === "DRAFT" && (
-              <PayrollStatutory
-                api={api}
-                run={selected}
-                onApplied={async () => {
-                  await open(selected);
-                }}
-              />
-            )}
-            <section className="payroll-workforce-review" data-tour="payroll-attendance-review">
-              <div className="panel-heading">
-                <h3>Attendance review</h3>
-                <span className="muted">Review only · no automatic deductions</span>
-              </div>
-              <div className="payroll-review-grid">
-                {workforceReview.map((review) => {
-                  const entry = selected.entries.find(
-                    (item) => item.employeeId === review.employeeId,
-                  );
-                  return (
-                    <article key={review.employeeId}>
-                      <strong>{review.employeeName}</strong>
-                      <span>
-                        {review.recordedAttendanceDays} attendance days ·{" "}
-                        {(review.workedMinutes / 60).toFixed(1)} hours
-                      </span>
-                      <span>{review.missingAttendanceRecords} missing records · warning only</span>
-                      <span>
-                        {review.approvedPaidLeaveUnits / 2} paid ·{" "}
-                        {review.approvedUnpaidLeaveUnits / 2} unpaid leave days
-                      </span>
-                      {(review.unresolvedLeaveRequests > 0 ||
-                        review.unresolvedOvertimeRequests > 0) && (
-                        <small>
-                          {review.unresolvedLeaveRequests} leave and{" "}
-                          {review.unresolvedOvertimeRequests} overtime requests unresolved
-                        </small>
-                      )}
-                      {selected.status === "DRAFT" &&
-                        entry &&
-                        review.approvedOvertime
-                          .filter((item) => !item.imported)
-                          .map((item) => (
-                            <button
-                              key={item.id}
-                              className="text-button"
-                              disabled={busy || !item.rate}
-                              onClick={() => void importOvertime(entry, item.id)}
-                            >
-                              {item.rate
-                                ? `Import ${item.minutes ?? 0} overtime minutes`
-                                : "Overtime rate required"}
-                            </button>
-                          ))}
-                      {selected.status === "DRAFT" &&
-                        entry &&
-                        review.unpaidLeaveDeductionsEnabled &&
-                        review.approvedUnpaidLeave
-                          .filter((item) => !item.imported)
-                          .map((item) => (
-                            <button
-                              key={item.id}
-                              className="text-button"
-                              disabled={busy}
-                              onClick={() => void importUnpaidLeave(entry, item.id)}
-                            >
-                              Import {(item.minutes ?? 0) / 60} unpaid leave hours
-                            </button>
-                          ))}
-                      {review.approvedUnpaidLeave.some((item) => !item.imported) &&
-                        !review.unpaidLeaveDeductionsEnabled && (
-                          <small>
-                            Unpaid leave found · deductions are disabled in Workforce settings
-                          </small>
-                        )}
-                    </article>
-                  );
-                })}
-              </div>
-            </section>
-            <div className="table-scroll">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Employee</th>
-                    <th>Gross</th>
-                    <th>Deductions</th>
-                    <th>Net</th>
-                    <th>Payment</th>
-                    <th>Payslip</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {selected.entries.map((entry) => (
-                    <tr key={entry.id}>
-                      <td>
-                        <strong>{entry.employeeName}</strong>
-                        <small className="muted payroll-subtitle">
-                          {entry.employeeCode} · {entry.jobTitle}
-                        </small>
-                        {selected.status === "DRAFT" && can("payroll:manage") && (
-                          <button
-                            className="text-button"
-                            disabled={busy}
-                            onClick={() => void adjustment(entry)}
-                          >
-                            + Adjustment
-                          </button>
-                        )}
-                      </td>
-                      <td>{entry.grossPay}</td>
-                      <td>{entry.totalDeductions}</td>
-                      <td>{entry.netPay}</td>
-                      <td>
-                        {entry.paymentStatus}
-                        {entry.payments.map((payment) => (
-                          <small className="muted payroll-subtitle" key={payment.id}>
-                            {payment.paymentDate.slice(0, 10)} · {selected.currency}{" "}
-                            {payment.amount} · {payment.reference}
-                          </small>
-                        ))}
-                        {selected.status === "FINALIZED" &&
-                          entry.outstandingAmount !== "0.00" &&
-                          can("payroll:payments:record") && (
-                            <button className="text-button" onClick={() => void payment(entry)}>
-                              Record
-                            </button>
-                          )}
-                      </td>
-                      <td>
-                        {entry.payslipStatus === "COMPLETED" ? (
-                          <button className="text-button" onClick={() => void download(entry)}>
-                            Download
-                          </button>
-                        ) : entry.payslipStatus === "FAILED" && can("payroll:manage") ? (
-                          <button
-                            className="text-button"
-                            disabled={busy}
-                            onClick={() => void retryPayslip(entry)}
-                          >
-                            Retry
-                          </button>
-                        ) : (
-                          entry.payslipStatus
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </AppModal>
+          onAction={(nextAction) => void action(nextAction)}
+          onReject={() => void reject()}
+          onImportOvertime={(entry, overtimeId) => void importOvertime(entry, overtimeId)}
+          onImportUnpaidLeave={(entry, leaveRequestId) =>
+            void importUnpaidLeave(entry, leaveRequestId)
+          }
+          onAdjustment={(entry) => void adjustment(entry)}
+          onPayment={(entry) => void payment(entry)}
+          onDownload={(entry) => void download(entry)}
+          onRetryPayslip={(entry) => void retryPayslip(entry)}
+          onRefresh={() => open(selected)}
+        />
       )}
     </>
   );

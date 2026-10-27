@@ -98,11 +98,11 @@ The route files were already thin before this audit. The remaining work is conce
 
 | Feature implementation      | Baseline lines | Current lines | Extracted modules                                                     | Status                                                      |
 | --------------------------- | -------------: | ------------: | --------------------------------------------------------------------- | ----------------------------------------------------------- |
-| Banking page                |            920 |           829 | `types.ts`, `constants.ts`, `bank-account-grid.tsx`                   | Partial; transaction/import/batch tables and dialogs remain |
+| Banking page                |            920 |           386 | Toolbar, transaction/import/batch panels and four focused dialogs     | Complete; page retains data loading and mutation workflows  |
 | Expenses page               |            836 |           710 | `expense-form.tsx` (existing schemas/utils retained)                  | Partial; filters, workflow dialogs and list remain          |
 | Workforce page              |            728 |           297 | Calendar, management panel, holiday, schedule and settings components | Complete; page now coordinates state, API calls and actions |
 | Accounts Payable page       |            723 |           645 | `types.ts`, `constants.ts`, `utils.ts`, `vendor-grid.tsx`             | Partial; bills table and three dialogs remain               |
-| Payroll page                |            718 |           654 | `types.ts`, `utils.ts` plus existing automation/statutory components  | Partial; run tables and workflow dialogs remain             |
+| Payroll page                |            718 |           323 | Run history, creation, details, review and entries components          | Complete; page retains payroll workflow orchestration       |
 | Cash Flow page              |            607 |           540 | `types.ts`, `utils.ts`, `cash-flow-kpi.tsx`                           | Partial; charts/events/settings dialog remain               |
 | Workspace controller        |            574 |           574 | Existing layout/dashboard entry components                            | Pending controller/hook extraction                          |
 | Retainers page              |            525 |           494 | `constants.ts`, `utils.ts` plus existing API/types modules            | Partial; schedule form and list remain                      |
@@ -118,5 +118,7 @@ The route files were already thin before this audit. The remaining work is conce
 | Login page                  |            301 |           301 | Existing auth layout/registration components                          | Reviewed; cohesive authentication form                      |
 
 Phase 2 pure-utility coverage includes payables filtering/sorting, cash-flow chart conversion, dashboard date ranges/labels, payroll period defaults, workforce calendar ranges and recurring-invoice cadence labels. Phase 3 completed the Workforce presentation boundary: the controller retains orchestration while calendar rendering, its management rail and each modal form own their JSX independently.
+
+Phase 3B applies the same boundary to Payroll and Banking. Payroll mutations and optimistic-version handling remain in `payroll-page.tsx`, while run history, draft creation, run details, workforce review and entry actions render in focused components. Banking loading, filtering and mutations remain in `banking-page.tsx`, while its toolbar, account/transaction/import/batch views and account/import/reconciliation/payment-batch dialogs own presentation. No API contracts or financial calculations moved.
 
 Line counts are a navigation aid, not a quality metric. A file is complete only when its remaining responsibilities are cohesive. This inventory must be updated as the remaining controllers are decomposed.
