@@ -146,3 +146,35 @@ export function FormCheckbox({
     </label>
   );
 }
+
+export function FormFilePicker({
+  accept,
+  fileName,
+  title = "Choose a file",
+  hint,
+  onChange,
+}: {
+  accept?: string;
+  fileName?: string;
+  title?: string;
+  hint?: string;
+  onChange: (file: File | null) => void | Promise<void>;
+}) {
+  return (
+    <label className="form-file-picker">
+      <input
+        type="file"
+        accept={accept}
+        onChange={(event) => void onChange(event.target.files?.[0] ?? null)}
+      />
+      <span className="form-file-picker-icon" aria-hidden="true">
+        ⇧
+      </span>
+      <span className="form-file-picker-copy">
+        <strong>{fileName || title}</strong>
+        {hint && <small>{hint}</small>}
+      </span>
+      <span className="button secondary compact">Browse</span>
+    </label>
+  );
+}

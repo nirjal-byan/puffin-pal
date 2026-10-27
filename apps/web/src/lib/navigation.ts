@@ -123,8 +123,7 @@ export const NAV: {
     permission: "profile:read",
   },
 ];
-export type NavigationSection =
-  "workspace" | "cash-flow" | "banking" | "reports" | "payroll" | "people" | "settings";
+export type NavigationSection = "workspace" | "cash-flow" | "payroll" | "people" | "settings";
 export const NAV_SECTIONS: {
   key: NavigationSection;
   label: string;
@@ -135,33 +134,13 @@ export const NAV_SECTIONS: {
     key: "workspace",
     label: "Workspace",
     sidebarLabel: "Business",
-    tabs: [
-      "overview",
-      "clients",
-      "invoices",
-      "retainers",
-      "expenses",
-      "vendors",
-      "accounts-payable",
-    ],
+    tabs: ["overview", "clients", "invoices", "retainers", "expenses"],
   },
   {
     key: "cash-flow",
-    label: "Cash Flow",
-    sidebarLabel: "Planning",
-    tabs: ["cash-flow"],
-  },
-  {
-    key: "banking",
-    label: "Banking",
-    sidebarLabel: "Money movement",
-    tabs: ["banking"],
-  },
-  {
-    key: "reports",
-    label: "Reports",
-    sidebarLabel: "Analytics",
-    tabs: ["reports"],
+    label: "Finance",
+    sidebarLabel: "Financial management",
+    tabs: ["cash-flow", "banking", "vendors", "accounts-payable", "reports"],
   },
   {
     key: "payroll",

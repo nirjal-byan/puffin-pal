@@ -23,7 +23,8 @@ export type FinancialReport = {
   expenses: {
     recorded: MoneyMetric;
     approved: MoneyMetric;
-    paid: null;
+    paid: MoneyMetric;
+    unpaid: MoneyMetric;
     byCategory: ReportBreakdown[];
     byVendor: ReportBreakdown[];
     largest: ReportBreakdown[];
@@ -46,7 +47,14 @@ export type FinancialReport = {
     marginPercent: string | null;
   };
   receivables: { aging: ReportBreakdown[]; byClient: ReportBreakdown[] };
-  payables: { available: false; reason: string };
+  payables: {
+    available: true;
+    outstanding: MoneyMetric;
+    overdue: MoneyMetric;
+    payments: MoneyMetric;
+    aging: ReportBreakdown[];
+    byVendor: ReportBreakdown[];
+  };
   cashMovement: {
     inflows: MoneyMetric;
     outflows: MoneyMetric;

@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { Permission } from "@puffinpal/permissions";
-import { AppModal } from "@/components/ui/app-modal";
+import { FormModal, FormModalIntro, FormModalSection } from "@/components/ui/form-modal";
 
 type Api = <T>(
   path: string,
@@ -148,8 +148,7 @@ export default function AccountsPayablePage({
   }, [search, vendors]);
   const pageSize = 10;
   const visibleBills = filteredBills.slice(page * pageSize, (page + 1) * pageSize);
-  async function createVendor(event: React.FormEvent) {
-    event.preventDefault();
+  async function createVendor() {
     await api("/vendors", {
       method: "POST",
       body: {
@@ -168,8 +167,7 @@ export default function AccountsPayablePage({
     onSaved("Vendor created.");
     await load();
   }
-  async function createBill(event: React.FormEvent) {
-    event.preventDefault();
+  async function createBill() {
     await api("/accounts-payable/bills", {
       method: "POST",
       body: {
@@ -204,8 +202,7 @@ export default function AccountsPayablePage({
     onSaved(`Bill ${action === "submit" ? "submitted" : `${action}d`}.`);
     await load();
   }
-  async function recordPayment(event: React.FormEvent) {
-    event.preventDefault();
+  async function recordPayment() {
     if (!selected) return;
     await api("/accounts-payable/payments", {
       method: "POST",
@@ -458,232 +455,240 @@ export default function AccountsPayablePage({
           )}
         </section>
       )}
-      <AppModal
-        open={modal === "vendor"}
-        title="Add vendor"
-        badge="Purchasing"
-        onClose={() => setModal(null)}
-      >
-        <form className="standard-form" onSubmit={(event) => void createVendor(event)}>
-          <div className="form-grid two">
-            <label className="form-field">
-              <span>Vendor name</span>
-              <input
-                required
-                value={vendorForm.name}
-                onChange={(e) => setVendorForm({ ...vendorForm, name: e.target.value })}
-              />
-            </label>
-            <label className="form-field">
-              <span>
-                Email <small>Optional</small>
-              </span>
-              <input
-                type="email"
-                value={vendorForm.email}
-                onChange={(e) => setVendorForm({ ...vendorForm, email: e.target.value })}
-              />
-            </label>
-            <label className="form-field">
-              <span>Currency</span>
-              <select
-                value={vendorForm.defaultCurrency}
-                onChange={(e) => setVendorForm({ ...vendorForm, defaultCurrency: e.target.value })}
-              >
-                <option>USD</option>
-                <option>NPR</option>
-                <option>EUR</option>
-                <option>GBP</option>
-                <option>CAD</option>
-              </select>
-            </label>
-            <label className="form-field">
-              <span>Payment terms</span>
-              <select
-                value={vendorForm.paymentTermsDays}
-                onChange={(e) =>
-                  setVendorForm({ ...vendorForm, paymentTermsDays: Number(e.target.value) })
-                }
-              >
-                <option value={0}>Due immediately</option>
-                <option value={7}>Net 7</option>
-                <option value={15}>Net 15</option>
-                <option value={30}>Net 30</option>
-                <option value={60}>Net 60</option>
-              </select>
-            </label>
-          </div>
-          <footer className="form-actions">
-            <button type="button" className="button secondary" onClick={() => setModal(null)}>
-              Cancel
-            </button>
-            <button className="button primary">Add vendor</button>
-          </footer>
-        </form>
-      </AppModal>
-      <AppModal
-        open={modal === "bill"}
-        title="New vendor bill"
-        badge="Draft"
-        onClose={() => setModal(null)}
-      >
-        <form className="standard-form" onSubmit={(event) => void createBill(event)}>
-          <div className="form-grid two">
-            <label className="form-field span-two">
-              <span>Vendor</span>
-              <select
-                required
-                value={billForm.vendorId}
-                onChange={(e) => {
-                  const vendor = vendors.find((v) => v.id === e.target.value);
-                  setBillForm({
-                    ...billForm,
-                    vendorId: e.target.value,
-                    currency: vendor?.defaultCurrency ?? billForm.currency,
-                  });
-                }}
-              >
-                <option value="">Select vendor</option>
-                {vendors
-                  .filter((v) => v.active)
-                  .map((v) => (
-                    <option value={v.id} key={v.id}>
-                      {v.displayName || v.name}
-                    </option>
-                  ))}
-              </select>
-            </label>
-            <label className="form-field">
-              <span>Bill number</span>
-              <input
-                required
-                value={billForm.billNumber}
-                onChange={(e) => setBillForm({ ...billForm, billNumber: e.target.value })}
-              />
-            </label>
-            <label className="form-field">
-              <span>Currency</span>
-              <select
-                value={billForm.currency}
-                onChange={(e) => setBillForm({ ...billForm, currency: e.target.value })}
-              >
-                <option>USD</option>
-                <option>NPR</option>
-                <option>EUR</option>
-                <option>GBP</option>
-                <option>CAD</option>
-              </select>
-            </label>
-            <label className="form-field">
-              <span>Issue date</span>
-              <input
-                type="date"
-                required
-                value={billForm.issueDate}
-                onChange={(e) => setBillForm({ ...billForm, issueDate: e.target.value })}
-              />
-            </label>
-            <label className="form-field">
-              <span>Due date</span>
-              <input
-                type="date"
-                required
-                value={billForm.dueDate}
-                onChange={(e) => setBillForm({ ...billForm, dueDate: e.target.value })}
-              />
-            </label>
-            <label className="form-field span-two">
-              <span>Line description</span>
-              <input
-                required
-                value={billForm.itemDescription}
-                onChange={(e) => setBillForm({ ...billForm, itemDescription: e.target.value })}
-              />
-            </label>
-            <label className="form-field">
-              <span>Quantity</span>
-              <input
-                inputMode="decimal"
-                required
-                value={billForm.quantity}
-                onChange={(e) => setBillForm({ ...billForm, quantity: e.target.value })}
-              />
-            </label>
-            <label className="form-field">
-              <span>Unit price</span>
-              <input
-                inputMode="decimal"
-                required
-                value={billForm.unitPrice}
-                onChange={(e) => setBillForm({ ...billForm, unitPrice: e.target.value })}
-              />
-            </label>
-          </div>
-          <footer className="form-actions">
-            <button type="button" className="button secondary" onClick={() => setModal(null)}>
-              Cancel
-            </button>
-            <button className="button primary">Save draft</button>
-          </footer>
-        </form>
-      </AppModal>
-      <AppModal
-        open={modal === "payment"}
-        title="Record vendor payment"
-        badge="Settlement"
-        onClose={() => setModal(null)}
-      >
-        <form className="standard-form" onSubmit={(event) => void recordPayment(event)}>
-          <div className="form-grid two">
-            <label className="form-field">
-              <span>Amount</span>
-              <input
-                required
-                inputMode="decimal"
-                value={payment.amount}
-                onChange={(e) => setPayment({ ...payment, amount: e.target.value })}
-              />
-            </label>
-            <label className="form-field">
-              <span>Payment date</span>
-              <input
-                required
-                type="date"
-                value={payment.paymentDate}
-                onChange={(e) => setPayment({ ...payment, paymentDate: e.target.value })}
-              />
-            </label>
-            <label className="form-field">
-              <span>Method</span>
-              <select
-                value={payment.method}
-                onChange={(e) => setPayment({ ...payment, method: e.target.value })}
-              >
-                <option value="BANK_TRANSFER">Bank transfer</option>
-                <option value="CARD">Card</option>
-                <option value="CASH">Cash</option>
-                <option value="CHEQUE">Cheque</option>
-                <option value="OTHER">Other</option>
-              </select>
-            </label>
-            <label className="form-field">
-              <span>
-                Reference <small>Optional</small>
-              </span>
-              <input
-                value={payment.reference}
-                onChange={(e) => setPayment({ ...payment, reference: e.target.value })}
-              />
-            </label>
-          </div>
-          <footer className="form-actions">
-            <button type="button" className="button secondary" onClick={() => setModal(null)}>
-              Cancel
-            </button>
-            <button className="button primary">Record payment</button>
-          </footer>
-        </form>
-      </AppModal>
+      {modal === "vendor" && (
+        <FormModal
+          title="Add vendor"
+          badge="Purchasing"
+          wide
+          onClose={() => setModal(null)}
+          onSubmit={createVendor}
+          submitLabel="Add vendor"
+        >
+          <FormModalIntro icon="◉" title="Supplier details">
+            Keep purchasing contacts and payment defaults in one place.
+          </FormModalIntro>
+          <FormModalSection title="Vendor profile" description="Contact and payment defaults">
+            <div className="standard-form-grid">
+              <label className="form-field">
+                <span>Vendor name</span>
+                <input
+                  required
+                  value={vendorForm.name}
+                  onChange={(e) => setVendorForm({ ...vendorForm, name: e.target.value })}
+                />
+              </label>
+              <label className="form-field">
+                <span>
+                  Email <small>Optional</small>
+                </span>
+                <input
+                  type="email"
+                  value={vendorForm.email}
+                  onChange={(e) => setVendorForm({ ...vendorForm, email: e.target.value })}
+                />
+              </label>
+              <label className="form-field">
+                <span>Currency</span>
+                <select
+                  value={vendorForm.defaultCurrency}
+                  onChange={(e) =>
+                    setVendorForm({ ...vendorForm, defaultCurrency: e.target.value })
+                  }
+                >
+                  <option>USD</option>
+                  <option>NPR</option>
+                  <option>EUR</option>
+                  <option>GBP</option>
+                  <option>CAD</option>
+                </select>
+              </label>
+              <label className="form-field">
+                <span>Payment terms</span>
+                <select
+                  value={vendorForm.paymentTermsDays}
+                  onChange={(e) =>
+                    setVendorForm({ ...vendorForm, paymentTermsDays: Number(e.target.value) })
+                  }
+                >
+                  <option value={0}>Due immediately</option>
+                  <option value={7}>Net 7</option>
+                  <option value={15}>Net 15</option>
+                  <option value={30}>Net 30</option>
+                  <option value={60}>Net 60</option>
+                </select>
+              </label>
+            </div>
+          </FormModalSection>
+        </FormModal>
+      )}
+      {modal === "bill" && (
+        <FormModal
+          title="New vendor bill"
+          badge="Draft"
+          wide
+          onClose={() => setModal(null)}
+          onSubmit={createBill}
+          submitLabel="Save draft"
+        >
+          <FormModalIntro icon="▧" title="Record a payable">
+            Add the bill details and the amount your organization owes.
+          </FormModalIntro>
+          <FormModalSection title="Bill details" description="Supplier, dates, and currency">
+            <div className="standard-form-grid">
+              <label className="form-field standard-form-grid-wide">
+                <span>Vendor</span>
+                <select
+                  required
+                  value={billForm.vendorId}
+                  onChange={(e) => {
+                    const vendor = vendors.find((v) => v.id === e.target.value);
+                    setBillForm({
+                      ...billForm,
+                      vendorId: e.target.value,
+                      currency: vendor?.defaultCurrency ?? billForm.currency,
+                    });
+                  }}
+                >
+                  <option value="">Select vendor</option>
+                  {vendors
+                    .filter((v) => v.active)
+                    .map((v) => (
+                      <option value={v.id} key={v.id}>
+                        {v.displayName || v.name}
+                      </option>
+                    ))}
+                </select>
+              </label>
+              <label className="form-field">
+                <span>Bill number</span>
+                <input
+                  required
+                  value={billForm.billNumber}
+                  onChange={(e) => setBillForm({ ...billForm, billNumber: e.target.value })}
+                />
+              </label>
+              <label className="form-field">
+                <span>Currency</span>
+                <select
+                  value={billForm.currency}
+                  onChange={(e) => setBillForm({ ...billForm, currency: e.target.value })}
+                >
+                  <option>USD</option>
+                  <option>NPR</option>
+                  <option>EUR</option>
+                  <option>GBP</option>
+                  <option>CAD</option>
+                </select>
+              </label>
+              <label className="form-field">
+                <span>Issue date</span>
+                <input
+                  type="date"
+                  required
+                  value={billForm.issueDate}
+                  onChange={(e) => setBillForm({ ...billForm, issueDate: e.target.value })}
+                />
+              </label>
+              <label className="form-field">
+                <span>Due date</span>
+                <input
+                  type="date"
+                  required
+                  value={billForm.dueDate}
+                  onChange={(e) => setBillForm({ ...billForm, dueDate: e.target.value })}
+                />
+              </label>
+              <label className="form-field standard-form-grid-wide">
+                <span>Line description</span>
+                <input
+                  required
+                  value={billForm.itemDescription}
+                  onChange={(e) => setBillForm({ ...billForm, itemDescription: e.target.value })}
+                />
+              </label>
+              <label className="form-field">
+                <span>Quantity</span>
+                <input
+                  inputMode="decimal"
+                  required
+                  value={billForm.quantity}
+                  onChange={(e) => setBillForm({ ...billForm, quantity: e.target.value })}
+                />
+              </label>
+              <label className="form-field">
+                <span>Unit price</span>
+                <input
+                  inputMode="decimal"
+                  required
+                  value={billForm.unitPrice}
+                  onChange={(e) => setBillForm({ ...billForm, unitPrice: e.target.value })}
+                />
+              </label>
+            </div>
+          </FormModalSection>
+        </FormModal>
+      )}
+      {modal === "payment" && (
+        <FormModal
+          title="Record vendor payment"
+          badge="Settlement"
+          wide
+          onClose={() => setModal(null)}
+          onSubmit={recordPayment}
+          submitLabel="Record payment"
+        >
+          <FormModalIntro icon="$" title="Settle a vendor bill">
+            Record money already paid and keep the bill balance accurate.
+          </FormModalIntro>
+          <FormModalSection
+            title="Payment details"
+            description={selected ? `Bill ${selected.billNumber}` : undefined}
+          >
+            <div className="standard-form-grid">
+              <label className="form-field">
+                <span>Amount</span>
+                <input
+                  required
+                  inputMode="decimal"
+                  value={payment.amount}
+                  onChange={(e) => setPayment({ ...payment, amount: e.target.value })}
+                />
+              </label>
+              <label className="form-field">
+                <span>Payment date</span>
+                <input
+                  required
+                  type="date"
+                  value={payment.paymentDate}
+                  onChange={(e) => setPayment({ ...payment, paymentDate: e.target.value })}
+                />
+              </label>
+              <label className="form-field">
+                <span>Method</span>
+                <select
+                  value={payment.method}
+                  onChange={(e) => setPayment({ ...payment, method: e.target.value })}
+                >
+                  <option value="BANK_TRANSFER">Bank transfer</option>
+                  <option value="CARD">Card</option>
+                  <option value="CASH">Cash</option>
+                  <option value="CHEQUE">Cheque</option>
+                  <option value="OTHER">Other</option>
+                </select>
+              </label>
+              <label className="form-field">
+                <span>
+                  Reference <small>Optional</small>
+                </span>
+                <input
+                  value={payment.reference}
+                  onChange={(e) => setPayment({ ...payment, reference: e.target.value })}
+                />
+              </label>
+            </div>
+          </FormModalSection>
+        </FormModal>
+      )}
     </div>
   );
 }

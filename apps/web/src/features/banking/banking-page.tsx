@@ -8,6 +8,7 @@ import { Dropdown } from "@/components/ui/dropdown";
 import {
   FormCheckbox,
   FormField,
+  FormFilePicker,
   FormModal,
   FormModalIntro,
   FormModalSection,
@@ -719,12 +720,12 @@ export default function BankingPage({
                 />
               </FormField>
               <FormField label="CSV file">
-                <input
-                  className="file-input"
-                  type="file"
+                <FormFilePicker
                   accept=".csv,text/csv"
-                  onChange={async (event) => {
-                    const file = event.target.files?.[0];
+                  fileName={csv?.name}
+                  title="Upload bank statement"
+                  hint="CSV only · maximum 2 MB"
+                  onChange={async (file) => {
                     if (!file) return;
                     if (file.size > 2_000_000) {
                       setError("CSV files must be 2 MB or smaller");
