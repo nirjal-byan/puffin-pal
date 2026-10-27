@@ -100,7 +100,7 @@ The route files were already thin before this audit. The remaining work is conce
 | --------------------------- | -------------: | ------------: | --------------------------------------------------------------------- | ----------------------------------------------------------- |
 | Banking page                |            920 |           829 | `types.ts`, `constants.ts`, `bank-account-grid.tsx`                   | Partial; transaction/import/batch tables and dialogs remain |
 | Expenses page               |            836 |           710 | `expense-form.tsx` (existing schemas/utils retained)                  | Partial; filters, workflow dialogs and list remain          |
-| Workforce page              |            728 |           677 | `calendar-types.ts`, `calendar-utils.ts` plus existing API/UI modules | Partial; calendar panels and management dialogs remain      |
+| Workforce page              |            728 |           297 | Calendar, management panel, holiday, schedule and settings components | Complete; page now coordinates state, API calls and actions |
 | Accounts Payable page       |            723 |           645 | `types.ts`, `constants.ts`, `utils.ts`, `vendor-grid.tsx`             | Partial; bills table and three dialogs remain               |
 | Payroll page                |            718 |           654 | `types.ts`, `utils.ts` plus existing automation/statutory components  | Partial; run tables and workflow dialogs remain             |
 | Cash Flow page              |            607 |           540 | `types.ts`, `utils.ts`, `cash-flow-kpi.tsx`                           | Partial; charts/events/settings dialog remain               |
@@ -117,6 +117,6 @@ The route files were already thin before this audit. The remaining work is conce
 | Overtime page               |            307 |           307 | Existing workforce API/types/UI                                       | Reviewed; cohesive request workflow                         |
 | Login page                  |            301 |           301 | Existing auth layout/registration components                          | Reviewed; cohesive authentication form                      |
 
-Phase 2 pure-utility coverage includes payables filtering/sorting, cash-flow chart conversion, dashboard date ranges/labels, payroll period defaults, workforce calendar ranges and recurring-invoice cadence labels.
+Phase 2 pure-utility coverage includes payables filtering/sorting, cash-flow chart conversion, dashboard date ranges/labels, payroll period defaults, workforce calendar ranges and recurring-invoice cadence labels. Phase 3 completed the Workforce presentation boundary: the controller retains orchestration while calendar rendering, its management rail and each modal form own their JSX independently.
 
 Line counts are a navigation aid, not a quality metric. A file is complete only when its remaining responsibilities are cohesive. This inventory must be updated as the remaining controllers are decomposed.

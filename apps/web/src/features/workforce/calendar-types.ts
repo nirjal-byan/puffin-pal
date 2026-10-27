@@ -1,4 +1,28 @@
 export type WorkforceSettings = { timezone: string; unpaidLeaveDeductionsEnabled: boolean };
+export type WorkforceCalendarView = "month" | "week";
+export type WorkforceCalendarEvent = { label: string; kind: string };
+export type WorkforceHolidayForm = {
+  name: string;
+  date: string;
+  endDate: string;
+  isRecurring: boolean;
+  durationMinutes?: number;
+  expectedVersion?: number;
+};
+export type WorkforceScheduleForm = {
+  employeeId: string;
+  name: string;
+  timezone: string;
+  workdays: string;
+  scheduledStartTime: string;
+  scheduledEndTime: string;
+  expectedDailyMinutes: number;
+  breakMinutes: number;
+  isActive: boolean;
+  effectiveFrom: string;
+  effectiveTo: string;
+  expectedVersion?: number;
+};
 
 export interface WorkforceCalendarData {
   timezone: string;
