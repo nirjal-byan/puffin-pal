@@ -20,7 +20,8 @@
   gap: 16px;
 }
 .ap-toolbar {
-  padding: 18px;
+  min-height: 96px;
+  padding: 18px 20px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -48,6 +49,10 @@
   align-items: center;
   gap: 8px;
 }
+.ap-actions {
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
 .ap-filter-bar {
   padding: 14px 16px;
   display: grid;
@@ -57,6 +62,12 @@
 }
 .ap-filter-bar .form-field {
   margin: 0;
+}
+.ap-filter-bar.vendors-only {
+  grid-template-columns: minmax(260px, 1fr);
+}
+.ap-filter-bar.vendors-only .ap-search {
+  max-width: 720px;
 }
 .ap-pagination {
   padding: 12px 16px;
@@ -145,6 +156,15 @@
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 12px;
 }
+.ap-vendor-grid > .empty-state {
+  grid-column: 1 / -1;
+}
+.ap-vendor-empty {
+  min-height: 280px;
+}
+.ap-vendor-empty .button {
+  margin-top: 8px;
+}
 .ap-vendor-card {
   padding: 16px;
   display: grid;
@@ -230,6 +250,22 @@
   }
   .form-field.span-two {
     grid-column: auto;
+  }
+}
+@media (max-width: 820px) {
+  .ap-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .ap-actions {
+    align-items: stretch;
+    justify-content: space-between;
+  }
+  .ap-actions .banking-tabs {
+    flex: 1;
+  }
+  .ap-actions .banking-tabs button {
+    flex: 1;
   }
 }
 .report-filter-bar {

@@ -2,7 +2,9 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { Permission } from "@puffinpal/permissions";
-import { FormModal, FormModalIntro, FormModalSection } from "@/components/ui/form-modal";
+import { DatePicker } from "@/components/ui/date-picker";
+import { Dropdown } from "@/components/ui/dropdown";
+import { FormField, FormModal, FormModalIntro, FormModalSection } from "@/components/ui/form-modal";
 
 type Api = <T>(
   path: string,
@@ -45,6 +47,10 @@ const emptySummary: Summary = {
     over90: "0.00",
   },
 };
+const currencyOptions = ["USD", "EUR", "GBP", "CAD", "AUD", "NPR", "INR"].map((value) => ({
+  value,
+  label: value,
+}));
 
 export default function AccountsPayablePage({
   api,
@@ -219,19 +225,32 @@ export default function AccountsPayablePage({
     await load();
   }
   return (
-    <div className="ap-page">
+    <div className="ap-page" data-view={view}>
       <section className="panel ap-toolbar">
         <div>
-          <span className="eyebrow">ACCOUNTS PAYABLE</span>
-          <h2>Purchases and vendor balances</h2>
-          <p>Track suppliers, approve bills, and keep payments auditable.</p>
+          <span className="eyebrow">{view === "vendors" ? "SUPPLIERS" : "ACCOUNTS PAYABLE"}</span>
+          <h2>{view === "vendors" ? "Vendor directory" : "Bills and payments"}</h2>
+          <p>
+            {view === "vendors"
+              ? "Manage supplier contacts and their default payment terms."
+              : "Review approvals, due dates, outstanding balances, and settlements."}
+          </p>
         </div>
         <div className="ap-actions">
-          <div className="segmented">
-            <button className={view === "bills" ? "active" : ""} onClick={() => setView("bills")}>
+          <div className="banking-tabs" role="tablist" aria-label="Purchasing views">
+            <button
+              type="button"
+              role="tab"
+              aria-selected={view === "bills"}
+              className={view === "bills" ? "active" : ""}
+              onClick={() => setView("bills")}
+            >
               Bills
             </button>
             <button
+              type="button"
+              role="tab"
+              aria-selected={view === "vendors"}
               className={view === "vendors" ? "active" : ""}
               onClick={() => setView("vendors")}
             >
@@ -249,7 +268,10 @@ export default function AccountsPayablePage({
         </div>
       </section>
       {error && <div className="form-alert error">{error}</div>}
-      <section className="panel ap-filter-bar" aria-label="Accounts payable filters">
+      <section
+        className={`panel ap-filter-bar${view === "vendors" ? " vendors-only" : ""}`}
+        aria-label="Accounts payable filters"
+      >
         <label className="form-field ap-search">
           <span>Search</span>
           <input
@@ -263,31 +285,40 @@ export default function AccountsPayablePage({
         </label>
         {view === "bills" && (
           <>
-            <label className="form-field">
-              <span>Approval status</span>
-              <select
+            <FormField label="Approval status">
+              <Dropdown
+                name="payable-status"
+                label="Approval status"
+                searchable={false}
                 value={status}
-                onChange={(event) => {
-                  setStatus(event.target.value);
+                onChange={(value) => {
+                  setStatus(value);
                   setPage(0);
                 }}
-              >
-                <option value="ALL">All statuses</option>
-                <option value="DRAFT">Draft</option>
-                <option value="PENDING_APPROVAL">Pending approval</option>
-                <option value="APPROVED">Approved</option>
-                <option value="REJECTED">Rejected</option>
-                <option value="VOIDED">Voided</option>
-              </select>
-            </label>
-            <label className="form-field">
-              <span>Sort by</span>
-              <select value={sort} onChange={(event) => setSort(event.target.value)}>
-                <option value="DUE_ASC">Due date: soonest</option>
-                <option value="DUE_DESC">Due date: latest</option>
-                <option value="BALANCE_DESC">Balance: highest</option>
-              </select>
-            </label>
+                options={[
+                  { value: "ALL", label: "All statuses" },
+                  { value: "DRAFT", label: "Draft" },
+                  { value: "PENDING_APPROVAL", label: "Pending approval" },
+                  { value: "APPROVED", label: "Approved" },
+                  { value: "REJECTED", label: "Rejected" },
+                  { value: "VOIDED", label: "Voided" },
+                ]}
+              />
+            </FormField>
+            <FormField label="Sort by">
+              <Dropdown
+                name="payable-sort"
+                label="Sort bills"
+                searchable={false}
+                value={sort}
+                onChange={setSort}
+                options={[
+                  { value: "DUE_ASC", label: "Due date: soonest" },
+                  { value: "DUE_DESC", label: "Due date: latest" },
+                  { value: "BALANCE_DESC", label: "Balance: highest" },
+                ]}
+              />
+            </FormField>
           </>
         )}
       </section>
@@ -448,9 +479,17 @@ export default function AccountsPayablePage({
             </article>
           ))}
           {!filteredVendors.length && !loading && (
-            <section className="panel empty-state">
+            <section className="panel empty-state ap-vendor-empty">
+              <span className="empty-state-icon" aria-hidden="true">
+                ◉
+              </span>
               <h3>No vendors yet</h3>
-              <p>Add a supplier before recording bills.</p>
+              <p>Add your first supplier to start recording and tracking bills.</p>
+              {canManage && (
+                <button className="button primary" type="button" onClick={() => setModal("vendor")}>
+                  + Add vendor
+                </button>
+              )}
             </section>
           )}
         </section>
@@ -463,6 +502,7 @@ export default function AccountsPayablePage({
           onClose={() => setModal(null)}
           onSubmit={createVendor}
           submitLabel="Add vendor"
+          submitDisabled={!vendorForm.name.trim()}
         >
           <FormModalIntro icon="◉" title="Supplier details">
             Keep purchasing contacts and payment defaults in one place.
@@ -477,46 +517,41 @@ export default function AccountsPayablePage({
                   onChange={(e) => setVendorForm({ ...vendorForm, name: e.target.value })}
                 />
               </label>
-              <label className="form-field">
-                <span>
-                  Email <small>Optional</small>
-                </span>
+              <FormField label="Email" optional>
                 <input
                   type="email"
                   value={vendorForm.email}
                   onChange={(e) => setVendorForm({ ...vendorForm, email: e.target.value })}
                 />
-              </label>
-              <label className="form-field">
-                <span>Currency</span>
-                <select
+              </FormField>
+              <FormField label="Currency">
+                <Dropdown
+                  name="vendor-currency"
+                  label="Vendor currency"
+                  searchable={false}
                   value={vendorForm.defaultCurrency}
-                  onChange={(e) =>
-                    setVendorForm({ ...vendorForm, defaultCurrency: e.target.value })
+                  onChange={(value) => setVendorForm({ ...vendorForm, defaultCurrency: value })}
+                  options={currencyOptions}
+                />
+              </FormField>
+              <FormField label="Payment terms">
+                <Dropdown
+                  name="vendor-payment-terms"
+                  label="Payment terms"
+                  searchable={false}
+                  value={String(vendorForm.paymentTermsDays)}
+                  onChange={(value) =>
+                    setVendorForm({ ...vendorForm, paymentTermsDays: Number(value) })
                   }
-                >
-                  <option>USD</option>
-                  <option>NPR</option>
-                  <option>EUR</option>
-                  <option>GBP</option>
-                  <option>CAD</option>
-                </select>
-              </label>
-              <label className="form-field">
-                <span>Payment terms</span>
-                <select
-                  value={vendorForm.paymentTermsDays}
-                  onChange={(e) =>
-                    setVendorForm({ ...vendorForm, paymentTermsDays: Number(e.target.value) })
-                  }
-                >
-                  <option value={0}>Due immediately</option>
-                  <option value={7}>Net 7</option>
-                  <option value={15}>Net 15</option>
-                  <option value={30}>Net 30</option>
-                  <option value={60}>Net 60</option>
-                </select>
-              </label>
+                  options={[
+                    { value: "0", label: "Due immediately" },
+                    { value: "7", label: "Net 7" },
+                    { value: "15", label: "Net 15" },
+                    { value: "30", label: "Net 30" },
+                    { value: "60", label: "Net 60" },
+                  ]}
+                />
+              </FormField>
             </div>
           </FormModalSection>
         </FormModal>
@@ -529,36 +564,37 @@ export default function AccountsPayablePage({
           onClose={() => setModal(null)}
           onSubmit={createBill}
           submitLabel="Save draft"
+          submitDisabled={
+            !billForm.vendorId ||
+            !billForm.billNumber.trim() ||
+            !billForm.issueDate ||
+            !billForm.dueDate ||
+            !billForm.itemDescription.trim()
+          }
         >
           <FormModalIntro icon="▧" title="Record a payable">
             Add the bill details and the amount your organization owes.
           </FormModalIntro>
           <FormModalSection title="Bill details" description="Supplier, dates, and currency">
             <div className="standard-form-grid">
-              <label className="form-field standard-form-grid-wide">
-                <span>Vendor</span>
-                <select
-                  required
+              <FormField label="Vendor" wide>
+                <Dropdown
+                  name="bill-vendor"
+                  label="Vendor"
                   value={billForm.vendorId}
-                  onChange={(e) => {
-                    const vendor = vendors.find((v) => v.id === e.target.value);
+                  onChange={(value) => {
+                    const vendor = vendors.find((v) => v.id === value);
                     setBillForm({
                       ...billForm,
-                      vendorId: e.target.value,
+                      vendorId: value,
                       currency: vendor?.defaultCurrency ?? billForm.currency,
                     });
                   }}
-                >
-                  <option value="">Select vendor</option>
-                  {vendors
+                  options={vendors
                     .filter((v) => v.active)
-                    .map((v) => (
-                      <option value={v.id} key={v.id}>
-                        {v.displayName || v.name}
-                      </option>
-                    ))}
-                </select>
-              </label>
+                    .map((v) => ({ value: v.id, label: v.displayName || v.name }))}
+                />
+              </FormField>
               <label className="form-field">
                 <span>Bill number</span>
                 <input
@@ -567,37 +603,31 @@ export default function AccountsPayablePage({
                   onChange={(e) => setBillForm({ ...billForm, billNumber: e.target.value })}
                 />
               </label>
-              <label className="form-field">
-                <span>Currency</span>
-                <select
+              <FormField label="Currency">
+                <Dropdown
+                  name="bill-currency"
+                  label="Bill currency"
+                  searchable={false}
                   value={billForm.currency}
-                  onChange={(e) => setBillForm({ ...billForm, currency: e.target.value })}
-                >
-                  <option>USD</option>
-                  <option>NPR</option>
-                  <option>EUR</option>
-                  <option>GBP</option>
-                  <option>CAD</option>
-                </select>
-              </label>
-              <label className="form-field">
-                <span>Issue date</span>
-                <input
-                  type="date"
-                  required
+                  onChange={(value) => setBillForm({ ...billForm, currency: value })}
+                  options={currencyOptions}
+                />
+              </FormField>
+              <FormField label="Issue date">
+                <DatePicker
+                  ariaLabel="Bill issue date"
                   value={billForm.issueDate}
-                  onChange={(e) => setBillForm({ ...billForm, issueDate: e.target.value })}
+                  onChange={(value) => setBillForm({ ...billForm, issueDate: value })}
                 />
-              </label>
-              <label className="form-field">
-                <span>Due date</span>
-                <input
-                  type="date"
-                  required
+              </FormField>
+              <FormField label="Due date">
+                <DatePicker
+                  ariaLabel="Bill due date"
                   value={billForm.dueDate}
-                  onChange={(e) => setBillForm({ ...billForm, dueDate: e.target.value })}
+                  min={billForm.issueDate}
+                  onChange={(value) => setBillForm({ ...billForm, dueDate: value })}
                 />
-              </label>
+              </FormField>
               <label className="form-field standard-form-grid-wide">
                 <span>Line description</span>
                 <input
@@ -636,6 +666,7 @@ export default function AccountsPayablePage({
           onClose={() => setModal(null)}
           onSubmit={recordPayment}
           submitLabel="Record payment"
+          submitDisabled={!payment.amount || !payment.paymentDate}
         >
           <FormModalIntro icon="$" title="Settle a vendor bill">
             Record money already paid and keep the bill balance accurate.
@@ -654,37 +685,35 @@ export default function AccountsPayablePage({
                   onChange={(e) => setPayment({ ...payment, amount: e.target.value })}
                 />
               </label>
-              <label className="form-field">
-                <span>Payment date</span>
-                <input
-                  required
-                  type="date"
+              <FormField label="Payment date">
+                <DatePicker
+                  ariaLabel="Vendor payment date"
                   value={payment.paymentDate}
-                  onChange={(e) => setPayment({ ...payment, paymentDate: e.target.value })}
+                  onChange={(value) => setPayment({ ...payment, paymentDate: value })}
                 />
-              </label>
-              <label className="form-field">
-                <span>Method</span>
-                <select
+              </FormField>
+              <FormField label="Method">
+                <Dropdown
+                  name="vendor-payment-method"
+                  label="Payment method"
+                  searchable={false}
                   value={payment.method}
-                  onChange={(e) => setPayment({ ...payment, method: e.target.value })}
-                >
-                  <option value="BANK_TRANSFER">Bank transfer</option>
-                  <option value="CARD">Card</option>
-                  <option value="CASH">Cash</option>
-                  <option value="CHEQUE">Cheque</option>
-                  <option value="OTHER">Other</option>
-                </select>
-              </label>
-              <label className="form-field">
-                <span>
-                  Reference <small>Optional</small>
-                </span>
+                  onChange={(value) => setPayment({ ...payment, method: value })}
+                  options={[
+                    { value: "BANK_TRANSFER", label: "Bank transfer" },
+                    { value: "CARD", label: "Card" },
+                    { value: "CASH", label: "Cash" },
+                    { value: "CHEQUE", label: "Cheque" },
+                    { value: "OTHER", label: "Other" },
+                  ]}
+                />
+              </FormField>
+              <FormField label="Reference" optional>
                 <input
                   value={payment.reference}
                   onChange={(e) => setPayment({ ...payment, reference: e.target.value })}
                 />
-              </label>
+              </FormField>
             </div>
           </FormModalSection>
         </FormModal>

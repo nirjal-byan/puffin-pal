@@ -48,7 +48,7 @@ type ImportRow = {
   createdAt: string;
 };
 type Candidate = {
-  targetType: "INVOICE_PAYMENT" | "PAYROLL_PAYMENT";
+  targetType: "INVOICE_PAYMENT" | "PAYROLL_PAYMENT" | "PAYABLE_PAYMENT";
   targetId: string;
   amount: string;
   date: string;
