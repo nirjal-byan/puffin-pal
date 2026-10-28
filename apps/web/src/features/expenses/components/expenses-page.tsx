@@ -1,16 +1,19 @@
 "use client";
 import type { Permission } from "@puffinpal/permissions";
-import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
+import { useState, type FormEvent } from "react";
 import { errorMessage, type WorkspaceApi } from "@/lib/api";
 import { validateExpense, validateReceiptFile } from "../../expenses/schemas/expense.schema";
 import { FormModal } from "@/components/ui/form-modal";
-import type { Expense, ExpensePage } from "../../expenses/types";
-import { expensePeriodRange, formatExpenseMoney } from "../../expenses/utils";
+import type { Expense } from "../../expenses/types";
+import { formatExpenseMoney } from "../../expenses/utils";
 import { ExpenseDetails } from "./expense-details";
-import { ExpenseFilters, type ExpenseFiltersValue } from "./expense-filters";
+import { ExpenseFilters } from "./expense-filters";
 import { ExpenseForm } from "./expense-form";
 import { ExpenseWorkflowDialog, type ExpenseWorkflow } from "./expense-workflow-dialog";
 import { ExpensesTable } from "./expenses-table";
+import { DeleteExpenseDialog } from "./delete-expense-dialog";
+import { useExpenseCollection } from "../hooks/use-expense-collection";
+import { ExpensePagination } from "./expense-pagination";
 
 export default function ExpensesPage({
   api,
@@ -30,66 +33,27 @@ export default function ExpensesPage({
     canDelete = permissions.includes("expenses:delete"),
     canSubmit = permissions.includes("expenses:submit"),
     canApprove = permissions.includes("expenses:approve");
-  const [page, setPage] = useState<ExpensePage>({
-    items: [],
-    total: 0,
-    pendingCount: 0,
-    limit: 20,
-    offset: 0,
-  });
-  const [offset, setOffset] = useState(0);
-  const [filters, setFilters] = useState<ExpenseFiltersValue>({
-    search: "",
-    category: "",
-    approvalStatus: "",
-    period: "",
-    sort: "date",
-    order: "desc",
-  });
-  const [applied, setApplied] = useState(filters);
+  const {
+    page,
+    offset,
+    setOffset,
+    filters,
+    setFilters,
+    applied,
+    loading,
+    failure,
+    setFailure,
+    load,
+    applyFilters,
+    showPending,
+  } = useExpenseCollection(api);
   const [editing, setEditing] = useState<Expense | null>(null),
     [creating, setCreating] = useState(false),
     [deleting, setDeleting] = useState<Expense | null>(null);
   const [selected, setSelected] = useState<Expense | null>(null);
   const [workflow, setWorkflow] = useState<ExpenseWorkflow | null>(null);
   const [rejectionReason, setRejectionReason] = useState("");
-  const [busy, setBusy] = useState(false),
-    [loading, setLoading] = useState(true),
-    [failure, setFailure] = useState("");
-  const dialog = useRef<HTMLDialogElement>(null);
-  const load = useCallback(async () => {
-    setLoading(true);
-    setFailure("");
-    const query = new URLSearchParams({
-      limit: "20",
-      offset: String(offset),
-      sort: applied.sort,
-      order: applied.order,
-    });
-    for (const [key, value] of Object.entries(applied))
-      if (value && !["sort", "order", "period"].includes(key)) query.set(key, value);
-    const range = expensePeriodRange(applied.period);
-    if (range) {
-      query.set("from", range.from);
-      query.set("to", range.to);
-    }
-    try {
-      setPage(await api<ExpensePage>(`/expenses?${query}`));
-    } catch (error) {
-      setFailure(errorMessage(error));
-    } finally {
-      setLoading(false);
-    }
-  }, [api, applied, offset]);
-  // Loading is intentionally tied to the applied filters and page offset.
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    void load();
-  }, [load]);
-  useEffect(() => {
-    if (deleting) dialog.current?.showModal();
-    else dialog.current?.close();
-  }, [deleting]);
+  const [busy, setBusy] = useState(false);
   async function save(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const data = new FormData(event.currentTarget),
@@ -230,10 +194,7 @@ export default function ExpensesPage({
         value={filters}
         canCreate={canCreate}
         onChange={setFilters}
-        onApply={() => {
-          setOffset(0);
-          setApplied(filters);
-        }}
+        onApply={applyFilters}
         onCreate={() => {
           setEditing(null);
           setCreating(true);
@@ -281,12 +242,7 @@ export default function ExpensesPage({
           approve: canApprove,
         }}
         money={money}
-        onPending={() => {
-          const next = { ...filters, approvalStatus: "PENDING_APPROVAL" };
-          setFilters(next);
-          setApplied(next);
-          setOffset(0);
-        }}
+        onPending={showPending}
         onDetails={(expense) => void openDetails(expense)}
         onReceipt={(expense) => void openReceipt(expense)}
         onWorkflow={(expense, action) => setWorkflow({ expense, action })}
@@ -319,57 +275,13 @@ export default function ExpensesPage({
           onConfirm={() => void runWorkflow()}
         />
       )}
-      <div className="pagination">
-        <span>
-          {page.total
-            ? `Showing ${page.offset + 1}–${Math.min(page.offset + page.items.length, page.total)} of ${page.total}`
-            : "No records"}
-        </span>
-        <div>
-          <button
-            className="button secondary compact"
-            disabled={offset === 0 || loading}
-            onClick={() => setOffset(Math.max(0, offset - 20))}
-          >
-            ← Previous
-          </button>
-          <button
-            className="button secondary compact"
-            disabled={offset + page.items.length >= page.total || loading}
-            onClick={() => setOffset(offset + 20)}
-          >
-            Next →
-          </button>
-        </div>
-      </div>
-      <dialog
-        ref={dialog}
-        className="invoice-delete-dialog"
-        onCancel={(e) => {
-          e.preventDefault();
-          if (!busy) setDeleting(null);
-        }}
+      <ExpensePagination page={page} offset={offset} loading={loading} onOffsetChange={setOffset} />
+      <DeleteExpenseDialog
+        expense={deleting}
+        busy={busy}
         onClose={() => setDeleting(null)}
-      >
-        <h2>Delete expense?</h2>
-        <p>
-          <strong>{deleting?.title}</strong>
-        </p>
-        <p>This permanently deletes the expense and its receipt.</p>
-        <div className="invoice-actions">
-          <button
-            autoFocus
-            className="button secondary"
-            disabled={busy}
-            onClick={() => setDeleting(null)}
-          >
-            Cancel
-          </button>
-          <button className="button danger" disabled={busy} onClick={() => void removeExpense()}>
-            {busy ? "Deleting…" : "Delete permanently"}
-          </button>
-        </div>
-      </dialog>
+        onConfirm={() => void removeExpense()}
+      />
     </div>
   );
 }

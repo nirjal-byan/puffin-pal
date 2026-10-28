@@ -98,8 +98,8 @@ The route files were already thin before this audit. The remaining work is conce
 
 | Feature implementation      | Baseline lines | Current lines | Extracted modules                                                     | Status                                                          |
 | --------------------------- | -------------: | ------------: | --------------------------------------------------------------------- | --------------------------------------------------------------- |
-| Banking page                |            920 |           386 | Toolbar, transaction/import/batch panels and four focused dialogs     | Complete; page retains data loading and mutation workflows      |
-| Expenses page               |            836 |           375 | Filters, table/actions, details/history and workflow dialog           | Complete; page retains CRUD, receipt and workflow mutations     |
+| Banking page                |            920 |           300 | Record-loading/filter and reconciliation hooks plus existing panels   | Complete; page retains import, account and batch mutations      |
+| Expenses page               |            836 |           287 | Collection hook, pagination/delete UI plus existing focused forms     | Complete; page retains CRUD, receipt and approval mutations     |
 | Workforce page              |            728 |           297 | Calendar, management panel, holiday, schedule and settings components | Complete; page now coordinates state, API calls and actions     |
 | Accounts Payable page       |            723 |           262 | Toolbar, filters, summary, bills table and three form dialogs         | Complete; page retains loading and mutation orchestration       |
 | Payroll page                |            718 |           323 | Run history, creation, details, review and entries components         | Complete; page retains payroll workflow orchestration           |
@@ -128,5 +128,9 @@ Phase 4 begins with the Workspace boundary. Cross-feature page selection now liv
 The initial Phase 4 Workspace checkpoint passed the web typecheck, lint suite, unit tests and production build. At that boundary, sixteen TypeScript/TSX files remained above 300 lines. The architecture cleanup remains in progress.
 
 The Phase 4 continuation completes the payroll settings batch. Statutory configuration and preview presentation now sit beside a 221-line orchestration controller. Automation schedule editing, status/reminder presentation, history and draft confirmation now sit beside a 197-line controller. All extracted payroll components remain below 200 lines. Fourteen TypeScript/TSX files remain above 300 lines; Banking and Expenses are the next priority batch.
+
+The final-overhaul Batch A completes Banking and Expenses. `useBankingRecords` owns the parallel record lifecycle and transaction filtering, while `useBankReconciliation` owns candidate loading, matching and reversal. `useExpenseCollection` owns applied filters, pagination and query loading; delete confirmation and pagination presentation are focused components. The controllers remain responsible for their distinct mutations, preserving request order and optimistic-concurrency payloads.
+
+Batch A passes the full frontend typecheck, ESLint, all 12 frontend tests, the production build, `git diff --check`, and the feature-to-route import-direction audit. Twelve TypeScript/TSX files remain above 300 lines. Browser regression testing was not available for this checkpoint; banking import/reconciliation and expense CRUD, receipt and approval workflows still require manual verification.
 
 Line counts are a navigation aid, not a quality metric. A file is complete only when its remaining responsibilities are cohesive. This inventory must be updated as the remaining controllers are decomposed.
