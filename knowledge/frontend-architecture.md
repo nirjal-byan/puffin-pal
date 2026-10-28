@@ -106,8 +106,8 @@ The route files were already thin before this audit. The remaining work is conce
 | Cash Flow page              |            607 |           540 | `types.ts`, `utils.ts`, `cash-flow-kpi.tsx`                           | Partial; charts/events/settings dialog remain                   |
 | Workspace controller        |            574 |           382 | Content router, page header/actions and invoice-modal components      | Reviewed; cohesive session/API/navigation orchestration remains |
 | Retainers page              |            525 |           494 | `constants.ts`, `utils.ts` plus existing API/types modules            | Partial; schedule form and list remain                          |
-| Payroll statutory           |            471 |           471 | Existing payroll domain ownership                                     | Pending form extraction                                         |
-| Payroll automation          |            460 |           455 | Existing payroll domain ownership                                     | Reviewed; schedule editor remains a candidate                   |
+| Payroll statutory           |            471 |           221 | Configuration dialog, summary, preview controls and results table     | Complete; controller retains loading and statutory mutations    |
+| Payroll automation          |            460 |           197 | Schedule dialog, overview, reminders, history and confirmation dialog | Complete; controller retains scheduling mutations               |
 | Attendance page             |            450 |           450 | Existing workforce API/types/UI                                       | Pending table/form extraction                                   |
 | Employee management dialogs |            446 |           446 | Existing employee services/types                                      | Pending dialog split                                            |
 | Leave page                  |            436 |           441 | Existing workforce API/types/UI                                       | Pending table/form extraction                                   |
@@ -125,6 +125,8 @@ Phase 3C decomposes Expenses and Accounts Payable. Expense filters, permission-a
 
 Phase 4 begins with the Workspace boundary. Cross-feature page selection now lives in `workspace-content.tsx`, page heading/actions in `workspace-page-header.tsx`, and create/edit invoice overlays in `workspace-invoice-modals.tsx`. The remaining controller coordinates session-bound API access, URL navigation, notifications, legacy pagination and application chrome. It remains above 300 lines because those concerns share the same authenticated workspace lifecycle; further reduction should extract coherent state hooks rather than move the controller wholesale.
 
-This Phase 4 checkpoint passes the web typecheck, lint suite, unit tests and production build. Sixteen TypeScript/TSX files remain above 300 lines; the priority payroll statutory, payroll automation, Banking and Expenses controllers shown as pending or still orchestration-heavy in the inventory have not been decomposed in this checkpoint. The architecture cleanup is therefore still in progress.
+The initial Phase 4 Workspace checkpoint passed the web typecheck, lint suite, unit tests and production build. At that boundary, sixteen TypeScript/TSX files remained above 300 lines. The architecture cleanup remains in progress.
+
+The Phase 4 continuation completes the payroll settings batch. Statutory configuration and preview presentation now sit beside a 221-line orchestration controller. Automation schedule editing, status/reminder presentation, history and draft confirmation now sit beside a 197-line controller. All extracted payroll components remain below 200 lines. Fourteen TypeScript/TSX files remain above 300 lines; Banking and Expenses are the next priority batch.
 
 Line counts are a navigation aid, not a quality metric. A file is complete only when its remaining responsibilities are cohesive. This inventory must be updated as the remaining controllers are decomposed.
