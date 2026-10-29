@@ -1,14 +1,15 @@
 "use client";
 import type { Permission } from "@puffinpal/permissions";
 import { useCallback, useEffect, useState } from "react";
-import { FormModal } from "@/components/ui/form-modal";
-import { DatePicker } from "@/components/ui/date-picker";
-import { Dropdown } from "@/components/ui/dropdown";
 import { errorMessage, type WorkspaceApi } from "@/lib/api";
-import { loadEmployees, loadOvertime } from "@/features/workforce/api";
-import type { EmployeeOption, OvertimeRequest } from "@/features/workforce/types";
-import { employeeName, shortDate } from "@/features/workforce/types";
-import { MetricCard, StatusBadge, WorkforceEmpty } from "@/features/workforce/workforce-ui";
+import { loadEmployees, loadOvertime } from "../api";
+import type { EmployeeOption, OvertimeRequest } from "../types";
+import { MetricCard } from "../workforce-ui";
+import {
+  OvertimeRequestDialog,
+  OvertimeRequestsTable,
+  type OvertimeForm,
+} from "./overtime-components";
 
 export default function OvertimePage({
   api,
@@ -23,7 +24,7 @@ export default function OvertimePage({
   const [employees, setEmployees] = useState<EmployeeOption[]>([]);
   const [error, setError] = useState("");
   const [open, setOpen] = useState(false);
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<OvertimeForm>({
     employeeId: "",
     workDate: "",
     requestedMinutes: 60,
@@ -137,170 +138,20 @@ export default function OvertimePage({
           </button>
         )}
       </section>
-      <section className="panel" data-tour="overtime-approvals">
-        <div className="panel-heading">
-          <h3>Overtime history</h3>
-          <span className="muted">{requests.length} total</span>
-        </div>
-        {!requests.length ? (
-          <WorkforceEmpty
-            title="No overtime requests"
-            detail="Submitted and approved overtime will appear here."
-          />
-        ) : (
-          <div className="table-scroll">
-            <table>
-              <thead>
-                <tr>
-                  <th>Employee</th>
-                  <th>Work date</th>
-                  <th>Requested</th>
-                  <th>Approved</th>
-                  <th>Status</th>
-                  <th />
-                </tr>
-              </thead>
-              <tbody>
-                {requests.map((request) => (
-                  <tr key={request.id}>
-                    <td>
-                      {employeeName(employees, request.employeeId)}
-                      <small className="muted workforce-row-detail">{request.reason}</small>
-                    </td>
-                    <td>{shortDate(request.workDate)}</td>
-                    <td>{request.requestedMinutes} min</td>
-                    <td>{request.approvedMinutes ? `${request.approvedMinutes} min` : "—"}</td>
-                    <td>
-                      <StatusBadge status={request.status} />
-                    </td>
-                    <td>
-                      {request.status === "PENDING_APPROVAL" && can("overtime:approve") && (
-                        <div className="row-actions">
-                          <button
-                            className="text-button"
-                            onClick={() => review(request, "approve")}
-                          >
-                            Approve
-                          </button>
-                          <button
-                            className="text-button danger-text"
-                            onClick={() => review(request, "reject")}
-                          >
-                            Reject
-                          </button>
-                        </div>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </section>
+      <OvertimeRequestsTable
+        requests={requests}
+        employees={employees}
+        canApprove={can("overtime:approve")}
+        onReview={review}
+      />
       {open && (
-        <FormModal title="Request overtime" badge="Overtime" onClose={() => setOpen(false)}>
-          <div className="workforce-form">
-            <div className="workforce-form-intro">
-              <span className="workforce-form-icon" aria-hidden="true">
-                ◷
-              </span>
-              <div>
-                <strong>Log additional time</strong>
-                <p>Record the work performed and optional compensation details.</p>
-              </div>
-            </div>
-            <section className="workforce-form-section">
-              <div className="workforce-form-section-heading">
-                <span>Request details</span>
-                <small>Work information</small>
-              </div>
-              <label>
-                Employee
-                <Dropdown
-                  name="overtime-employee"
-                  label="Employee"
-                  placeholder="Select employee"
-                  value={form.employeeId}
-                  onChange={(employeeId) => setForm({ ...form, employeeId })}
-                  options={employees.map((employee) => ({
-                    value: employee.id,
-                    label: `${employee.firstName} ${employee.lastName}`,
-                  }))}
-                />
-              </label>
-              <div className="workforce-form-grid">
-                <label>
-                  Work date
-                  <DatePicker
-                    value={form.workDate}
-                    onChange={(workDate) => setForm({ ...form, workDate })}
-                    ariaLabel="Overtime work date"
-                  />
-                </label>
-                <label>
-                  Minutes
-                  <input
-                    type="number"
-                    min="1"
-                    max="1440"
-                    value={form.requestedMinutes}
-                    onChange={(event) =>
-                      setForm({ ...form, requestedMinutes: Number(event.target.value) })
-                    }
-                  />
-                </label>
-              </div>
-              <label>
-                Reason
-                <textarea
-                  rows={3}
-                  placeholder="Describe the additional work"
-                  value={form.reason}
-                  onChange={(event) => setForm({ ...form, reason: event.target.value })}
-                />
-              </label>
-            </section>
-            <section className="workforce-form-section workforce-form-section-muted">
-              <div className="workforce-form-section-heading">
-                <span>Compensation</span>
-                <small>Optional</small>
-              </div>
-              <div className="workforce-form-grid">
-                <label>
-                  Hourly rate <small>optional</small>
-                  <input
-                    inputMode="decimal"
-                    placeholder="Use salary rate"
-                    value={form.hourlyRate}
-                    onChange={(event) => setForm({ ...form, hourlyRate: event.target.value })}
-                  />
-                </label>
-                <label>
-                  Multiplier <small>optional</small>
-                  <input
-                    inputMode="decimal"
-                    placeholder="For example, 1.5"
-                    value={form.multiplier}
-                    onChange={(event) => setForm({ ...form, multiplier: event.target.value })}
-                  />
-                </label>
-              </div>
-            </section>
-            <div className="workforce-form-actions">
-              <button className="button secondary" onClick={() => setOpen(false)}>
-                Cancel
-              </button>
-              <button
-                className="button primary"
-                disabled={!form.employeeId || !form.workDate || !form.reason}
-                onClick={create}
-              >
-                Submit request
-              </button>
-            </div>
-          </div>
-        </FormModal>
+        <OvertimeRequestDialog
+          form={form}
+          employees={employees}
+          onChange={setForm}
+          onClose={() => setOpen(false)}
+          onSubmit={create}
+        />
       )}
     </>
   );

@@ -111,10 +111,10 @@ The route files were already thin before this audit. The remaining work is conce
 | Attendance page             |            450 |           241 | Records/review tables and record/correction dialogs                   | Complete; controller retains server-timed mutations             |
 | Employee management dialogs |            446 |           446 | Existing employee services/types                                      | Pending dialog split                                            |
 | Leave page                  |            436 |           208 | Request/type dialogs, balances and request-history components          | Complete; controller retains versioned leave mutations          |
-| Leave policy management     |            371 |           371 | Existing workforce API/types/UI                                       | Reviewed; policy forms remain candidates                        |
+| Leave policy management     |            371 |           156 | Policy table, policy form and balance-adjustment dialog                | Complete; controller retains accrual and ledger mutations       |
 | Financial dashboard         |            370 |           307 | `types.ts`, `utils.ts`, `hooks/use-financial-summary.ts`              | Reviewed; chart sections remain candidates for extraction       |
 | Employees page              |            337 |           337 | Existing employee service/types/directory/form modules                | Reviewed; orchestration remains                                 |
-| Overtime page               |            307 |           307 | Existing workforce API/types/UI                                       | Reviewed; cohesive request workflow                             |
+| Overtime page               |            307 |           158 | Request-history table and overtime-request dialog                      | Complete; controller retains submission and review workflow     |
 | Login page                  |            301 |           301 | Existing auth layout/registration components                          | Reviewed; cohesive authentication form                          |
 
 Phase 2 pure-utility coverage includes payables filtering/sorting, cash-flow chart conversion, dashboard date ranges/labels, payroll period defaults, workforce calendar ranges and recurring-invoice cadence labels. Phase 3 completed the Workforce presentation boundary: the controller retains orchestration while calendar rendering, its management rail and each modal form own their JSX independently.
@@ -146,5 +146,9 @@ This Attendance checkpoint passes the frontend typecheck, ESLint, all 12 fronten
 Batch C continues with Leave. Balance summaries and request history now own their presentation, while request and leave-type dialogs own their complete form UI. The 208-line controller retains parallel loading, the create-then-submit sequence, permission-sensitive endpoints, optimistic versions, review mutations and refresh ordering. Leave Policy Management and Overtime remain the next unstarted feature boundaries.
 
 The Leave checkpoint passes the frontend typecheck, ESLint, all 12 frontend tests, the production build, `git diff --check`, and the feature-to-route import-direction audit. Eight TypeScript/TSX files remain above 300 lines. Browser verification remains pending for leave creation/submission, approval/rejection and leave-type creation.
+
+Batch C completes with Leave Policies and Overtime. Policy listing, creation and ledger adjustment now render independently of the 156-line controller, which retains effective-date accrual preview/run requests, exact minute conversion and idempotent ledger mutations. Overtime history and request presentation now sit beside a 158-line controller that retains permission-sensitive create/submit ordering, optional compensation payload handling, optimistic versions and approval/rejection mutations. No hook was warranted for either compact lifecycle.
+
+The completed Batch C passes the frontend typecheck, ESLint, all 12 frontend tests, the production build, `git diff --check`, and the feature-to-route import-direction audit. Six TypeScript/TSX files remain above 300 lines. Browser verification remains pending for accrual preview/run, ledger adjustments and overtime request/review workflows. Batch D proceeds with Employee Management Dialogs, Employees and Workspace.
 
 Line counts are a navigation aid, not a quality metric. A file is complete only when its remaining responsibilities are cohesive. This inventory must be updated as the remaining controllers are decomposed.
