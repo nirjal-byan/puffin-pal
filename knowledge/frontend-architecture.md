@@ -105,7 +105,7 @@ The route files were already thin before this audit. The remaining work is conce
 | Payroll page                |            718 |           323 | Run history, creation, details, review and entries components         | Complete; page retains payroll workflow orchestration           |
 | Cash Flow page              |            607 |           280 | Forecast controls, settings dialog, KPI, types and chart utilities    | Complete; page coordinates forecast loading and visualizations  |
 | Workspace controller        |            574 |           382 | Content router, page header/actions and invoice-modal components      | Reviewed; cohesive session/API/navigation orchestration remains |
-| Retainers page              |            525 |           494 | `constants.ts`, `utils.ts` plus existing API/types modules            | Partial; schedule form and list remain                          |
+| Retainers page              |            525 |           162 | Schedule form, schedules table and generated-invoice history          | Complete; controller retains loading and recurring mutations    |
 | Payroll statutory           |            471 |           221 | Configuration dialog, summary, preview controls and results table     | Complete; controller retains loading and statutory mutations    |
 | Payroll automation          |            460 |           197 | Schedule dialog, overview, reminders, history and confirmation dialog | Complete; controller retains scheduling mutations               |
 | Attendance page             |            450 |           450 | Existing workforce API/types/UI                                       | Pending table/form extraction                                   |
@@ -134,5 +134,9 @@ The final-overhaul Batch A completes Banking and Expenses. `useBankingRecords` o
 Batch A passes the full frontend typecheck, ESLint, all 12 frontend tests, the production build, `git diff --check`, and the feature-to-route import-direction audit. Twelve TypeScript/TSX files remain above 300 lines. Browser regression testing was not available for this checkpoint; banking import/reconciliation and expense CRUD, receipt and approval workflows still require manual verification.
 
 Batch B begins with Cash Flow. Scenario and horizon controls now belong to `forecast-controls.tsx`, while the complete settings form and configuration mutation belong to `cash-flow-settings-dialog.tsx`. The 280-line page retains abortable forecast loading, currency formatting and chart/event composition. Retainers remains the next unstarted feature boundary.
+
+Batch B continues with Retainers. The schedule form owns cadence, client, date, payment-term, line-item and auto-issue presentation; the schedules table owns status-aware row actions and empty state; generated-invoice history owns invoice links and retry actions. The 162-line controller retains workspace/detail loading, optimistic versions, mutations, notifications and request ordering. No additional hook was warranted for this compact orchestration layer.
+
+The completed Retainers continuation passes the full frontend typecheck, ESLint, all 12 frontend tests, the production build, `git diff --check`, and the feature-to-route import-direction audit. Ten TypeScript/TSX files remain above 300 lines. Browser regression testing remains pending for schedule creation/editing, status transitions, occurrence retry and invoice links.
 
 Line counts are a navigation aid, not a quality metric. A file is complete only when its remaining responsibilities are cohesive. This inventory must be updated as the remaining controllers are decomposed.
