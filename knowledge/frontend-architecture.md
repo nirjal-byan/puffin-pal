@@ -110,7 +110,7 @@ The route files were already thin before this audit. The remaining work is conce
 | Payroll automation          |            460 |           197 | Schedule dialog, overview, reminders, history and confirmation dialog | Complete; controller retains scheduling mutations               |
 | Attendance page             |            450 |           241 | Records/review tables and record/correction dialogs                   | Complete; controller retains server-timed mutations             |
 | Employee management dialogs |            446 |           446 | Existing employee services/types                                      | Pending dialog split                                            |
-| Leave page                  |            436 |           441 | Existing workforce API/types/UI                                       | Pending table/form extraction                                   |
+| Leave page                  |            436 |           208 | Request/type dialogs, balances and request-history components          | Complete; controller retains versioned leave mutations          |
 | Leave policy management     |            371 |           371 | Existing workforce API/types/UI                                       | Reviewed; policy forms remain candidates                        |
 | Financial dashboard         |            370 |           307 | `types.ts`, `utils.ts`, `hooks/use-financial-summary.ts`              | Reviewed; chart sections remain candidates for extraction       |
 | Employees page              |            337 |           337 | Existing employee service/types/directory/form modules                | Reviewed; orchestration remains                                 |
@@ -142,5 +142,9 @@ The completed Retainers continuation passes the full frontend typecheck, ESLint,
 Batch C begins with Attendance. Attendance history and pending-correction review now own their table presentation, while daily-record and correction-request dialogs own their form UI. The 241-line controller retains parallel loading, server-authoritative check-in/out, manager recording, correction mutations and refresh ordering. Leave, policy management and Overtime remain unstarted in this batch.
 
 This Attendance checkpoint passes the frontend typecheck, ESLint, all 12 frontend tests, the production build, `git diff --check`, and the import-direction audit. Nine TypeScript/TSX files remain above 300 lines. Browser verification remains pending for check-in/out, manager recording and correction request/review workflows.
+
+Batch C continues with Leave. Balance summaries and request history now own their presentation, while request and leave-type dialogs own their complete form UI. The 208-line controller retains parallel loading, the create-then-submit sequence, permission-sensitive endpoints, optimistic versions, review mutations and refresh ordering. Leave Policy Management and Overtime remain the next unstarted feature boundaries.
+
+The Leave checkpoint passes the frontend typecheck, ESLint, all 12 frontend tests, the production build, `git diff --check`, and the feature-to-route import-direction audit. Eight TypeScript/TSX files remain above 300 lines. Browser verification remains pending for leave creation/submission, approval/rejection and leave-type creation.
 
 Line counts are a navigation aid, not a quality metric. A file is complete only when its remaining responsibilities are cohesive. This inventory must be updated as the remaining controllers are decomposed.
