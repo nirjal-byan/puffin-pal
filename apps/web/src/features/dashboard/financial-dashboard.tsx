@@ -24,6 +24,7 @@ import {
   formatDashboardMoney as money,
 } from "./utils";
 import { useFinancialSummary } from "./hooks/use-financial-summary";
+import { DashboardPeriodFilter } from "./components/dashboard-period-filter";
 
 export function FinancialDashboard({ api }: { api: WorkspaceApi }) {
   const initial = useMemo(() => presetRange("30"), []);
@@ -31,13 +32,6 @@ export function FinancialDashboard({ api }: { api: WorkspaceApi }) {
   const [draftRange, setDraftRange] = useState(initial);
   const [range, setRange] = useState(initial);
   const { summary, loading, error, reload } = useFinancialSummary(api, range);
-
-  function choosePreset(next: Exclude<Preset, "custom">) {
-    const nextRange = presetRange(next);
-    setPreset(next);
-    setDraftRange(nextRange);
-    setRange(nextRange);
-  }
 
   const trend =
     summary?.trend.map((point) => ({
@@ -67,70 +61,13 @@ export function FinancialDashboard({ api }: { api: WorkspaceApi }) {
           <h1 id="financial-dashboard-title">Financial overview</h1>
           <p>Track billing and cash flow at a glance.</p>
         </div>
-        <div className="dashboard-filters" aria-label="Reporting period">
-          <div className="dashboard-presets">
-            {(
-              [
-                ["month", "Month"],
-                ["30", "30 days"],
-                ["90", "90 days"],
-                ["year", "Year"],
-              ] as const
-            ).map(([value, label]) => (
-              <button
-                key={value}
-                type="button"
-                className={`button compact ${preset === value ? "primary" : "secondary"}`}
-                onClick={() => choosePreset(value)}
-              >
-                {label}
-              </button>
-            ))}
-            <button
-              type="button"
-              className={`button compact ${preset === "custom" ? "primary" : "secondary"}`}
-              onClick={() => setPreset("custom")}
-            >
-              Custom
-            </button>
-          </div>
-          {preset === "custom" && (
-            <div className="dashboard-custom-range">
-              <label>
-                From
-                <input
-                  type="date"
-                  value={draftRange.from}
-                  max={draftRange.to}
-                  onChange={(event) =>
-                    setDraftRange((current) => ({ ...current, from: event.target.value }))
-                  }
-                />
-              </label>
-              <label>
-                To
-                <input
-                  type="date"
-                  value={draftRange.to}
-                  min={draftRange.from}
-                  onChange={(event) =>
-                    setDraftRange((current) => ({ ...current, to: event.target.value }))
-                  }
-                />
-              </label>
-              <button
-                type="button"
-                className="button primary compact"
-                disabled={!draftRange.from || !draftRange.to || draftRange.from > draftRange.to}
-                onClick={() => {
-                  setRange(draftRange);
-                }}
-              >
-                Apply
-              </button>
-            </div>
-          )}
-        </div>
+        <DashboardPeriodFilter
+          preset={preset}
+          draftRange={draftRange}
+          setPreset={setPreset}
+          setDraftRange={setDraftRange}
+          setRange={setRange}
+        />
       </div>
 
       {error ? (

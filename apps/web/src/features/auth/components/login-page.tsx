@@ -1,9 +1,9 @@
 "use client";
-import { PasswordInput } from "@/components/ui/password-input";
 import { Brand } from "@/components/layout/brand";
 import LoginLayout from "./auth-layout";
 import { createRegistrationDraft } from "@/lib/registration";
 import { RegistrationFields } from "./registration-fields";
+import { LoginFields } from "./login-fields";
 import { useEffect, useLayoutEffect, useRef, useState, type FormEvent } from "react";
 import { apiRequest, errorMessage, type Session } from "@/lib/api";
 
@@ -211,49 +211,7 @@ export default function LoginPage({
                 }
               />
             ) : (
-              <>
-                <label>
-                  Organization slug
-                  <input
-                    name="organizationSlug"
-                    required
-                    defaultValue={initialSlug}
-                    minLength={3}
-                    maxLength={63}
-                    pattern="[a-z0-9]+(-[a-z0-9]+)*"
-                    placeholder="acme-studio"
-                    autoCapitalize="none"
-                    autoComplete="off"
-                  />
-                  <span className="field-hint">
-                    {signup
-                      ? "A unique name using lowercase letters, numbers, and hyphens."
-                      : "Use the slug you chose when creating your organization."}
-                  </span>
-                </label>
-                <label>
-                  Email address
-                  <input
-                    name="email"
-                    type="email"
-                    required
-                    maxLength={254}
-                    placeholder="you@company.com"
-                    autoComplete="username"
-                  />
-                </label>
-                <label>
-                  Password
-                  <PasswordInput
-                    name="password"
-                    required
-                    minLength={signup ? 12 : 1}
-                    maxLength={128}
-                    placeholder={signup ? "At least 12 characters" : "Your password"}
-                    autoComplete={signup ? "new-password" : "current-password"}
-                  />
-                </label>
-              </>
+              <LoginFields initialSlug={initialSlug} />
             )}
             <div className={signup ? "registration-actions" : ""}>
               {signup && signupStep > 0 && (

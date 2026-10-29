@@ -1,16 +1,11 @@
 "use client";
 
 import type { Permission } from "@puffinpal/permissions";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { errorMessage, type WorkspaceApi } from "@/lib/api";
-import type {
-  PayrollDetails,
-  PayrollEmployeeOption as EmployeeOption,
-  PayrollEntry,
-  PayrollRun,
-  WorkforceReview,
-} from "../types";
+import type { PayrollEmployeeOption as EmployeeOption, PayrollEntry, PayrollRun } from "../types";
 import { initialPayrollDates } from "../utils";
+import { usePayrollRuns } from "../hooks/use-payroll-runs";
 import { CreatePayrollDialog } from "./create-payroll-dialog";
 import { PayrollRunDetails } from "./payroll-run-details";
 import { PayrollRunsTable } from "./payroll-runs-table";
@@ -24,33 +19,14 @@ export default function PayrollPage({
   permissions: readonly Permission[];
   onSaved: (message: string) => void;
 }) {
-  const [runs, setRuns] = useState<PayrollRun[]>([]);
-  const [selected, setSelected] = useState<PayrollDetails | null>(null);
-  const [workforceReview, setWorkforceReview] = useState<WorkforceReview[]>([]);
   const [creating, setCreating] = useState(false);
   const [employees, setEmployees] = useState<EmployeeOption[]>([]);
   const [employeeIds, setEmployeeIds] = useState<string[]>([]);
   const [form, setForm] = useState(() => ({ name: "", ...initialPayrollDates() }));
-  const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const can = (permission: Permission) => permissions.includes(permission);
-  const load = useCallback(async () => {
-    const data = await api<{ items: PayrollRun[] }>("/payroll/runs?limit=100&offset=0");
-    setRuns(data.items);
-  }, [api]);
-  useEffect(() => {
-    let active = true;
-    api<{ items: PayrollRun[] }>("/payroll/runs?limit=100&offset=0")
-      .then((data) => {
-        if (active) setRuns(data.items);
-      })
-      .catch((failure: unknown) => {
-        if (active) setError(errorMessage(failure));
-      });
-    return () => {
-      active = false;
-    };
-  }, [api]);
+  const { runs, selected, setSelected, workforceReview, error, setError, load, open } =
+    usePayrollRuns(api);
   useEffect(() => {
     if (!creating) return;
     let active = true;
@@ -69,19 +45,7 @@ export default function PayrollPage({
     return () => {
       active = false;
     };
-  }, [api, creating]);
-  async function open(run: PayrollRun) {
-    try {
-      const [details, review] = await Promise.all([
-        api<PayrollDetails>(`/payroll/runs/${run.id}`),
-        api<WorkforceReview[]>(`/payroll/runs/${run.id}/workforce-review`),
-      ]);
-      setSelected(details);
-      setWorkforceReview(review);
-    } catch (failure) {
-      setError(errorMessage(failure));
-    }
-  }
+  }, [api, creating, setError]);
   async function importOvertime(entry: PayrollEntry, overtimeId: string) {
     if (!selected) return;
     setBusy(true);
