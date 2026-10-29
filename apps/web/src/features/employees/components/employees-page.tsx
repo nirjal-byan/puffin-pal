@@ -1,24 +1,17 @@
 "use client";
 
 import type { Permission } from "@puffinpal/permissions";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { DatePicker } from "@/components/ui/date-picker";
+import { useCallback, useState } from "react";
 import { errorMessage, type WorkspaceApi } from "@/lib/api";
 import {
   createSalaryStructure,
   loadEmployee,
-  loadEmployeeWorkspace,
   loadSalaryStructures,
   saveEmployee,
 } from "../services/employees-api";
+import { useEmployeeDirectory } from "../hooks/use-employee-directory";
 import { EmployeeDirectory } from "./employee-directory";
-import { EmployeeFormModal } from "./employee-form-modal";
-import {
-  ConfirmationModal,
-  DepartmentModal,
-  EmployeeDetailsModal,
-  SalaryFormModal,
-} from "./employee-management-modals";
+import { EmployeePageDialogs } from "./employee-page-dialogs";
 import {
   currentDate,
   employeeToForm,
@@ -27,7 +20,6 @@ import {
   type Department,
   type Employee,
   type EmployeeFormValues,
-  type MemberSummary,
   type SalaryFormValues,
   type SalaryStructure,
 } from "../types/employee.types";
@@ -40,14 +32,7 @@ interface EmployeesPageProps {
 }
 
 export default function EmployeesPage({ api, currency, permissions, onSaved }: EmployeesPageProps) {
-  const [employees, setEmployees] = useState<Employee[]>([]);
-  const [departments, setDepartments] = useState<Department[]>([]);
-  const [members, setMembers] = useState<MemberSummary[]>([]);
-  const [error, setError] = useState("");
   const [isSaving, setIsSaving] = useState(false);
-  const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState("");
-  const [departmentFilter, setDepartmentFilter] = useState("");
   const [editingEmployee, setEditingEmployee] = useState<Employee | "new" | null>(null);
   const [employeeForm, setEmployeeForm] = useState<EmployeeFormValues>(emptyEmployeeForm);
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
@@ -64,44 +49,21 @@ export default function EmployeesPage({ api, currency, permissions, onSaved }: E
     [permissions],
   );
   const canManageEmployees = can("employees:manage");
-
-  const refreshWorkspace = useCallback(async () => {
-    const data = await loadEmployeeWorkspace(api, canManageEmployees);
-    setEmployees(data.employees);
-    setDepartments(data.departments);
-    setMembers(data.members);
-  }, [api, canManageEmployees]);
-
-  useEffect(() => {
-    let active = true;
-    loadEmployeeWorkspace(api, canManageEmployees)
-      .then((data) => {
-        if (!active) return;
-        setEmployees(data.employees);
-        setDepartments(data.departments);
-        setMembers(data.members);
-      })
-      .catch((failure: unknown) => {
-        if (active) setError(errorMessage(failure));
-      });
-    return () => {
-      active = false;
-    };
-  }, [api, canManageEmployees]);
-
-  const filteredEmployees = useMemo(() => {
-    const query = search.trim().toLowerCase();
-    return employees.filter((employee) => {
-      const text = [employee.employeeCode, employee.firstName, employee.lastName, employee.jobTitle]
-        .join(" ")
-        .toLowerCase();
-      return (
-        (!query || text.includes(query)) &&
-        (!statusFilter || employee.status === statusFilter) &&
-        (!departmentFilter || employee.departmentId === departmentFilter)
-      );
-    });
-  }, [departmentFilter, employees, search, statusFilter]);
+  const {
+    employees,
+    departments,
+    members,
+    error,
+    setError,
+    search,
+    setSearch,
+    statusFilter,
+    setStatusFilter,
+    departmentFilter,
+    setDepartmentFilter,
+    filteredEmployees,
+    refresh: refreshWorkspace,
+  } = useEmployeeDirectory(api, canManageEmployees);
 
   function openEmployeeForm(employee?: Employee) {
     setEditingEmployee(employee ?? "new");
@@ -244,94 +206,49 @@ export default function EmployeesPage({ api, currency, permissions, onSaved }: E
         </p>
       )}
 
-      {editingEmployee && (
-        <EmployeeFormModal
-          employee={editingEmployee === "new" ? undefined : editingEmployee}
-          values={employeeForm}
-          employees={employees}
-          departments={departments}
-          members={members}
-          isSaving={isSaving}
-          onChange={setEmployeeForm}
-          onSubmit={() => void handleEmployeeSubmit()}
-          onClose={() => setEditingEmployee(null)}
-        />
-      )}
-
-      {selectedEmployee && !isTerminationOpen && !isSalaryFormOpen && (
-        <EmployeeDetailsModal
-          employee={selectedEmployee}
-          salaryStructures={salaryStructures}
-          currency={currency}
-          canManage={canManageEmployees}
-          canReadSalary={can("salaries:read")}
-          canManageSalary={can("salaries:manage")}
-          onTerminate={() => setIsTerminationOpen(true)}
-          onAddSalary={() => {
-            setSalaryForm(emptySalaryForm());
-            setIsSalaryFormOpen(true);
-          }}
-          onClose={() => setSelectedEmployee(null)}
-        />
-      )}
-
-      {isSalaryFormOpen && (
-        <SalaryFormModal
-          values={salaryForm}
-          currency={currency}
-          isSaving={isSaving}
-          onChange={setSalaryForm}
-          onSubmit={() => void handleSalarySubmit()}
-          onClose={() => setIsSalaryFormOpen(false)}
-        />
-      )}
-
-      {isDepartmentModalOpen && (
-        <DepartmentModal
-          departments={departments}
-          isSaving={isSaving}
-          onSave={(name, department) => void handleDepartmentSave(name, department)}
-          onDelete={(department) => {
-            setIsDepartmentModalOpen(false);
-            setDepartmentToDelete(department);
-          }}
-          onClose={() => setIsDepartmentModalOpen(false)}
-        />
-      )}
-
-      {isTerminationOpen && selectedEmployee && (
-        <ConfirmationModal
-          title="Terminate employment"
-          message={`End employment for ${selectedEmployee.firstName} ${selectedEmployee.lastName}? Their history will be retained.`}
-          confirmLabel="Terminate employee"
-          danger
-          isSaving={isSaving}
-          onConfirm={() => void handleTermination()}
-          onClose={() => setIsTerminationOpen(false)}
-        >
-          <label>
-            Termination date
-            <DatePicker
-              min={selectedEmployee.hireDate.slice(0, 10)}
-              value={terminationDate}
-              onChange={setTerminationDate}
-              ariaLabel="Employment termination date"
-            />
-          </label>
-        </ConfirmationModal>
-      )}
-
-      {departmentToDelete && (
-        <ConfirmationModal
-          title="Delete department"
-          message={`Delete ${departmentToDelete.name}? Assigned employees must be moved first.`}
-          confirmLabel="Delete department"
-          danger
-          isSaving={isSaving}
-          onConfirm={() => void handleDepartmentDelete()}
-          onClose={() => setDepartmentToDelete(null)}
-        />
-      )}
+      <EmployeePageDialogs
+        currency={currency}
+        employees={employees}
+        departments={departments}
+        members={members}
+        editingEmployee={editingEmployee}
+        employeeForm={employeeForm}
+        selectedEmployee={selectedEmployee}
+        salaryStructures={salaryStructures}
+        salaryForm={salaryForm}
+        isSalaryFormOpen={isSalaryFormOpen}
+        isDepartmentModalOpen={isDepartmentModalOpen}
+        isTerminationOpen={isTerminationOpen}
+        terminationDate={terminationDate}
+        departmentToDelete={departmentToDelete}
+        isSaving={isSaving}
+        canManageEmployees={canManageEmployees}
+        canReadSalary={can("salaries:read")}
+        canManageSalary={can("salaries:manage")}
+        onEmployeeFormChange={setEmployeeForm}
+        onEmployeeSubmit={() => void handleEmployeeSubmit()}
+        onCloseEmployeeForm={() => setEditingEmployee(null)}
+        onCloseEmployeeDetails={() => setSelectedEmployee(null)}
+        onOpenTermination={() => setIsTerminationOpen(true)}
+        onOpenSalary={() => {
+          setSalaryForm(emptySalaryForm());
+          setIsSalaryFormOpen(true);
+        }}
+        onSalaryFormChange={setSalaryForm}
+        onSalarySubmit={() => void handleSalarySubmit()}
+        onCloseSalary={() => setIsSalaryFormOpen(false)}
+        onDepartmentSave={(name, department) => void handleDepartmentSave(name, department)}
+        onDepartmentDelete={(department) => {
+          setIsDepartmentModalOpen(false);
+          setDepartmentToDelete(department);
+        }}
+        onCloseDepartments={() => setIsDepartmentModalOpen(false)}
+        onTerminationDateChange={setTerminationDate}
+        onTerminationConfirm={() => void handleTermination()}
+        onCloseTermination={() => setIsTerminationOpen(false)}
+        onDepartmentDeleteConfirm={() => void handleDepartmentDelete()}
+        onCloseDepartmentDelete={() => setDepartmentToDelete(null)}
+      />
     </>
   );
 }

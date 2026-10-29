@@ -1,7 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
-import { flushSync } from "react-dom";
+import { useCallback, useState } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { InvoiceDetailPage } from "@/features/invoices/components/invoice-detail-page";
 import { ProductTour } from "@/features/onboarding/product-tour";
@@ -12,9 +11,6 @@ import {
   apiRequest,
   errorMessage,
   roleLabel,
-  type Client,
-  type FinancialRecord,
-  type Member,
   type Profile,
   type Session,
 } from "@/lib/api";
@@ -30,6 +26,8 @@ import WorkspaceLayout from "./workspace-layout";
 import { WorkspaceContent } from "./workspace-content";
 import { WorkspaceInvoiceModals } from "./workspace-invoice-modals";
 import { WorkspacePageHeader } from "./workspace-page-header";
+import { useWorkspaceRecords } from "../hooks/use-workspace-records";
+import { useWorkspaceTheme } from "../hooks/use-workspace-theme";
 
 export default function WorkspacePage({
   session,
@@ -50,39 +48,8 @@ export default function WorkspacePage({
 }) {
   const router = useRouter();
   const recentDraft = recentlyCreatedInvoice(session.organization.id);
-  const [theme, setTheme] = useState<"light" | "dark">(() => {
-    if (typeof window === "undefined") return "light";
-    try {
-      const saved = localStorage.getItem("puffinpal-theme");
-      if (saved === "light" || saved === "dark") return saved;
-    } catch {
-      /* Local storage may be unavailable. */
-    }
-    return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-  });
+  const { theme, toggleTheme } = useWorkspaceTheme();
   const { notifications, toast, notify, dismissToast, clearNotifications } = useNotifications();
-  function toggleTheme() {
-    const next = theme === "light" ? "dark" : "light";
-    const applyTheme = () => {
-      flushSync(() => setTheme(next));
-    };
-    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (!document.startViewTransition || reduceMotion) {
-      applyTheme();
-    } else {
-      document.documentElement.classList.add("theme-view-transition");
-      const transition = document.startViewTransition(applyTheme);
-      const finishTransition = () => {
-        document.documentElement.classList.remove("theme-view-transition");
-      };
-      void transition.finished.then(finishTransition, finishTransition);
-    }
-    try {
-      localStorage.setItem("puffinpal-theme", next);
-    } catch {
-      /* Theme still applies for the current page. */
-    }
-  }
   function recordNotification(message: string) {
     notify(message);
   }
@@ -99,13 +66,6 @@ export default function WorkspacePage({
       : tab === "overview"
         ? "Financial overview"
         : (NAV.find((item) => item.key === tab)?.label ?? "Workspace");
-  const [previousTab, setPreviousTab] = useState(tab);
-  const [offset, setOffset] = useState(0);
-  const [rows, setRows] = useState<(Client | Member | FinancialRecord)[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-  const [loadFailed, setLoadFailed] = useState(false);
-  const [revision, setRevision] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
   const can = (permission: Permission) => session.permissions.includes(permission);
   const currentNav = NAV.find((item) => item.key === tab)!;
@@ -132,63 +92,10 @@ export default function WorkspacePage({
     },
     [session.accessToken, onSignOut],
   );
-  useEffect(() => {
-    if (
-      invoiceId ||
-      ["overview", "access", "profile", "password"].includes(tab) ||
-      tab === "expenses" ||
-      tab === "retainers" ||
-      tab === "employees" ||
-      tab === "workforce" ||
-      tab === "attendance" ||
-      tab === "leave" ||
-      tab === "overtime" ||
-      tab === "payroll" ||
-      tab === "payroll-automation" ||
-      tab === "cash-flow" ||
-      tab === "banking" ||
-      tab === "reports" ||
-      tab === "vendors" ||
-      tab === "accounts-payable" ||
-      !allowed
-    )
-      return;
-    const controller = new AbortController();
-    api<(Client | Member | FinancialRecord)[]>(`/${tab}?limit=20&offset=${offset}`, {
-      signal: controller.signal,
-    })
-      .then((data) => {
-        if (!controller.signal.aborted) {
-          setRows(data);
-          setLoading(false);
-        }
-      })
-      .catch((failure: unknown) => {
-        if (!controller.signal.aborted) {
-          setError(errorMessage(failure));
-          setLoadFailed(true);
-          setLoading(false);
-        }
-      });
-    return () => controller.abort();
-  }, [tab, offset, revision, api, allowed, creatingInvoice, invoiceId]);
-  // Reset page-specific state when URL navigation (including history) changes tabs.
-  if (previousTab !== tab) {
-    setPreviousTab(tab);
-    setOffset(0);
-    setRows([]);
-    setError("");
-    setLoading(true);
-    setLoadFailed(false);
-  }
+  const { rows, loading, error, setError, loadFailed, revision, offset, reload, previous, next } =
+    useWorkspaceRecords({ api, tab, allowed, invoiceId, creatingInvoice });
   function navigate(next: Tab) {
     router.push(tabHref(next));
-  }
-  function reload() {
-    setLoadFailed(false);
-    setLoading(true);
-    setError("");
-    setRevision((current) => current + 1);
   }
   function saved(message: string) {
     recordNotification(message);
@@ -339,11 +246,7 @@ export default function WorkspacePage({
                       className="button secondary compact"
                       type="button"
                       disabled={offset === 0}
-                      onClick={() => {
-                        setOffset((value) => value - 20);
-                        setLoading(true);
-                        setError("");
-                      }}
+                      onClick={previous}
                     >
                       ← Previous
                     </button>
@@ -351,11 +254,7 @@ export default function WorkspacePage({
                       className="button secondary compact"
                       type="button"
                       disabled={rows.length < 20}
-                      onClick={() => {
-                        setOffset((value) => value + 20);
-                        setLoading(true);
-                        setError("");
-                      }}
+                      onClick={next}
                     >
                       Next →
                     </button>
