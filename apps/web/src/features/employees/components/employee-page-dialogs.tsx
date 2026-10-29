@@ -7,13 +7,11 @@ import type {
   SalaryFormValues,
   SalaryStructure,
 } from "../types/employee.types";
-import { EmployeeFormModal } from "./employee-form-modal";
-import {
-  ConfirmationModal,
-  DepartmentModal,
-  EmployeeDetailsModal,
-  SalaryFormModal,
-} from "./employee-management-modals";
+import { EmployeeFormModal } from "../dialogs/employee-form-modal";
+import { ConfirmationModal } from "../dialogs/confirmation-modal";
+import { DepartmentModal } from "../dialogs/department-modal";
+import { EmployeeDetailsModal } from "../dialogs/employee-details-modal";
+import { SalaryFormModal } from "../dialogs/salary-form-modal";
 
 export function EmployeePageDialogs(props: {
   currency: string;

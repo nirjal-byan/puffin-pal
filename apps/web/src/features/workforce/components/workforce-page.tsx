@@ -3,8 +3,8 @@
 import type { Permission } from "@puffinpal/permissions";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { errorMessage, type WorkspaceApi } from "@/lib/api";
-import { loadEmployees } from "@/features/workforce/api";
-import type { EmployeeOption } from "@/features/workforce/types";
+import { loadEmployees } from "../services/workforce-api";
+import type { EmployeeOption } from "../types";
 import type {
   WorkforceCalendarData as CalendarData,
   WorkforceHolidayForm,
@@ -14,9 +14,9 @@ import type {
 import { workforceCalendarRange, workforceIsoDate as iso } from "../calendar-utils";
 import { WorkforceManagementPanel } from "./workforce-management-panel";
 import { WorkforceCalendar } from "./workforce-calendar";
-import { WorkforceHolidayDialog } from "./workforce-holiday-dialog";
-import { WorkforceScheduleDialog } from "./workforce-schedule-dialog";
-import { WorkforceSettingsDialog } from "./workforce-settings-dialog";
+import { WorkforceHolidayDialog } from "../dialogs/workforce-holiday-dialog";
+import { WorkforceScheduleDialog } from "../dialogs/workforce-schedule-dialog";
+import { WorkforceSettingsDialog } from "../dialogs/workforce-settings-dialog";
 
 export default function WorkforcePage({
   api,

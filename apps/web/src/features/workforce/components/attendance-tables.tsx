@@ -1,6 +1,6 @@
 import type { AttendanceCorrection, AttendanceRecord, EmployeeOption } from "../types";
 import { employeeName, shortDate } from "../types";
-import { StatusBadge, WorkforceEmpty } from "../workforce-ui";
+import { StatusBadge, WorkforceEmpty } from "./workforce-ui";
 
 export function AttendanceRecordsTable({
   records,

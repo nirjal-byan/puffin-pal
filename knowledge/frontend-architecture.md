@@ -96,26 +96,26 @@ Start with the smallest real structure. Add `types.ts`, `constants.ts`, `utils.t
 
 The route files were already thin before this audit. The remaining work is concentrated in client-side feature controllers.
 
-| Feature implementation      | Baseline lines | Current lines | Extracted modules                                                     | Status                                                          |
-| --------------------------- | -------------: | ------------: | --------------------------------------------------------------------- | --------------------------------------------------------------- |
-| Banking page                |            920 |           300 | Record-loading/filter and reconciliation hooks plus existing panels   | Complete; page retains import, account and batch mutations      |
-| Expenses page               |            836 |           287 | Collection hook, pagination/delete UI plus existing focused forms     | Complete; page retains CRUD, receipt and approval mutations     |
-| Workforce page              |            728 |           297 | Calendar, management panel, holiday, schedule and settings components | Complete; page now coordinates state, API calls and actions     |
-| Accounts Payable page       |            723 |           262 | Toolbar, filters, summary, bills table and three form dialogs         | Complete; page retains loading and mutation orchestration       |
-| Payroll page                |            718 |           287 | Existing components plus run-loading and selection hook                | Complete; page retains payroll workflow mutations               |
-| Cash Flow page              |            607 |           280 | Forecast controls, settings dialog, KPI, types and chart utilities    | Complete; page coordinates forecast loading and visualizations  |
-| Workspace controller        |            574 |           281 | Existing components plus record-loading and theme hooks                | Complete; controller retains auth, navigation and composition   |
-| Retainers page              |            525 |           162 | Schedule form, schedules table and generated-invoice history          | Complete; controller retains loading and recurring mutations    |
-| Payroll statutory           |            471 |           221 | Configuration dialog, summary, preview controls and results table     | Complete; controller retains loading and statutory mutations    |
-| Payroll automation          |            460 |           197 | Schedule dialog, overview, reminders, history and confirmation dialog | Complete; controller retains scheduling mutations               |
-| Attendance page             |            450 |           241 | Records/review tables and record/correction dialogs                   | Complete; controller retains server-timed mutations             |
-| Employee management dialogs |            446 |             4 | Department, confirmation, details and salary dialogs                   | Complete; original module is a compatibility barrel             |
-| Leave page                  |            436 |           208 | Request/type dialogs, balances and request-history components          | Complete; controller retains versioned leave mutations          |
-| Leave policy management     |            371 |           156 | Policy table, policy form and balance-adjustment dialog                | Complete; controller retains accrual and ledger mutations       |
-| Financial dashboard         |            370 |           244 | Existing modules plus reporting-period filter                          | Complete; page retains financial transformations and charts     |
-| Employees page              |            337 |           254 | Directory lifecycle hook and page-dialog coordinator                   | Complete; page retains employee and salary mutations            |
-| Overtime page               |            307 |           158 | Request-history table and overtime-request dialog                      | Complete; controller retains submission and review workflow     |
-| Login page                  |            301 |           259 | Existing auth modules plus sign-in credential fields                   | Complete; page retains authentication and registration flow     |
+| Feature implementation      | Baseline lines | Current lines | Extracted modules                                                     | Status                                                         |
+| --------------------------- | -------------: | ------------: | --------------------------------------------------------------------- | -------------------------------------------------------------- |
+| Banking page                |            920 |           300 | Record-loading/filter and reconciliation hooks plus existing panels   | Complete; page retains import, account and batch mutations     |
+| Expenses page               |            836 |           287 | Collection hook, pagination/delete UI plus existing focused forms     | Complete; page retains CRUD, receipt and approval mutations    |
+| Workforce page              |            728 |           297 | Calendar, management panel, holiday, schedule and settings components | Complete; page now coordinates state, API calls and actions    |
+| Accounts Payable page       |            723 |           262 | Toolbar, filters, summary, bills table and three form dialogs         | Complete; page retains loading and mutation orchestration      |
+| Payroll page                |            718 |           287 | Existing components plus run-loading and selection hook               | Complete; page retains payroll workflow mutations              |
+| Cash Flow page              |            607 |           280 | Forecast controls, settings dialog, KPI, types and chart utilities    | Complete; page coordinates forecast loading and visualizations |
+| Workspace controller        |            574 |           281 | Existing components plus record-loading and theme hooks               | Complete; controller retains auth, navigation and composition  |
+| Retainers page              |            525 |           162 | Schedule form, schedules table and generated-invoice history          | Complete; controller retains loading and recurring mutations   |
+| Payroll statutory           |            471 |           221 | Configuration dialog, summary, preview controls and results table     | Complete; controller retains loading and statutory mutations   |
+| Payroll automation          |            460 |           197 | Schedule dialog, overview, reminders, history and confirmation dialog | Complete; controller retains scheduling mutations              |
+| Attendance page             |            450 |           241 | Records/review tables and record/correction dialogs                   | Complete; controller retains server-timed mutations            |
+| Employee management dialogs |            446 |             — | Department, confirmation, details and salary dialogs                  | Complete; obsolete compatibility barrel removed                |
+| Leave page                  |            436 |           208 | Request/type dialogs, balances and request-history components         | Complete; controller retains versioned leave mutations         |
+| Leave policy management     |            371 |           156 | Policy table, policy form and balance-adjustment dialog               | Complete; controller retains accrual and ledger mutations      |
+| Financial dashboard         |            370 |           244 | Existing modules plus reporting-period filter                         | Complete; page retains financial transformations and charts    |
+| Employees page              |            337 |           254 | Directory lifecycle hook and page-dialog coordinator                  | Complete; page retains employee and salary mutations           |
+| Overtime page               |            307 |           158 | Request-history table and overtime-request dialog                     | Complete; controller retains submission and review workflow    |
+| Login page                  |            301 |           259 | Existing auth modules plus sign-in credential fields                  | Complete; page retains authentication and registration flow    |
 
 Phase 2 pure-utility coverage includes payables filtering/sorting, cash-flow chart conversion, dashboard date ranges/labels, payroll period defaults, workforce calendar ranges and recurring-invoice cadence labels. Phase 3 completed the Workforce presentation boundary: the controller retains orchestration while calendar rendering, its management rail and each modal form own their JSX independently.
 
@@ -159,6 +159,73 @@ The completed Batch D passes the frontend typecheck, ESLint, all 12 frontend tes
 
 Batch E finishes feature-level size remediation. `usePayrollRuns` owns run collection loading and selected-run detail/workforce-review loading; the 287-line Payroll controller retains every calculation, import, approval, finalization, adjustment, payment and payslip mutation. The dashboard reporting-period control is a focused component beside the existing summary hook, leaving all server-provided financial values and chart transformations in the 244-line dashboard. Login credential fields are isolated as static presentation while the 259-line page retains validation, registration steps, credential submission, session handoff and card animation.
 
-The completed Batch E passes the frontend typecheck, ESLint, all 12 frontend tests, the production build, `git diff --check`, and the feature-to-route import-direction audit. No TypeScript or TSX file under `apps/web/src` exceeds 300 lines. Browser verification remains pending for payroll run selection and mutations, dashboard preset/custom ranges, login, registration and authentication transitions. The overall overhaul is not yet complete; the repository-wide final architecture audit remains.
+The completed Batch E passes the frontend typecheck, ESLint, all 12 frontend tests, the production build, `git diff --check`, and the feature-to-route import-direction audit. No TypeScript or TSX file under `apps/web/src` exceeds 300 lines. Browser verification remains pending for payroll run selection and mutations, dashboard preset/custom ranges, login, registration and authentication transitions. The repository-wide final architecture audit is documented below.
 
-Line counts are a navigation aid, not a quality metric. A file is complete only when its remaining responsibilities are cohesive. This inventory must be updated as the remaining controllers are decomposed.
+## Final structural refinement
+
+Feature folders use only the layers they need:
+
+- `components/` owns page controllers, tables, cards, filters and other feature presentation.
+- `dialogs/` is used when a feature has several modal workflows, as in Accounts Payable, Banking, Employees, Payroll and Workforce.
+- `hooks/` owns focused stateful lifecycles.
+- `services/` or `api/` owns reusable endpoint wrappers.
+- A cohesive `types.ts`, `constants.ts` or `utils.ts` stays at the feature root; directories are used only when multiple modules justify them.
+- Routes compose feature controllers and do not import feature implementation back into `app/`.
+
+Representative Accounts Payable structure:
+
+```text
+features/accounts-payable/
+├── components/
+│   ├── accounts-payable-page.tsx
+│   ├── bills-table.tsx
+│   ├── payables-filters.tsx
+│   ├── payables-summary.tsx
+│   ├── payables-toolbar.tsx
+│   └── vendor-grid.tsx
+├── dialogs/
+│   ├── bill-dialog.tsx
+│   ├── vendor-dialog.tsx
+│   └── vendor-payment-dialog.tsx
+├── constants.ts
+├── types.ts
+└── utils.ts
+```
+
+Banking follows the same presentation/dialog split and additionally owns `hooks/use-banking-records.ts` and `hooks/use-bank-reconciliation.ts`. Employees, Payroll and Workforce now separate their multiple modal workflows into `dialogs/`. Recurring Invoices and Workforce place reusable endpoint wrappers in `services/`. Dashboard and Onboarding presentation lives in `components/`.
+
+### Import and dependency rules
+
+- Same-feature imports are relative; aliases are reserved for cross-tree or cross-feature imports.
+- Workspace is the intentional composition root and directly imports feature controllers.
+- Workspace also intentionally composes Invoice and Onboarding UI.
+- Shared UI, layout, providers and `lib/` do not import route pages or feature internals.
+- Compatibility barrels are retained only when they serve an external/stable entry point. The unused employee-dialog barrel was removed.
+
+### Final audit findings
+
+| Finding                                                                                  | Resolution                                                                   |
+| ---------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| Accounts Payable and Banking mixed controllers, tables, hooks and dialogs at their roots | Moved presentation, dialogs and hooks to responsibility-specific directories |
+| Employee, Payroll and Workforce modal workflows were mixed with ordinary presentation    | Moved modal workflows into feature-owned `dialogs/` directories              |
+| Dashboard and Onboarding UI lived at feature roots                                       | Moved into their existing/new `components/` directories                      |
+| Recurring Invoice and Workforce API wrappers lived beside presentation                   | Moved into feature-owned `services/` directories                             |
+| Employee dialog compatibility barrel had one internal consumer                           | Replaced with direct dialog imports and removed the barrel                   |
+| Two identical layout wrappers had no static, dynamic, route or test consumers            | Removed `expenses-layout.tsx` and `retainers-layout.tsx`                     |
+| Same-feature aliases bypassed local ownership                                            | Replaced with relative imports                                               |
+
+The static import graph reports no cycles and no feature-to-route reverse imports. TypeScript with `noUnusedLocals` and `noUnusedParameters` reports no unused local declarations. A zero-inbound static-file audit found only the two deleted layout wrappers. Dedicated Madge/unused-export tooling is not installed, so the audit relies on the TypeScript compiler, ESLint, repository search and the static import graph rather than claiming third-party analyzer coverage.
+
+No TypeScript or TSX file under `apps/web/src` exceeds 300 lines. No routes, dependencies, API contracts, calculations or runtime workflows changed during the structural refinement.
+
+### Manual browser regression checklist
+
+- Authentication: login, invalid credentials, registration steps, session persistence, redirects and card animations.
+- Finance: bank account/import/reconciliation, expense CRUD and approvals, vendor/bill/payment workflows, cash-flow settings, dashboard ranges, reporting exports and retainer lifecycle/history.
+- Workforce: attendance record/correction, leave request/review, accrual preview/run, balance adjustment, overtime request/review and employee/department/salary/termination workflows.
+- Payroll: draft generation, workforce imports, calculation, submit/approve/reject/finalize, adjustments, partial/full payments and payslip download/retry.
+- Workspace: top/side navigation, legacy pagination, notifications, theme persistence/transitions and invoice create/edit/detail dialogs.
+
+Automated checks validate compilation, lint rules, unit tests, production bundling and static architecture. The browser checklist remains required before production regression sign-off.
+
+Line counts are a navigation aid, not a quality metric. A file is complete only when its remaining responsibilities are cohesive. Keep this inventory current as features evolve.

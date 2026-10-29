@@ -3,7 +3,7 @@ import { Dropdown } from "@/components/ui/dropdown";
 import { FormModal } from "@/components/ui/form-modal";
 import type { EmployeeOption, OvertimeRequest } from "../types";
 import { employeeName, shortDate } from "../types";
-import { StatusBadge, WorkforceEmpty } from "../workforce-ui";
+import { StatusBadge, WorkforceEmpty } from "./workforce-ui";
 
 export type OvertimeForm = {
   employeeId: string;

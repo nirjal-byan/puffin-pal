@@ -2,16 +2,11 @@
 import type { Permission } from "@puffinpal/permissions";
 import { useCallback, useEffect, useState } from "react";
 import { errorMessage, type WorkspaceApi } from "@/lib/api";
-import { loadEmployees, loadLeave } from "@/features/workforce/api";
-import type {
-  EmployeeOption,
-  LeaveBalance,
-  LeaveRequest,
-  LeaveType,
-} from "@/features/workforce/types";
-import { shortDate } from "@/features/workforce/types";
-import { MetricCard } from "@/features/workforce/workforce-ui";
-import { LeaveRequestDialog, LeaveTypeDialog } from "./leave-dialogs";
+import { loadEmployees, loadLeave } from "../services/workforce-api";
+import type { EmployeeOption, LeaveBalance, LeaveRequest, LeaveType } from "../types";
+import { shortDate } from "../types";
+import { MetricCard } from "./workforce-ui";
+import { LeaveRequestDialog, LeaveTypeDialog } from "../dialogs/leave-dialogs";
 import { LeaveBalances, LeaveRequestsTable } from "./leave-overview";
 import { LeavePolicyManagement } from "./leave-policy-management";
 

@@ -9,7 +9,7 @@ import type {
   StatutoryReport,
   StatutoryRuleSet,
 } from "../types";
-import { StatutoryConfigurationDialog } from "./statutory-configuration-dialog";
+import { StatutoryConfigurationDialog } from "../dialogs/statutory-configuration-dialog";
 import {
   StatutoryPreviewControls,
   StatutoryPreviewTable,

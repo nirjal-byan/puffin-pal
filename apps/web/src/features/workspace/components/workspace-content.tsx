@@ -1,8 +1,8 @@
 import type { Permission } from "@puffinpal/permissions";
 import type { Client, FinancialRecord, Member, Profile, Session, WorkspaceApi } from "@/lib/api";
 import type { Tab } from "@/lib/navigation";
-import AccountsPayablePage from "@/features/accounts-payable/accounts-payable-page";
-import BankingPage from "@/features/banking/banking-page";
+import AccountsPayablePage from "@/features/accounts-payable/components/accounts-payable-page";
+import BankingPage from "@/features/banking/components/banking-page";
 import CashFlowPage from "@/features/cash-flow/components/cash-flow-page";
 import ClientsPage from "@/features/clients/components/clients-page";
 import OverviewPage from "@/features/dashboard/components/overview-page";

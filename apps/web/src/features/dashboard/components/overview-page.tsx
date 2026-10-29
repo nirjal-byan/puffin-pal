@@ -1,7 +1,7 @@
 import type { Session, WorkspaceApi } from "@/lib/api";
 import { NAV, ICON_PATHS, DESCRIPTION, type Tab } from "@/lib/navigation";
 import OverviewLayout from "./overview-layout";
-import { FinancialDashboard } from "@/features/dashboard/financial-dashboard";
+import { FinancialDashboard } from "./financial-dashboard";
 
 export default function OverviewPage({
   session,

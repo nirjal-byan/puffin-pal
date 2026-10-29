@@ -2,9 +2,9 @@
 import type { Permission } from "@puffinpal/permissions";
 import { useCallback, useEffect, useState } from "react";
 import { errorMessage, type WorkspaceApi } from "@/lib/api";
-import { loadEmployees, loadOvertime } from "../api";
+import { loadEmployees, loadOvertime } from "../services/workforce-api";
 import type { EmployeeOption, OvertimeRequest } from "../types";
-import { MetricCard } from "../workforce-ui";
+import { MetricCard } from "./workforce-ui";
 import {
   OvertimeRequestDialog,
   OvertimeRequestsTable,

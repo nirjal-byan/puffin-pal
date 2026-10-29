@@ -9,13 +9,13 @@ import type {
   PayrollScheduleFormState,
   PayrollScheduleOccurrence,
 } from "../types";
-import { GeneratePayrollDialog } from "./generate-payroll-dialog";
+import { GeneratePayrollDialog } from "../dialogs/generate-payroll-dialog";
 import {
   PayrollAutomationActions,
   PayrollAutomationHistory,
   PayrollAutomationOverview,
 } from "./payroll-automation-overview";
-import { PayrollScheduleDialog } from "./payroll-schedule-dialog";
+import { PayrollScheduleDialog } from "../dialogs/payroll-schedule-dialog";
 
 const today = () => new Date().toISOString().slice(0, 10);
 const defaults: PayrollScheduleFormState = {

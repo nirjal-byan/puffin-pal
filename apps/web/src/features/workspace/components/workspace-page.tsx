@@ -3,7 +3,7 @@
 import { useCallback, useState } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { InvoiceDetailPage } from "@/features/invoices/components/invoice-detail-page";
-import { ProductTour } from "@/features/onboarding/product-tour";
+import { ProductTour } from "@/features/onboarding/components/product-tour";
 import { recentlyCreatedInvoice } from "@/features/invoices/api/invoices";
 import type { Permission } from "@puffinpal/permissions";
 import {

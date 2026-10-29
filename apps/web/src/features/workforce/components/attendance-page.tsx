@@ -2,20 +2,20 @@
 import type { Permission } from "@puffinpal/permissions";
 import { useCallback, useEffect, useState } from "react";
 import { errorMessage, type WorkspaceApi } from "@/lib/api";
-import { loadAttendance, loadAttendanceSummary, loadEmployees } from "../api";
+import { loadAttendance, loadAttendanceSummary, loadEmployees } from "../services/workforce-api";
 import type {
   AttendanceCorrection,
   AttendanceRecord,
   AttendanceSummary,
   EmployeeOption,
 } from "../types";
-import { MetricCard } from "../workforce-ui";
+import { MetricCard } from "./workforce-ui";
 import {
   AttendanceCorrectionDialog,
   RecordAttendanceDialog,
   type AttendanceForm,
   type CorrectionForm,
-} from "./attendance-dialogs";
+} from "../dialogs/attendance-dialogs";
 import { AttendanceRecordsTable, PendingCorrectionsTable } from "./attendance-tables";
 
 export default function AttendancePage({

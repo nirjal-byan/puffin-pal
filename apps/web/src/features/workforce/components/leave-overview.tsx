@@ -1,6 +1,6 @@
 import type { EmployeeOption, LeaveBalance, LeaveRequest, LeaveType } from "../types";
 import { employeeName, shortDate } from "../types";
-import { StatusBadge, WorkforceEmpty } from "../workforce-ui";
+import { StatusBadge, WorkforceEmpty } from "./workforce-ui";
 
 export function LeaveBalances({
   balances,

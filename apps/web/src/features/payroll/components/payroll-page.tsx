@@ -6,7 +6,7 @@ import { errorMessage, type WorkspaceApi } from "@/lib/api";
 import type { PayrollEmployeeOption as EmployeeOption, PayrollEntry, PayrollRun } from "../types";
 import { initialPayrollDates } from "../utils";
 import { usePayrollRuns } from "../hooks/use-payroll-runs";
-import { CreatePayrollDialog } from "./create-payroll-dialog";
+import { CreatePayrollDialog } from "../dialogs/create-payroll-dialog";
 import { PayrollRunDetails } from "./payroll-run-details";
 import { PayrollRunsTable } from "./payroll-runs-table";
 

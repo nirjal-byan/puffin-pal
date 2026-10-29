@@ -2,7 +2,7 @@
 import { useCallback, useEffect, useState } from "react";
 import type { Permission } from "@puffinpal/permissions";
 import { errorMessage, type Client, type WorkspaceApi } from "@/lib/api";
-import { loadRecurringSchedule, loadRecurringWorkspace } from "../api";
+import { loadRecurringSchedule, loadRecurringWorkspace } from "../services/recurring-invoices-api";
 import {
   emptyRecurringForm,
   scheduleToForm,
