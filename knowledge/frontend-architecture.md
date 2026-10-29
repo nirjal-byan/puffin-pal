@@ -108,7 +108,7 @@ The route files were already thin before this audit. The remaining work is conce
 | Retainers page              |            525 |           162 | Schedule form, schedules table and generated-invoice history          | Complete; controller retains loading and recurring mutations    |
 | Payroll statutory           |            471 |           221 | Configuration dialog, summary, preview controls and results table     | Complete; controller retains loading and statutory mutations    |
 | Payroll automation          |            460 |           197 | Schedule dialog, overview, reminders, history and confirmation dialog | Complete; controller retains scheduling mutations               |
-| Attendance page             |            450 |           450 | Existing workforce API/types/UI                                       | Pending table/form extraction                                   |
+| Attendance page             |            450 |           241 | Records/review tables and record/correction dialogs                   | Complete; controller retains server-timed mutations             |
 | Employee management dialogs |            446 |           446 | Existing employee services/types                                      | Pending dialog split                                            |
 | Leave page                  |            436 |           441 | Existing workforce API/types/UI                                       | Pending table/form extraction                                   |
 | Leave policy management     |            371 |           371 | Existing workforce API/types/UI                                       | Reviewed; policy forms remain candidates                        |
@@ -138,5 +138,9 @@ Batch B begins with Cash Flow. Scenario and horizon controls now belong to `fore
 Batch B continues with Retainers. The schedule form owns cadence, client, date, payment-term, line-item and auto-issue presentation; the schedules table owns status-aware row actions and empty state; generated-invoice history owns invoice links and retry actions. The 162-line controller retains workspace/detail loading, optimistic versions, mutations, notifications and request ordering. No additional hook was warranted for this compact orchestration layer.
 
 The completed Retainers continuation passes the full frontend typecheck, ESLint, all 12 frontend tests, the production build, `git diff --check`, and the feature-to-route import-direction audit. Ten TypeScript/TSX files remain above 300 lines. Browser regression testing remains pending for schedule creation/editing, status transitions, occurrence retry and invoice links.
+
+Batch C begins with Attendance. Attendance history and pending-correction review now own their table presentation, while daily-record and correction-request dialogs own their form UI. The 241-line controller retains parallel loading, server-authoritative check-in/out, manager recording, correction mutations and refresh ordering. Leave, policy management and Overtime remain unstarted in this batch.
+
+This Attendance checkpoint passes the frontend typecheck, ESLint, all 12 frontend tests, the production build, `git diff --check`, and the import-direction audit. Nine TypeScript/TSX files remain above 300 lines. Browser verification remains pending for check-in/out, manager recording and correction request/review workflows.
 
 Line counts are a navigation aid, not a quality metric. A file is complete only when its remaining responsibilities are cohesive. This inventory must be updated as the remaining controllers are decomposed.

@@ -1,19 +1,22 @@
 "use client";
 import type { Permission } from "@puffinpal/permissions";
 import { useCallback, useEffect, useState } from "react";
-import { FormModal } from "@/components/ui/form-modal";
-import { DatePicker } from "@/components/ui/date-picker";
-import { Dropdown } from "@/components/ui/dropdown";
 import { errorMessage, type WorkspaceApi } from "@/lib/api";
-import { loadAttendance, loadAttendanceSummary, loadEmployees } from "@/features/workforce/api";
+import { loadAttendance, loadAttendanceSummary, loadEmployees } from "../api";
 import type {
   AttendanceCorrection,
   AttendanceRecord,
   AttendanceSummary,
   EmployeeOption,
-} from "@/features/workforce/types";
-import { employeeName, shortDate } from "@/features/workforce/types";
-import { MetricCard, StatusBadge, WorkforceEmpty } from "@/features/workforce/workforce-ui";
+} from "../types";
+import { MetricCard } from "../workforce-ui";
+import {
+  AttendanceCorrectionDialog,
+  RecordAttendanceDialog,
+  type AttendanceForm,
+  type CorrectionForm,
+} from "./attendance-dialogs";
+import { AttendanceRecordsTable, PendingCorrectionsTable } from "./attendance-tables";
 
 export default function AttendancePage({
   api,
@@ -24,56 +27,58 @@ export default function AttendancePage({
   permissions: readonly Permission[];
   onSaved: (message: string) => void;
 }) {
-  const [records, setRecords] = useState<AttendanceRecord[]>([]);
-  const [summary, setSummary] = useState<AttendanceSummary | null>(null);
-  const [employees, setEmployees] = useState<EmployeeOption[]>([]);
-  const [corrections, setCorrections] = useState<AttendanceCorrection[]>([]);
-  const [ownRecordIds, setOwnRecordIds] = useState<Set<string>>(new Set());
-  const [error, setError] = useState("");
-  const [open, setOpen] = useState(false);
-  const [correcting, setCorrecting] = useState<AttendanceRecord | null>(null);
-  const [correction, setCorrection] = useState({
+  const [records, setRecords] = useState<AttendanceRecord[]>([]),
+    [summary, setSummary] = useState<AttendanceSummary | null>(null),
+    [employees, setEmployees] = useState<EmployeeOption[]>([]),
+    [corrections, setCorrections] = useState<AttendanceCorrection[]>([]),
+    [ownRecordIds, setOwnRecordIds] = useState<Set<string>>(new Set()),
+    [error, setError] = useState(""),
+    [open, setOpen] = useState(false),
+    [correcting, setCorrecting] = useState<AttendanceRecord | null>(null);
+  const [correction, setCorrection] = useState<CorrectionForm>({
     proposedStatus: "PRESENT",
     proposedWorkedMinutes: 0,
     reason: "",
   });
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<AttendanceForm>({
     employeeId: "",
     workDate: new Date().toISOString().slice(0, 10),
     status: "PRESENT",
     notes: "",
   });
   const can = (permission: Permission) => permissions.includes(permission);
-  const refresh = useCallback(async () => {
-    const [attendance, totals, people, correctionRows, mine] = await Promise.all([
-      loadAttendance(api),
-      loadAttendanceSummary(api),
-      loadEmployees(api),
-      api<AttendanceCorrection[]>("/attendance/corrections"),
-      api<AttendanceRecord[]>("/attendance/mine").catch(() => []),
-    ]);
-    setRecords(attendance);
-    setSummary(totals);
-    setEmployees(people);
-    setCorrections(correctionRows);
-    setOwnRecordIds(new Set(mine.map((row) => row.id)));
-  }, [api]);
+  const applyData = (
+    data: [
+      AttendanceRecord[],
+      AttendanceSummary,
+      EmployeeOption[],
+      AttendanceCorrection[],
+      AttendanceRecord[],
+    ],
+  ) => {
+    setRecords(data[0]);
+    setSummary(data[1]);
+    setEmployees(data[2]);
+    setCorrections(data[3]);
+    setOwnRecordIds(new Set(data[4].map((row) => row.id)));
+  };
+  const requestData = useCallback(
+    () =>
+      Promise.all([
+        loadAttendance(api),
+        loadAttendanceSummary(api),
+        loadEmployees(api),
+        api<AttendanceCorrection[]>("/attendance/corrections"),
+        api<AttendanceRecord[]>("/attendance/mine").catch(() => []),
+      ]),
+    [api],
+  );
+  const refresh = useCallback(async () => applyData(await requestData()), [requestData]);
   useEffect(() => {
     let active = true;
-    Promise.all([
-      loadAttendance(api),
-      loadAttendanceSummary(api),
-      loadEmployees(api),
-      api<AttendanceCorrection[]>("/attendance/corrections"),
-      api<AttendanceRecord[]>("/attendance/mine").catch(() => []),
-    ])
-      .then(([attendance, totals, people, correctionRows, mine]) => {
-        if (!active) return;
-        setRecords(attendance);
-        setSummary(totals);
-        setEmployees(people);
-        setCorrections(correctionRows);
-        setOwnRecordIds(new Set(mine.map((row) => row.id)));
+    requestData()
+      .then((data) => {
+        if (active) applyData(data);
       })
       .catch((failure) => {
         if (active) setError(errorMessage(failure));
@@ -81,56 +86,63 @@ export default function AttendancePage({
     return () => {
       active = false;
     };
-  }, [api]);
-  async function selfAction(action: "check-in" | "check-out") {
+  }, [requestData]);
+  async function mutate(action: () => Promise<unknown>, message: string) {
     setError("");
     try {
-      await api(`/attendance/${action}`, { method: "POST" });
+      await action();
       await refresh();
-      onSaved(action === "check-in" ? "Checked in." : "Checked out.");
+      onSaved(message);
+      return true;
     } catch (failure) {
       setError(errorMessage(failure));
+      return false;
     }
   }
+  const selfAction = (action: "check-in" | "check-out") =>
+    mutate(
+      () => api(`/attendance/${action}`, { method: "POST" }),
+      action === "check-in" ? "Checked in." : "Checked out.",
+    );
   async function save() {
-    setError("");
-    try {
-      await api("/attendance", { method: "POST", body: form });
+    if (
+      await mutate(() => api("/attendance", { method: "POST", body: form }), "Attendance recorded.")
+    )
       setOpen(false);
-      await refresh();
-      onSaved("Attendance recorded.");
-    } catch (failure) {
-      setError(errorMessage(failure));
-    }
   }
   async function requestCorrection() {
     if (!correcting) return;
-    try {
-      await api("/attendance/corrections", {
-        method: "POST",
-        body: { attendanceRecordId: correcting.id, ...correction },
-      });
+    if (
+      await mutate(
+        () =>
+          api("/attendance/corrections", {
+            method: "POST",
+            body: { attendanceRecordId: correcting.id, ...correction },
+          }),
+        "Attendance correction requested.",
+      )
+    )
       setCorrecting(null);
-      await refresh();
-      onSaved("Attendance correction requested.");
-    } catch (failure) {
-      setError(errorMessage(failure));
-    }
   }
-  async function reviewCorrection(row: AttendanceCorrection, action: "approve" | "reject") {
-    try {
-      await api(`/attendance/corrections/${row.id}/${action}`, {
-        method: "POST",
-        body: {
-          expectedVersion: row.version,
-          ...(action === "reject" ? { reason: "Correction rejected" } : {}),
-        },
-      });
-      await refresh();
-      onSaved(`Correction ${action}d.`);
-    } catch (failure) {
-      setError(errorMessage(failure));
-    }
+  const reviewCorrection = (row: AttendanceCorrection, action: "approve" | "reject") =>
+    mutate(
+      () =>
+        api(`/attendance/corrections/${row.id}/${action}`, {
+          method: "POST",
+          body: {
+            expectedVersion: row.version,
+            ...(action === "reject" ? { reason: "Correction rejected" } : {}),
+          },
+        }),
+      `Correction ${action}d.`,
+    );
+  function openCorrection(row: AttendanceRecord) {
+    setCorrecting(row);
+    setCorrection({
+      proposedStatus: row.status,
+      proposedWorkedMinutes: row.workedMinutes ?? 0,
+      reason: "",
+    });
   }
   return (
     <>
@@ -172,11 +184,11 @@ export default function AttendancePage({
               <button
                 className="button secondary"
                 data-tour="attendance-check-in"
-                onClick={() => selfAction("check-in")}
+                onClick={() => void selfAction("check-in")}
               >
                 Check in
               </button>
-              <button className="button secondary" onClick={() => selfAction("check-out")}>
+              <button className="button secondary" onClick={() => void selfAction("check-out")}>
                 Check out
               </button>
             </>
@@ -192,258 +204,37 @@ export default function AttendancePage({
           )}
         </div>
       </section>
-      <section className="panel">
-        <div className="panel-heading">
-          <h3>Attendance history</h3>
-          <span className="muted">{records.length} records</span>
-        </div>
-        {!records.length ? (
-          <WorkforceEmpty
-            title="No attendance recorded"
-            detail="Check-ins and manager entries will appear here."
-          />
-        ) : (
-          <div className="table-scroll">
-            <table>
-              <thead>
-                <tr>
-                  <th>Employee</th>
-                  <th>Date</th>
-                  <th>Status</th>
-                  <th>Time</th>
-                  <th>Worked</th>
-                  <th />
-                </tr>
-              </thead>
-              <tbody>
-                {records.map((row) => (
-                  <tr key={row.id}>
-                    <td>{employeeName(employees, row.employeeId)}</td>
-                    <td>{shortDate(row.workDate)}</td>
-                    <td>
-                      <StatusBadge status={row.status} />
-                      {row.isLate && <small className="workforce-inline-note">Late</small>}
-                    </td>
-                    <td>
-                      {ownRecordIds.has(row.id) &&
-                        !corrections.some(
-                          (item) => item.attendanceRecordId === row.id && item.status === "PENDING",
-                        ) && (
-                          <button
-                            className="text-button"
-                            onClick={() => {
-                              setCorrecting(row);
-                              setCorrection({
-                                proposedStatus: row.status,
-                                proposedWorkedMinutes: row.workedMinutes ?? 0,
-                                reason: "",
-                              });
-                            }}
-                          >
-                            Request correction
-                          </button>
-                        )}
-                    </td>
-                    <td>
-                      {row.checkInAt
-                        ? new Date(row.checkInAt).toLocaleTimeString([], {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          })
-                        : "—"}{" "}
-                      –{" "}
-                      {row.checkOutAt
-                        ? new Date(row.checkOutAt).toLocaleTimeString([], {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          })
-                        : "—"}
-                    </td>
-                    <td>
-                      {row.workedMinutes
-                        ? `${Math.floor(row.workedMinutes / 60)}h ${row.workedMinutes % 60}m`
-                        : "—"}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </section>
-      {can("attendance:manage") && corrections.some((row) => row.status === "PENDING") && (
-        <section className="panel">
-          <div className="panel-heading">
-            <h3>Pending corrections</h3>
-            <span className="muted">Manager review</span>
-          </div>
-          <div className="table-scroll">
-            <table>
-              <thead>
-                <tr>
-                  <th>Employee</th>
-                  <th>Requested change</th>
-                  <th>Reason</th>
-                  <th />
-                </tr>
-              </thead>
-              <tbody>
-                {corrections
-                  .filter((row) => row.status === "PENDING")
-                  .map((row) => (
-                    <tr key={row.id}>
-                      <td>{employeeName(employees, row.employeeId)}</td>
-                      <td>
-                        {row.proposedStatus.replaceAll("_", " ")} · {row.proposedWorkedMinutes ?? 0}{" "}
-                        minutes
-                      </td>
-                      <td>{row.reason}</td>
-                      <td>
-                        <div className="row-actions">
-                          <button
-                            className="text-button"
-                            onClick={() => void reviewCorrection(row, "approve")}
-                          >
-                            Approve
-                          </button>
-                          <button
-                            className="text-button danger-text"
-                            onClick={() => void reviewCorrection(row, "reject")}
-                          >
-                            Reject
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-              </tbody>
-            </table>
-          </div>
-        </section>
+      <AttendanceRecordsTable
+        records={records}
+        employees={employees}
+        corrections={corrections}
+        ownRecordIds={ownRecordIds}
+        onCorrect={openCorrection}
+      />
+      {can("attendance:manage") && (
+        <PendingCorrectionsTable
+          corrections={corrections}
+          employees={employees}
+          onReview={(row, action) => void reviewCorrection(row, action)}
+        />
       )}
       {open && (
-        <FormModal title="Record attendance" badge="Attendance" onClose={() => setOpen(false)}>
-          <div className="workforce-form">
-            <div className="workforce-form-intro">
-              <span className="workforce-form-icon" aria-hidden="true">
-                ✓
-              </span>
-              <div>
-                <strong>Add a daily record</strong>
-                <p>Choose an employee, date, and attendance status.</p>
-              </div>
-            </div>
-            <section className="workforce-form-section">
-              <div className="workforce-form-section-heading">
-                <span>Record details</span>
-                <small>Required fields</small>
-              </div>
-              <div className="workforce-form-grid">
-                <label>
-                  Employee
-                  <Dropdown
-                    name="attendance-employee"
-                    label="Employee"
-                    placeholder="Select employee"
-                    value={form.employeeId}
-                    onChange={(employeeId) => setForm({ ...form, employeeId })}
-                    options={employees.map((employee) => ({
-                      value: employee.id,
-                      label: `${employee.firstName} ${employee.lastName}`,
-                    }))}
-                  />
-                </label>
-                <label>
-                  Work date
-                  <DatePicker
-                    value={form.workDate}
-                    onChange={(workDate) => setForm({ ...form, workDate })}
-                    ariaLabel="Work date"
-                  />
-                </label>
-                <label>
-                  Status
-                  <Dropdown
-                    name="attendance-status"
-                    label="Attendance status"
-                    searchable={false}
-                    value={form.status}
-                    onChange={(status) => setForm({ ...form, status })}
-                    options={["PRESENT", "ABSENT", "HALF_DAY", "ON_LEAVE", "HOLIDAY"].map(
-                      (status) => ({ value: status, label: status.replaceAll("_", " ") }),
-                    )}
-                  />
-                </label>
-              </div>
-              <label>
-                Notes <small>Optional context for this record</small>
-                <textarea
-                  rows={3}
-                  placeholder="Add context about this attendance record"
-                  value={form.notes}
-                  onChange={(event) => setForm({ ...form, notes: event.target.value })}
-                />
-              </label>
-            </section>
-            <div className="workforce-form-actions">
-              <button className="button secondary" onClick={() => setOpen(false)}>
-                Cancel
-              </button>
-              <button className="button primary" disabled={!form.employeeId} onClick={save}>
-                Save attendance
-              </button>
-            </div>
-          </div>
-        </FormModal>
+        <RecordAttendanceDialog
+          form={form}
+          employees={employees}
+          onChange={setForm}
+          onClose={() => setOpen(false)}
+          onSave={() => void save()}
+        />
       )}
       {correcting && (
-        <FormModal
-          title="Request attendance correction"
-          badge={shortDate(correcting.workDate)}
+        <AttendanceCorrectionDialog
+          record={correcting}
+          form={correction}
+          onChange={setCorrection}
           onClose={() => setCorrecting(null)}
           onSubmit={requestCorrection}
-          submitLabel="Submit request"
-        >
-          <div className="standard-form-grid">
-            <label>
-              Correct status
-              <Dropdown
-                name="correctionStatus"
-                label="Correct status"
-                searchable={false}
-                value={correction.proposedStatus}
-                onChange={(proposedStatus) => setCorrection({ ...correction, proposedStatus })}
-                options={["PRESENT", "ABSENT", "HALF_DAY", "ON_LEAVE", "HOLIDAY"].map((value) => ({
-                  value,
-                  label: value.replaceAll("_", " "),
-                }))}
-              />
-            </label>
-            <label>
-              Worked minutes
-              <input
-                type="number"
-                min="0"
-                max="1440"
-                value={correction.proposedWorkedMinutes}
-                onChange={(event) =>
-                  setCorrection({
-                    ...correction,
-                    proposedWorkedMinutes: Number(event.target.value),
-                  })
-                }
-              />
-            </label>
-          </div>
-          <label>
-            Why is this correction needed?
-            <textarea
-              rows={4}
-              value={correction.reason}
-              onChange={(event) => setCorrection({ ...correction, reason: event.target.value })}
-            />
-          </label>
-        </FormModal>
+        />
       )}
     </>
   );
