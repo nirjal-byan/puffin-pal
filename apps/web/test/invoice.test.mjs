@@ -195,14 +195,14 @@ test("edit prepopulation keeps decimal strings, notes, dates and item order", as
     edit: true,
     delete: false,
   });
-  assert.deepEqual(
-    draftActions("DRAFT", ["invoices:update", "invoices:delete"]),
-    { edit: true, delete: true },
-  );
-  assert.deepEqual(
-    draftActions("PAID", ["invoices:update", "invoices:delete"]),
-    { edit: false, delete: false },
-  );
+  assert.deepEqual(draftActions("DRAFT", ["invoices:update", "invoices:delete"]), {
+    edit: true,
+    delete: true,
+  });
+  assert.deepEqual(draftActions("PAID", ["invoices:update", "invoices:delete"]), {
+    edit: false,
+    delete: false,
+  });
 });
 
 test("edit/delete API contracts include version and invalidate snapshots only after success", async () => {
@@ -254,10 +254,10 @@ test("issuance requires a draft and dedicated permission", async () => {
   assert.equal(canIssueInvoice("DRAFT", ["invoices:update"]), false);
   for (const status of ["ISSUED", "PENDING", "PAID", "OVERDUE", "CANCELLED"]) {
     assert.equal(canIssueInvoice(status, ["invoices:issue"]), false);
-    assert.deepEqual(
-      draftActions(status, ["invoices:update", "invoices:delete"]),
-      { edit: false, delete: false },
-    );
+    assert.deepEqual(draftActions(status, ["invoices:update", "invoices:delete"]), {
+      edit: false,
+      delete: false,
+    });
   }
 });
 

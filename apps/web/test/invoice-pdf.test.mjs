@@ -5,8 +5,14 @@ import { downloadInvoicePdf } from "../src/features/invoices/api/invoices.ts";
 
 let instance = 0;
 const load = () => import(`../src/lib/api.ts?pdf=${instance++}`);
-const session = (token) => ({ accessToken: token, user: { id: "user" }, organization: { id: "org" }, permissions: [] });
-const json = (body, status = 200) => new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json" } });
+const session = (token) => ({
+  accessToken: token,
+  user: { id: "user" },
+  organization: { id: "org" },
+  permissions: [],
+});
+const json = (body, status = 200) =>
+  new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json" } });
 
 test("PDF action eligibility requires issued status and invoice read permission", () => {
   assert.equal(canDownloadInvoicePdf("ISSUED", ["invoices:read"]), true);
@@ -26,7 +32,11 @@ test("PDF requests return binary data and pass an abort signal", async (t) => {
     assert.equal(options.cache, "no-store");
     return new Response("%PDF-binary", { headers: { "content-type": "application/pdf" } });
   });
-  const result = await downloadInvoicePdf((path, options) => api.apiRequest(path, { ...options, token: "token" }), "invoice-1", abort.signal);
+  const result = await downloadInvoicePdf(
+    (path, options) => api.apiRequest(path, { ...options, token: "token" }),
+    "invoice-1",
+    abort.signal,
+  );
   assert.ok(result instanceof Blob);
   assert.equal(await result.text(), "%PDF-binary");
 });
@@ -35,7 +45,10 @@ test("expired PDF request refreshes the session and retries binary download", as
   api.setActiveSession(session("old"));
   let refreshes = 0;
   t.mock.method(globalThis, "fetch", async (url, options) => {
-    if (url.endsWith("/auth/refresh")) { refreshes++; return json(session("new")); }
+    if (url.endsWith("/auth/refresh")) {
+      refreshes++;
+      return json(session("new"));
+    }
     return options.headers.Authorization === "Bearer new"
       ? new Response("%PDF-refreshed", { headers: { "content-type": "application/pdf" } })
       : json({ message: "Expired" }, 401);
@@ -48,14 +61,24 @@ test("PDF failures remain actionable JSON errors, including refresh expiry", asy
   const api = await load();
   for (const status of [401, 403, 404, 409, 500]) {
     t.mock.method(globalThis, "fetch", async () => json({ message: "PDF unavailable" }, status));
-    await assert.rejects(api.apiRequest("/invoices/1/pdf", { token: "token", responseType: "blob" }),
-      (error) => error.status === status && error.message === "PDF unavailable");
+    await assert.rejects(
+      api.apiRequest("/invoices/1/pdf", { token: "token", responseType: "blob" }),
+      (error) => error.status === status && error.message === "PDF unavailable",
+    );
   }
 });
 test("PDF download rejects unexpected response types and preserves aborts", async (t) => {
   const api = await load();
   t.mock.method(globalThis, "fetch", async () => json({}));
-  await assert.rejects(api.apiRequest("/invoices/1/pdf", { responseType: "blob" }), (error) => error.status === 502);
-  t.mock.method(globalThis, "fetch", async () => { throw new DOMException("Aborted", "AbortError"); });
-  await assert.rejects(api.apiRequest("/invoices/1/pdf", { responseType: "blob" }), (error) => error.name === "AbortError");
+  await assert.rejects(
+    api.apiRequest("/invoices/1/pdf", { responseType: "blob" }),
+    (error) => error.status === 502,
+  );
+  t.mock.method(globalThis, "fetch", async () => {
+    throw new DOMException("Aborted", "AbortError");
+  });
+  await assert.rejects(
+    api.apiRequest("/invoices/1/pdf", { responseType: "blob" }),
+    (error) => error.name === "AbortError",
+  );
 });

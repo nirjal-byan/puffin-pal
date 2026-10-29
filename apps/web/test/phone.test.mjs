@@ -17,14 +17,8 @@ test("international input detects the country and normalizes the number", () => 
   }
 });
 test("national numbers respect the chosen country and dialing prefixes", () => {
-  assert.equal(
-    readPhoneInput("020 7946 0018", "GB").normalized,
-    "+442079460018",
-  );
-  assert.equal(
-    readPhoneInput("(202) 555-0123", "US").normalized,
-    "+12025550123",
-  );
+  assert.equal(readPhoneInput("020 7946 0018", "GB").normalized, "+442079460018");
+  assert.equal(readPhoneInput("(202) 555-0123", "US").normalized, "+12025550123");
 });
 test("partial country codes update the selector without accepting incomplete numbers", () => {
   const result = readPhoneInput("+977", "US");
@@ -36,9 +30,6 @@ test("invalid input is not submitted and each country has a flag", () => {
   for (const input of ["", "abc", "+999123456789", "12"]) {
     assert.equal(readPhoneInput(input, "US").normalized, "");
   }
-  assert.equal(
-    PHONE_COUNTRIES.find((item) => item.country === "US").flag,
-    "🇺🇸",
-  );
+  assert.equal(PHONE_COUNTRIES.find((item) => item.country === "US").flag, "🇺🇸");
   assert.ok(PHONE_COUNTRIES.length > 200);
 });

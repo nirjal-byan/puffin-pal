@@ -12,7 +12,14 @@ const filterSource = await readFile(
 );
 
 test("dashboard provides range controls, six KPIs, and accessible analytics", () => {
-  for (const label of ["Invoiced revenue", "Payments received", "Outstanding", "Overdue", "Expenses", "Net cash flow"])
+  for (const label of [
+    "Invoiced revenue",
+    "Payments received",
+    "Outstanding",
+    "Overdue",
+    "Expenses",
+    "Net cash flow",
+  ])
     assert.match(source, new RegExp(label));
   assert.match(filterSource, /type="date"/);
   assert.match(source, /role="img"/);

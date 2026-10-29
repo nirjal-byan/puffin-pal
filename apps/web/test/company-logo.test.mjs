@@ -14,14 +14,8 @@ test("company logo rejects unsupported and oversized files before decoding", asy
 });
 
 test("company logo resizes proportionally, bounds output, and releases decoded images", async () => {
-  const originalBitmap = Object.getOwnPropertyDescriptor(
-    globalThis,
-    "createImageBitmap",
-  );
-  const originalDocument = Object.getOwnPropertyDescriptor(
-    globalThis,
-    "document",
-  );
+  const originalBitmap = Object.getOwnPropertyDescriptor(globalThis, "createImageBitmap");
+  const originalDocument = Object.getOwnPropertyDescriptor(globalThis, "document");
   let closed = 0,
     drawn = 0;
   const image = {
@@ -65,17 +59,12 @@ test("company logo resizes proportionally, bounds output, and releases decoded i
     assert.equal(drawn, 1);
     assert.equal(closed, 1);
     canvas.toDataURL = () => `data:image/png;base64,${"A".repeat(90000)}`;
-    await assert.rejects(
-      prepareCompanyLogo({ type: "image/png", size: 1024 }),
-      /too detailed/,
-    );
+    await assert.rejects(prepareCompanyLogo({ type: "image/png", size: 1024 }), /too detailed/);
     assert.equal(closed, 2);
   } finally {
-    if (originalBitmap)
-      Object.defineProperty(globalThis, "createImageBitmap", originalBitmap);
+    if (originalBitmap) Object.defineProperty(globalThis, "createImageBitmap", originalBitmap);
     else delete globalThis.createImageBitmap;
-    if (originalDocument)
-      Object.defineProperty(globalThis, "document", originalDocument);
+    if (originalDocument) Object.defineProperty(globalThis, "document", originalDocument);
     else delete globalThis.document;
   }
 });

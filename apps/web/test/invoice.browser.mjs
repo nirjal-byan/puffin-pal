@@ -11,10 +11,7 @@ const api = process.env.TEST_API_URL,
   web = process.env.TEST_WEB_URL;
 assert.equal(api, "http://localhost:3002/api/v1");
 assert.equal(web, "http://localhost:3003");
-assert.match(
-  new URL(process.env.DATABASE_URL).pathname,
-  /^\/puffinpal_browser_test_/,
-);
+assert.match(new URL(process.env.DATABASE_URL).pathname, /^\/puffinpal_browser_test_/);
 const profile = await mkdtemp(join(tmpdir(), "puffinpal-chrome-"));
 const chrome = spawn(
   process.env.CHROME_BIN ?? "google-chrome",
@@ -55,15 +52,17 @@ async function until(expression) {
     if (await evaluate(expression)) return;
     await pause(100);
   }
-  throw Error(
-    `Timed out: ${expression}\n${await evaluate("document.body.innerText")}`,
-  );
+  throw Error(`Timed out: ${expression}\n${await evaluate("document.body.innerText")}`);
 }
-const text = (value) =>
-  `(document.body?.innerText ?? "").includes(${JSON.stringify(value)})`;
+const text = (value) => `(document.body?.innerText ?? "").includes(${JSON.stringify(value)})`;
 async function click(label) {
   await evaluate(
     `(() => { const e = [...document.querySelectorAll('button,a')].find(e => e.textContent.trim() === ${JSON.stringify(label)}); if (!e) throw Error('Missing action '+${JSON.stringify(label)}); e.click(); })()`,
+  );
+}
+async function clickInOpenDialog(label) {
+  await evaluate(
+    `(() => { const e = [...document.querySelectorAll('dialog.invoice-delete-dialog[open] button')].find(e => e.textContent.trim() === ${JSON.stringify(label)}); if (!e) throw Error('Missing delete dialog action '+${JSON.stringify(label)}); e.click(); })()`,
   );
 }
 async function fill(selector, value) {
@@ -90,9 +89,7 @@ async function login(email) {
   await fill('[name="organizationSlug"]', "browser-invoices");
   await fill('[name="email"]', email);
   await fill('[name="password"]', "Browser-test-password-123");
-  await evaluate(
-    "document.querySelector('.auth-form-card form').requestSubmit()",
-  );
+  await evaluate("document.querySelector('.auth-form-card form').requestSubmit()");
   await until("!!document.querySelector('.workspace-main')");
 }
 async function navigate(path, expected) {
@@ -126,8 +123,7 @@ try {
       if (m.error) p?.reject(Error(m.error.message));
       else p?.resolve(m.result);
     }
-    if (m.method === "Runtime.exceptionThrown")
-      errors.push(m.params.exceptionDetails.text);
+    if (m.method === "Runtime.exceptionThrown") errors.push(m.params.exceptionDetails.text);
   };
   await command("Page.enable");
   await command("Runtime.enable");
@@ -155,6 +151,28 @@ try {
   };
   const invoice = await request("/invoices", owner.accessToken, input);
   await login("owner@browser.test");
+  const initialTheme = await evaluate(
+    `document.querySelector('[role=switch][aria-label="Dark mode"]').getAttribute('aria-checked')`,
+  );
+  await evaluate(`document.querySelector('[role=switch][aria-label="Dark mode"]').click()`);
+  await until(
+    `document.querySelector('[role=switch][aria-label="Dark mode"]').getAttribute('aria-checked') !== ${JSON.stringify(initialTheme)}`,
+  );
+  const toggledTheme = await evaluate(
+    `document.querySelector('[role=switch][aria-label="Dark mode"]').getAttribute('aria-checked')`,
+  );
+  await command("Page.reload", { ignoreCache: true });
+  await until("!!document.querySelector('.workspace-main')");
+  assert.equal(
+    await evaluate(
+      `document.querySelector('[role=switch][aria-label="Dark mode"]').getAttribute('aria-checked')`,
+    ),
+    toggledTheme,
+  );
+  await evaluate(`document.querySelector('[role=switch][aria-label="Dark mode"]').click()`);
+  await until(
+    `document.querySelector('[role=switch][aria-label="Dark mode"]').getAttribute('aria-checked') === ${JSON.stringify(initialTheme)}`,
+  );
   await navigate(`/invoices/${invoice.id}`, "Browser client");
   assert.ok(await evaluate(text("USD 24.80")));
   assert.ok(await evaluate(text("Edit Draft")));
@@ -164,10 +182,7 @@ try {
   const screenshot = async (name) =>
     writeFile(
       join(artifacts, name),
-      Buffer.from(
-        (await command("Page.captureScreenshot", { format: "png" })).data,
-        "base64",
-      ),
+      Buffer.from((await command("Page.captureScreenshot", { format: "png" })).data, "base64"),
     );
   await command("Emulation.setDeviceMetricsOverride", {
     width: 1440,
@@ -179,35 +194,27 @@ try {
   await click("Edit Draft");
   await until("!!document.querySelector('[aria-label=\"Description 1\"]')");
   assert.equal(
-    await evaluate(
-      "document.querySelector('[aria-label=\"Description 1\"]').value",
-    ),
+    await evaluate("document.querySelector('[aria-label=\"Description 1\"]').value"),
     "First service",
   );
   assert.equal(
-    await evaluate(
-      "document.querySelector('[aria-label=\"Description 2\"]').value",
-    ),
+    await evaluate("document.querySelector('[aria-label=\"Description 2\"]').value"),
     "Second service",
   );
-  await until(
-    `!!document.querySelector('select option[value="${client.id}"]')`,
-  );
+  await until("!!document.querySelector('[data-dropdown-name=\"clientId\"]')");
   assert.equal(
-    await evaluate("document.querySelector('select').value"),
-    client.id,
+    await evaluate(
+      "document.querySelector('[data-dropdown-name=\"clientId\"]')?.getAttribute('aria-label')",
+    ),
+    "Choose a client: Browser client",
   );
   await fill('[aria-label="Quantity 1"]', "7");
   await click("+ Add line item");
   await fill('[aria-label="Description 3"]', "Extra service");
   await fill('[aria-label="Unit price 3"]', "0.10");
-  await evaluate(
-    "document.querySelector('[aria-label=\"Remove item 2\"]').click()",
-  );
+  await evaluate("document.querySelector('[aria-label=\"Remove item 2\"]').click()");
   assert.equal(
-    await evaluate(
-      "document.querySelector('[aria-label=\"Invoice total\"]').textContent",
-    ),
+    await evaluate("document.querySelector('[aria-label=\"Invoice total\"]').textContent"),
     "0.80",
   );
   await fill("textarea", "");
@@ -216,12 +223,7 @@ try {
   );
   await click("Save Changes");
   await until(text("Cannot reach the API"));
-  assert.equal(
-    await evaluate(
-      "document.querySelector('[aria-label=\"Quantity 1\"]').value",
-    ),
-    "7",
-  );
+  assert.equal(await evaluate("document.querySelector('[aria-label=\"Quantity 1\"]').value"), "7");
   await evaluate("window.failPatch = false");
   await click("Save Changes");
   await until(text("USD 0.80"));
@@ -229,12 +231,7 @@ try {
   await click("Edit Draft");
   await until("!!document.querySelector('textarea')");
   await fill("textarea", "My unsaved note");
-  const latest = await request(
-    `/invoices/${invoice.id}`,
-    owner.accessToken,
-    undefined,
-    "GET",
-  );
+  const latest = await request(`/invoices/${invoice.id}`, owner.accessToken, undefined, "GET");
   await request(
     `/invoices/${invoice.id}`,
     owner.accessToken,
@@ -252,10 +249,7 @@ try {
   };`);
   await click("Save Changes");
   await until(text("Your changes have not been saved"));
-  assert.equal(
-    await evaluate("document.querySelector('textarea').value"),
-    "My unsaved note",
-  );
+  assert.equal(await evaluate("document.querySelector('textarea').value"), "My unsaved note");
   assert.equal(
     await evaluate(
       "[...document.querySelectorAll('button')].find(e => e.textContent === 'Save Changes').disabled",
@@ -263,9 +257,7 @@ try {
     true,
   );
   await click("Discard my changes and reload");
-  await until(
-    "document.querySelector('textarea')?.value === \"Other user's note\"",
-  );
+  await until("document.querySelector('textarea')?.value === \"Other user's note\"");
   await command("Emulation.setDeviceMetricsOverride", {
     width: 390,
     height: 844,
@@ -285,13 +277,8 @@ try {
     "Mobile detail page overflows",
   );
   await click("Delete Draft");
-  await until("!!document.querySelector('dialog[open]')");
-  const now = await request(
-    `/invoices/${invoice.id}`,
-    owner.accessToken,
-    undefined,
-    "GET",
-  );
+  await until("!!document.querySelector('dialog.invoice-delete-dialog[open]')");
+  const now = await request(`/invoices/${invoice.id}`, owner.accessToken, undefined, "GET");
   await request(
     `/invoices/${invoice.id}`,
     owner.accessToken,
@@ -303,21 +290,21 @@ try {
   await click("Reload latest invoice");
   await until(text("Delete Draft"));
   await click("Delete Draft");
-  await until("!!document.querySelector('dialog[open]')");
+  await until("!!document.querySelector('dialog.invoice-delete-dialog[open]')");
   assert.ok(
     await evaluate(
-      "document.querySelector('dialog').innerText.includes('permanently')",
+      "document.querySelector('dialog.invoice-delete-dialog[open]').innerText.includes('permanently')",
     ),
   );
-  await click("Cancel");
-  await until("!document.querySelector('dialog[open]')");
+  await clickInOpenDialog("Cancel");
+  await until("!document.querySelector('dialog.invoice-delete-dialog[open]')");
   await click("← Back to Invoices");
   await until(text("Show items"));
   await until(text(invoice.invoiceNumber));
   await click("Show items");
   await until(text("Invoice items"));
   await click("Delete Draft");
-  await until("!!document.querySelector('dialog[open]')");
+  await until("!!document.querySelector('dialog.invoice-delete-dialog[open]')");
   await screenshot("delete-mobile.png");
   await click("Delete permanently");
   await until(text("No invoices yet"));
@@ -338,23 +325,14 @@ try {
     );
     await login(email);
     await navigate(`/invoices/${next.id}`, "Browser client");
-    assert.equal(
-      await evaluate(text("Edit Draft")),
-      role === "PROJECT_MANAGER",
-    );
+    assert.equal(await evaluate(text("Edit Draft")), role === "PROJECT_MANAGER");
     assert.equal(await evaluate(text("Delete Draft")), false);
     if (role === "FINANCE_VIEWER") {
       await navigate(`/invoices/${next.id}/edit`, "Draft editing unavailable");
-      assert.equal(
-        await evaluate("!!document.querySelector('textarea')"),
-        false,
-      );
+      assert.equal(await evaluate("!!document.querySelector('textarea')"), false);
     }
   }
-  await navigate(
-    "/invoices/00000000-0000-4000-8000-000000000001",
-    "Invoice not found",
-  );
+  await navigate("/invoices/00000000-0000-4000-8000-000000000001", "Invoice not found");
   assert.deepEqual(errors, []);
   console.log(`Browser invoice workflows passed. Screenshots: ${artifacts}`);
 } finally {
