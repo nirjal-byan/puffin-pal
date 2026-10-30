@@ -48,6 +48,7 @@ const environment = {
   ...process.env,
   DATABASE_URL: url.toString(),
   JWT_SECRET: randomBytes(32).toString("hex"),
+  REDIS_RATE_LIMIT_PREFIX: `puffinpal:browser:${database}`,
   NODE_ENV: "test",
   PORT: "3002",
   WEB_ORIGIN: "http://localhost:3003",

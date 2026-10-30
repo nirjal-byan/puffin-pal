@@ -125,6 +125,43 @@ test("bank reconciliation saves the selected candidate before refreshing records
   harness.unmount();
 });
 
+test("bank reconciliation keeps suggestions for the most recently opened transaction", async () => {
+  let resolveFirst;
+  let resolveSecond;
+  const first = new Promise((resolve) => {
+    resolveFirst = resolve;
+  });
+  const second = new Promise((resolve) => {
+    resolveSecond = resolve;
+  });
+  const api = (path) => (path.includes("transaction-1") ? first : second);
+  const errors = [];
+  const harness = createHookHarness(useBankReconciliation, {
+    api,
+    reload: async () => {},
+    onSaved: () => {},
+    onError: (message) => errors.push(message),
+  });
+  let hook = harness.render();
+  const openingFirst = hook.open({ id: "transaction-1", reconciliation: null });
+  hook = harness.render();
+  const openingSecond = hook.open({ id: "transaction-2", reconciliation: null });
+
+  resolveSecond([{ targetId: "new-candidate", targetType: "INVOICE_PAYMENT" }]);
+  await openingSecond;
+  hook = harness.render();
+  assert.equal(hook.transaction.id, "transaction-2");
+  assert.equal(hook.candidates[0].targetId, "new-candidate");
+
+  resolveFirst([{ targetId: "old-candidate", targetType: "INVOICE_PAYMENT" }]);
+  await openingFirst;
+  hook = harness.render();
+  assert.equal(hook.transaction.id, "transaction-2");
+  assert.equal(hook.candidates[0].targetId, "new-candidate");
+  assert.deepEqual(errors, []);
+  harness.unmount();
+});
+
 test("banking load failures clear loading and a manual reload recovers", async () => {
   let failing = true;
   const api = async (path) => {
@@ -146,6 +183,39 @@ test("banking load failures clear loading and a manual reload recovers", async (
   assert.equal(hook.error, "");
   assert.equal(hook.loading, false);
   assert.equal(hook.accounts[0].id, "account-1");
+  harness.unmount();
+});
+
+test("banking records ignore an older load that finishes after a newer refresh", async () => {
+  const deferred = Array.from({ length: 8 }, () => {
+    let resolve;
+    const promise = new Promise((next) => {
+      resolve = next;
+    });
+    return { promise, resolve };
+  });
+  let request = 0;
+  const api = async () => deferred[request++].promise;
+  const harness = createHookHarness(useBankingRecords, api);
+  harness.render();
+  let hook = harness.render();
+  const refresh = hook.load();
+
+  deferred[4].resolve([{ id: "new-account", displayName: "New", isDefault: true }]);
+  deferred[5].resolve([]);
+  deferred[6].resolve([]);
+  deferred[7].resolve([]);
+  await refresh;
+  hook = harness.render();
+  assert.equal(hook.accounts[0].id, "new-account");
+
+  deferred[0].resolve([{ id: "old-account", displayName: "Old", isDefault: true }]);
+  deferred[1].resolve([]);
+  deferred[2].resolve([]);
+  deferred[3].resolve([]);
+  await flushPromises();
+  hook = harness.render();
+  assert.equal(hook.accounts[0].id, "new-account");
   harness.unmount();
 });
 

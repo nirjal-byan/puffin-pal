@@ -70,6 +70,20 @@ async function fill(selector, value) {
     `(() => { const e = document.querySelector(${JSON.stringify(selector)}); if (!e) throw Error('Missing input'); const p = e.tagName === 'TEXTAREA' ? HTMLTextAreaElement.prototype : e.tagName === 'SELECT' ? HTMLSelectElement.prototype : HTMLInputElement.prototype; Object.getOwnPropertyDescriptor(p, 'value').set.call(e, ${JSON.stringify(value)}); e.dispatchEvent(new Event('input', { bubbles: true })); e.dispatchEvent(new Event('change', { bubbles: true })); })()`,
   );
 }
+async function fillFormField(label, value) {
+  await evaluate(
+    `(() => { const field = [...document.querySelectorAll('dialog[open] .form-field')].find((item) => item.querySelector('.form-field-label > span')?.textContent.trim() === ${JSON.stringify(label)}); const input = field?.querySelector('input,textarea'); if (!input) throw Error('Missing form field '+${JSON.stringify(label)}); const prototype = input.tagName === 'TEXTAREA' ? HTMLTextAreaElement.prototype : HTMLInputElement.prototype; Object.getOwnPropertyDescriptor(prototype, 'value').set.call(input, ${JSON.stringify(value)}); input.dispatchEvent(new Event('input', { bubbles: true })); input.dispatchEvent(new Event('change', { bubbles: true })); })()`,
+  );
+}
+async function uploadFile(path) {
+  const { root } = await command("DOM.getDocument");
+  const { nodeId } = await command("DOM.querySelector", {
+    nodeId: root.nodeId,
+    selector: "dialog[open] input[type=file]",
+  });
+  assert.ok(nodeId, "Missing file input in open dialog");
+  await command("DOM.setFileInputFiles", { nodeId, files: [path] });
+}
 async function selectDropdown(name, optionText) {
   await evaluate(
     `document.querySelector(${JSON.stringify(`[data-dropdown-name="${name}"]`)}).click()`,
@@ -159,6 +173,109 @@ async function request(path, token, body, method = "POST") {
   assert.ok(response.ok, JSON.stringify(data));
   return data;
 }
+async function bankingWorkflow(owner, client) {
+  const matchDraft = await request("/invoices", owner.accessToken, {
+    clientId: client.id,
+    issueDate: "2026-10-01",
+    dueDate: "2026-11-01",
+    items: [{ description: "Banking browser fixture", quantity: 1, unitPrice: "25.00" }],
+  });
+  const issued = await request(`/invoices/${matchDraft.id}/issue`, owner.accessToken, {
+    expectedVersion: matchDraft.version,
+  });
+  await request(`/invoices/${issued.id}/payments`, owner.accessToken, {
+    amount: "25.00",
+    expectedVersion: issued.version,
+    paymentDate: "2026-10-20",
+    method: "BANK_TRANSFER",
+    reference: "BANK-REF-1",
+    notes: "Banking browser fixture",
+  });
+
+  await navigate("/?section=banking", "Statement transactions");
+  await until("!document.querySelector('.banking-page .loading')");
+  assert.ok(await evaluate(text("No imported transactions")));
+  await click("Accounts");
+  await until(text("No bank accounts"));
+  await click("+ Add account");
+  await until(text("Add bank account"));
+  await fillFormField("Account name", "Browser operating account");
+  await fillFormField("Bank", "Browser Bank");
+  await fillFormField("Account holder", "Browser Invoices LLC");
+  await fillFormField("Masked identifier", "•••• 4242");
+  await evaluate("document.querySelector('dialog[open] .form-checkbox input').click()");
+  await click("Add account");
+  await until(text("Bank account added."));
+  await until(text("Browser operating account"));
+  assert.ok(await evaluate(text("Browser Bank · •••• 4242")));
+
+  await click("Transactions");
+  await click("Import statement");
+  await until(text("Import bank statement"));
+  const invalidCsv = join(profile, "invalid-statement.csv");
+  const validCsv = join(profile, "browser-statement.csv");
+  await writeFile(invalidCsv, "foo,bar\n1,2\n");
+  await writeFile(
+    validCsv,
+    "date,amount,description,reference,direction,currency\n2026-10-20,25.00,Client deposit,BANK-REF-1,CREDIT,USD\n",
+  );
+  await uploadFile(invalidCsv);
+  await until(text("invalid-statement.csv"));
+  await click("Preview statement");
+  await until(text("CSV column not found: date"));
+  assert.equal(await evaluate(text("Client deposit")), false);
+  await uploadFile(validCsv);
+  await until(text("browser-statement.csv"));
+  await click("Preview statement");
+  await until(text("1 rows ready"));
+  assert.ok(await evaluate(text("Client deposit")));
+  await click("Confirm import");
+  await until(text("Bank statement imported."));
+  await until("!!document.querySelector('.banking-table tbody tr')");
+
+  await fill('[aria-label="Search transactions"]', "does-not-exist");
+  assert.equal(await evaluate(text("Client deposit")), false);
+  await fill('[aria-label="Search transactions"]', "deposit");
+  assert.ok(await evaluate(text("Client deposit")));
+  await fill('[aria-label="Search transactions"]', "");
+  await selectDropdown("transaction-status", "Unmatched");
+  assert.ok(await evaluate(text("Client deposit")));
+  await click("Match");
+  await until(text("Match bank transaction"));
+  await until(text(matchDraft.invoiceNumber));
+  await evaluate("document.querySelector('dialog[open] input[name=candidate]').click()");
+  await click("Confirm match");
+  await until(text("Transaction reconciled."));
+  await selectDropdown("transaction-status", "Matched");
+  await until(text("Reverse"));
+  assert.ok(await evaluate(text("Client deposit")));
+  await evaluate("window.confirm = () => false");
+  await click("Reverse");
+  await pause(200);
+  assert.ok(await evaluate(text("Reverse")));
+  await evaluate("window.confirm = () => true");
+  await click("Reverse");
+  await until(text("Reconciliation reversed."));
+  await until(text("Match"));
+
+  await click("Imports");
+  await until(text("Import history"));
+  assert.ok(await evaluate(text("browser-statement.csv")));
+  assert.ok(await evaluate(text("1")));
+  await click("Payment batches");
+  await until(text("No payment batches"));
+  await click("+ Payment batch");
+  await until(text("Create payroll payment batch"));
+  assert.ok(await evaluate(text("No finalized unpaid payroll entries are available.")));
+  assert.equal(
+    await evaluate(
+      "document.querySelector('dialog[open] .standard-form-modal-actions .primary').disabled",
+    ),
+    true,
+  );
+  await click("Cancel");
+  await until("!document.querySelector('dialog[open]')");
+}
 async function login(email) {
   await command("Page.navigate", { url: web });
   await until("!!document.querySelector('[name=organizationSlug]')");
@@ -203,6 +320,7 @@ try {
   };
   await command("Page.enable");
   await command("Runtime.enable");
+  await command("DOM.enable");
   await authenticationWorkflow();
   const password = "Browser-test-password-123";
   const owner = await request("/auth/signup", null, {
@@ -228,6 +346,7 @@ try {
   };
   const invoice = await request("/invoices", owner.accessToken, input);
   await login("owner@browser.test");
+  await bankingWorkflow(owner, client);
   const initialTheme = await evaluate(
     `document.querySelector('[role=switch][aria-label="Dark mode"]').getAttribute('aria-checked')`,
   );
@@ -383,8 +502,8 @@ try {
   await click("Delete Draft");
   await until("!!document.querySelector('dialog.invoice-delete-dialog[open]')");
   await screenshot("delete-mobile.png");
-  await click("Delete permanently");
-  await until(text("No invoices yet"));
+  await clickInOpenDialog("Delete permanently");
+  await until(`!${text(invoice.invoiceNumber)}`);
   assert.ok(!(await evaluate(text(invoice.invoiceNumber))));
   const next = await request("/invoices", owner.accessToken, input);
   for (const [role, email] of [
@@ -407,11 +526,31 @@ try {
     if (role === "FINANCE_VIEWER") {
       await navigate(`/invoices/${next.id}/edit`, "Draft editing unavailable");
       assert.equal(await evaluate("!!document.querySelector('textarea')"), false);
+      await navigate("/?section=banking", "Statement transactions");
+      await until("!document.querySelector('.banking-page .loading')");
+      assert.equal(
+        await evaluate(
+          "[...document.querySelectorAll('button')].some((item) => item.textContent.trim() === 'Import statement')",
+        ),
+        false,
+      );
+      assert.equal(
+        await evaluate(
+          "[...document.querySelectorAll('button')].some((item) => item.textContent.trim() === 'Match')",
+        ),
+        false,
+      );
+      await click("Accounts");
+      assert.equal(await evaluate(text("+ Add account")), false);
+      await click("Payment batches");
+      assert.equal(await evaluate(text("+ Payment batch")), false);
     }
   }
   await navigate("/invoices/00000000-0000-4000-8000-000000000001", "Invoice not found");
   assert.deepEqual(errors, []);
-  console.log(`Browser authentication and invoice workflows passed. Screenshots: ${artifacts}`);
+  console.log(
+    `Browser authentication, banking, and invoice workflows passed. Screenshots: ${artifacts}`,
+  );
 } finally {
   socket?.close();
   chrome.kill("SIGTERM");

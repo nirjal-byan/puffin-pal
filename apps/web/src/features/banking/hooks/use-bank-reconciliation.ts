@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { errorMessage, type WorkspaceApi } from "@/lib/api";
 import type { BankTransaction, ReconciliationCandidate } from "../types";
 
@@ -19,17 +19,20 @@ export function useBankReconciliation({
   const [candidates, setCandidates] = useState<ReconciliationCandidate[]>([]);
   const [selected, setSelected] = useState("");
   const [busy, setBusy] = useState(false);
+  const openVersion = useRef(0);
 
   async function open(row: BankTransaction) {
+    const version = ++openVersion.current;
     setTransaction(row);
     setSelected("");
     setCandidates([]);
     try {
-      setCandidates(
-        await api<ReconciliationCandidate[]>(`/banking/transactions/${row.id}/suggestions`),
+      const nextCandidates = await api<ReconciliationCandidate[]>(
+        `/banking/transactions/${row.id}/suggestions`,
       );
+      if (version === openVersion.current) setCandidates(nextCandidates);
     } catch (failure) {
-      onError(errorMessage(failure));
+      if (version === openVersion.current) onError(errorMessage(failure));
     }
   }
 
@@ -76,7 +79,12 @@ export function useBankReconciliation({
     selected,
     busy,
     setSelected,
-    close: () => setTransaction(null),
+    close: () => {
+      openVersion.current++;
+      setTransaction(null);
+      setCandidates([]);
+      setSelected("");
+    },
     open,
     reconcile,
     reverse,

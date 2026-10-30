@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { errorMessage, type WorkspaceApi } from "@/lib/api";
 import type { BankAccount, BankImport, BankTransaction, PaymentBatch } from "../types";
 
@@ -14,8 +14,13 @@ export function useBankingRecords(api: WorkspaceApi) {
   const [status, setStatus] = useState("ALL");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
+  const loadVersion = useRef(0);
+  const invalidateLoads = useCallback(() => {
+    loadVersion.current++;
+  }, []);
 
   const load = useCallback(async () => {
+    const version = ++loadVersion.current;
     setLoading(true);
     setError("");
     try {
@@ -25,6 +30,7 @@ export function useBankingRecords(api: WorkspaceApi) {
         api<BankImport[]>("/banking/imports?limit=50&offset=0"),
         api<PaymentBatch[]>("/banking/payment-batches"),
       ]);
+      if (version !== loadVersion.current) return;
       setAccounts(nextAccounts);
       setTransactions(nextTransactions);
       setImports(nextImports);
@@ -34,16 +40,19 @@ export function useBankingRecords(api: WorkspaceApi) {
           current || nextAccounts.find((item) => item.isDefault)?.id || nextAccounts[0]?.id || "",
       );
     } catch (failure) {
-      setError(errorMessage(failure));
+      if (version === loadVersion.current) setError(errorMessage(failure));
     } finally {
-      setLoading(false);
+      if (version === loadVersion.current) setLoading(false);
     }
   }, [api]);
 
   useEffect(() => {
     const frame = window.requestAnimationFrame(() => void load());
-    return () => window.cancelAnimationFrame(frame);
-  }, [load]);
+    return () => {
+      window.cancelAnimationFrame(frame);
+      invalidateLoads();
+    };
+  }, [invalidateLoads, load]);
 
   const accountById = useMemo(() => new Map(accounts.map((item) => [item.id, item])), [accounts]);
   const visibleTransactions = useMemo(() => {
