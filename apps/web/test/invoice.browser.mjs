@@ -173,6 +173,19 @@ async function request(path, token, body, method = "POST") {
   assert.ok(response.ok, JSON.stringify(data));
   return data;
 }
+async function requestFailure(path, token, body, expectedStatus, method = "POST") {
+  const response = await fetch(api + path, {
+    method,
+    headers: {
+      "content-type": "application/json",
+      authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(body),
+  });
+  const data = await response.json();
+  assert.equal(response.status, expectedStatus, JSON.stringify(data));
+  return data;
+}
 async function bankingWorkflow(owner, client) {
   const matchDraft = await request("/invoices", owner.accessToken, {
     clientId: client.id,
@@ -263,18 +276,8 @@ async function bankingWorkflow(owner, client) {
   assert.ok(await evaluate(text("browser-statement.csv")));
   assert.ok(await evaluate(text("1")));
   await click("Payment batches");
-  await until(text("No payment batches"));
-  await click("+ Payment batch");
-  await until(text("Create payroll payment batch"));
-  assert.ok(await evaluate(text("No finalized unpaid payroll entries are available.")));
-  assert.equal(
-    await evaluate(
-      "document.querySelector('dialog[open] .standard-form-modal-actions .primary').disabled",
-    ),
-    true,
-  );
-  await click("Cancel");
-  await until("!document.querySelector('dialog[open]')");
+  await until(text("Browser payroll payments"));
+  assert.ok(await evaluate(text("FAILED")));
 }
 async function login(email) {
   await command("Page.navigate", { url: web });
@@ -288,6 +291,189 @@ async function login(email) {
 async function navigate(path, expected) {
   await command("Page.navigate", { url: web + path });
   await until(text(expected));
+}
+
+async function logout() {
+  await evaluate(
+    `fetch(${JSON.stringify(api + "/auth/logout")}, { method: 'POST', credentials: 'include' })`,
+  );
+}
+
+async function payrollWorkflow(owner) {
+  await navigate("/?section=payroll-automation", "Automation is not configured");
+  await click("Set up automation");
+  await until(text("Set up payroll automation"));
+  await fillFormField("Schedule name", "Browser monthly payroll");
+  await click("Save schedule");
+  await until(text("Browser monthly payroll"));
+  await click("Pause");
+  await until(text("Resume"));
+  await click("Resume");
+  await until(text("Pause"));
+
+  await click("Configure");
+  await until(text("Configure statutory rules"));
+  await fillFormField("Country code", "US");
+  await fillFormField("Rule-set name", "Browser withholding");
+  await evaluate("document.querySelector('dialog[open] [aria-label=\"Statutory rule effective date\"]').click()");
+  await until("!!document.querySelector('.date-picker-popover')");
+  await evaluate(`(() => {
+    const day = [...document.querySelectorAll('.date-picker-popover .date-picker-days button')]
+      .find((button) => button.textContent.trim() === '1');
+    if (!day) throw Error('Missing first day in statutory date picker');
+    day.click();
+  })()`);
+  await click("Save and activate");
+  await until(text("New rule version"));
+
+  const employee = await request("/employees", owner.accessToken, {
+    employeeCode: "BROWSER-001",
+    firstName: "Browser",
+    lastName: "Employee",
+    jobTitle: "QA Engineer",
+    employmentType: "FULL_TIME",
+    hireDate: "2026-01-01",
+  });
+  await request(`/employees/${employee.id}/salary-structures`, owner.accessToken, {
+    compensationType: "FIXED_SALARY",
+    baseAmount: "3000.00",
+    currency: "USD",
+    payFrequency: "MONTHLY",
+    effectiveFrom: "2026-01-01",
+    components: [
+      {
+        name: "Housing allowance",
+        type: "EARNING",
+        amount: "200.00",
+        statutoryClass: "TAXABLE_EARNING",
+      },
+      {
+        name: "Benefits deduction",
+        type: "DEDUCTION",
+        amount: "50.00",
+        statutoryClass: "POST_TAX_DEDUCTION",
+      },
+    ],
+  });
+  await request("/members", owner.accessToken, {
+    fullName: "Browser payroll approver",
+    email: "approver@browser.test",
+    password: "Browser-test-password-123",
+    role: "ADMIN",
+  });
+
+  await navigate("/?section=payroll", "Payroll history");
+  await click("+ New pay run");
+  await until(text("Browser Employee"));
+  await fill('dialog[open] input[placeholder="October payroll"]', "Browser October payroll");
+  assert.equal(
+    await evaluate("document.querySelector('dialog[open] input[type=checkbox]').checked"),
+    true,
+  );
+  await click("Create draft");
+  await until(text("Browser October payroll"));
+  await until(text("3200.00"));
+  assert.ok(await evaluate(text("3150.00")));
+
+  await until(
+    "document.querySelector('[data-dropdown-name=\"statutoryRule\"]')?.textContent.includes('Browser withholding v1')",
+  );
+  await selectDropdown("statutoryRule", "Browser withholding v1");
+  await click("Preview");
+  await until(text("Apply statutory components"));
+  assert.ok(await evaluate(text("320.00")));
+  await click("Apply statutory components");
+  await until(
+    "![...document.querySelectorAll('button')].find((button) => button.textContent.trim() === 'Apply statutory components')",
+  );
+  await until(text("2830.00"));
+
+  await evaluate(`window.promptAnswers = ['EARNING', 'Browser bonus', '100.00'];
+    window.prompt = () => window.promptAnswers.shift() ?? null;`);
+  await click("+ Adjustment");
+  await until(text("2930.00"));
+
+  await evaluate("window.confirm = () => true");
+  await click("Submit for approval");
+  await until(text("PENDING APPROVAL"));
+  const pendingRun = await request(
+    "/payroll/runs?limit=100&offset=0",
+    owner.accessToken,
+    undefined,
+    "GET",
+  );
+  const submitted = pendingRun.items.find((run) => run.name === "Browser October payroll");
+  assert.ok(submitted);
+  const selfApproval = await requestFailure(
+    `/payroll/runs/${submitted.id}/approve`,
+    owner.accessToken,
+    { expectedVersion: submitted.version },
+    403,
+  );
+  assert.match(selfApproval.message, /creator cannot approve/i);
+
+  await logout();
+  await login("approver@browser.test");
+  const approver = await request("/auth/login", null, {
+    organizationSlug: "browser-invoices",
+    email: "approver@browser.test",
+    password: "Browser-test-password-123",
+  });
+  await navigate("/?section=payroll", "Browser October payroll");
+  await click("View");
+  await until("!!document.querySelector('dialog[open] .payroll-detail')");
+  await until("!![...document.querySelectorAll('dialog[open] button')].find((button) => button.textContent.trim() === 'Approve')");
+  await evaluate("window.confirm = () => true");
+  await click("Approve");
+  await until(text("APPROVED"));
+  await click("Finalize payroll");
+  await until(text("FINALIZED"));
+  let finalizedDetails;
+  for (let attempt = 0; attempt < 100; attempt++) {
+    finalizedDetails = await request(
+      `/payroll/runs/${submitted.id}`,
+      approver.accessToken,
+      undefined,
+      "GET",
+    );
+    if (finalizedDetails.entries[0]?.payslipStatus === "COMPLETED") break;
+    await pause(200);
+  }
+  assert.equal(finalizedDetails.entries[0]?.payslipStatus, "COMPLETED");
+  await evaluate("document.querySelector('dialog[open] .app-modal-close').click()");
+  await until("!document.querySelector('dialog[open]')");
+  await click("View");
+  await until("!!document.querySelector('dialog[open] .payroll-detail')");
+  await until(text("Download"));
+  assert.ok(await evaluate(text("UNPAID")));
+
+  await navigate("/?section=banking", "Statement transactions");
+  await until("!document.querySelector('.banking-page .loading')");
+  await click("Payment batches");
+  await click("+ Payment batch");
+  await until(text("Browser Employee"));
+  await fillFormField("Batch name", "Browser payroll payments");
+  await evaluate("document.querySelector('dialog[open] input[type=checkbox]').click()");
+  await click("Create batch");
+  await until(text("Browser payroll payments"));
+  await click("Attempted");
+  await until(text("ATTEMPTED"));
+  await click("Failed");
+  await until(text("FAILED"));
+
+  await navigate("/?section=payroll", "Browser October payroll");
+  await click("View");
+  await until("!!document.querySelector('dialog[open] .payroll-detail')");
+  await until(text("FINALIZED"));
+  await evaluate(`window.promptAnswers = ['1000.00', 'BROWSER-PARTIAL'];
+    window.prompt = (_message, defaultValue) => window.promptAnswers.shift() ?? defaultValue ?? null;`);
+  await click("Record");
+  await until(text("PARTIALLY_PAID"));
+  assert.ok(await evaluate(text("1000.00")));
+  await evaluate(`window.promptAnswers = ['1930.00', 'BROWSER-FINAL'];`);
+  await click("Record");
+  await until(text("BROWSER-FINAL"));
+  assert.ok(await evaluate(text("PAID")));
 }
 try {
   let target;
@@ -345,6 +531,9 @@ try {
     ],
   };
   const invoice = await request("/invoices", owner.accessToken, input);
+  await login("owner@browser.test");
+  await payrollWorkflow(owner);
+  await logout();
   await login("owner@browser.test");
   await bankingWorkflow(owner, client);
   const initialTheme = await evaluate(
@@ -524,6 +713,19 @@ try {
     assert.equal(await evaluate(text("Edit Draft")), role === "PROJECT_MANAGER");
     assert.equal(await evaluate(text("Delete Draft")), false);
     if (role === "FINANCE_VIEWER") {
+      await navigate("/?section=payroll", "Browser October payroll");
+      assert.equal(await evaluate(text("+ New pay run")), false);
+      await click("View");
+      await until("!!document.querySelector('dialog[open] .payroll-detail')");
+      assert.equal(await evaluate(text("+ Adjustment")), false);
+      assert.equal(await evaluate(text("Record")), false);
+      assert.ok(await evaluate(text("Download")));
+      await evaluate("document.querySelector('dialog[open] .app-modal-close').click()");
+      await until("!document.querySelector('dialog[open]')");
+      await navigate("/?section=payroll-automation", "Browser monthly payroll");
+      assert.equal(await evaluate(text("Edit")), false);
+      assert.equal(await evaluate(text("Pause")), false);
+      assert.equal(await evaluate(text("Generate due draft")), false);
       await navigate(`/invoices/${next.id}/edit`, "Draft editing unavailable");
       assert.equal(await evaluate("!!document.querySelector('textarea')"), false);
       await navigate("/?section=banking", "Statement transactions");
@@ -549,7 +751,7 @@ try {
   await navigate("/invoices/00000000-0000-4000-8000-000000000001", "Invoice not found");
   assert.deepEqual(errors, []);
   console.log(
-    `Browser authentication, banking, and invoice workflows passed. Screenshots: ${artifacts}`,
+    `Browser authentication, payroll, banking, and invoice workflows passed. Screenshots: ${artifacts}`,
   );
 } finally {
   socket?.close();

@@ -1,8 +1,9 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { errorMessage, type WorkspaceApi } from "@/lib/api";
 import type { PayrollDetails, PayrollRun, WorkforceReview } from "../types";
 
 export function usePayrollRuns(api: WorkspaceApi) {
+  const openVersion = useRef(0);
   const [runs, setRuns] = useState<PayrollRun[]>([]);
   const [selected, setSelected] = useState<PayrollDetails | null>(null);
   const [workforceReview, setWorkforceReview] = useState<WorkforceReview[]>([]);
@@ -13,15 +14,19 @@ export function usePayrollRuns(api: WorkspaceApi) {
   }, [api]);
   const open = useCallback(
     async (run: PayrollRun) => {
+      const version = ++openVersion.current;
       try {
         const [details, review] = await Promise.all([
           api<PayrollDetails>(`/payroll/runs/${run.id}`),
           api<WorkforceReview[]>(`/payroll/runs/${run.id}/workforce-review`),
         ]);
-        setSelected(details);
-        setWorkforceReview(review);
+        if (version === openVersion.current) {
+          setSelected(details);
+          setWorkforceReview(review);
+          setError("");
+        }
       } catch (failure) {
-        setError(errorMessage(failure));
+        if (version === openVersion.current) setError(errorMessage(failure));
       }
     },
     [api],
@@ -37,6 +42,7 @@ export function usePayrollRuns(api: WorkspaceApi) {
       });
     return () => {
       active = false;
+      openVersion.current += 1;
     };
   }, [api]);
   return { runs, selected, setSelected, workforceReview, error, setError, load, open };

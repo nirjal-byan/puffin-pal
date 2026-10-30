@@ -424,6 +424,31 @@ test("payroll selection failures retain the previous selection and expose the er
   harness.unmount();
 });
 
+test("payroll run selection ignores a slower obsolete response", async () => {
+  const pending = new Map();
+  const api = (path) => {
+    if (path === "/payroll/runs?limit=100&offset=0") return Promise.resolve({ items: [] });
+    return new Promise((resolve) => pending.set(path, resolve));
+  };
+  const harness = createHookHarness(usePayrollRuns, api);
+  harness.render();
+  await flushPromises();
+  let hook = harness.render();
+  const first = hook.open({ id: "run-1" });
+  const second = hook.open({ id: "run-2" });
+  pending.get("/payroll/runs/run-2")({ id: "run-2", entries: [] });
+  pending.get("/payroll/runs/run-2/workforce-review")([{ employeeId: "employee-2" }]);
+  await second;
+  pending.get("/payroll/runs/run-1")({ id: "run-1", entries: [] });
+  pending.get("/payroll/runs/run-1/workforce-review")([{ employeeId: "employee-1" }]);
+  await first;
+  hook = harness.render();
+
+  assert.equal(hook.selected.id, "run-2");
+  assert.deepEqual(hook.workforceReview, [{ employeeId: "employee-2" }]);
+  harness.unmount();
+});
+
 test("workspace records abort obsolete requests and advance legacy pagination", async () => {
   const requests = [];
   const api = (path, options) => {

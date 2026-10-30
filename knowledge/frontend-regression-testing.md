@@ -86,7 +86,13 @@ The repository’s Chrome/CDP runner was executed against a uniquely named local
 - Invalid CSV import recovery, valid preview/confirmation and import history.
 - Transaction loading, search and reconciliation-status filtering.
 - Invoice-payment reconciliation, cancellation of reversal and confirmed reversal.
-- Empty payroll payment-batch state and disabled submission.
+- Populated payroll payment-batch creation plus attempted and failed status transitions.
+- Payroll automation setup, pause and resume.
+- Statutory jurisdiction/rule configuration, preview and application.
+- Employee/salary fixture creation and calculated payroll totals.
+- Manual adjustment, submission, creator self-approval rejection and independent approval.
+- Finalization, worker-generated payslip readiness and finance-viewer payslip access.
+- Partial and final payroll payments with refreshed payment history.
 - Finance-viewer restrictions for account, import, reconciliation and batch actions.
 - Invoice detail and exact amounts.
 - Edit prepopulation and line-item operations.
@@ -162,8 +168,8 @@ Use a non-production organization with disposable records.
 ## Outstanding risks and recommended tests
 
 - Add a DOM component harness such as Testing Library only as a deliberate dependency decision.
-- Add isolated browser workflows for expenses, retainers, attendance, leave, employees and payroll.
-- Investigate the remaining suspected overlapping-request risks in `useExpenseCollection`, `useEmployeeDirectory.refresh` and `usePayrollRuns.open`.
+- Add isolated browser workflows for expenses, retainers, attendance, leave and employee management.
+- Investigate the remaining suspected overlapping-request risks in `useExpenseCollection` and `useEmployeeDirectory.refresh`.
 - Add accessibility automation for dialogs, dropdowns, date pickers, focus restoration and keyboard-only use.
 - Configure repository-wide coverage with explicit inclusion of all `apps/web/src` files before adopting percentage thresholds.
 
@@ -185,6 +191,22 @@ puffinpal_browser_test_1793369624562_b12e2404
 
 They are intentionally retained for short-term debugging and were not covered by the earlier deletion approval.
 
+Nine additional databases from failed Payroll-run diagnostics are retained under the same failure-preservation policy:
+
+```text
+puffinpal_browser_test_1793370174111_492e4e58
+puffinpal_browser_test_1793370200592_460d6c4e
+puffinpal_browser_test_1793370220773_09caf8c3
+puffinpal_browser_test_1793370243349_728247e8
+puffinpal_browser_test_1793370294095_6522c8f6
+puffinpal_browser_test_1793370368468_fab7f1df
+puffinpal_browser_test_1793370413687_e9cb7454
+puffinpal_browser_test_1793370459546_49148932
+puffinpal_browser_test_1793370565372_17f86c30
+```
+
+No cleanup approval applies to these databases, so the runner and this QA pass did not remove them.
+
 ## Confirmed regressions from browser expansion
 
 The login submit button displayed `Creating workspace…` while an ordinary login request was pending. The shared busy branch did not distinguish login from registration. The button now displays `Logging in…` for login and preserves `Creating workspace…` for registration; the isolated browser workflow delays the login response deterministically and verifies the label and disabled fieldset before checking recovery from `Invalid credentials`.
@@ -199,6 +221,8 @@ Two Banking request races were reproduced deterministically:
 | `useBankReconciliation` | Suggestions for transaction A completed after B and replaced B's candidates | Latest-open guard covers candidates/errors and invalidates when dialog closes |
 
 Both regression tests failed before their fixes and pass afterward.
+
+The Payroll selection hook had the same stale-response class: opening run A, then run B, allowed a slower A detail/workforce response to replace B. A deterministic regression now resolves B first and A last. A latest-open guard prevents obsolete data and errors from committing and invalidates in-flight selections on unmount.
 
 ## Authentication browser checkpoint
 
@@ -221,6 +245,20 @@ Banking checkpoint verification:
 - `pnpm exec turbo run check-types lint build`: 12/12 tasks successful with zero ESLint warnings.
 - `cd apps/api && node scripts/test-invoice-browser.mjs`: authentication, Banking and invoice workflows passed; the successful database was removed automatically.
 - `git diff --check`, import-direction audit and 198-file circular-dependency audit: passed.
+
+## Payroll browser checkpoint
+
+The Payroll batch completed on 2026-10-30. The isolated Chrome workflow now covers automation setup/pause/resume, statutory rule configuration/preview/application, deterministic salary calculation, an earning adjustment, submission, backend-enforced self-approval rejection, approval by a second administrator, finalization, worker-generated payslip completion, a populated Banking payment batch, partial/final payments and finance-viewer read-only boundaries.
+
+The fixture uses a monthly USD salary with a base amount, taxable allowance and post-tax deduction. Assertions verify the calculated totals before statutory application, the withholding result after application and the final adjusted totals before payment. The successful database was removed automatically. Failed exploratory databases were retained as listed above.
+
+Payroll checkpoint verification:
+
+- `cd apps/web && pnpm test`: 16/16 files passed, representing all 81 declared cases; zero failures or skips.
+- `cd apps/web && pnpm exec eslint --max-warnings 0`: passed with zero warnings.
+- `cd apps/web && pnpm run check-types`: passed.
+- `pnpm --filter @puffinpal/api build`: passed.
+- `node apps/api/scripts/test-invoice-browser.mjs`: authentication, Payroll, Banking and invoice workflows passed; the successful database was removed automatically.
 
 ## Verification commands
 

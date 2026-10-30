@@ -14,6 +14,7 @@ if (
   process.env.NODE_ENV === "production"
 )
   throw Error("Browser tests require local PostgreSQL");
+
 // Refuse occupied test ports before creating fixtures or starting any browser.
 for (const port of [3002, 3003, 9223]) {
   await new Promise((resolve, reject) => {
@@ -80,6 +81,13 @@ try {
   if (migration.status !== 0) throw Error(migration.stderr + migration.stdout);
   servers.push(
     spawn(process.execPath, ["dist/src/main.js"], {
+      cwd: api,
+      env: environment,
+      stdio: ["ignore", "ignore", "inherit"],
+    }),
+  );
+  servers.push(
+    spawn(process.execPath, ["dist/src/worker.js"], {
       cwd: api,
       env: environment,
       stdio: ["ignore", "ignore", "inherit"],
