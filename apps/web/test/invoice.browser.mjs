@@ -70,6 +70,82 @@ async function fill(selector, value) {
     `(() => { const e = document.querySelector(${JSON.stringify(selector)}); if (!e) throw Error('Missing input'); const p = e.tagName === 'TEXTAREA' ? HTMLTextAreaElement.prototype : e.tagName === 'SELECT' ? HTMLSelectElement.prototype : HTMLInputElement.prototype; Object.getOwnPropertyDescriptor(p, 'value').set.call(e, ${JSON.stringify(value)}); e.dispatchEvent(new Event('input', { bubbles: true })); e.dispatchEvent(new Event('change', { bubbles: true })); })()`,
   );
 }
+async function selectDropdown(name, optionText) {
+  await evaluate(
+    `document.querySelector(${JSON.stringify(`[data-dropdown-name="${name}"]`)}).click()`,
+  );
+  await until("!!document.querySelector('[role=listbox]')");
+  await evaluate(
+    `(() => { const option = [...document.querySelectorAll('[role=option]')].find((item) => item.textContent.includes(${JSON.stringify(optionText)})); if (!option) throw Error('Missing dropdown option '+${JSON.stringify(optionText)}); option.click(); })()`,
+  );
+}
+async function authenticationWorkflow() {
+  await command("Page.navigate", { url: `${web}/invoices/new` });
+  await until("!!document.querySelector('[name=organizationSlug]')");
+  assert.equal(await evaluate("!!document.querySelector('.workspace-main')"), false);
+  assert.equal(
+    await evaluate("document.querySelector('.auth-form-card form').checkValidity()"),
+    false,
+  );
+  await evaluate("document.querySelector('.auth-form-card form').requestSubmit()");
+  assert.equal(await evaluate("!!document.querySelector('.workspace-main')"), false);
+
+  await fill('[name="organizationSlug"]', "missing-browser-org");
+  await fill('[name="email"]', "missing@browser.test");
+  await fill('[name="password"]', "invalid-browser-password");
+  await evaluate("document.querySelector('[aria-label=\"Show password\"]').click()");
+  assert.equal(await evaluate("document.querySelector('[name=password]').type"), "text");
+  await evaluate("document.querySelector('[aria-label=\"Hide password\"]').click()");
+  assert.equal(await evaluate("document.querySelector('[name=password]').type"), "password");
+  await evaluate(`(() => {
+    window.__browserOriginalFetch = window.fetch;
+    window.fetch = (...args) => String(args[0]).includes('/auth/login')
+      ? new Promise((resolve) => setTimeout(() => resolve(window.__browserOriginalFetch(...args)), 350))
+      : window.__browserOriginalFetch(...args);
+    document.querySelector('.auth-form-card form').requestSubmit();
+  })()`);
+  await until(text("Logging in…"));
+  assert.equal(await evaluate("document.querySelector('.auth-form-card fieldset').disabled"), true);
+  await until(text("Invalid credentials"));
+  await evaluate("window.fetch = window.__browserOriginalFetch");
+  assert.equal(
+    await evaluate("document.querySelector('.auth-form-card fieldset').disabled"),
+    false,
+  );
+
+  await click("Create an organization");
+  await until(text("Create your workspace"));
+  await click("← Back to sign in");
+  await until(text("Log in"));
+  await click("Create an organization");
+  await fill('[name="firstName"]', "Browser");
+  await fill('[name="lastName"]', "Registration");
+  await fill('[name="email"]', "registration@browser.test");
+  await fill('[name="phoneNumberDisplay"]', "2025550123");
+  await evaluate("document.querySelector('.auth-form-card form').requestSubmit()");
+  await until("!!document.querySelector('[name=organizationName]')");
+  await fill('[name="organizationName"]', "Browser registration");
+  await fill('[name="companyWebsite"]', "https://browser.test");
+  await selectDropdown("employeeCount", "1-10 employees");
+  await pause(500);
+  await selectDropdown("currency", "USD — US Dollar");
+  await evaluate("document.querySelector('.auth-form-card form').requestSubmit()");
+  await until(text("Use at least 12 characters"));
+  await fill('[name="password"]', "Registration-password-123");
+  await fill('[name="confirmPassword"]', "different-password-123");
+  await evaluate("document.querySelector('.auth-form-card form').requestSubmit()");
+  await until(text("Passwords do not match"));
+  await fill('[name="confirmPassword"]', "Registration-password-123");
+  await evaluate("document.querySelector('.auth-form-card form').requestSubmit()");
+  await until("!!document.querySelector('.workspace-main')");
+  await command("Page.reload", { ignoreCache: true });
+  await until("!!document.querySelector('.workspace-main')");
+  await evaluate(
+    `fetch(${JSON.stringify(api + "/auth/logout")}, { method: 'POST', credentials: 'include' })`,
+  );
+  await command("Page.navigate", { url: web });
+  await until("!!document.querySelector('[name=organizationSlug]')");
+}
 async function request(path, token, body, method = "POST") {
   const response = await fetch(api + path, {
     method,
@@ -127,6 +203,7 @@ try {
   };
   await command("Page.enable");
   await command("Runtime.enable");
+  await authenticationWorkflow();
   const password = "Browser-test-password-123";
   const owner = await request("/auth/signup", null, {
     organizationName: "Browser invoices",
@@ -334,7 +411,7 @@ try {
   }
   await navigate("/invoices/00000000-0000-4000-8000-000000000001", "Invoice not found");
   assert.deepEqual(errors, []);
-  console.log(`Browser invoice workflows passed. Screenshots: ${artifacts}`);
+  console.log(`Browser authentication and invoice workflows passed. Screenshots: ${artifacts}`);
 } finally {
   socket?.close();
   chrome.kill("SIGTERM");

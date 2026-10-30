@@ -41,7 +41,7 @@ The new tests cover:
 
 | Feature             | Assessment               | Automated coverage                                                                  | Browser coverage                         | Outstanding risk                                                               |
 | ------------------- | ------------------------ | ----------------------------------------------------------------------------------- | ---------------------------------------- | ------------------------------------------------------------------------------ |
-| Authentication      | Partial                  | Validation contracts, normalization, errors, session handoff, password toggle       | Login succeeds during invoice runner     | Registration UI, invalid login and redirect behavior need browser checks       |
+| Authentication      | Browser verified         | Validation contracts, normalization, errors, session handoff, password toggle       | Full isolated authentication workflow    | Broader browser and assistive-technology combinations                          |
 | Banking             | Partial                  | Loading, default account, filtering and reconciliation ordering                     | None                                     | Import, reverse reconciliation, batches and stale overlapping loads            |
 | Expenses            | Partial                  | Form/receipt validation, permission controls, filters and pagination query          | None                                     | CRUD, uploads and approval workflows are not browser verified                  |
 | Accounts Payable    | Minimal                  | Bill/vendor filtering and sorting                                                   | None                                     | Vendor, bill, payment and aging workflows                                      |
@@ -75,7 +75,12 @@ These changes update only test selectors and do not alter application behavior.
 
 The repository’s Chrome/CDP runner was executed against a uniquely named local PostgreSQL database after its selector contracts were updated. The final run passed:
 
-- API signup and browser login.
+- Protected-route gating and native required-field validation.
+- Password visibility and login/registration mode transitions.
+- Invalid credentials, login loading state and authentication error recovery.
+- All three registration steps, required custom-dropdown values and password-mismatch recovery.
+- Successful registration redirect and authenticated session persistence across reload.
+- API fixture signup and browser login.
 - Invoice detail and exact amounts.
 - Edit prepopulation and line-item operations.
 - Save network failure and retry.
@@ -89,7 +94,9 @@ The repository’s Chrome/CDP runner was executed against a uniquely named local
 
 Screenshots are stored in `/tmp/puffinpal-invoice-browser`.
 
-The runner intentionally retains isolated databases. Nine uniquely named `puffinpal_browser_test_*` databases were created during selector and theme-test diagnosis and the passing runs. They were not reset or deleted. The development database was not modified.
+The runner now removes only the exact database it created after a successful run. It retains the database after a failed run, and `KEEP_BROWSER_TEST_DATABASE=1` explicitly retains a successful run for debugging. The lifecycle code validates the generated name against `puffinpal_browser_test_<timestamp>_<8 hex characters>` and refuses non-local PostgreSQL or port values before creating anything.
+
+The latest passing authentication and invoice run removed its own database. Nineteen earlier or failed-run databases remain and were not reset or deleted. The development database was not modified.
 
 No other feature received browser verification.
 
@@ -154,6 +161,85 @@ Use a non-production organization with disposable records.
 - Add request-generation guards or cancellation tests for overlapping `useBankingRecords`, `useExpenseCollection`, `useEmployeeDirectory.refresh` and `usePayrollRuns.open` calls. These are risks, not confirmed regressions.
 - Add accessibility automation for dialogs, dropdowns, date pickers, focus restoration and keyboard-only use.
 - Configure repository-wide coverage with explicit inclusion of all `apps/web/src` files before adopting percentage thresholds.
+
+## Browser-test isolation and database inventory
+
+The browser runner starts the built API on `localhost:3002`, Next.js development server on `localhost:3003`, and a dedicated headless Chrome CDP endpoint on port `9223`. The database target was verified as the local `puffinpal-postgres` container running `postgres:16-alpine`, published only at `127.0.0.1:5433`. Each run replaces only the database pathname with a generated name, supplies a random test JWT secret and sets `NODE_ENV=test`. Test organizations, users and business records therefore live only in the generated database.
+
+On 2026-10-30, all cleanup candidates were owned by the same local PuffinPal database role used by the runner and had zero active connections:
+
+```text
+puffinpal_browser_test_1791736052417_4ba12a17
+puffinpal_browser_test_1791736108962_50bc2939
+puffinpal_browser_test_1791736148345_cc66b8de
+puffinpal_browser_test_1791736181168_10f64fdb
+puffinpal_browser_test_1791736373287_d9a28be9
+puffinpal_browser_test_1791736470267_cffd2c47
+puffinpal_browser_test_1793287586513_a9c001fb
+puffinpal_browser_test_1793287631292_4c3b6b9d
+puffinpal_browser_test_1793287674882_56e8a1c4
+puffinpal_browser_test_1793287713167_c2260708
+puffinpal_browser_test_1793287757028_4d537b34
+puffinpal_browser_test_1793287781537_9e3bccc2
+puffinpal_browser_test_1793287827312_95441596
+puffinpal_browser_test_1793288085749_78006c34
+puffinpal_browser_test_1793288110341_0ddee52f
+puffinpal_browser_test_1793288451068_de7cfd2d
+puffinpal_browser_test_1793288466746_cb99a2bf
+puffinpal_browser_test_1793288503404_61eac423
+puffinpal_browser_test_1793288539010_451ff492
+```
+
+None is required by an active process. The last four are failed authentication-run fixtures retained intentionally by the improved lifecycle. They may still be useful for short-term debugging; therefore no deletion was performed.
+
+After explicit approval and a fresh active-connection check, the precise proposed cleanup command is:
+
+```sh
+for database in \
+  puffinpal_browser_test_1791736052417_4ba12a17 \
+  puffinpal_browser_test_1791736108962_50bc2939 \
+  puffinpal_browser_test_1791736148345_cc66b8de \
+  puffinpal_browser_test_1791736181168_10f64fdb \
+  puffinpal_browser_test_1791736373287_d9a28be9 \
+  puffinpal_browser_test_1791736470267_cffd2c47 \
+  puffinpal_browser_test_1793287586513_a9c001fb \
+  puffinpal_browser_test_1793287631292_4c3b6b9d \
+  puffinpal_browser_test_1793287674882_56e8a1c4 \
+  puffinpal_browser_test_1793287713167_c2260708 \
+  puffinpal_browser_test_1793287757028_4d537b34 \
+  puffinpal_browser_test_1793287781537_9e3bccc2 \
+  puffinpal_browser_test_1793287827312_95441596 \
+  puffinpal_browser_test_1793288085749_78006c34 \
+  puffinpal_browser_test_1793288110341_0ddee52f \
+  puffinpal_browser_test_1793288451068_de7cfd2d \
+  puffinpal_browser_test_1793288466746_cb99a2bf \
+  puffinpal_browser_test_1793288503404_61eac423 \
+  puffinpal_browser_test_1793288539010_451ff492
+do
+  docker exec puffinpal-postgres dropdb -U puffinpal_admin --if-exists "$database"
+done
+```
+
+This list is intentionally explicit: no prefix query, wildcard or development database name participates in deletion.
+
+## Confirmed regressions from browser expansion
+
+The login submit button displayed `Creating workspace…` while an ordinary login request was pending. The shared busy branch did not distinguish login from registration. The button now displays `Logging in…` for login and preserves `Creating workspace…` for registration; the isolated browser workflow delays the login response deterministically and verifies the label and disabled fieldset before checking recovery from `Invalid credentials`.
+
+Request-race investigation remains pending for the next incremental batch; no hook was changed based on the previously documented suspected risks.
+
+## Authentication browser checkpoint
+
+The first browser-expansion batch completed on 2026-10-30. Verification results:
+
+- `pnpm exec turbo run check-types lint build`: 12/12 tasks successful; web and API lint, type checks and production builds passed.
+- `cd apps/web && pnpm test`: 16/16 test files passed, representing all 78 declared cases; zero failures or skips.
+- `cd apps/api && node scripts/test-invoice-browser.mjs`: authentication and invoice workflows passed; the successful run removed its newly created isolated database.
+- `git diff --check`: passed.
+- Feature/shared-to-route import-direction audit: passed.
+- Static TypeScript/TSX import graph: 198 files inspected, zero circular dependencies found.
+
+Banking is the next browser-regression batch. Request-race investigation remains pending and no previously suspected hook risk is reported as a confirmed regression.
 
 ## Verification commands
 

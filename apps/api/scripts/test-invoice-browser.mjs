@@ -23,6 +23,8 @@ for (const port of [3002, 3003, 9223]) {
   });
 }
 const database = `puffinpal_browser_test_${Date.now()}_${randomBytes(4).toString("hex")}`;
+if (!/^puffinpal_browser_test_\d+_[0-9a-f]{8}$/.test(database))
+  throw Error("Refusing unsafe browser test database name");
 const create = spawnSync(
   "docker",
   [
@@ -54,6 +56,7 @@ const environment = {
   TEST_WEB_URL: "http://localhost:3003",
 };
 const servers = [];
+let browserPassed = false;
 async function ready(address) {
   for (let attempt = 0; attempt < 100; attempt++) {
     if (servers.some((server) => server.exitCode !== null))
@@ -98,6 +101,7 @@ try {
   process.exitCode = await new Promise((resolve) =>
     child.on("exit", (code) => resolve(code ?? 1)),
   );
+  browserPassed = process.exitCode === 0;
 } finally {
   await Promise.all(
     servers.map(
@@ -109,5 +113,30 @@ try {
         }),
     ),
   );
-  console.log(`Browser test database retained: ${database}`);
+  if (browserPassed && process.env.KEEP_BROWSER_TEST_DATABASE !== "1") {
+    const drop = spawnSync(
+      "docker",
+      [
+        "exec",
+        "puffinpal-postgres",
+        "dropdb",
+        "-U",
+        decodeURIComponent(url.username),
+        "--if-exists",
+        database,
+      ],
+      { encoding: "utf8" },
+    );
+    if (drop.status !== 0) {
+      process.exitCode = 1;
+      console.error(`Browser test database cleanup failed: ${database}`);
+      console.error(drop.stderr);
+    } else {
+      console.log(`Browser test database removed after success: ${database}`);
+    }
+  } else {
+    console.log(
+      `Browser test database retained${browserPassed ? " by request" : " after failure"}: ${database}`,
+    );
+  }
 }

@@ -229,7 +229,9 @@ export default function LoginPage({
               )}
               <button className={`button primary ${signup ? "" : "full"}`} type="submit">
                 {busy
-                  ? "Creating workspace…"
+                  ? signup
+                    ? "Creating workspace…"
+                    : "Logging in…"
                   : signup
                     ? signupStep < 2
                       ? "Continue →"
