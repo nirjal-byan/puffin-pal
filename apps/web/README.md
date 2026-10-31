@@ -51,6 +51,5 @@ HTTP helpers and response types live in `lib/api.ts`; navigation metadata is in
 `lib/navigation.ts`.
 Styling uses CSS in `app/globals.css` and the existing local Geist font.
 
-Validation: frontend build, lint, and type checks, plus Chrome tests against a
-throwaway database for signup/login, client create/edit, team creation, role changes,
-viewer restrictions, organization isolation, financial empty states, and mobile layout.
+Validation uses frontend build, lint, type checks, retained unit tests, and API
+integration tests against isolated disposable databases.

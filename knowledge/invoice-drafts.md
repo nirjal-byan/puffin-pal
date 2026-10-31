@@ -151,9 +151,6 @@ pnpm typecheck
 pnpm --filter @puffinpal/api test
 pnpm --filter @puffinpal/web test
 KEEP_TEST_DATABASE=1 pnpm --filter @puffinpal/api test:e2e
-# Stop the normal frontend first: Next.js permits one dev server per checkout.
-cd apps/api
-node scripts/test-invoice-browser.mjs
 ```
 
 The HTTP suite covers tenant isolation, every role, exact recalculation, validation,
@@ -161,15 +158,6 @@ notes clearing, non-draft restrictions, real overlapping writes, stale deletion,
 and forced item-replacement/cascading-delete rollback. Unit tests cover form mapping,
 permissions, item operations, previews, payload/version contracts, failure propagation,
 submission gating, and snapshot invalidation.
-
-The browser runner requires local Docker/PostgreSQL, Google Chrome (`CHROME_BIN` may
-select another Chromium executable), and free ports 3002, 3003 and 9223. It starts
-isolated test servers, creates a separate migrated database and retains that database
-and screenshots under `/tmp/puffinpal-invoice-browser`. It never creates development
-accounts or drops databases. It exercises desktop/mobile details, prepopulation,
-item operations, save failure/retry, conflicts, explicit reload, confirmation/cancel,
-list expansion/deletion, role restrictions and not-found navigation. Restart the
-normal frontend with `make run.web` afterward.
 
 ## Recorded results
 
@@ -191,7 +179,6 @@ apps/api/prisma/migrations/app/20261011T1617_invoice_draft_version_order/migrati
 apps/api/prisma/migrations/app/20261011T1617_invoice_draft_version_order/ops.json
 apps/api/prisma/migrations/snapshots/f2ee70e027cd89598d87bec91f125b6a3c6be501b574355a0744e49d6fb89e67/contract.d.ts
 apps/api/prisma/migrations/snapshots/f2ee70e027cd89598d87bec91f125b6a3c6be501b574355a0744e49d6fb89e67/contract.json
-apps/api/scripts/test-invoice-browser.mjs
 apps/api/src/invoices/dto/update-invoice.dto.ts
 apps/api/test/invoice-drafts.e2e.test.mjs
 apps/web/AGENTS.md
@@ -200,7 +187,6 @@ apps/web/src/app/(dashboard)/invoices/[id]/edit/page.tsx
 apps/web/src/app/(dashboard)/invoices/[id]/page.tsx
 apps/web/src/features/invoices/components/invoice-actions.tsx
 apps/web/src/features/invoices/components/invoice-detail-page.tsx
-apps/web/test/invoice.browser.mjs
 knowledge/invoice-drafts.md
 ```
 

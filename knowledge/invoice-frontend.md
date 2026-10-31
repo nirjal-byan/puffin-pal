@@ -92,7 +92,6 @@ clients into additional modules would be a later task, not part of this change.
 Frontend: lint, type checks, production build, existing session/phone tests, and
 new invoice tests for validation, item operations, precise calculations, payload
 whitelisting, API failures, tenant-bound results, permissions and submission gating.
-Browser checks use Chrome and isolated test servers/database to exercise the form.
 Backend: build, lint, type checks, unit tests and existing HTTP integration tests.
 Test databases are retained when checks run with `KEEP_TEST_DATABASE=1`; development
 data is not reset and no destructive cleanup is executed.
