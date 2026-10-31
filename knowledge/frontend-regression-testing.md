@@ -207,6 +207,20 @@ puffinpal_browser_test_1793370565372_17f86c30
 
 No cleanup approval applies to these databases, so the runner and this QA pass did not remove them.
 
+Two additional databases from the Payroll edge-case browser expansion are retained. The first
+captured an assertion that expected an adjustment label even though the table intentionally renders
+only recalculated totals. The second captured the authentication throttle reached by redundant role
+logins before the workflow was streamlined. Neither database has been deleted:
+
+```text
+puffinpal_browser_test_1793425801700_e5adb858
+puffinpal_browser_test_1793425875241_a107d7de
+```
+
+The corrected browser run used `puffinpal_browser_test_1793425942819_7cb47ff5` and removed that exact
+database after success. The development database and all retained diagnostic databases remain
+untouched.
+
 ## Confirmed regressions from browser expansion
 
 The login submit button displayed `Creating workspace…` while an ordinary login request was pending. The shared busy branch did not distinguish login from registration. The button now displays `Logging in…` for login and preserves `Creating workspace…` for registration; the isolated browser workflow delays the login response deterministically and verifies the label and disabled fieldset before checking recovery from `Invalid credentials`.
@@ -259,6 +273,42 @@ Payroll checkpoint verification:
 - `cd apps/web && pnpm run check-types`: passed.
 - `pnpm --filter @puffinpal/api build`: passed.
 - `node apps/api/scripts/test-invoice-browser.mjs`: authentication, Payroll, Banking and invoice workflows passed; the successful database was removed automatically.
+
+## Payroll edge-case checkpoint
+
+The fourth QA batch adds an isolated database-backed suite at
+`apps/api/test/payroll-edge-cases.e2e.test.mjs`. It covers the following verified contracts:
+
+| Scenario | Verification level | Result |
+| --- | --- | --- |
+| Approved overtime and unpaid leave imports | Database-backed HTTP integration | Approved records are eligible; rejected and paid-leave records are excluded; a 60-minute overtime approval produces `30.00`; half-day leave records 240 minutes; duplicate imports are rejected; a failed ineligible import leaves the run reusable. |
+| Rejection, revision and resubmission | Database-backed HTTP integration plus Chrome workflow | Finance viewer rejection is forbidden; a separate administrator returns the run to draft with a reason; stale versions conflict; the creator revises/resubmits; the administrator approves and finalizes; audit ordering is preserved. |
+| Scheduled draft generation | Database-backed processor integration | A due occurrence creates and calculates one draft; replay is idempotent; a paused schedule is ignored; invalid salary coverage marks the occurrence `FAILED` with `GENERATION_FAILED`. This directly invokes the real processor against PostgreSQL; it is not a live BullMQ retry test. |
+| Payslip failure and recovery | Database-backed worker-processor test with controlled storage | The first object-storage write is deliberately failed and records `FAILED/GENERATION_FAILED`; a second processor invocation generates a valid PDF and records `COMPLETED`. This is controlled processor retry-path coverage, not a live BullMQ retry execution. |
+| Concurrent payroll payments | Database-backed concurrent HTTP integration plus Chrome recovery | Simultaneous partial payments serialize successfully; exact idempotency replay returns the original record; conflicting reuse and overpayment are rejected. The payment contract has no optimistic-version field, so stale-version payment coverage is not applicable. |
+
+The Chrome payroll workflow now also exercises return-to-draft, creator revision, resubmission,
+independent approval, and recovery from an externally recorded payment. On payment failure the open
+payroll dialog reloads authoritative details before keeping the actionable error visible, preventing
+stale outstanding amounts from remaining on screen.
+
+Payroll edge-case checkpoint verification:
+
+- `node scripts/test-auth-e2e.mjs test/payroll-edge-cases.e2e.test.mjs`: 1/1 comprehensive database-backed scenario passed.
+- `cd apps/web && pnpm test`: 16/16 declared frontend test files passed.
+- `cd apps/web && pnpm run lint`: passed with zero warnings.
+- `cd apps/web && pnpm run check-types`: passed.
+- `node apps/api/scripts/test-invoice-browser.mjs`: updated authentication, Payroll, Banking and invoice workflow passed; its successful database was removed automatically.
+
+Run the focused database suite with:
+
+```sh
+cd apps/api
+node scripts/test-auth-e2e.mjs test/payroll-edge-cases.e2e.test.mjs
+```
+
+The wrapper creates and deletes only its exact generated `puffinpal_auth_test_*` database. It does
+not access the development database or the 14 retained browser diagnostic databases.
 
 ## Verification commands
 

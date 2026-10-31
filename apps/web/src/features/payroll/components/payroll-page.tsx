@@ -174,7 +174,9 @@ export default function PayrollPage({
       });
       await open(selected);
     } catch (failure) {
-      setError(errorMessage(failure));
+      const message = errorMessage(failure);
+      await open(selected).catch(() => undefined);
+      setError(message);
     } finally {
       setBusy(false);
     }

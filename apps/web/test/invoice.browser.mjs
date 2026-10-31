@@ -422,6 +422,34 @@ async function payrollWorkflow(owner) {
   await navigate("/?section=payroll", "Browser October payroll");
   await click("View");
   await until("!!document.querySelector('dialog[open] .payroll-detail')");
+  await until("!![...document.querySelectorAll('dialog[open] button')].find((button) => button.textContent.trim() === 'Return to draft')");
+  await evaluate("window.prompt = () => 'Correct the browser payroll revision'");
+  await click("Return to draft");
+  await until(text("DRAFT"));
+  let revision = await request(
+    `/payroll/runs/${submitted.id}`,
+    owner.accessToken,
+    undefined,
+    "GET",
+  );
+  revision = await request(
+    `/payroll/runs/${submitted.id}/entries/${revision.entries[0].id}/adjustments`,
+    owner.accessToken,
+    {
+      expectedVersion: revision.version,
+      type: "EARNING",
+      name: "Revision correction",
+      amount: "10.00",
+    },
+  );
+  await request(`/payroll/runs/${submitted.id}/submit`, owner.accessToken, {
+    expectedVersion: revision.version,
+  });
+  await evaluate("document.querySelector('dialog[open] .app-modal-close').click()");
+  await until("!document.querySelector('dialog[open]')");
+  await navigate("/?section=payroll", "Browser October payroll");
+  await click("View");
+  await until("!!document.querySelector('dialog[open] .payroll-detail')");
   await until("!![...document.querySelectorAll('dialog[open] button')].find((button) => button.textContent.trim() === 'Approve')");
   await evaluate("window.confirm = () => true");
   await click("Approve");
@@ -470,7 +498,21 @@ async function payrollWorkflow(owner) {
   await click("Record");
   await until(text("PARTIALLY_PAID"));
   assert.ok(await evaluate(text("1000.00")));
-  await evaluate(`window.promptAnswers = ['1930.00', 'BROWSER-FINAL'];`);
+  await request(
+    `/payroll/runs/${submitted.id}/entries/${finalizedDetails.entries[0].id}/payments`,
+    approver.accessToken,
+    {
+      amount: "100.00",
+      paymentDate: "2026-11-01",
+      reference: "BROWSER-CONCURRENT",
+      idempotencyKey: "browser-concurrent-payment",
+    },
+  );
+  await evaluate(`window.promptAnswers = ['1940.00', 'BROWSER-STALE'];`);
+  await click("Record");
+  await until(text("Payment must be positive and cannot exceed outstanding pay"));
+  await until(text("BROWSER-CONCURRENT"));
+  await evaluate(`window.promptAnswers = ['1840.00', 'BROWSER-FINAL'];`);
   await click("Record");
   await until(text("BROWSER-FINAL"));
   assert.ok(await evaluate(text("PAID")));
