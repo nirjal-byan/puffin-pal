@@ -48,7 +48,38 @@ export interface BillItem {
   taxAmount: string;
   discountAmount: string;
 }
+export type BillTransition = "submit" | "approve" | "reject" | "resubmit" | "void";
+export interface PayablePayment {
+  id: string;
+  vendorBillId: string | null;
+  targetType: "VENDOR_BILL" | "EXPENSE";
+  amount: string;
+  currency: string;
+  paymentDate: string;
+  method: string;
+  reference: string | null;
+  notes: string | null;
+  recordedById: string;
+  createdAt: string;
+  reversedAt: string | null;
+  reversedById: string | null;
+  reversalReason: string | null;
+  version: number;
+}
+export interface PayableAuditEvent {
+  id: string;
+  action: string;
+  actorId: string;
+  createdAt: string;
+  details: string | null;
+}
 export interface VendorBillDetail extends VendorBill {
+  rejectionReason: string | null;
+  submittedAt: string | null;
+  approvedAt: string | null;
+  rejectedAt: string | null;
+  voidedAt: string | null;
+  audit: PayableAuditEvent[];
   vendor: Vendor;
   expenseId: string | null;
   vendorReference: string | null;

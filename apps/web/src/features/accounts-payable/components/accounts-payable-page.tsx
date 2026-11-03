@@ -2,6 +2,9 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { Permission } from "@puffinpal/permissions";
+import { BillActivityDialog } from "../dialogs/bill-activity-dialog";
+import { BillTransitionDialog } from "../dialogs/bill-transition-dialog";
+import type { BillTransition } from "../types";
 import { ArchiveVendorDialog } from "../dialogs/archive-vendor-dialog";
 import { usePayableAction } from "../hooks/use-payable-action";
 import {
@@ -54,6 +57,11 @@ export default function AccountsPayablePage({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [modal, setModal] = useState<PayablesModal>(null);
+  const [activityBillId, setActivityBillId] = useState<string | null>(null);
+  const [transitioning, setTransitioning] = useState<{
+    bill: VendorBill;
+    transition: BillTransition;
+  } | null>(null);
   const [selected, setSelected] = useState<VendorBill | null>(null);
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("ALL");
@@ -176,16 +184,6 @@ export default function AccountsPayablePage({
       setModal("bill");
     });
   }
-  async function transition(bill: VendorBill, action: string) {
-    if (!window.confirm(`${action === "submit" ? "Submit" : "Approve"} bill ${bill.billNumber}?`))
-      return;
-    await api(`/accounts-payable/bills/${bill.id}/${action}`, {
-      method: "POST",
-      body: { expectedVersion: bill.version },
-    });
-    onSaved(`Bill ${action === "submit" ? "submitted" : `${action}d`}.`);
-    await load();
-  }
   async function recordPayment() {
     if (!selected) return;
     await api("/accounts-payable/payments", {
@@ -250,7 +248,8 @@ export default function AccountsPayablePage({
             onEdit={(bill) => openBill(bill)}
             onAttachments={(bill) => openBill(bill, true)}
             onPage={setPage}
-            onTransition={(bill, action) => void transition(bill, action)}
+            onTransition={(bill, transition) => setTransitioning({ bill, transition })}
+            onDetails={(bill) => setActivityBillId(bill.id)}
             onPay={(bill) => {
               setSelected(bill);
               setPayment((value) => ({ ...value, amount: bill.balance }));
@@ -307,6 +306,39 @@ export default function AccountsPayablePage({
           onChange={setPayment}
           onClose={closeModal}
           onSubmit={recordPayment}
+        />
+      )}
+      {transitioning && (
+        <BillTransitionDialog
+          bill={transitioning.bill}
+          transition={transitioning.transition}
+          api={api}
+          permissions={permissions}
+          onClose={() => setTransitioning(null)}
+          onSaved={async () => {
+            onSaved("Bill status updated.");
+            await load();
+          }}
+        />
+      )}
+      {activityBillId && (
+        <BillActivityDialog
+          id={activityBillId}
+          api={api}
+          permissions={permissions}
+          onClose={() => setActivityBillId(null)}
+          onSaved={async (message) => {
+            onSaved(message);
+            await load();
+          }}
+          onEdit={(bill) => {
+            setActivityBillId(null);
+            openBill(bill);
+          }}
+          onAttachments={(bill) => {
+            setActivityBillId(null);
+            openBill(bill, true);
+          }}
         />
       )}
       {archiveVendor && canManageVendors && (

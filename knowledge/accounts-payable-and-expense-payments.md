@@ -78,8 +78,58 @@ a second tab, then upload/download/replace/remove a bill attachment and verify a
 read-only. Repeat with a finance viewer to confirm mutation controls are absent. Confirm downloaded
 files match the originals. No database reset is required.
 
-Approval exceptions, payment history/reversals, expense settlement UI, server pagination, and a
-new expense-linking workflow remain outside this batch.
+Batch 1 leaves approval exceptions and payment history/reversals to Batch 2 below. Expense settlement UI, server pagination, and a new expense-linking workflow remain outside both batches.
+
+## Frontend Batch 2
+
+Bills expose confirmed submit, approve, reject (with a required 1–500 character reason), resubmit,
+and void actions according to backend lifecycle and the separate manage/approve permissions.
+Voiding is available only for approved bills with no active payment amount; the server rechecks
+payments before voiding. Version conflicts preserve the dialog and rejection reason. Use **Reload
+latest bill** to explicitly fetch the current version; actions are disabled if the latest status
+or permissions no longer permit them. Nothing automatically retries a financial mutation.
+
+**Details / payments** loads bill details, backend-calculated balances, payment records, and bill
+audit events. It displays current approval/settlement state, previous rejection reasons, payment
+methods, dates, references, notes, and recorded/reversed audit identity, date, and reason. Empty,
+loading, error, and explicit reload states are included. Reversed records remain visible and are
+excluded from applied-payment totals by the backend.
+
+Users with `accounts-payable:pay` can select an active payment, review the amount/reference,
+enter a required reason, and explicitly confirm reversal. The existing version-checked reversal
+endpoint preserves the original row. Duplicate clicks are blocked. Reconciliation conflicts are
+shown with the instruction to reverse the bank reconciliation first. On success, bill details,
+payment history, and the parent AP list/summary reload from the API; no frontend balances are
+adjusted. Existing cash-flow/reporting queries already exclude reversed payments.
+
+Backend boundaries are unchanged: rejected bill **fields and lines cannot be edited**, and no
+reopen-to-draft endpoint exists. Rejected attachments can be corrected through Batch 1 and the
+bill resubmitted. Broader rejected-field corrections require a separate lifecycle decision.
+Void accepts a version only; it has no reason field. Payment endpoints expose audit user IDs,
+not user display names, and do not expose reconciliation eligibility in their list response;
+the server authoritatively rejects reconciled-payment reversals.
+
+Verification includes focused service/hook tests, actual confirmation-dialog handler tests, and
+server-rendered payment-history/permission/empty-state tests, using the installed Next.js compiler.
+Run `pnpm test:accounts-payable` in `apps/web`. Browser and Docker-backed integration checks remain
+manual in this environment.
+
+Manual checks:
+
+1. Submit a draft; reject it with a reason as an approver. As a preparer, review its reason and
+   audit, correct its attachment, resubmit, and approve. Confirm rejected field edits remain absent.
+2. In two tabs, change a pending bill in one and try rejecting its old version in the other.
+   Confirm the reason remains and **Reload latest bill** disables the now-invalid action.
+3. Record multiple partial payments, then open **Details / payments**. Check amounts/references,
+   dates, methods, and the server's outstanding balance. Also check a bill with no payments.
+4. Select an active payment, cancel once, then enter a reason and confirm reversal. Check the
+   original record remains marked reversed, its audit is shown, and the list/summary balance updates.
+5. Attempt a reconciled-payment reversal; check the actionable error. Repeat as a read-only user:
+   history is visible, while approval/reversal controls are absent.
+6. Reverse all active payments on an approved bill, then confirm voiding. Check the preserved history.
+
+Expense settlements, first-100 list pagination, new expense linking, and rejected-field reopening
+remain deferred. No schema, financial calculation, authorization, or infrastructure changes are made.
 
 ## Known limitation
 

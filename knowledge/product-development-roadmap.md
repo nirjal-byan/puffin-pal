@@ -32,7 +32,7 @@ No verified P0 data-loss, authentication-bypass, tenant-isolation, or fundamenta
 | Revenue | Bulk invoice export | Complete | Durable BullMQ export, immutable PDFs, ZIP storage, expiry, retry, and download are implemented in `apps/api/src/infrastructure/background-jobs` and documented in `knowledge/background-jobs.md`. |
 | Revenue | Recurring invoices / retainers | Mostly Complete | Schedule CRUD, pause/resume/cancel, worker occurrences, retry, generated invoices, and UI exist. Legacy `Retainer` records are not migrated into recurring schedules, and delivery/collection remain separate. |
 | Spend | Expense capture, receipts, approval lifecycle | Mostly Complete | CRUD, receipt storage, submit/approve/reject/reopen, filters, and history are connected. The Expenses UI does not expose the existing expense-payment history, payment, or reversal endpoints in Accounts Payable. |
-| Spend | Vendors and bills / Accounts Payable | Partial | The API supports vendor update/archive, bill update, attachments, submit/approve/reject/resubmit/void, payment history, bill/expense payment, and reversal in `accounts-payable.controller.ts`. Batch 1 adds full-field vendor editing, confirmed archiving, multi-line draft bill editing, and private attachment upload/download/replacement/removal. Submit, approve, and bill payment remain available; approval exceptions and payment audit/reversal UI remain outstanding. |
+| Spend | Vendors and bills / Accounts Payable | Partial | The API supports vendor update/archive, bill update, attachments, submit/approve/reject/resubmit/void, payment history, bill/expense payment, and reversal in `accounts-payable.controller.ts`. Batch 1 adds full-field vendor editing, confirmed archiving, multi-line draft bill editing, and private attachment upload/download/replacement/removal. Batch 2 adds confirmed reject/resubmit/void, rejection and bill audit details, bill payment history, and version-checked payment reversal with required reason. Rejected field editing/reopening is unsupported by the API; expense settlement and server pagination remain outstanding. |
 | Spend | AP aging and summary | Mostly Complete | Service/report aggregation exists, but the frontend fetches only the first 100 vendors/bills and then paginates locally; large organizations get incomplete search and totals at the view layer. |
 | Banking | Bank accounts and CSV statement import | Mostly Complete | Account create/update API, preview/confirm import, dedupe, import history, and UI exist. The UI does not expose account edit/archive/default-account lifecycle; there is intentionally no live bank feed. |
 | Banking | Reconciliation and reversal | Mostly Complete | Suggestions, one-to-one reconciliation, audit, and reversal are connected. Split/aggregate matching is unsupported, and list views cap retrieval at 100 records. |
@@ -80,7 +80,7 @@ Gap: `expenses-page.tsx` ends at approval and never calls `GET/POST /expenses/:i
 
 The backend lifecycle is `Vendor -> Bill draft -> Attachment/update -> Submit -> Approve/reject -> Resubmit/void -> Pay -> Reverse payment -> Aging/reporting`.
 
-After Batch 1, the UI supports full-field vendor create/edit, confirmed archive, multi-line draft bill create/edit, and private attachment management, alongside submit, approve, and pay. Remaining gaps are reject/resubmit/void, payment history, and payment reversals. Existing expense links are preserved when editing bills; creating or changing expense links is not part of Batch 1.
+After Batch 1, the UI supports full-field vendor create/edit, confirmed archive, multi-line draft bill create/edit, and private attachment management, alongside submit, approve, and pay. Batch 2 exposes confirmed reject/resubmit/void, rejection/bill audit details, bill payment history, and confirmed version-checked payment reversals. Rejected attachments can be corrected before resubmission; rejected fields remain immutable because no reopen endpoint exists. Existing expense links are preserved when editing bills; creating or changing expense links is not part of Batch 1.
 
 ### 4. Banking and settlement
 
@@ -188,12 +188,14 @@ No P0 was proven by static inspection. Any runtime finding involving tenant leak
 
 Batch 1 implemented (2026-11-03): vendor editing and confirmed archiving, draft bill editing with all lines/tax/discounts/reference and preserved expense links, and private attachment management. Existing API endpoints and backend lifecycle/RBAC rules are reused unchanged. No restoration endpoint exists. Focused frontend service/hook/contract tests, web type checks, and AP lint pass; browser workflows and HTTP integration against Docker still need local verification. The overall AP work item remains **Partial** pending the later criteria below.
 
+Batch 2 implemented (2026-11-03): approval exception actions, bill approval/audit detail, payment history, and reasoned/version-checked payment reversals reuse the existing APIs. Focused workflow/confirmation-handler and rendered-UI tests, TypeScript, and targeted lint verify the frontend behavior; browser and Docker-backed integration remain to be checked locally. Rejected field correction/reopening and void reasons are unsupported by current backend contracts and were not added. Overall AP remains **Partial** for server pagination, expense settlement, and the remaining runtime verification criteria.
+
 Completion criteria:
 
 1. Vendors can be viewed, edited, archived/restored as allowed, with full supported fields and concurrency/error handling.
 2. Bills can be viewed and edited with multiple items, discounts, attachment upload/download/removal, and version checks.
-3. All valid transitions are exposed: submit, approve, reject with reason, resubmit, and void with reason.
-4. Bill payment history is visible; authorized users can record and append-only reverse payments with idempotency-safe retry behavior.
+3. All supported transitions are exposed (Batch 2 frontend verified): submit, approve, reject with reason, resubmit, and void. The existing void endpoint accepts no reason; adding one requires a separate contract change.
+4. Bill payment history and confirmed append-only reversal are exposed (Batch 2 frontend verified), with required reasons, payment-version checks, duplicate-submit guards, and reload after success/conflict. Payment recording retains its existing API idempotency behavior; broader lost-response runtime verification remains pending.
 5. Expense settlement remains a separate follow-up or is explicitly included with the same payment-history pattern.
 6. Lists use server-backed pagination/search rather than first-100 client slicing.
 7. Permissions hide or disable unauthorized actions; tenant IDs are never client-selectable.

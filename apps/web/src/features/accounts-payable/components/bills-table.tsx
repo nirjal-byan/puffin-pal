@@ -1,5 +1,7 @@
 import { PAYABLE_PAGE_SIZE } from "../constants";
-import type { VendorBill } from "../types";
+import { billTransitions, TRANSITION_LABELS } from "../services/bill-workflow-api";
+import type { Permission } from "@puffinpal/permissions";
+import type { BillTransition, VendorBill } from "../types";
 export function BillsTable({
   bills,
   total,
@@ -14,6 +16,7 @@ export function BillsTable({
   onPay,
   onEdit,
   onAttachments,
+  onDetails,
   busy = false,
 }: {
   bills: VendorBill[];
@@ -25,9 +28,10 @@ export function BillsTable({
   canApprove: boolean;
   canPay: boolean;
   onPage: (page: number) => void;
-  onTransition: (bill: VendorBill, action: string) => void;
+  onTransition: (bill: VendorBill, action: BillTransition) => void;
   onPay: (bill: VendorBill) => void;
   onEdit: (bill: VendorBill) => void;
+  onDetails: (bill: VendorBill) => void;
   onAttachments: (bill: VendorBill) => void;
   busy?: boolean;
 }) {
@@ -93,22 +97,26 @@ export function BillsTable({
                         Edit
                       </button>
                     )}
-                    {bill.status === "DRAFT" && canManage && (
+                    <button
+                      className="button secondary compact"
+                      disabled={busy}
+                      onClick={() => onDetails(bill)}
+                    >
+                      Details / payments
+                    </button>
+                    {billTransitions(bill, [
+                      ...(canManage ? ["accounts-payable:manage"] : []),
+                      ...(canApprove ? ["accounts-payable:approve"] : []),
+                    ] as Permission[]).map((transition) => (
                       <button
+                        key={transition}
                         className="button secondary compact"
-                        onClick={() => onTransition(bill, "submit")}
+                        disabled={busy}
+                        onClick={() => onTransition(bill, transition)}
                       >
-                        Submit
+                        {TRANSITION_LABELS[transition]}
                       </button>
-                    )}
-                    {bill.status === "PENDING_APPROVAL" && canApprove && (
-                      <button
-                        className="button secondary compact"
-                        onClick={() => onTransition(bill, "approve")}
-                      >
-                        Approve
-                      </button>
-                    )}
+                    ))}
                     {bill.status === "APPROVED" && bill.settlementStatus !== "PAID" && canPay && (
                       <button className="button primary compact" onClick={() => onPay(bill)}>
                         Pay
