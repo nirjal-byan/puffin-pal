@@ -33,12 +33,17 @@ export function FormModal({
 
   const content = <div className="standard-form-modal-content">{children}</div>;
   return (
-    <AppModal title={title} badge={badge} onClose={onClose} wide={wide}>
+    <AppModal title={title} badge={badge} onClose={onClose} wide={wide} dismissible={!submitting}>
       {onSubmit && submitLabel ? (
         <form className="standard-form-modal" onSubmit={submit}>
           {content}
           <footer className="standard-form-modal-actions">
-            <button type="button" className="button secondary" onClick={onClose}>
+            <button
+              type="button"
+              className="button secondary"
+              disabled={submitting}
+              onClick={onClose}
+            >
               Cancel
             </button>
             <button className="button primary" disabled={submitting || submitDisabled}>

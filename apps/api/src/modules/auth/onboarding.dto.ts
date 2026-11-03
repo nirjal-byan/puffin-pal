@@ -2,6 +2,14 @@ import { IsIn } from "class-validator";
 
 export const ONBOARDING_STEPS = [
   "welcome",
+  // Current workspace tour IDs. Keep the older IDs below for existing clients/progress.
+  "overview",
+  "billing",
+  "spending",
+  "cash-flow",
+  "people",
+  "payroll",
+  "payroll-automation",
   "dashboard",
   "clients",
   "invoices",

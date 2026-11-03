@@ -141,3 +141,16 @@ test("popover remains inside desktop, mobile and short viewports", () => {
     }
   }
 });
+
+
+test("invalid browser progress falls back to valid server progress or welcome", () => {
+  for (const saved of [null, {}, { step: "unknown", active: true, manual: false }, { step: "billing", active: "true", manual: false }]) {
+    assert.equal(initialTour({ onboardingStatus: "PENDING" }, saved).step, "welcome");
+    assert.equal(initialTour({ onboardingStatus: "IN_PROGRESS", onboardingStep: "payroll" }, saved).step, "payroll");
+  }
+  const legacy = { active: true, manual: false, step: "payment-history" };
+  assert.deepEqual(initialTour({ onboardingStatus: "IN_PROGRESS" }, legacy), { ...legacy, step: "billing" });
+  for (const status of ["COMPLETED", "SKIPPED"]) {
+    assert.equal(initialTour({ onboardingStatus: status }, { active: true, manual: false, step: "overview" }).active, false);
+  }
+});

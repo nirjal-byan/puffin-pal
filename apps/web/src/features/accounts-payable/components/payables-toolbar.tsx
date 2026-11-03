@@ -1,12 +1,18 @@
 import type { PayablesView } from "../types";
 export function PayablesToolbar({
+  busy = false,
   view,
   canManage,
+  canViewVendors,
+  canViewBills,
   onView,
   onCreate,
 }: {
+  busy?: boolean;
   view: PayablesView;
   canManage: boolean;
+  canViewVendors: boolean;
+  canViewBills: boolean;
   onView: (view: PayablesView) => void;
   onCreate: () => void;
 }) {
@@ -23,21 +29,24 @@ export function PayablesToolbar({
       </div>
       <div className="ap-actions">
         <div className="banking-tabs" role="tablist" aria-label="Purchasing views">
-          {(["bills", "vendors"] as const).map((item) => (
-            <button
-              key={item}
-              type="button"
-              role="tab"
-              aria-selected={view === item}
-              className={view === item ? "active" : ""}
-              onClick={() => onView(item)}
-            >
-              {item[0]!.toUpperCase() + item.slice(1)}
-            </button>
-          ))}
+          {(["bills", "vendors"] as const)
+            .filter((item) => (item === "bills" ? canViewBills : canViewVendors))
+            .map((item) => (
+              <button
+                key={item}
+                disabled={busy}
+                type="button"
+                role="tab"
+                aria-selected={view === item}
+                className={view === item ? "active" : ""}
+                onClick={() => onView(item)}
+              >
+                {item[0]!.toUpperCase() + item.slice(1)}
+              </button>
+            ))}
         </div>
         {canManage && (
-          <button className="button primary" onClick={onCreate}>
+          <button className="button primary" disabled={busy} onClick={onCreate}>
             + New {view === "vendors" ? "vendor" : "bill"}
           </button>
         )}

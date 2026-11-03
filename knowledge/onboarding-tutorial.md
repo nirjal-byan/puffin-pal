@@ -25,7 +25,8 @@ so saved tours continue after this reduction.
 3. Add a stable `data-tour` attribute to the smallest useful visible container.
 4. Set `requiredPermissions` from `@puffinpal/permissions`; never infer access from a role name.
 5. Keep copy short and describe only behavior that currently exists.
-6. Add permission-filtering and navigation coverage to `apps/web/test/onboarding.test.mjs`.
+6. Add the ID to `ONBOARDING_STEPS` in `apps/api/src/modules/auth/onboarding.dto.ts`; retain older IDs for backward compatibility. The API onboarding contract test validates every frontend step against this DTO.
+7. Add permission-filtering and navigation coverage to `apps/web/test/onboarding.test.mjs`.
 
 Tutorial steps must remain observational. They must not submit forms, issue invoices, record
 payments, upload files, or create disposable business records.

@@ -2,6 +2,17 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { Permission } from "@puffinpal/permissions";
+import { ArchiveVendorDialog } from "../dialogs/archive-vendor-dialog";
+import { usePayableAction } from "../hooks/use-payable-action";
+import {
+  billValues,
+  emptyBill,
+  emptyVendor,
+  saveBill,
+  saveVendor,
+  vendorValues,
+} from "../services/payables-api";
+import { BillAttachmentsDialog } from "../dialogs/bill-attachments-dialog";
 import { EMPTY_PAYABLES_SUMMARY, PAYABLE_PAGE_SIZE } from "../constants";
 import type {
   AccountsPayableApi,
@@ -11,6 +22,7 @@ import type {
   PayablesView,
   Vendor,
   VendorBill,
+  VendorBillDetail,
   VendorFormValue,
   VendorPaymentFormValue,
 } from "../types";
@@ -47,30 +59,22 @@ export default function AccountsPayablePage({
   const [status, setStatus] = useState("ALL");
   const [sort, setSort] = useState("DUE_ASC");
   const [page, setPage] = useState(0);
-  const [vendorForm, setVendorForm] = useState<VendorFormValue>({
-    name: "",
-    email: "",
-    defaultCurrency: "USD",
-    paymentTermsDays: 30,
-  });
-  const [billForm, setBillForm] = useState<BillFormValue>({
-    vendorId: "",
-    billNumber: "",
-    issueDate: new Date().toISOString().slice(0, 10),
-    dueDate: "",
-    currency: "USD",
-    description: "",
-    itemDescription: "",
-    quantity: "1",
-    unitPrice: "0.00",
-    taxAmount: "0.00",
-  });
+  const action = usePayableAction();
+  const [editingVendor, setEditingVendor] = useState<Vendor | null>(null);
+  const [archiveVendor, setArchiveVendor] = useState<Vendor | null>(null);
+  const [editingBill, setEditingBill] = useState<VendorBillDetail | null>(null);
+  const [attachmentBill, setAttachmentBill] = useState<VendorBillDetail | null>(null);
+  const [vendorForm, setVendorForm] = useState<VendorFormValue>(emptyVendor);
+  const [billForm, setBillForm] = useState<BillFormValue>(emptyBill);
   const [payment, setPayment] = useState<VendorPaymentFormValue>({
     amount: "",
     paymentDate: new Date().toISOString().slice(0, 10),
     method: "BANK_TRANSFER",
     reference: "",
   });
+  const canManageVendors = permissions.includes("vendors:manage");
+  const canReadVendors = permissions.includes("vendors:read");
+  const canReadBills = permissions.includes("accounts-payable:read");
   const canManage = permissions.includes("accounts-payable:manage");
   const canPay = permissions.includes("accounts-payable:pay");
   const load = useCallback(async () => {
@@ -78,9 +82,15 @@ export default function AccountsPayablePage({
     setError("");
     try {
       const [vendorResult, billResult, totals] = await Promise.all([
-        api<{ items: Vendor[] }>("/vendors?limit=100&offset=0"),
-        api<{ items: VendorBill[] }>("/accounts-payable/bills?limit=100&offset=0"),
-        api<PayablesSummaryValue>("/accounts-payable/summary"),
+        canReadVendors
+          ? api<{ items: Vendor[] }>("/vendors?limit=100&offset=0")
+          : Promise.resolve({ items: [] as Vendor[] }),
+        canReadBills
+          ? api<{ items: VendorBill[] }>("/accounts-payable/bills?limit=100&offset=0")
+          : Promise.resolve({ items: [] as VendorBill[] }),
+        canReadBills
+          ? api<PayablesSummaryValue>("/accounts-payable/summary")
+          : Promise.resolve(EMPTY_PAYABLES_SUMMARY),
       ]);
       setVendors(vendorResult.items);
       setBills(billResult.items);
@@ -90,7 +100,7 @@ export default function AccountsPayablePage({
     } finally {
       setLoading(false);
     }
-  }, [api]);
+  }, [api, canReadVendors, canReadBills]);
   useEffect(() => {
     void Promise.resolve().then(load);
   }, [load]);
@@ -107,49 +117,64 @@ export default function AccountsPayablePage({
     page * PAYABLE_PAGE_SIZE,
     (page + 1) * PAYABLE_PAGE_SIZE,
   );
+  function closeModal() {
+    if (!action.busy) setModal(null);
+  }
+  function openCreate() {
+    action.clearError();
+    if (view === "vendors") {
+      setEditingVendor(null);
+      setVendorForm(emptyVendor());
+      setModal("vendor");
+    } else {
+      setEditingBill(null);
+      setBillForm(emptyBill());
+      setModal("bill");
+    }
+  }
   async function createVendor() {
-    await api("/vendors", {
-      method: "POST",
-      body: {
-        ...vendorForm,
-        displayName: "",
-        phone: "",
-        website: "",
-        address: "",
-        country: "",
-        taxId: "",
-        notes: "",
-      },
+    if (!canManageVendors) return;
+    await action.run(async () => {
+      await saveVendor(api, vendorForm, editingVendor);
+      setModal(null);
+      onSaved(editingVendor ? "Vendor updated." : "Vendor created.");
+      await load();
     });
-    setModal(null);
-    setVendorForm({ name: "", email: "", defaultCurrency: "USD", paymentTermsDays: 30 });
-    onSaved("Vendor created.");
-    await load();
   }
   async function createBill() {
-    await api("/accounts-payable/bills", {
-      method: "POST",
-      body: {
-        vendorId: billForm.vendorId,
-        billNumber: billForm.billNumber,
-        issueDate: billForm.issueDate,
-        dueDate: billForm.dueDate,
-        currency: billForm.currency,
-        description: billForm.description,
-        items: [
-          {
-            description: billForm.itemDescription,
-            quantity: billForm.quantity,
-            unitPrice: billForm.unitPrice,
-            taxAmount: billForm.taxAmount,
-            discountAmount: "0.00",
-          },
-        ],
-      },
+    if (!canManage) return;
+    await action.run(async () => {
+      await saveBill(api, billForm, editingBill);
+      setModal(null);
+      onSaved(editingBill ? "Vendor bill updated." : "Vendor bill saved as a draft.");
+      await load();
     });
-    setModal(null);
-    onSaved("Vendor bill saved as a draft.");
-    await load();
+  }
+  function editVendor(vendor: Vendor) {
+    if (!canManageVendors) return;
+    void action.run(async () => {
+      const detail = await api<Vendor>(`/vendors/${vendor.id}`);
+      setEditingVendor(detail);
+      setVendorForm(vendorValues(detail));
+      setModal("vendor");
+    });
+  }
+  function openBill(bill: VendorBill, attachment = false) {
+    if (!attachment && !canManage) return;
+    void action.run(async () => {
+      const detail = await api<VendorBillDetail>(`/accounts-payable/bills/${bill.id}`);
+      if (attachment) {
+        setAttachmentBill(detail);
+        return;
+      }
+      if (detail.status !== "DRAFT")
+        throw new Error(
+          "Only draft bills can be edited. Reload the list to see its latest status.",
+        );
+      setEditingBill(detail);
+      setBillForm(billValues(detail));
+      setModal("bill");
+    });
   }
   async function transition(bill: VendorBill, action: string) {
     if (!window.confirm(`${action === "submit" ? "Submit" : "Approve"} bill ${bill.billNumber}?`))
@@ -180,12 +205,20 @@ export default function AccountsPayablePage({
   return (
     <div className="ap-page" data-view={view}>
       <PayablesToolbar
+        busy={action.busy}
         view={view}
-        canManage={canManage}
+        canManage={view === "vendors" ? canManageVendors : canManage && canReadVendors}
+        canViewVendors={canReadVendors}
+        canViewBills={canReadBills}
         onView={setView}
-        onCreate={() => setModal(view === "vendors" ? "vendor" : "bill")}
+        onCreate={openCreate}
       />
-      {error && <div className="form-alert error">{error}</div>}
+      {(error || (!modal && !archiveVendor && action.error)) && (
+        <div className="form-alert error" role="alert">
+          {error || action.error}
+        </div>
+      )}
+      {action.busy && !modal && <p role="status">Loading…</p>}
       <PayablesFilters
         view={view}
         search={search}
@@ -213,6 +246,9 @@ export default function AccountsPayablePage({
             canManage={canManage}
             canApprove={permissions.includes("accounts-payable:approve")}
             canPay={canPay}
+            busy={action.busy}
+            onEdit={(bill) => openBill(bill)}
+            onAttachments={(bill) => openBill(bill, true)}
             onPage={setPage}
             onTransition={(bill, action) => void transition(bill, action)}
             onPay={(bill) => {
@@ -227,24 +263,40 @@ export default function AccountsPayablePage({
         <VendorGrid
           vendors={filteredVendors}
           loading={loading}
-          canManage={canManage}
-          onAdd={() => setModal("vendor")}
+          canManage={canManageVendors}
+          busy={action.busy}
+          onEdit={editVendor}
+          onArchive={(vendor) => {
+            action.clearError();
+            setArchiveVendor(vendor);
+          }}
+          onAdd={openCreate}
         />
       )}
       {modal === "vendor" && (
         <VendorDialog
+          editing={!!editingVendor}
+          busy={action.busy}
+          error={action.error}
           value={vendorForm}
           onChange={setVendorForm}
-          onClose={() => setModal(null)}
+          onClose={closeModal}
           onSubmit={createVendor}
         />
       )}
       {modal === "bill" && (
         <BillDialog
+          editing={!!editingBill}
+          busy={action.busy}
+          error={action.error}
           value={billForm}
-          vendors={vendors}
+          vendors={
+            editingBill && !vendors.some(({ id }) => id === editingBill.vendorId)
+              ? [...vendors, editingBill.vendor]
+              : vendors
+          }
           onChange={setBillForm}
-          onClose={() => setModal(null)}
+          onClose={closeModal}
           onSubmit={createBill}
         />
       )}
@@ -253,8 +305,31 @@ export default function AccountsPayablePage({
           bill={selected}
           value={payment}
           onChange={setPayment}
-          onClose={() => setModal(null)}
+          onClose={closeModal}
           onSubmit={recordPayment}
+        />
+      )}
+      {archiveVendor && canManageVendors && (
+        <ArchiveVendorDialog
+          vendor={archiveVendor}
+          api={api}
+          onClose={() => setArchiveVendor(null)}
+          onSaved={async () => {
+            onSaved("Vendor archived.");
+            await load();
+          }}
+        />
+      )}
+      {attachmentBill && (
+        <BillAttachmentsDialog
+          api={api}
+          initialBill={attachmentBill}
+          canManage={canManage}
+          onClose={() => setAttachmentBill(null)}
+          onSaved={async (message) => {
+            onSaved(message);
+            await load();
+          }}
         />
       )}
     </div>

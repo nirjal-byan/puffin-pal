@@ -9,6 +9,7 @@ export function AppModal({
   wide = false,
   badge,
   open = true,
+  dismissible = true,
 }: {
   title: string;
   children: ReactNode;
@@ -16,13 +17,14 @@ export function AppModal({
   wide?: boolean;
   badge?: string;
   open?: boolean;
+  dismissible?: boolean;
 }) {
   const dialog = useRef<HTMLDialogElement>(null);
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [closing, setClosing] = useState(false);
 
   function requestClose() {
-    if (closing) return;
+    if (closing || !dismissible) return;
     setClosing(true);
     closeTimer.current = setTimeout(onClose, 160);
   }
@@ -60,6 +62,7 @@ export function AppModal({
           type="button"
           className="app-modal-close"
           onClick={requestClose}
+          disabled={!dismissible}
           aria-label={`Close ${title}`}
         >
           <span aria-hidden="true">×</span>

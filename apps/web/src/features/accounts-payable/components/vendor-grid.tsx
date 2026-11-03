@@ -5,11 +5,17 @@ export function VendorGrid({
   loading,
   canManage,
   onAdd,
+  onEdit,
+  onArchive,
+  busy = false,
 }: {
   vendors: Vendor[];
   loading: boolean;
   canManage: boolean;
   onAdd: () => void;
+  onEdit: (vendor: Vendor) => void;
+  onArchive: (vendor: Vendor) => void;
+  busy?: boolean;
 }) {
   return (
     <section className="ap-vendor-grid">
@@ -26,6 +32,28 @@ export function VendorGrid({
           <span className={`status-pill ${vendor.active ? "" : "neutral"}`}>
             {vendor.active ? "Active" : "Archived"}
           </span>
+          {canManage && (
+            <div className="row-actions">
+              <button
+                type="button"
+                className="button secondary compact"
+                disabled={busy}
+                onClick={() => onEdit(vendor)}
+              >
+                Edit
+              </button>
+              {vendor.active && (
+                <button
+                  type="button"
+                  className="button secondary compact"
+                  disabled={busy}
+                  onClick={() => onArchive(vendor)}
+                >
+                  Archive
+                </button>
+              )}
+            </div>
+          )}
         </article>
       ))}
       {!vendors.length && !loading && (

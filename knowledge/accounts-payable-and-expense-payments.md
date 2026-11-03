@@ -55,6 +55,32 @@ Debit bank transactions can suggest active expense or bill payments by amount, c
 8. Reconcile a debit transaction and confirm reversal ordering is enforced.
 9. Review Accounts Payable, Cash Flow, Expenses, Payables, and Cash Movement reports.
 
+## Frontend Batch 1
+
+The vendor directory supports all contact/payment fields, version-checked edits, and confirmed
+archiving. Archive errors remain in the dialog; outstanding balances are enforced by the API.
+Archived vendors remain visible for historical reference and are excluded from new bill choices.
+Restoration is not supported by the API.
+
+Draft bills can be edited with multiple lines, tax, discounts, dates, currency, vendor, reference,
+and description. The form fetches current details and preserves existing expense links. A version
+conflict keeps the form and entered values open; close and reopen to load the latest record.
+
+The Attachment action shows filename, MIME type, and size and downloads through the authenticated
+API. Users with bill-management permission can upload/replace/remove attachments on draft or rejected
+bills only. Replacement and removal refresh the bill version and list/summary data. PDF, JPEG, PNG,
+and WebP files up to 5 MB are supported. Removal requires confirmation. Read-only users can download.
+
+Focused verification: `pnpm test:accounts-payable` from `apps/web`.
+Manual checks: edit a vendor with custom terms, try archiving a vendor with an outstanding balance,
+edit a multi-line draft without losing discounts or its expense link, provoke a stale version in
+a second tab, then upload/download/replace/remove a bill attachment and verify approved bills are
+read-only. Repeat with a finance viewer to confirm mutation controls are absent. Confirm downloaded
+files match the originals. No database reset is required.
+
+Approval exceptions, payment history/reversals, expense settlement UI, server pagination, and a
+new expense-linking workflow remain outside this batch.
+
 ## Known limitation
 
 PuffinPal records payments but does not initiate bank transfers. Foreign-exchange conversion is not performed; bills and payments must use the same currency.

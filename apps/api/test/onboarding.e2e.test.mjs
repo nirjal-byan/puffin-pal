@@ -35,6 +35,12 @@ test("onboarding registration, persistence, authentication and tenant isolation"
     assert.equal(me.user.onboardingStatus, "IN_PROGRESS");
     assert.equal(me.user.onboardingStep, "invoices");
     assert.equal((await request("/auth/me", second.accessToken, undefined, "GET")).user.onboardingStatus, "PENDING");
+    // Current tour IDs must survive the HTTP validation and persistence layers.
+    for (const step of ["overview", "billing", "spending", "cash-flow", "people", "payroll", "payroll-automation", "people", "welcome"]) {
+      assert.equal((await request(path, first.accessToken, { status: "IN_PROGRESS", step })).onboardingStep, step);
+      assert.equal((await request("/auth/me", first.accessToken, undefined, "GET")).user.onboardingStep, step);
+    }
+    await request(path, first.accessToken, { status: "IN_PROGRESS", step: "unknown" }, "PATCH", 400);
     await request(path, first.accessToken, { status: "COMPLETED", step: "finish" });
     assert.equal((await request(path, first.accessToken, { status: "IN_PROGRESS", step: "welcome" })).onboardingStatus, "COMPLETED");
     await request(path, second.accessToken, { status: "SKIPPED", step: "welcome" });

@@ -2,120 +2,207 @@ import { DatePicker } from "@/components/ui/date-picker";
 import { Dropdown } from "@/components/ui/dropdown";
 import { FormField, FormModal, FormModalIntro, FormModalSection } from "@/components/ui/form-modal";
 import { PAYABLE_CURRENCY_OPTIONS } from "../constants";
+import { emptyBillItem } from "../services/payables-api";
 import type { BillFormValue, Vendor } from "../types";
+
 export function BillDialog({
   value,
   vendors,
+  editing = false,
+  busy = false,
+  error = "",
   onChange,
   onClose,
   onSubmit,
 }: {
   value: BillFormValue;
   vendors: Vendor[];
+  editing?: boolean;
+  busy?: boolean;
+  error?: string;
   onChange: (value: BillFormValue) => void;
   onClose: () => void;
   onSubmit: () => void | Promise<void>;
 }) {
   return (
     <FormModal
-      title="New vendor bill"
+      title={editing ? "Edit vendor bill" : "New vendor bill"}
       badge="Draft"
       wide
       onClose={onClose}
       onSubmit={onSubmit}
       submitLabel="Save draft"
-      submitDisabled={
-        !value.vendorId ||
-        !value.billNumber.trim() ||
-        !value.issueDate ||
-        !value.dueDate ||
-        !value.itemDescription.trim()
-      }
+      submitting={busy}
     >
-      <FormModalIntro icon="▧" title="Record a payable">
-        Add the bill details and the amount your organization owes.
-      </FormModalIntro>
-      <FormModalSection title="Bill details" description="Supplier, dates, and currency">
-        <div className="standard-form-grid">
-          <FormField label="Vendor" wide>
-            <Dropdown
-              name="bill-vendor"
-              label="Vendor"
-              value={value.vendorId}
-              onChange={(vendorId) => {
-                const vendor = vendors.find((item) => item.id === vendorId);
-                onChange({
-                  ...value,
-                  vendorId,
-                  currency: vendor?.defaultCurrency ?? value.currency,
-                });
-              }}
-              options={vendors
-                .filter((vendor) => vendor.active)
-                .map((vendor) => ({ value: vendor.id, label: vendor.displayName || vendor.name }))}
-            />
-          </FormField>
-          <label className="form-field">
-            <span>Bill number</span>
-            <input
-              required
-              value={value.billNumber}
-              onChange={(event) => onChange({ ...value, billNumber: event.target.value })}
-            />
-          </label>
-          <FormField label="Currency">
-            <Dropdown
-              name="bill-currency"
-              label="Bill currency"
-              searchable={false}
-              value={value.currency}
-              onChange={(currency) => onChange({ ...value, currency })}
-              options={PAYABLE_CURRENCY_OPTIONS}
-            />
-          </FormField>
-          <FormField label="Issue date">
-            <DatePicker
-              ariaLabel="Bill issue date"
-              value={value.issueDate}
-              onChange={(issueDate) => onChange({ ...value, issueDate })}
-            />
-          </FormField>
-          <FormField label="Due date">
-            <DatePicker
-              ariaLabel="Bill due date"
-              value={value.dueDate}
-              min={value.issueDate}
-              onChange={(dueDate) => onChange({ ...value, dueDate })}
-            />
-          </FormField>
-          <label className="form-field standard-form-grid-wide">
-            <span>Line description</span>
-            <input
-              required
-              value={value.itemDescription}
-              onChange={(event) => onChange({ ...value, itemDescription: event.target.value })}
-            />
-          </label>
-          <label className="form-field">
-            <span>Quantity</span>
-            <input
-              inputMode="decimal"
-              required
-              value={value.quantity}
-              onChange={(event) => onChange({ ...value, quantity: event.target.value })}
-            />
-          </label>
-          <label className="form-field">
-            <span>Unit price</span>
-            <input
-              inputMode="decimal"
-              required
-              value={value.unitPrice}
-              onChange={(event) => onChange({ ...value, unitPrice: event.target.value })}
-            />
-          </label>
-        </div>
-      </FormModalSection>
+      {error && (
+        <p className="form-alert error" role="alert">
+          {error}
+        </p>
+      )}
+      {editing && (
+        <p>
+          Only draft bills can be edited. If someone changes this bill, close and reopen it to load
+          the latest version.
+        </p>
+      )}
+      <fieldset disabled={busy} style={{ border: 0, margin: 0, padding: 0 }}>
+        <FormModalIntro icon="▧" title="Record a payable">
+          Add the bill details and the amount your organization owes.
+        </FormModalIntro>
+        <FormModalSection title="Bill details" description="Supplier, dates, and currency">
+          <div className="standard-form-grid">
+            <FormField label="Vendor" wide>
+              <Dropdown
+                name="bill-vendor"
+                label="Vendor"
+                value={value.vendorId}
+                onChange={(vendorId) => {
+                  const vendor = vendors.find((item) => item.id === vendorId);
+                  onChange({
+                    ...value,
+                    vendorId,
+                    currency: vendor?.defaultCurrency ?? value.currency,
+                  });
+                }}
+                options={vendors
+                  .filter((vendor) => vendor.active || vendor.id === value.vendorId)
+                  .map((vendor) => ({
+                    value: vendor.id,
+                    label: `${vendor.displayName || vendor.name}${vendor.active ? "" : " (archived)"}`,
+                  }))}
+              />
+            </FormField>
+            <FormField label="Bill number">
+              <input
+                required
+                maxLength={80}
+                value={value.billNumber}
+                onChange={(event) => onChange({ ...value, billNumber: event.target.value })}
+              />
+            </FormField>
+            <FormField label="Vendor reference" optional>
+              <input
+                maxLength={100}
+                value={value.vendorReference}
+                onChange={(event) => onChange({ ...value, vendorReference: event.target.value })}
+              />
+            </FormField>
+            <FormField label="Currency">
+              <Dropdown
+                name="bill-currency"
+                label="Bill currency"
+                searchable={false}
+                value={value.currency}
+                onChange={(currency) => onChange({ ...value, currency })}
+                options={
+                  PAYABLE_CURRENCY_OPTIONS.some(
+                    ({ value: currency }) => currency === value.currency,
+                  )
+                    ? PAYABLE_CURRENCY_OPTIONS
+                    : [
+                        ...PAYABLE_CURRENCY_OPTIONS,
+                        { value: value.currency, label: value.currency },
+                      ]
+                }
+              />
+            </FormField>
+            <FormField label="Issue date">
+              <DatePicker
+                ariaLabel="Bill issue date"
+                value={value.issueDate}
+                onChange={(issueDate) => onChange({ ...value, issueDate })}
+              />
+            </FormField>
+            <FormField label="Due date">
+              <DatePicker
+                ariaLabel="Bill due date"
+                value={value.dueDate}
+                min={value.issueDate}
+                onChange={(dueDate) => onChange({ ...value, dueDate })}
+              />
+            </FormField>
+            <FormField label="Description" optional wide>
+              <textarea
+                maxLength={2000}
+                value={value.description}
+                onChange={(event) => onChange({ ...value, description: event.target.value })}
+              />
+            </FormField>
+            {value.expenseId && <p>This bill remains linked to its existing expense.</p>}
+          </div>
+        </FormModalSection>
+        <FormModalSection
+          title="Bill lines"
+          description="Totals are calculated when the bill is saved."
+        >
+          {value.items.map((item, index) => (
+            <section key={index} aria-label={`Line ${index + 1}`}>
+              <h4>Line {index + 1}</h4>
+              <div className="standard-form-grid">
+                <FormField label="Line description" wide>
+                  <input
+                    required
+                    maxLength={500}
+                    value={item.description}
+                    onChange={(event) =>
+                      onChange({
+                        ...value,
+                        items: value.items.map((line, i) =>
+                          i === index ? { ...line, description: event.target.value } : line,
+                        ),
+                      })
+                    }
+                  />
+                </FormField>
+                {(
+                  [
+                    ["quantity", "Quantity", "0.0001"],
+                    ["unitPrice", "Unit price", "0.01"],
+                    ["taxAmount", "Tax", "0.01"],
+                    ["discountAmount", "Discount", "0.01"],
+                  ] as const
+                ).map(([key, label, step]) => (
+                  <FormField key={key} label={label}>
+                    <input
+                      type="number"
+                      inputMode="decimal"
+                      min="0"
+                      step={step}
+                      required
+                      value={item[key]}
+                      onChange={(event) =>
+                        onChange({
+                          ...value,
+                          items: value.items.map((line, i) =>
+                            i === index ? { ...line, [key]: event.target.value } : line,
+                          ),
+                        })
+                      }
+                    />
+                  </FormField>
+                ))}
+              </div>
+              <button
+                type="button"
+                className="button secondary compact"
+                disabled={value.items.length === 1}
+                onClick={() =>
+                  onChange({ ...value, items: value.items.filter((_, i) => i !== index) })
+                }
+              >
+                Remove line {index + 1}
+              </button>
+            </section>
+          ))}
+          <button
+            type="button"
+            className="button secondary"
+            onClick={() => onChange({ ...value, items: [...value.items, emptyBillItem()] })}
+          >
+            Add line
+          </button>
+        </FormModalSection>
+      </fieldset>
     </FormModal>
   );
 }

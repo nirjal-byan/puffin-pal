@@ -12,6 +12,9 @@ export function BillsTable({
   onPage,
   onTransition,
   onPay,
+  onEdit,
+  onAttachments,
+  busy = false,
 }: {
   bills: VendorBill[];
   total: number;
@@ -24,6 +27,9 @@ export function BillsTable({
   onPage: (page: number) => void;
   onTransition: (bill: VendorBill, action: string) => void;
   onPay: (bill: VendorBill) => void;
+  onEdit: (bill: VendorBill) => void;
+  onAttachments: (bill: VendorBill) => void;
+  busy?: boolean;
 }) {
   return (
     <section className="panel ap-table-panel">
@@ -71,6 +77,22 @@ export function BillsTable({
                 </td>
                 <td>
                   <div className="row-actions">
+                    <button
+                      className="button secondary compact"
+                      disabled={busy}
+                      onClick={() => onAttachments(bill)}
+                    >
+                      Attachment
+                    </button>
+                    {bill.status === "DRAFT" && canManage && (
+                      <button
+                        className="button secondary compact"
+                        disabled={busy}
+                        onClick={() => onEdit(bill)}
+                      >
+                        Edit
+                      </button>
+                    )}
                     {bill.status === "DRAFT" && canManage && (
                       <button
                         className="button secondary compact"

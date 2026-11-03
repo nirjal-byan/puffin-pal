@@ -32,7 +32,7 @@ No verified P0 data-loss, authentication-bypass, tenant-isolation, or fundamenta
 | Revenue | Bulk invoice export | Complete | Durable BullMQ export, immutable PDFs, ZIP storage, expiry, retry, and download are implemented in `apps/api/src/infrastructure/background-jobs` and documented in `knowledge/background-jobs.md`. |
 | Revenue | Recurring invoices / retainers | Mostly Complete | Schedule CRUD, pause/resume/cancel, worker occurrences, retry, generated invoices, and UI exist. Legacy `Retainer` records are not migrated into recurring schedules, and delivery/collection remain separate. |
 | Spend | Expense capture, receipts, approval lifecycle | Mostly Complete | CRUD, receipt storage, submit/approve/reject/reopen, filters, and history are connected. The Expenses UI does not expose the existing expense-payment history, payment, or reversal endpoints in Accounts Payable. |
-| Spend | Vendors and bills / Accounts Payable | Partial | The API supports vendor update/archive, bill update, attachments, submit/approve/reject/resubmit/void, payment history, bill/expense payment, and reversal in `accounts-payable.controller.ts`. `accounts-payable-page.tsx`, `vendor-grid.tsx`, and `bills-table.tsx` expose only create vendor, create a single-line bill, submit, approve, and record a bill payment. |
+| Spend | Vendors and bills / Accounts Payable | Partial | The API supports vendor update/archive, bill update, attachments, submit/approve/reject/resubmit/void, payment history, bill/expense payment, and reversal in `accounts-payable.controller.ts`. Batch 1 adds full-field vendor editing, confirmed archiving, multi-line draft bill editing, and private attachment upload/download/replacement/removal. Submit, approve, and bill payment remain available; approval exceptions and payment audit/reversal UI remain outstanding. |
 | Spend | AP aging and summary | Mostly Complete | Service/report aggregation exists, but the frontend fetches only the first 100 vendors/bills and then paginates locally; large organizations get incomplete search and totals at the view layer. |
 | Banking | Bank accounts and CSV statement import | Mostly Complete | Account create/update API, preview/confirm import, dedupe, import history, and UI exist. The UI does not expose account edit/archive/default-account lifecycle; there is intentionally no live bank feed. |
 | Banking | Reconciliation and reversal | Mostly Complete | Suggestions, one-to-one reconciliation, audit, and reversal are connected. Split/aggregate matching is unsupported, and list views cap retrieval at 100 records. |
@@ -80,7 +80,7 @@ Gap: `expenses-page.tsx` ends at approval and never calls `GET/POST /expenses/:i
 
 The backend lifecycle is `Vendor -> Bill draft -> Attachment/update -> Submit -> Approve/reject -> Resubmit/void -> Pay -> Reverse payment -> Aging/reporting`.
 
-The current UI lifecycle is only `Create minimal vendor -> Create one-line bill -> Submit -> Approve -> Pay`. The discrepancy is the highest-value existing-code gap: users cannot edit/archive vendors, make multi-line bill changes, manage attachments, reject/resubmit/void, view payment history, or reverse payments even though API contracts already exist.
+After Batch 1, the UI supports full-field vendor create/edit, confirmed archive, multi-line draft bill create/edit, and private attachment management, alongside submit, approve, and pay. Remaining gaps are reject/resubmit/void, payment history, and payment reversals. Existing expense links are preserved when editing bills; creating or changing expense links is not part of Batch 1.
 
 ### 4. Banking and settlement
 
@@ -185,6 +185,8 @@ No P0 was proven by static inspection. Any runtime finding involving tenant leak
 ## Immediate next task
 
 **Complete the Accounts Payable frontend using the already implemented API.** This is the best next task because it closes the largest verified UI/backend gap, unlocks existing safe server behavior, and does not require a schema or API redesign.
+
+Batch 1 implemented (2026-11-03): vendor editing and confirmed archiving, draft bill editing with all lines/tax/discounts/reference and preserved expense links, and private attachment management. Existing API endpoints and backend lifecycle/RBAC rules are reused unchanged. No restoration endpoint exists. Focused frontend service/hook/contract tests, web type checks, and AP lint pass; browser workflows and HTTP integration against Docker still need local verification. The overall AP work item remains **Partial** pending the later criteria below.
 
 Completion criteria:
 
