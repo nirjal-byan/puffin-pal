@@ -5,6 +5,7 @@ export interface ExpenseFiltersValue {
   search: string;
   category: string;
   approvalStatus: string;
+  settlementStatus?: string;
   period: string;
   sort: string;
   order: string;
@@ -16,12 +17,14 @@ export function ExpenseFilters({
   onChange,
   onApply,
   onCreate,
+  onClear,
 }: {
   value: ExpenseFiltersValue;
   canCreate: boolean;
   onChange: (value: ExpenseFiltersValue) => void;
   onApply: () => void;
   onCreate: () => void;
+  onClear?: () => void;
 }) {
   return (
     <section className="panel expense-filters">
@@ -71,6 +74,18 @@ export function ExpenseFilters({
           />
         </label>
         <label>
+          Settlement status
+          <select
+            value={value.settlementStatus ?? ""}
+            onChange={(event) => onChange({ ...value, settlementStatus: event.target.value })}
+          >
+            <option value="">All settlements</option>
+            {["UNPAID", "PARTIALLY_PAID", "PAID"].map((value) => (
+              <option key={value}>{value}</option>
+            ))}
+          </select>
+        </label>
+        <label>
           Period
           <Dropdown
             name="periodFilter"
@@ -111,6 +126,11 @@ export function ExpenseFilters({
         <button className="button secondary" type="submit">
           Apply filters
         </button>
+        {onClear && (
+          <button className="button secondary" type="button" onClick={onClear}>
+            Clear filters
+          </button>
+        )}
         {canCreate && (
           <button className="button primary" type="button" onClick={onCreate}>
             + Create Expense

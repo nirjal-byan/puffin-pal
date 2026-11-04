@@ -90,7 +90,11 @@ export function BillTransitionDialog({
         disabled={action.busy}
         onClick={() =>
           void action.run(async () => {
-            setCurrentBill(await api<VendorBillDetail>(`/accounts-payable/bills/${bill.id}`));
+            setCurrentBill(
+              await api<VendorBillDetail>(
+                `/accounts-payable/bills/${bill.id}?includeHistory=false`,
+              ),
+            );
           })
         }
       >

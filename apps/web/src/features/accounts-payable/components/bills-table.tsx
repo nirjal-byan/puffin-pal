@@ -1,39 +1,36 @@
-import { PAYABLE_PAGE_SIZE } from "../constants";
 import { billTransitions, TRANSITION_LABELS } from "../services/bill-workflow-api";
 import type { Permission } from "@puffinpal/permissions";
 import type { BillTransition, VendorBill } from "../types";
 export function BillsTable({
   bills,
   total,
-  page,
   loading,
   vendorNames,
   canManage,
   canApprove,
   canPay,
-  onPage,
   onTransition,
   onPay,
   onEdit,
   onAttachments,
   onDetails,
   busy = false,
+  filtered = false,
 }: {
   bills: VendorBill[];
   total: number;
-  page: number;
   loading: boolean;
   vendorNames: Map<string, string>;
   canManage: boolean;
   canApprove: boolean;
   canPay: boolean;
-  onPage: (page: number) => void;
   onTransition: (bill: VendorBill, action: BillTransition) => void;
   onPay: (bill: VendorBill) => void;
   onEdit: (bill: VendorBill) => void;
   onDetails: (bill: VendorBill) => void;
   onAttachments: (bill: VendorBill) => void;
   busy?: boolean;
+  filtered?: boolean;
 }) {
   return (
     <section className="panel ap-table-panel">
@@ -129,37 +126,13 @@ export function BillsTable({
             {!total && !loading && (
               <tr>
                 <td colSpan={7} className="empty-cell">
-                  No vendor bills match these filters.
+                  {filtered ? "No vendor bills match these filters." : "No vendor bills yet."}
                 </td>
               </tr>
             )}
           </tbody>
         </table>
       </div>
-      {total > PAYABLE_PAGE_SIZE && (
-        <footer className="ap-pagination">
-          <span>
-            {page * PAYABLE_PAGE_SIZE + 1}–{Math.min((page + 1) * PAYABLE_PAGE_SIZE, total)} of{" "}
-            {total}
-          </span>
-          <div className="row-actions">
-            <button
-              className="button secondary compact"
-              disabled={page === 0}
-              onClick={() => onPage(Math.max(0, page - 1))}
-            >
-              Previous
-            </button>
-            <button
-              className="button secondary compact"
-              disabled={(page + 1) * PAYABLE_PAGE_SIZE >= total}
-              onClick={() => onPage(page + 1)}
-            >
-              Next
-            </button>
-          </div>
-        </footer>
-      )}
     </section>
   );
 }

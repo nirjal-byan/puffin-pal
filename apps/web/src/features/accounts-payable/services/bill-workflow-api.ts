@@ -75,9 +75,8 @@ export function reverseBillPayment(
   });
 }
 export async function loadBillActivity(api: AccountsPayableApi, id: string, signal?: AbortSignal) {
-  const [bill, payments] = await Promise.all([
-    api<VendorBillDetail>(`/accounts-payable/bills/${id}`, { signal }),
-    api<PayablePayment[]>(`/accounts-payable/bills/${id}/payments`, { signal }),
-  ]);
-  return { bill, payments };
+  const bill = await api<VendorBillDetail>(`/accounts-payable/bills/${id}?includeHistory=false`, {
+    signal,
+  });
+  return { bill, payments: [] as PayablePayment[] };
 }

@@ -2,6 +2,7 @@ import { PartialType } from "@nestjs/swagger";
 import { Transform, Type } from "class-transformer";
 import {
   IsIn,
+  IsDateString,
   IsInt,
   IsOptional,
   IsString,
@@ -44,9 +45,10 @@ export class ExpenseQueryDto {
   @IsOptional() @IsIn(EXPENSE_CATEGORIES) category?: (typeof EXPENSE_CATEGORIES)[number];
   @IsOptional() @IsIn(["DRAFT", "PENDING_APPROVAL", "APPROVED", "REJECTED"]) approvalStatus?:
     "DRAFT" | "PENDING_APPROVAL" | "APPROVED" | "REJECTED";
+  @IsOptional() @IsIn(["UNPAID", "PARTIALLY_PAID", "PAID"]) settlementStatus?: string;
   @IsOptional() @IsUUID() submittedById?: string;
-  @IsOptional() @Matches(/^\d{4}-\d{2}-\d{2}$/) from?: string;
-  @IsOptional() @Matches(/^\d{4}-\d{2}-\d{2}$/) to?: string;
+  @IsOptional() @IsDateString({ strict: true }) @Matches(/^\d{4}-\d{2}-\d{2}$/) from?: string;
+  @IsOptional() @IsDateString({ strict: true }) @Matches(/^\d{4}-\d{2}-\d{2}$/) to?: string;
   @IsOptional() @IsIn(["date", "title", "amount", "createdAt"]) sort:
     "date" | "title" | "amount" | "createdAt" = "date";
   @IsOptional()

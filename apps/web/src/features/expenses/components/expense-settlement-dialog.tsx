@@ -4,7 +4,7 @@ import { DatePicker } from "@/components/ui/date-picker";
 import { Dropdown } from "@/components/ui/dropdown";
 import { FormField, FormModal } from "@/components/ui/form-modal";
 import { usePayableAction } from "@/features/accounts-payable/hooks/use-payable-action";
-import { BillPaymentsTable } from "@/features/accounts-payable/components/bill-payments-table";
+import { PagedPayments } from "@/features/accounts-payable/components/paged-payments";
 import type { AccountsPayableApi, PayablePayment } from "@/features/accounts-payable/types";
 import {
   billHref,
@@ -30,6 +30,7 @@ export function ExpenseSettlementDialog({
   onSaved: () => Promise<void>;
 }) {
   const [settlement, setSettlement] = useState<ExpenseSettlement | null>(null);
+  const [historyRevision, setHistoryRevision] = useState(0);
   const [loading, setLoading] = useState(true);
   const [failure, setFailure] = useState("");
   const [attempted, setAttempted] = useState(false);
@@ -53,7 +54,7 @@ export function ExpenseSettlementDialog({
     setLoading(true);
     setFailure("");
     try {
-      const next = await api<ExpenseSettlement>(`/expenses/${id}/settlement`, {
+      const next = await api<ExpenseSettlement>(`/expenses/${id}/settlement?includeHistory=false`, {
         signal: controller.signal,
       });
       if (!controller.signal.aborted) setSettlement(next);
@@ -91,6 +92,7 @@ export function ExpenseSettlementDialog({
             setReversing(null);
             key.current = "";
             await refresh();
+            setHistoryRevision((value) => value + 1);
             await onSaved();
           })
       : undefined;
@@ -247,36 +249,30 @@ export function ExpenseSettlementDialog({
               {!settlement.linked && settlement.approvalStatus !== "APPROVED" && (
                 <p>Only approved expenses can be settled.</p>
               )}
-              {settlement.linked && !!settlement.directPayments?.length && (
-                <>
-                  <p>
-                    Earlier direct expense payments are preserved below. Review active entries and
-                    reverse them before paying the linked bill.
-                  </p>
-                  <BillPaymentsTable
-                    caption="Earlier direct expense payments"
-                    payments={settlement.directPayments}
-                    permissions={permissions}
-                    busy={action.busy}
-                    canReverse={(payment) =>
-                      !payment.reversedAt && permissions.includes("expenses:pay")
-                    }
-                    onReverse={(payment) => {
-                      action.clearError();
-                      setReason("");
-                      setReversing(payment);
-                    }}
-                  />
-                </>
-              )}
-              <BillPaymentsTable
-                caption="Expense settlement history"
-                emptyMessage="No settlement payments recorded."
-                payments={settlement.payments}
+            </>
+          )}
+        </>
+      )}
+      {settlement && (
+        <fieldset
+          disabled={recording || !!reversing || loading || !!failure}
+          hidden={recording || !!reversing || loading || !!failure}
+          style={{ border: 0, padding: 0 }}
+        >
+          {settlement.linked && (
+            <>
+              <p>
+                Earlier direct expense payments are preserved below. Review active entries and
+                reverse them before paying the linked bill.
+              </p>
+              <PagedPayments
+                api={api}
+                revision={historyRevision}
+                path={`/expenses/${id}/payments`}
+                caption="Earlier direct expense payments"
                 permissions={permissions}
-                busy={action.busy}
                 canReverse={(payment) =>
-                  !settlement.linked && !payment.reversedAt && permissions.includes("expenses:pay")
+                  !payment.reversedAt && permissions.includes("expenses:pay")
                 }
                 onReverse={(payment) => {
                   action.clearError();
@@ -286,7 +282,28 @@ export function ExpenseSettlementDialog({
               />
             </>
           )}
-        </>
+          {(!settlement.linked || settlement.linkedBill) && (
+            <PagedPayments
+              api={api}
+              revision={historyRevision}
+              path={
+                settlement.linkedBill
+                  ? `/accounts-payable/bills/${settlement.linkedBill.id}/payments`
+                  : `/expenses/${id}/payments`
+              }
+              caption="Expense settlement history"
+              permissions={permissions}
+              canReverse={(payment) =>
+                !settlement.linked && !payment.reversedAt && permissions.includes("expenses:pay")
+              }
+              onReverse={(payment) => {
+                action.clearError();
+                setReason("");
+                setReversing(payment);
+              }}
+            />
+          )}
+        </fieldset>
       )}
     </FormModal>
   );

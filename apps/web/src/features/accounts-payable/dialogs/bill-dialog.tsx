@@ -1,3 +1,4 @@
+import { VendorPicker } from "../components/vendor-picker";
 import { DatePicker } from "@/components/ui/date-picker";
 import { Dropdown } from "@/components/ui/dropdown";
 import { FormField, FormModal, FormModalIntro, FormModalSection } from "@/components/ui/form-modal";
@@ -6,6 +7,7 @@ import { emptyBillItem } from "../services/payables-api";
 import type { BillFormValue, Vendor } from "../types";
 
 export function BillDialog({
+  api,
   value,
   vendors,
   editing = false,
@@ -15,6 +17,7 @@ export function BillDialog({
   onClose,
   onSubmit,
 }: {
+  api: import("../types").AccountsPayableApi;
   value: BillFormValue;
   vendors: Vendor[];
   editing?: boolean;
@@ -51,27 +54,20 @@ export function BillDialog({
         </FormModalIntro>
         <FormModalSection title="Bill details" description="Supplier, dates, and currency">
           <div className="standard-form-grid">
-            <FormField label="Vendor" wide>
-              <Dropdown
-                name="bill-vendor"
-                label="Vendor"
+            <div className="standard-form-grid-wide">
+              <VendorPicker
+                api={api}
                 value={value.vendorId}
-                onChange={(vendorId) => {
-                  const vendor = vendors.find((item) => item.id === vendorId);
+                selectedName={vendors.find((vendor) => vendor.id === value.vendorId)?.name}
+                onChange={(vendorId, vendor) =>
                   onChange({
                     ...value,
                     vendorId,
                     currency: vendor?.defaultCurrency ?? value.currency,
-                  });
-                }}
-                options={vendors
-                  .filter((vendor) => vendor.active || vendor.id === value.vendorId)
-                  .map((vendor) => ({
-                    value: vendor.id,
-                    label: `${vendor.displayName || vendor.name}${vendor.active ? "" : " (archived)"}`,
-                  }))}
+                  })
+                }
               />
-            </FormField>
+            </div>
             <FormField label="Bill number">
               <input
                 required

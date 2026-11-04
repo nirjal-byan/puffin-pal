@@ -208,7 +208,12 @@ test("actual settlement form prevents duplicate submissions and refreshes author
   dialog = harness.render();
   assert.equal(dialog.props.submitLabel, undefined);
   assert.equal(
-    find(dialog, (element) => element.type?.name === "BillPaymentsTable").props.payments.length,
+    find(
+      dialog,
+      (element) =>
+        element.type?.name === "PagedPayments" &&
+        element.props.caption === "Expense settlement history",
+    ).props.revision,
     1,
   );
   assert.deepEqual(refreshed, ["expense list/details"]);
@@ -271,7 +276,12 @@ test("linked expenses show bill navigation and never expose direct payment/rever
   const dialog = harness.render();
   assert.equal(button(dialog, "Record settlement"), undefined);
   assert.equal(find(dialog, (element) => element.type === "a").props.href, billHref("b1"));
-  const table = find(dialog, (element) => element.type?.name === "BillPaymentsTable");
+  const table = find(
+    dialog,
+    (element) =>
+      element.type?.name === "PagedPayments" &&
+      element.props.caption === "Expense settlement history",
+  );
   assert.equal(table.props.canReverse(linked.payments[0]), false);
   harness.unmount();
 });
@@ -307,9 +317,12 @@ test("expense reversal confirmation preserves history and server balance, with n
   });
   harness.render();
   await flushPromises();
-  find(harness.render(), (element) => element.type?.name === "BillPaymentsTable").props.onReverse(
-    payment,
-  );
+  find(
+    harness.render(),
+    (element) =>
+      element.type?.name === "PagedPayments" &&
+      element.props.caption === "Expense settlement history",
+  ).props.onReverse(payment);
   assert.equal(mutations, 0);
   let dialog = harness.render();
   assert.equal(dialog.props.submitLabel, "Confirm reversal");
@@ -323,9 +336,13 @@ test("expense reversal confirmation preserves history and server balance, with n
   assert.equal(mutations, 1);
   assert.equal(saved, 1);
   assert.equal(
-    find(harness.render(), (element) => element.type?.name === "BillPaymentsTable").props
-      .payments[0].reversedAt,
-    "2026-11-04",
+    find(
+      harness.render(),
+      (element) =>
+        element.type?.name === "PagedPayments" &&
+        element.props.caption === "Expense settlement history",
+    ).props.revision,
+    1,
   );
   harness.unmount();
 });

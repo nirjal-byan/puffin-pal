@@ -6,6 +6,13 @@ import {
   NotFoundException,
   Scope,
 } from "@nestjs/common";
+import {
+  vendorPage,
+  billPage,
+  paymentPage,
+  paymentTotals,
+  payableSummary,
+} from "./payables-queries.js";
 import { settlementSummary } from "./settlement-summary.js";
 import { hasPermission } from "@puffinpal/permissions";
 import { REQUEST } from "@nestjs/core";
@@ -53,8 +60,6 @@ function decimal(value: bigint, places = 2) {
 const money = (value: bigint) => decimal(value) as Numeric<14, 2>;
 const date = (value: string) => Temporal.Instant.from(`${value.slice(0, 10)}T00:00:00Z`);
 const day = (value: { toString(): string } | string) => value.toString().slice(0, 10);
-const millis = (value: { toString(): string }) =>
-  Number(Temporal.Instant.from(value.toString()).epochMilliseconds);
 const now = () => Temporal.Now.instant();
 
 @Injectable({ scope: Scope.REQUEST })
@@ -106,27 +111,12 @@ export class AccountsPayableService {
     if (!row) throw new NotFoundException("Vendor not found");
     return row;
   }
-  async listVendors(query: PayablesQueryDto) {
-    let rows = await this.db.orm.public.Vendor.where({
-      organizationId: this.tenant.organizationId,
-    }).all();
-    if (query.search) {
-      const term = query.search.toLowerCase();
-      rows = rows.filter((row) =>
-        [row.name, row.displayName, row.email].some((v) => v?.toLowerCase().includes(term)),
-      );
-    }
-    if (query.active !== undefined) rows = rows.filter((row) => row.active === query.active);
-    rows.sort((a, b) => a.name.localeCompare(b.name));
-    return {
-      items: rows.slice(query.offset, query.offset + query.limit),
-      total: rows.length,
-      limit: query.limit,
-      offset: query.offset,
-    };
+  listVendors(query: PayablesQueryDto) {
+    return vendorPage(this.db, this.tenant.organizationId, query);
   }
-  async getVendor(id: string) {
+  async getVendor(id: string, includeHistory = true) {
     const vendor = await this.vendor(id);
+    if (!includeHistory) return { ...vendor, bills: [] };
     const bills = await this.db.orm.public.VendorBill.where({
       organizationId: this.tenant.organizationId,
       vendorId: id,
@@ -213,13 +203,8 @@ export class AccountsPayableService {
   private async decorateBill<
     T extends { id: string; totalAmount: string; status: BillStatus; dueDate: Date },
   >(bill: T) {
-    const payments = await this.db.orm.public.PayablePayment.where({
-      organizationId: this.tenant.organizationId,
-      vendorBillId: bill.id,
-    }).all();
-    const paid = payments
-      .filter((p) => !p.reversedAt)
-      .reduce((sum, p) => sum + scaled(p.amount, 2), 0n);
+    const totals = await paymentTotals(this.db, this.tenant.organizationId, "VENDOR_BILL", bill.id);
+    const paid = scaled(totals.paidAmount, 2);
     const total = scaled(bill.totalAmount, 2);
     const balance = total > paid ? total - paid : 0n;
     const settlementStatus = paid === 0n ? "UNPAID" : balance === 0n ? "PAID" : "PARTIALLY_PAID";
@@ -236,40 +221,21 @@ export class AccountsPayableService {
     };
   }
   async listBills(query: PayablesQueryDto) {
-    let rows = await this.db.orm.public.VendorBill.where({
-      organizationId: this.tenant.organizationId,
-    }).all();
-    if (query.vendorId) rows = rows.filter((r) => r.vendorId === query.vendorId);
-    if (query.status) rows = rows.filter((r) => r.status === query.status);
-    if (query.search) {
-      const term = query.search.toLowerCase();
-      rows = rows.filter((r) =>
-        [r.billNumber, r.vendorReference, r.description].some((v) =>
-          v?.toLowerCase().includes(term),
-        ),
-      );
-    }
-    rows.sort((a, b) => millis(b.issueDate) - millis(a.issueDate));
-    return {
-      items: await Promise.all(
-        rows.slice(query.offset, query.offset + query.limit).map((r) => this.decorateBill(r)),
-      ),
-      total: rows.length,
-      limit: query.limit,
-      offset: query.offset,
-    };
+    return billPage(this.db, this.tenant.organizationId, (await this.today()).toString(), query);
   }
-  async getBill(id: string) {
+  async getBill(id: string, includeHistory = true) {
     const bill = await this.bill(id);
     const [items, payments, vendor, audit] = await Promise.all([
       this.db.orm.public.VendorBillItem.where({
         organizationId: this.tenant.organizationId,
         vendorBillId: id,
       }).all(),
-      this.db.orm.public.PayablePayment.where({
-        organizationId: this.tenant.organizationId,
-        vendorBillId: id,
-      }).all(),
+      includeHistory
+        ? this.db.orm.public.PayablePayment.where({
+            organizationId: this.tenant.organizationId,
+            vendorBillId: id,
+          }).all()
+        : Promise.resolve([]),
       this.vendor(bill.vendorId),
       this.db.orm.public.PayableAuditEvent.where({
         organizationId: this.tenant.organizationId,
@@ -711,7 +677,7 @@ export class AccountsPayableService {
       return payment;
     });
   }
-  async expenseSettlement(id: string) {
+  async expenseSettlement(id: string, includeHistory = true) {
     const organizationId = this.tenant.organizationId;
     const expense = await this.db.orm.public.Expense.where({ organizationId, id }).first();
     if (!expense) throw new NotFoundException("Expense not found");
@@ -721,17 +687,29 @@ export class AccountsPayableService {
     ]);
     const currency = linkedBill?.currency ?? organization?.currency ?? "USD";
     const total = linkedBill?.totalAmount ?? expense.amount;
-    const payments = await this.db.orm.public.PayablePayment.where({
-      organizationId,
-      ...(linkedBill ? { vendorBillId: linkedBill.id } : { expenseId: id }),
-    })
-      .orderBy((row) => row.paymentDate.desc())
-      .all();
-    const directPayments = linkedBill
-      ? await this.db.orm.public.PayablePayment.where({ organizationId, expenseId: id })
+    const payments = includeHistory
+      ? await this.db.orm.public.PayablePayment.where({
+          organizationId,
+          ...(linkedBill ? { vendorBillId: linkedBill.id } : { expenseId: id }),
+        })
           .orderBy((row) => row.paymentDate.desc())
           .all()
       : [];
+    const totals = includeHistory
+      ? null
+      : await paymentTotals(
+          this.db,
+          organizationId,
+          linkedBill ? "VENDOR_BILL" : "EXPENSE",
+          linkedBill?.id ?? id,
+          currency,
+        );
+    const directPayments =
+      includeHistory && linkedBill
+        ? await this.db.orm.public.PayablePayment.where({ organizationId, expenseId: id })
+            .orderBy((row) => row.paymentDate.desc())
+            .all()
+        : [];
     const canReadBill = hasPermission(this.tenant.role, "accounts-payable:read");
     return {
       expenseId: id,
@@ -739,7 +717,11 @@ export class AccountsPayableService {
       expenseAmount: expense.amount,
       expenseCurrency: organization?.currency ?? "USD",
       basis: linkedBill ? "BILL" : "EXPENSE",
-      ...settlementSummary(total, currency, payments),
+      ...settlementSummary(
+        total,
+        currency,
+        totals ? [{ amount: totals.paidAmount, currency, reversedAt: null }] : payments,
+      ),
       linked: !!linkedBill,
       linkedBill:
         linkedBill && canReadBill
@@ -754,7 +736,10 @@ export class AccountsPayableService {
       directPayments,
     };
   }
-  listPayments(targetType: "VENDOR_BILL" | "EXPENSE", targetId: string) {
+  listPayments(targetType: "VENDOR_BILL" | "EXPENSE", targetId: string, query?: PayablesQueryDto) {
+    if (query?.paginated)
+      return paymentPage(this.db, this.tenant.organizationId, targetType, targetId, query);
+
     return this.db.orm.public.PayablePayment.where({
       organizationId: this.tenant.organizationId,
       ...(targetType === "VENDOR_BILL" ? { vendorBillId: targetId } : { expenseId: targetId }),
@@ -793,65 +778,12 @@ export class AccountsPayableService {
       return payment;
     });
   }
-  async summary() {
-    const bills = await this.db.orm.public.VendorBill.where({
-      organizationId: this.tenant.organizationId,
-      status: "APPROVED",
-    }).all();
-    const details = await Promise.all(bills.map((bill) => this.decorateBill(bill)));
-    const today = await this.today();
-    const [payments, vendors] = await Promise.all([
-      this.db.orm.public.PayablePayment.where({ organizationId: this.tenant.organizationId }).all(),
-      this.db.orm.public.Vendor.where({ organizationId: this.tenant.organizationId }).all(),
-    ]);
-    const buckets = { current: 0n, days1to30: 0n, days31to60: 0n, days61to90: 0n, over90: 0n };
-    for (const bill of details) {
-      const balance = scaled(bill.balance, 2);
-      const days = Temporal.PlainDate.from(day(bill.dueDate)).until(today).days;
-      if (days <= 0) buckets.current += balance;
-      else if (days <= 30) buckets.days1to30 += balance;
-      else if (days <= 60) buckets.days31to60 += balance;
-      else if (days <= 90) buckets.days61to90 += balance;
-      else buckets.over90 += balance;
-    }
-    const vendorNames = new Map(
-      vendors.map((vendor) => [vendor.id, vendor.displayName ?? vendor.name]),
+  async summary(compact = false) {
+    return payableSummary(
+      this.db,
+      this.tenant.organizationId,
+      (await this.today()).toString(),
+      compact,
     );
-    const vendorBalances = new Map<string, bigint>();
-    for (const bill of details)
-      vendorBalances.set(
-        bill.vendorId,
-        (vendorBalances.get(bill.vendorId) ?? 0n) + scaled(bill.balance, 2),
-      );
-    const dueWithin = (limit: number) =>
-      money(
-        details
-          .filter((bill) => {
-            const days = today.until(Temporal.PlainDate.from(day(bill.dueDate))).days;
-            return days >= 0 && days <= limit;
-          })
-          .reduce((sum, bill) => sum + scaled(bill.balance, 2), 0n),
-      );
-    return {
-      outstanding: money(Object.values(buckets).reduce((a, b) => a + b, 0n)),
-      overdue: money(buckets.days1to30 + buckets.days31to60 + buckets.days61to90 + buckets.over90),
-      dueWithin7Days: dueWithin(7),
-      dueWithin30Days: dueWithin(30),
-      paidBills: details.filter((bill) => bill.settlementStatus === "PAID").length,
-      partiallyPaidBills: details.filter((bill) => bill.settlementStatus === "PARTIALLY_PAID")
-        .length,
-      aging: Object.fromEntries(Object.entries(buckets).map(([key, value]) => [key, money(value)])),
-      vendorBalances: [...vendorBalances]
-        .filter(([, balance]) => balance > 0n)
-        .map(([vendorId, balance]) => ({
-          vendorId,
-          vendor: vendorNames.get(vendorId) ?? "Vendor",
-          balance: money(balance),
-        })),
-      recentPayments: payments
-        .filter((payment) => !payment.reversedAt)
-        .sort((a, b) => millis(b.paymentDate) - millis(a.paymentDate))
-        .slice(0, 10),
-    };
   }
 }

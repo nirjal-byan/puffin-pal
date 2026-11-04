@@ -11,7 +11,7 @@ import {
   reverseBillPayment,
   TRANSITION_LABELS,
 } from "../services/bill-workflow-api";
-import { BillPaymentsTable } from "../components/bill-payments-table";
+import { PagedPayments } from "../components/paged-payments";
 import { BillTransitionDialog } from "./bill-transition-dialog";
 import type {
   AccountsPayableApi,
@@ -53,6 +53,7 @@ export function BillActivityDialog({
 }) {
   const activity = useBillActivity(api, id);
   const action = usePayableAction();
+  const [historyRevision, setHistoryRevision] = useState(0);
   const [transition, setTransition] = useState<BillTransition | null>(null);
   const [reversing, setReversing] = useState<PayablePayment | null>(null);
   const [reason, setReason] = useState("");
@@ -87,6 +88,7 @@ export function BillActivityDialog({
                 setReversing(null);
                 setReason("");
                 await activity.refresh();
+                setHistoryRevision((value) => value + 1);
                 await onSaved("Payment reversed. Bill balance and payment history refreshed.");
               })
           : undefined
@@ -218,17 +220,6 @@ export function BillActivityDialog({
                 canRead={permissions.includes("expenses:read")}
               />
             )}
-            <h3>Payment history</h3>
-            <BillPaymentsTable
-              payments={activity.data.payments}
-              permissions={permissions}
-              busy={action.busy}
-              onReverse={(payment) => {
-                action.clearError();
-                setReason("");
-                setReversing(payment);
-              }}
-            />
             <h3>Bill approval and edit history</h3>
             {bill.audit.length ? (
               <ul>
@@ -247,6 +238,26 @@ export function BillActivityDialog({
             )}
           </>
         )
+      )}
+      {bill && activity.data && (
+        <fieldset
+          disabled={!!reversing || activity.loading || !!activity.error}
+          hidden={!!reversing || activity.loading || !!activity.error}
+          style={{ border: 0, padding: 0 }}
+        >
+          <h3>Payment history</h3>
+          <PagedPayments
+            api={api}
+            path={`/accounts-payable/bills/${id}/payments`}
+            revision={historyRevision}
+            permissions={permissions}
+            onReverse={(payment) => {
+              action.clearError();
+              setReason("");
+              setReversing(payment);
+            }}
+          />
+        </fieldset>
       )}
     </FormModal>
   );

@@ -8,6 +8,7 @@ export function VendorGrid({
   onEdit,
   onArchive,
   busy = false,
+  filtered = false,
 }: {
   vendors: Vendor[];
   loading: boolean;
@@ -16,6 +17,7 @@ export function VendorGrid({
   onEdit: (vendor: Vendor) => void;
   onArchive: (vendor: Vendor) => void;
   busy?: boolean;
+  filtered?: boolean;
 }) {
   return (
     <section className="ap-vendor-grid">
@@ -61,8 +63,12 @@ export function VendorGrid({
           <span className="empty-state-icon" aria-hidden="true">
             ◉
           </span>
-          <h3>No vendors yet</h3>
-          <p>Add your first supplier to start recording and tracking bills.</p>
+          <h3>{filtered ? "No vendors match these filters" : "No vendors yet"}</h3>
+          <p>
+            {filtered
+              ? "Try clearing or changing your filters."
+              : "Add your first supplier to start recording and tracking bills."}
+          </p>
           {canManage && (
             <button className="button primary" type="button" onClick={onAdd}>
               + Add vendor

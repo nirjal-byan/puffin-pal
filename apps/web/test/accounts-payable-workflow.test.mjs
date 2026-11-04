@@ -122,7 +122,7 @@ test("invalid transitions make no request and backend conflicts remain actionabl
   );
 });
 
-test("bill activity loads exact server balances, all payments and approval audit without client totals", async () => {
+test("bill activity loads server balances and approval audit without unbounded embedded payments", async () => {
   const payments = [
     payment,
     {
@@ -143,10 +143,10 @@ test("bill activity loads exact server balances, all payments and approval audit
     controller.signal,
   );
   assert.equal(activity.bill.balance, "150.00");
-  assert.deepEqual(activity.payments, payments);
+  assert.deepEqual(activity.payments, []);
   assert.deepEqual(
     calls.map(([path]) => path),
-    ["/accounts-payable/bills/bill-1", "/accounts-payable/bills/bill-1/payments"],
+    ["/accounts-payable/bills/bill-1?includeHistory=false"],
   );
   assert.ok(calls.every(([, signal]) => signal === controller.signal));
   assert.deepEqual(
@@ -243,7 +243,7 @@ test("activity hook exposes loading/error/retry and refreshes server payment his
   );
   await harness.render().refresh();
   assert.equal(harness.render().data.bill.balance, "200.00");
-  assert.equal(harness.render().data.payments[0].reversedAt, "2026-11-03");
+  assert.deepEqual(harness.render().data.payments, []);
   assert.equal(harness.render().error, "");
   harness.unmount();
 });
@@ -257,15 +257,13 @@ test("only the latest history request can update the dialog; unmount aborts requ
   await flushPromises();
   const reload = harness.render().refresh();
   assert.equal(requests[0].signal.aborted, true);
-  requests[2].resolve({ ...bill, balance: "250.00" });
-  requests[3].resolve([]);
+  requests[1].resolve({ ...bill, balance: "250.00" });
   await reload;
   requests[0].resolve({ ...bill, balance: "999.00" });
-  requests[1].resolve([]);
   await flushPromises();
   assert.equal(harness.render().data.bill.balance, "250.00");
   harness.unmount();
-  assert.equal(requests[2].signal.aborted, true);
+  assert.equal(requests[1].signal.aborted, true);
 });
 
 function findElement(node, predicate) {
@@ -316,9 +314,7 @@ test("actual reversal dialog requires confirmation, blocks duplicate submission,
   harness.render();
   await flushPromises();
   let dialog = harness.render();
-  findElement(dialog, (element) => element.type?.name === "BillPaymentsTable").props.onReverse(
-    payment,
-  );
+  findElement(dialog, (element) => element.type?.name === "PagedPayments").props.onReverse(payment);
   dialog = harness.render();
   assert.equal(posts, 0, "selecting a payment must not reverse it");
   assert.equal(dialog.props.submitLabel, "Confirm payment reversal");
@@ -336,8 +332,8 @@ test("actual reversal dialog requires confirmation, blocks duplicate submission,
   release();
   await submit;
   dialog = harness.render();
-  const table = findElement(dialog, (element) => element.type?.name === "BillPaymentsTable");
-  assert.equal(table.props.payments[0].reversedAt, "2026-11-03");
+  const table = findElement(dialog, (element) => element.type?.name === "PagedPayments");
+  assert.equal(table.props.revision, 1);
   assert.equal(dialog.props.submitLabel, undefined);
   assert.equal(notifications.length, 1, "parent summary/list refresh callback runs once");
   assert.ok(notifications[0].includes("Payment reversed"));
@@ -368,7 +364,7 @@ test("actual reversal dialog preserves failed confirmation and shows reconciliat
   await flushPromises();
   findElement(
     harness.render(),
-    (element) => element.type?.name === "BillPaymentsTable",
+    (element) => element.type?.name === "PagedPayments",
   ).props.onReverse(payment);
   findElement(harness.render(), (element) => element.type === "textarea").props.onChange({
     target: { value: "Duplicate" },
@@ -426,4 +422,26 @@ test("approval conflict keeps reason open and explicit reload disables an outdat
   await flushPromises();
   assert.equal(harness.render().props.submitDisabled, true);
   harness.unmount();
+});
+
+test("debounced search submits only the latest text and cancels pending work on unmount", async (t) => {
+  const { DebouncedSearch } = await import("../src/components/ui/debounced-search.tsx");
+  t.mock.timers.enable({ apis: ["setTimeout"] });
+  const changes = [];
+  const harness = createHookHarness(DebouncedSearch, {
+    value: "",
+    onChange: (value) => changes.push(value),
+  });
+  harness.render();
+  await flushPromises();
+  harness.render().props.onChange({ target: { value: "ven" } });
+  t.mock.timers.tick(200);
+  assert.deepEqual(changes, []);
+  harness.render().props.onChange({ target: { value: "vendor" } });
+  t.mock.timers.tick(250);
+  assert.deepEqual(changes, ["vendor"]);
+  harness.render().props.onChange({ target: { value: "cancelled" } });
+  harness.unmount();
+  t.mock.timers.tick(250);
+  assert.deepEqual(changes, ["vendor"]);
 });

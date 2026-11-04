@@ -7,6 +7,8 @@ import {
   IsEmail,
   IsEnum,
   IsInt,
+  IsIn,
+  Matches,
   IsOptional,
   IsString,
   IsUUID,
@@ -103,13 +105,44 @@ export class ReversePayablePaymentDto extends VersionDto {
 }
 
 export class PayablesQueryDto {
-  @IsOptional() @Transform(optionalTrim) @IsString() search?: string;
+  @IsOptional() @Transform(optionalTrim) @IsString() @MaxLength(160) search?: string;
   @IsOptional() @IsUUID() vendorId?: string;
-  @IsOptional() @IsString() status?: string;
+  @IsOptional()
+  @IsIn(["DRAFT", "PENDING_APPROVAL", "APPROVED", "REJECTED", "VOIDED"])
+  status?: string;
   @IsOptional()
   @Transform(({ value }) => (value === "true" ? true : value === "false" ? false : value))
   @IsBoolean()
   active?: boolean;
+  @IsOptional()
+  @IsString()
+  @MaxLength(160)
+  @IsIn(["name", "createdAt", "dueDate", "issueDate", "totalAmount", "balance", "paymentDate"])
+  sort?: string;
+  @IsOptional() @IsIn(["asc", "desc"]) order?: "asc" | "desc";
+  @IsOptional() @IsDateString({ strict: true }) @Matches(/^\d{4}-\d{2}-\d{2}$/) from?: string;
+  @IsOptional() @IsDateString({ strict: true }) @Matches(/^\d{4}-\d{2}-\d{2}$/) to?: string;
+  @IsOptional() @IsIn(["UNPAID", "PARTIALLY_PAID", "PAID"]) settlementStatus?: string;
+  @IsOptional() @IsEnum(PaymentMethodDto) method?: PaymentMethodDto;
+  @IsOptional() @IsIn(["ALL", "ACTIVE", "REVERSED"]) reversalState = "ALL";
+  @IsOptional()
+  @Transform(({ value }) => (value === "true" ? true : value === "false" ? false : value))
+  @IsBoolean()
+  paginated?: boolean;
   @IsOptional() @Type(() => Number) @IsInt() @Min(1) @Max(100) limit = 50;
-  @IsOptional() @Type(() => Number) @IsInt() @Min(0) offset = 0;
+  @IsOptional() @Type(() => Number) @IsInt() @Min(0) @Max(1000000) offset = 0;
+}
+
+export class DetailQueryDto {
+  @IsOptional()
+  @Transform(({ value }) => (value === "false" ? false : value === "true" ? true : value))
+  @IsBoolean()
+  includeHistory = true;
+}
+
+export class SummaryQueryDto {
+  @IsOptional()
+  @Transform(({ value }) => (value === "true" ? true : value === "false" ? false : value))
+  @IsBoolean()
+  compact = false;
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { errorMessage, type WorkspaceApi } from "@/lib/api";
 import type { ExpensePage } from "../types";
 import { expensePeriodRange } from "../utils";
@@ -10,6 +10,7 @@ const INITIAL_FILTERS: ExpenseFiltersValue = {
   search: "",
   category: "",
   approvalStatus: "",
+  settlementStatus: "",
   period: "",
   sort: "date",
   order: "desc",
@@ -23,6 +24,8 @@ export function useExpenseCollection(api: WorkspaceApi) {
     limit: 20,
     offset: 0,
   });
+  const [limit, setLimitValue] = useState(20);
+  const request = useRef<AbortController | null>(null);
   const [offset, setOffset] = useState(0);
   const [filters, setFilters] = useState(INITIAL_FILTERS);
   const [applied, setApplied] = useState(INITIAL_FILTERS);
@@ -30,10 +33,13 @@ export function useExpenseCollection(api: WorkspaceApi) {
   const [failure, setFailure] = useState("");
 
   const load = useCallback(async () => {
+    request.current?.abort();
+    const controller = new AbortController();
+    request.current = controller;
     setLoading(true);
     setFailure("");
     const query = new URLSearchParams({
-      limit: "20",
+      limit: String(limit),
       offset: String(offset),
       sort: applied.sort,
       order: applied.order,
@@ -46,18 +52,27 @@ export function useExpenseCollection(api: WorkspaceApi) {
       query.set("to", range.to);
     }
     try {
-      setPage(await api<ExpensePage>(`/expenses?${query}`));
+      const next = await api<ExpensePage>(`/expenses?${query}`, { signal: controller.signal });
+      if (controller.signal.aborted) return;
+      if (offset > 0 && offset >= next.total)
+        setOffset(next.total ? Math.floor((next.total - 1) / limit) * limit : 0);
+      else setPage(next);
     } catch (error) {
-      setFailure(errorMessage(error));
+      if (!controller.signal.aborted) setFailure(errorMessage(error));
     } finally {
-      setLoading(false);
+      if (!controller.signal.aborted) setLoading(false);
     }
-  }, [api, applied, offset]);
+  }, [api, applied, offset, limit]);
 
   useEffect(() => {
-    // Loading is intentionally tied to the applied filters and page offset.
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    void load();
+    let active = true;
+    void Promise.resolve().then(() => {
+      if (active) void load();
+    });
+    return () => {
+      active = false;
+      request.current?.abort();
+    };
   }, [load]);
 
   function applyFilters() {
@@ -73,6 +88,16 @@ export function useExpenseCollection(api: WorkspaceApi) {
 
   return {
     page,
+    limit,
+    setLimit: (value: number) => {
+      setOffset(0);
+      setLimitValue(value);
+    },
+    clearFilters: () => {
+      setFilters(INITIAL_FILTERS);
+      setApplied(INITIAL_FILTERS);
+      setOffset(0);
+    },
     offset,
     setOffset,
     filters,

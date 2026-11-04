@@ -40,6 +40,9 @@ export default function ExpensesPage({
     canApprove = permissions.includes("expenses:approve");
   const {
     page,
+    limit,
+    setLimit,
+    clearFilters,
     offset,
     setOffset,
     filters,
@@ -213,6 +216,7 @@ export default function ExpensesPage({
         value={filters}
         canCreate={canCreate}
         onChange={setFilters}
+        onClear={clearFilters}
         onApply={applyFilters}
         onCreate={() => {
           setEditing(null);
@@ -309,7 +313,13 @@ export default function ExpensesPage({
           onConfirm={() => void runWorkflow()}
         />
       )}
-      <ExpensePagination page={page} offset={offset} loading={loading} onOffsetChange={setOffset} />
+      <ExpensePagination
+        page={{ ...page, limit }}
+        offset={offset}
+        loading={loading}
+        onOffsetChange={setOffset}
+        onLimitChange={setLimit}
+      />
       <DeleteExpenseDialog
         expense={deleting}
         busy={busy}

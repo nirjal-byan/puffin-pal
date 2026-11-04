@@ -31,7 +31,7 @@ export function BillAttachmentsDialog({
   const fileError = file ? validateAttachment(file) : "";
   async function refresh(message: string) {
     // Attachment changes increment the bill version; always reload before another operation.
-    setBill(await api<VendorBillDetail>(`/accounts-payable/bills/${bill.id}`));
+    setBill(await api<VendorBillDetail>(`/accounts-payable/bills/${bill.id}?includeHistory=false`));
     await onSaved(message);
   }
   return (

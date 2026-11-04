@@ -21,6 +21,8 @@ import { RequirePermissions } from "../../common/decorators/auth.decorators.js";
 import { AccountsPayableService } from "./accounts-payable.service.js";
 import {
   CreateVendorBillDto,
+  DetailQueryDto,
+  SummaryQueryDto,
   PayablesQueryDto,
   PayablePaymentInputDto,
   PayableTargetDto,
@@ -43,8 +45,9 @@ export class AccountsPayableController {
   }
   @Get("vendors/:id") @RequirePermissions("vendors:read") vendor(
     @Param("id", ParseUUIDPipe) id: string,
+    @Query() query: DetailQueryDto,
   ) {
-    return this.service.getVendor(id);
+    return this.service.getVendor(id, query.includeHistory);
   }
   @Post("vendors") @RequirePermissions("vendors:manage") createVendor(@Body() input: VendorDto) {
     return this.service.createVendor(input);
@@ -67,8 +70,10 @@ export class AccountsPayableController {
     return this.service.archiveVendor(id);
   }
 
-  @Get("accounts-payable/summary") @RequirePermissions("accounts-payable:read") summary() {
-    return this.service.summary();
+  @Get("accounts-payable/summary") @RequirePermissions("accounts-payable:read") summary(
+    @Query() query: SummaryQueryDto,
+  ) {
+    return this.service.summary(query.compact);
   }
   @Get("accounts-payable/aging") @RequirePermissions("accounts-payable:read") async aging() {
     const summary = await this.service.summary();
@@ -88,8 +93,9 @@ export class AccountsPayableController {
   }
   @Get("accounts-payable/bills/:id") @RequirePermissions("accounts-payable:read") bill(
     @Param("id", ParseUUIDPipe) id: string,
+    @Query() query: DetailQueryDto,
   ) {
-    return this.service.getBill(id);
+    return this.service.getBill(id, query.includeHistory);
   }
   @Put("accounts-payable/bills/:id/attachment")
   @UseInterceptors(
@@ -190,8 +196,8 @@ export class AccountsPayableController {
   }
   @Get("accounts-payable/bills/:id/payments")
   @RequirePermissions("accounts-payable:read")
-  billPayments(@Param("id", ParseUUIDPipe) id: string) {
-    return this.service.listPayments("VENDOR_BILL", id);
+  billPayments(@Param("id", ParseUUIDPipe) id: string, @Query() query: PayablesQueryDto) {
+    return this.service.listPayments("VENDOR_BILL", id, query);
   }
   @Post("accounts-payable/bills/:id/payments")
   @RequirePermissions("accounts-payable:pay")
@@ -204,13 +210,13 @@ export class AccountsPayableController {
   }
   @Get("expenses/:id/settlement")
   @RequirePermissions("expenses:read")
-  expenseSettlement(@Param("id", ParseUUIDPipe) id: string) {
-    return this.service.expenseSettlement(id);
+  expenseSettlement(@Param("id", ParseUUIDPipe) id: string, @Query() query: DetailQueryDto) {
+    return this.service.expenseSettlement(id, query.includeHistory);
   }
   @Get("expenses/:id/payments")
   @RequirePermissions("expenses:read")
-  expensePayments(@Param("id", ParseUUIDPipe) id: string) {
-    return this.service.listPayments("EXPENSE", id);
+  expensePayments(@Param("id", ParseUUIDPipe) id: string, @Query() query: PayablesQueryDto) {
+    return this.service.listPayments("EXPENSE", id, query);
   }
   @Post("expenses/:id/payments")
   @RequirePermissions("expenses:pay")

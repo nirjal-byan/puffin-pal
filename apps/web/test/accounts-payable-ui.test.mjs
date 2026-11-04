@@ -124,3 +124,36 @@ test("rejection dialog requires a reason and an explicit confirmation button", (
   assert.match(html, /disabled=""/);
   assert.match(html, /Cancel/);
 });
+
+const { Pagination } = await import("../src/components/ui/pagination.tsx");
+test("pagination renders totals, active page, sizes, accessible labels and loading disabled states", () => {
+  const html = renderToStaticMarkup(
+    createElement(Pagination, {
+      total: 105,
+      offset: 100,
+      limit: 20,
+      count: 5,
+      loading: false,
+      onOffset() {},
+      onLimit() {},
+      label: "Bills",
+    }),
+  );
+  assert.match(html, /101–105 of 105/);
+  assert.match(html, /Page 6 of 6/);
+  assert.match(html, /aria-label="Bills pagination"/);
+  assert.match(html, /Rows per page/);
+  const loading = renderToStaticMarkup(
+    createElement(Pagination, {
+      total: 0,
+      offset: 0,
+      limit: 20,
+      count: 0,
+      loading: true,
+      onOffset() {},
+      onLimit() {},
+    }),
+  );
+  assert.match(loading, /No matching records/);
+  assert.equal((loading.match(/disabled=""/g) ?? []).length, 3);
+});

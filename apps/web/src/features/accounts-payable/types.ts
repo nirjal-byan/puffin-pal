@@ -26,6 +26,7 @@ export interface Vendor {
 }
 
 export interface VendorBill {
+  vendorName?: string;
   id: string;
   vendorId: string;
   billNumber: string;

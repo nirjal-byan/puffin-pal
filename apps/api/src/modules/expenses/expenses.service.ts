@@ -15,7 +15,7 @@ import { DATABASE } from "../../infrastructure/database/database.module.js";
 import type { Database } from "../../infrastructure/database/client.js";
 import type { AuthenticatedRequest } from "../../common/types/auth.types.js";
 import type { CreateExpenseDto, ExpenseQueryDto, UpdateExpenseDto } from "./expense.dto.js";
-import { settlementSummary } from "../accounts-payable/settlement-summary.js";
+import { expensePage } from "../accounts-payable/payables-queries.js";
 import { expenseAmount } from "./expense-money.js";
 import { ReceiptStorageService } from "./receipt-storage.service.js";
 import { validateReceipt } from "./receipt-validation.js";
@@ -70,18 +70,21 @@ export class ExpensesService {
   private async details(
     expense: Awaited<ReturnType<ExpensesService["find"]>>,
     includeHistory = false,
+    knownUsers?: ReadonlyMap<string, string>,
   ) {
     const userIds = [expense.createdByUserId, expense.submittedById, expense.reviewedById].filter(
       (value): value is string => Boolean(value),
     );
-    const users = userIds.length
-      ? (
-          await this.db.orm.public.User.where({ organizationId: this.organizationId })
-            .select("id", "fullName")
-            .all()
-        ).filter((user) => userIds.includes(user.id))
-      : [];
-    const names = new Map(users.map((user) => [user.id, user.fullName]));
+    const users =
+      !knownUsers && userIds.length
+        ? (
+            await this.db.orm.public.User.where({ organizationId: this.organizationId })
+              .where((row) => row.id.in(userIds))
+              .select("id", "fullName")
+              .all()
+          ).filter((user) => userIds.includes(user.id))
+        : [];
+    const names = knownUsers ?? new Map(users.map((user) => [user.id, user.fullName]));
     const history = includeHistory
       ? await this.db.orm.public.ExpenseApprovalHistory.where({
           organizationId: this.organizationId,
@@ -94,6 +97,7 @@ export class ExpensesService {
     const actors = actorIds.length
       ? (
           await this.db.orm.public.User.where({ organizationId: this.organizationId })
+            .where((row) => row.id.in(actorIds))
             .select("id", "fullName")
             .all()
         ).filter((user) => actorIds.includes(user.id))
@@ -130,77 +134,45 @@ export class ExpensesService {
     };
   }
 
-  private async settlements() {
-    const organizationId = this.organizationId;
-    const [bills, payments, organization] = await Promise.all([
-      this.db.orm.public.VendorBill.where({ organizationId }).all(),
-      this.db.orm.public.PayablePayment.where({ organizationId }).all(),
-      this.db.orm.public.Organization.where({ id: organizationId }).first(),
-    ]);
-    return (expense: { id: string; amount: string }) => {
-      const bill = bills.find((row) => row.expenseId === expense.id);
-      return {
-        linked: !!bill,
-        basis: bill ? "BILL" : "EXPENSE",
-        ...settlementSummary(
-          bill?.totalAmount ?? expense.amount,
-          bill?.currency ?? organization?.currency ?? "USD",
-          payments.filter((payment) =>
-            bill ? payment.vendorBillId === bill.id : payment.expenseId === expense.id,
-          ),
-        ),
-      };
-    };
-  }
   async list(query: ExpenseQueryDto) {
-    let rows = await this.db.orm.public.Expense.where({
-      organizationId: this.organizationId,
-    }).all();
-    const search = query.search?.trim().toLowerCase();
-    if (search)
-      rows = rows.filter((row) =>
-        [row.title, row.description, row.vendor, row.notes].some((value) =>
-          value?.toLowerCase().includes(search),
-        ),
-      );
-    if (query.category) rows = rows.filter((row) => row.category === query.category);
-    const pendingCount = rows.filter((row) => row.approvalStatus === "PENDING_APPROVAL").length;
-    if (query.approvalStatus)
-      rows = rows.filter((row) => row.approvalStatus === query.approvalStatus);
-    if (query.submittedById) {
-      if (!this.canReview && query.submittedById !== this.userId)
-        throw new ForbiddenException("You can only filter your own submissions");
-      rows = rows.filter((row) => row.submittedById === query.submittedById);
-    }
-    if (query.from) rows = rows.filter((row) => row.date.toString().slice(0, 10) >= query.from!);
-    if (query.to) rows = rows.filter((row) => row.date.toString().slice(0, 10) <= query.to!);
-    const direction = query.order === "asc" ? 1 : -1;
-    rows.sort((a, b) => {
-      const av =
-        query.sort === "amount" ? BigInt(a.amount.replace(".", "")) : String(a[query.sort]);
-      const bv =
-        query.sort === "amount" ? BigInt(b.amount.replace(".", "")) : String(b[query.sort]);
-      return av < bv ? -direction : av > bv ? direction : 0;
-    });
-    const selected = rows.slice(query.offset, query.offset + query.limit);
-    const settlement = await this.settlements();
-    return {
-      items: await Promise.all(
-        selected.map(async (row) => ({
-          ...(await this.details(row)),
-          settlement: settlement(row),
-        })),
+    if (query.submittedById && !this.canReview && query.submittedById !== this.userId)
+      throw new ForbiddenException("You can only filter your own submissions");
+    const page = await expensePage(this.db, this.organizationId, query);
+    const userIds = [
+      ...new Set(
+        page.items
+          .flatMap((row) => [row.createdByUserId, row.submittedById, row.reviewedById])
+          .filter((value): value is string => typeof value === "string"),
       ),
-      total: rows.length,
-      pendingCount,
-      limit: query.limit,
-      offset: query.offset,
-    };
+    ];
+    const users = userIds.length
+      ? await this.db.orm.public.User.where({ organizationId: this.organizationId })
+          .where((row) => row.id.in(userIds))
+          .select("id", "fullName")
+          .all()
+      : [];
+    const names = new Map(users.map((user) => [user.id, user.fullName]));
+    const items = await Promise.all(
+      page.items.map(async (row) => ({
+        ...(await this.details(
+          row as unknown as Awaited<ReturnType<ExpensesService["find"]>>,
+          false,
+          names,
+        )),
+        settlement: row.settlement,
+      })),
+    );
+    return { ...page, items };
   }
   async get(id: string) {
     const expense = await this.find(id);
-    const settlement = await this.settlements();
-    return { ...(await this.details(expense, true)), settlement: settlement(expense) };
+    const page = await expensePage(
+      this.db,
+      this.organizationId,
+      { limit: 1, offset: 0, sort: "date", order: "desc" } as ExpenseQueryDto,
+      id,
+    );
+    return { ...(await this.details(expense, true)), settlement: page.items[0]?.settlement };
   }
   async create(input: CreateExpenseDto) {
     const expense = await this.db.orm.public.Expense.create({
