@@ -31,8 +31,8 @@ No verified P0 data-loss, authentication-bypass, tenant-isolation, or fundamenta
 | Revenue | Invoice drafts, editing, issuance, PDF, payments, history | Mostly Complete | End-to-end in `apps/api/src/modules/invoices` and `apps/web/src/features/invoices`; invoice payment reversal/refund, credit notes, voiding issued invoices, and customer delivery are not modeled. |
 | Revenue | Bulk invoice export | Complete | Durable BullMQ export, immutable PDFs, ZIP storage, expiry, retry, and download are implemented in `apps/api/src/infrastructure/background-jobs` and documented in `knowledge/background-jobs.md`. |
 | Revenue | Recurring invoices / retainers | Mostly Complete | Schedule CRUD, pause/resume/cancel, worker occurrences, retry, generated invoices, and UI exist. Legacy `Retainer` records are not migrated into recurring schedules, and delivery/collection remain separate. |
-| Spend | Expense capture, receipts, approval lifecycle | Mostly Complete | CRUD, receipt storage, submit/approve/reject/reopen, filters, and history are connected. The Expenses UI does not expose the existing expense-payment history, payment, or reversal endpoints in Accounts Payable. |
-| Spend | Vendors and bills / Accounts Payable | Partial | The API supports vendor update/archive, bill update, attachments, submit/approve/reject/resubmit/void, payment history, bill/expense payment, and reversal in `accounts-payable.controller.ts`. Batch 1 adds full-field vendor editing, confirmed archiving, multi-line draft bill editing, and private attachment upload/download/replacement/removal. Batch 2 adds confirmed reject/resubmit/void, rejection and bill audit details, bill payment history, and version-checked payment reversal with required reason. Rejected field editing/reopening is unsupported by the API; expense settlement and server pagination remain outstanding. |
+| Spend | Expense capture, receipts, approval lifecycle | Mostly Complete | CRUD, receipt storage, submit/approve/reject/reopen, filters, and history are connected. Batch 3 exposes settlement status/history, partial/full direct payments and reversal for approved standalone expenses, with linked-bill navigation and server balances. Interactive browser verification remains manual. |
+| Spend | Vendors and bills / Accounts Payable | Partial | The API supports vendor update/archive, bill update, attachments, submit/approve/reject/resubmit/void, payment history, bill/expense payment, and reversal in `accounts-payable.controller.ts`. Batch 1 adds full-field vendor editing, confirmed archiving, multi-line draft bill editing, and private attachment upload/download/replacement/removal. Batch 2 adds confirmed reject/resubmit/void, rejection and bill audit details, bill payment history, and version-checked payment reversal with required reason. Rejected field editing/reopening is unsupported by the API; Batch 3 adds expense settlements, linked-record navigation and financial-consistency fixes; server pagination remains outstanding. |
 | Spend | AP aging and summary | Mostly Complete | Service/report aggregation exists, but the frontend fetches only the first 100 vendors/bills and then paginates locally; large organizations get incomplete search and totals at the view layer. |
 | Banking | Bank accounts and CSV statement import | Mostly Complete | Account create/update API, preview/confirm import, dedupe, import history, and UI exist. The UI does not expose account edit/archive/default-account lifecycle; there is intentionally no live bank feed. |
 | Banking | Reconciliation and reversal | Mostly Complete | Suggestions, one-to-one reconciliation, audit, and reversal are connected. Split/aggregate matching is unsupported, and list views cap retrieval at 100 records. |
@@ -74,7 +74,7 @@ Gaps:
 
 `Expense -> Receipt -> Submit -> Approve` is complete. The newer AP service can settle an expense and reverse that settlement, and reporting can use payable payment evidence.
 
-Gap: `expenses-page.tsx` ends at approval and never calls `GET/POST /expenses/:id/payments` or `POST /expense-payments/:id/reverse`. A finance user cannot finish the expense lifecycle from the expense screen.
+Batch 3 connects expense settlement history, direct partial/full payments and confirmed reversals. Linked expenses direct users to the authoritative bill instead of creating another settlement. Expense lists/details and related bill panels refresh from server data. Focused API/frontend and disposable PostgreSQL integration verify settlement and reporting; interactive browser verification remains manual.
 
 ### 3. Vendor bill lifecycle
 
@@ -150,7 +150,7 @@ No P0 was proven by static inspection. Any runtime finding involving tenant leak
 | Work item | User/business value | Dependencies | Size |
 | --- | --- | --- | --- |
 | Complete the Accounts Payable frontend against existing endpoints | Makes vendor/bill correction, approval exceptions, attachments, and payment audit usable without backend workarounds | Existing API; focused browser regression | Large |
-| Add expense settlement history, pay, and reversal UI | Completes approved-expense lifecycle and improves cash evidence | Existing AP expense-payment endpoints; permissions | Medium |
+| Add expense settlement history, pay, and reversal UI — Batch 3 implemented and covered by focused/integration tests | Completes approved-expense lifecycle and improves cash evidence | Interactive browser verification remains | Medium |
 | Resolve payment-batch/payroll-payment semantics | Prevents two “paid” states from diverging | Product decision on checklist vs atomic payment recording | Medium |
 | Add append-only invoice and payroll payment reversal workflows | Corrects operator mistakes without deleting audit history | Accounting rules, permissions, reporting updates | Large |
 | Implement secure invitation, account recovery, and email verification | Removes password sharing and avoids unrecoverable accounts | Email provider, token lifecycle, abuse controls | Large |
@@ -166,7 +166,7 @@ No P0 was proven by static inspection. Any runtime finding involving tenant leak
 | Build a unified audit activity view | Improves support, controls, and operator accountability | Normalize event presentation and permissions | Large |
 | Expand notification center to approvals/failures/due work | Reduces missed operational work | Notification event taxonomy; optional email decision | Large |
 | Carry finalized-period workforce corrections into next payroll | Makes payroll-impact flags actionable | Retroactive adjustment policy | Large |
-| Reconcile cash-flow assumptions with payable settlements | Improves forecast timing accuracy | Review forecast queries and AP payment recognition | Medium |
+| Reconcile cash-flow assumptions with payable settlements — Batch 3 linked-state and currency fixes verified | Excludes duplicate linked expense assumptions and mixed-currency totals | Broader forecast policy remains unchanged | Medium |
 | Add recurring holiday expansion and automated leave accrual scheduling | Reduces recurring manual workforce operations | Timezone/idempotency rules and worker job | Medium |
 | Reconcile stale documentation with current code | Prevents false gap reports and unsafe operator assumptions | None | Small |
 | Add observability and restore evidence | Improves production operability | Hosting choice, metrics/log/alert provider, backup target | Large |
@@ -190,13 +190,15 @@ Batch 1 implemented (2026-11-03): vendor editing and confirmed archiving, draft 
 
 Batch 2 implemented (2026-11-03): approval exception actions, bill approval/audit detail, payment history, and reasoned/version-checked payment reversals reuse the existing APIs. Focused workflow/confirmation-handler and rendered-UI tests, TypeScript, and targeted lint verify the frontend behavior; browser and Docker-backed integration remain to be checked locally. Rejected field correction/reopening and void reasons are unsupported by current backend contracts and were not added. Overall AP remains **Partial** for server pagination, expense settlement, and the remaining runtime verification criteria.
 
+Batch 3 implemented (2026-11-04): approved standalone expense settlement/history/reversal, linked expense ↔ bill navigation, server settlement summaries/badges, serialized link/payment checks, target-specific reversal routes, and linked-state/currency consistency fixes. Focused API/frontend tests and disposable PostgreSQL AP/report integration cover full/partial settlement, tenant isolation, retained reversal history, and cost/cash counting. Interactive browser verification remains manual. Overall AP remains **Partial** for server pagination, unsupported lifecycle additions, and the remaining runtime verification criteria.
+
 Completion criteria:
 
 1. Vendors can be viewed, edited, archived/restored as allowed, with full supported fields and concurrency/error handling.
 2. Bills can be viewed and edited with multiple items, discounts, attachment upload/download/removal, and version checks.
 3. All supported transitions are exposed (Batch 2 frontend verified): submit, approve, reject with reason, resubmit, and void. The existing void endpoint accepts no reason; adding one requires a separate contract change.
 4. Bill payment history and confirmed append-only reversal are exposed (Batch 2 frontend verified), with required reasons, payment-version checks, duplicate-submit guards, and reload after success/conflict. Payment recording retains its existing API idempotency behavior; broader lost-response runtime verification remains pending.
-5. Expense settlement remains a separate follow-up or is explicitly included with the same payment-history pattern.
+5. Expense settlement is included in Batch 3: history, partial/full standalone payments, confirmed reversal, and linked-bill authority/navigation are verified by focused and database integration tests.
 6. Lists use server-backed pagination/search rather than first-100 client slicing.
 7. Permissions hide or disable unauthorized actions; tenant IDs are never client-selectable.
 8. Focused API, component, and browser tests cover happy paths, invalid transitions, stale versions, duplicate/lost-response safety, and another-tenant IDs.

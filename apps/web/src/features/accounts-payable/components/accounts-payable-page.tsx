@@ -1,5 +1,6 @@
 "use client";
 
+import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { Permission } from "@puffinpal/permissions";
 import { BillActivityDialog } from "../dialogs/bill-activity-dialog";
@@ -50,6 +51,7 @@ export default function AccountsPayablePage({
   initialView: PayablesView;
   onSaved: (message: string) => void;
 }) {
+  const searchParams = useSearchParams();
   const [view, setView] = useState(initialView);
   const [vendors, setVendors] = useState<Vendor[]>([]);
   const [bills, setBills] = useState<VendorBill[]>([]);
@@ -57,7 +59,7 @@ export default function AccountsPayablePage({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [modal, setModal] = useState<PayablesModal>(null);
-  const [activityBillId, setActivityBillId] = useState<string | null>(null);
+  const [activityBillId, setActivityBillId] = useState<string | null>(searchParams.get("bill"));
   const [transitioning, setTransitioning] = useState<{
     bill: VendorBill;
     transition: BillTransition;

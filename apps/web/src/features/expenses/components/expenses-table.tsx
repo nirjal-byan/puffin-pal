@@ -22,6 +22,7 @@ export function ExpensesTable({
   onWorkflow,
   onEdit,
   onDelete,
+  onSettlement,
 }: {
   page: ExpensePage;
   loading: boolean;
@@ -34,6 +35,7 @@ export function ExpensesTable({
   onReceipt: (expense: Expense) => void;
   onWorkflow: (expense: Expense, action: ExpenseWorkflowAction) => void;
   onEdit: (expense: Expense) => void;
+  onSettlement: (expense: Expense) => void;
   onDelete: (expense: Expense) => void;
 }) {
   return (
@@ -90,6 +92,11 @@ export function ExpensesTable({
                     <span className={`expense-status ${expense.approvalStatus.toLowerCase()}`}>
                       {expense.approvalStatus.replaceAll("_", " ").toLowerCase()}
                     </span>
+                    {expense.settlement && (
+                      <small>
+                        Settlement: {expense.settlement.settlementStatus.replaceAll("_", " ")}
+                      </small>
+                    )}
                   </td>
                   <td>
                     <span className="role-badge">{expense.category.toLowerCase()}</span>
@@ -102,6 +109,13 @@ export function ExpensesTable({
                     <div className="client-row-actions">
                       <button className="text-button" onClick={() => onDetails(expense)}>
                         View
+                      </button>
+                      <button
+                        className="text-button"
+                        disabled={busy}
+                        onClick={() => onSettlement(expense)}
+                      >
+                        Settlement
                       </button>
                       {expense.receiptName && (
                         <button

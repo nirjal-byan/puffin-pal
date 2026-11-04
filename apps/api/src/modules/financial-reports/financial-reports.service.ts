@@ -80,6 +80,7 @@ export class FinancialReportsService {
       expense_period AS (
         SELECT e.* FROM expenses e, bounds b
         WHERE e."organizationId" = ${organizationId}
+          AND b.currency = (SELECT currency FROM organizations WHERE id = ${organizationId})
           AND e.date >= b.from_date AND e.date < b.end_exclusive
       ),
       payable_payment_period AS (
@@ -175,12 +176,14 @@ export class FinancialReportsService {
             SELECT COALESCE(SUM(pp.amount),0) total_paid FROM payable_payments pp
             LEFT JOIN vendor_bills vb ON vb."organizationId"=ep."organizationId" AND vb."expenseId"=ep.id
             WHERE pp."organizationId"=ep."organizationId" AND pp."reversedAt" IS NULL
+              AND pp.currency = (SELECT currency FROM bounds)
               AND (pp."expenseId"=ep.id OR pp."vendorBillId"=vb.id) AND pp."paymentDate" < (SELECT end_exclusive FROM bounds)
           ) paid ON true WHERE ep."approvalStatus"='APPROVED'),0),'FM999999999999990.00'),
           'unpaid', to_char(COALESCE((SELECT SUM(GREATEST(ep.amount-paid.total_paid,0)) FROM expense_period ep LEFT JOIN LATERAL (
             SELECT COALESCE(SUM(pp.amount),0) total_paid FROM payable_payments pp
             LEFT JOIN vendor_bills vb ON vb."organizationId"=ep."organizationId" AND vb."expenseId"=ep.id
             WHERE pp."organizationId"=ep."organizationId" AND pp."reversedAt" IS NULL
+              AND pp.currency = (SELECT currency FROM bounds)
               AND (pp."expenseId"=ep.id OR pp."vendorBillId"=vb.id) AND pp."paymentDate" < (SELECT end_exclusive FROM bounds)
           ) paid ON true WHERE ep."approvalStatus"='APPROVED'),0),'FM999999999999990.00'),
           'byCategory', COALESCE((SELECT json_agg(json_build_object('category',category,'amount',to_char(amount,'FM999999999999990.00')) ORDER BY amount DESC) FROM (SELECT category,SUM(amount) amount FROM expense_period WHERE "approvalStatus"='APPROVED' GROUP BY category) q),'[]'::json),

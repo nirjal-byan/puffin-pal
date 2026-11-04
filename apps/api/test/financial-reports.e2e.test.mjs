@@ -117,7 +117,7 @@ test("financial reports aggregate authoritative tenant records without cross-ten
       status: "APPROVED",
       createdById: owner.user.id,
     });
-    await db.orm.public.PayablePayment.create({
+    const linkedPayment = await db.orm.public.PayablePayment.create({
       organizationId: owner.organization.id,
       targetType: "VENDOR_BILL",
       vendorBillId: bill.id,
@@ -154,6 +154,22 @@ test("financial reports aggregate authoritative tenant records without cross-ten
     );
     assert.equal(isolated.revenue.issued, "0.00");
     assert.equal(isolated.expenses.approved, "0.00");
+    const settlement = await request(`/expenses/${expense.id}/settlement`, owner.accessToken, undefined, "GET");
+    assert.equal(settlement.linkedBill.id, bill.id);
+    assert.equal(settlement.balance, "6.00");
+    await request(`/accounts-payable/payments/${linkedPayment.id}/reverse`, owner.accessToken, { expectedVersion: linkedPayment.version, reason: "Report reversal verification" }, "POST");
+    const reversed = await request(`/financial-reports/overview?${query}`, owner.accessToken, undefined, "GET");
+    assert.equal(reversed.expenses.approved, "10.00");
+    assert.equal(reversed.expenses.paid, "0.00");
+    assert.equal(reversed.expenses.unpaid, "10.00");
+    assert.equal(reversed.payables.outstanding, "10.00");
+    assert.equal(reversed.cashMovement.outflows, "0.00");
+    const eur = await request(`/financial-reports/overview?${query.replace("currency=USD", "currency=EUR")}`, owner.accessToken, undefined, "GET");
+    assert.equal(eur.expenses.approved, "0.00");
+    const history = await request(`/expenses/${expense.id}/settlement`, owner.accessToken, undefined, "GET");
+    assert.equal(history.balance, "10.00");
+    assert.ok(history.payments[0].reversedAt);
+
   } finally {
     await app.close();
   }

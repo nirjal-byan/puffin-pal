@@ -6,6 +6,8 @@ import {
   NotFoundException,
   Scope,
 } from "@nestjs/common";
+import { settlementSummary } from "./settlement-summary.js";
+import { hasPermission } from "@puffinpal/permissions";
 import { REQUEST } from "@nestjs/core";
 import type { Numeric } from "@prisma/orm-postgres/target/codec-types";
 import { DATABASE } from "../../infrastructure/database/database.module.js";
@@ -390,6 +392,23 @@ export class AccountsPayableService {
     const discount = items.reduce((s, i) => s + scaled(i.discountAmount, 2), 0n);
     const total = items.reduce((s, i) => s + i.cents, 0n);
     return this.db.transaction(async (tx) => {
+      if (input.expenseId) {
+        await tx.execute(
+          this.db.raw
+            .sql`SELECT id FROM expenses WHERE id = ${input.expenseId} AND "organizationId" = ${organizationId} FOR UPDATE`
+            .affectedCount()
+            .build(),
+        );
+        const direct = await tx.orm.public.PayablePayment.where({
+          organizationId,
+          expenseId: input.expenseId,
+          reversedAt: null,
+        }).all();
+        if (direct.length)
+          throw new ConflictException(
+            "Reverse direct expense payments before linking a vendor bill",
+          );
+      }
       const bill = await tx.orm.public.VendorBill.create({
         organizationId,
         vendorId: input.vendorId,
@@ -461,6 +480,29 @@ export class AccountsPayableService {
     const discount = items.reduce((sum, item) => sum + scaled(item.discountAmount, 2), 0n);
     const total = items.reduce((sum, item) => sum + item.cents, 0n);
     return this.db.transaction(async (tx) => {
+      if (input.expenseId) {
+        await tx.execute(
+          this.db.raw
+            .sql`SELECT id FROM expenses WHERE id = ${input.expenseId} AND "organizationId" = ${organizationId} FOR UPDATE`
+            .affectedCount()
+            .build(),
+        );
+        const expense = await tx.orm.public.Expense.where({
+          organizationId,
+          id: input.expenseId,
+          approvalStatus: "APPROVED",
+        }).first();
+        if (!expense) throw new BadRequestException("Linked expense must exist and be approved");
+        const direct = await tx.orm.public.PayablePayment.where({
+          organizationId,
+          expenseId: input.expenseId,
+          reversedAt: null,
+        }).all();
+        if (direct.length)
+          throw new ConflictException(
+            "Reverse direct expense payments before linking a vendor bill",
+          );
+      }
       const [bill] = await tx.orm.public.VendorBill.where({
         organizationId,
         id,
@@ -608,6 +650,33 @@ export class AccountsPayableService {
             .affectedCount()
             .build(),
         );
+      if (expenseId) {
+        const linked = await tx.orm.public.VendorBill.where({ organizationId, expenseId }).first();
+        if (linked) throw new ConflictException("Record payment against the linked vendor bill");
+      }
+      if (vendorBillId) {
+        const current = await tx.orm.public.VendorBill.where({
+          organizationId,
+          id: vendorBillId,
+        }).first();
+        if (current?.expenseId) {
+          await tx.execute(
+            this.db.raw
+              .sql`SELECT id FROM expenses WHERE id = ${current.expenseId} AND "organizationId" = ${organizationId} FOR UPDATE`
+              .affectedCount()
+              .build(),
+          );
+          const direct = await tx.orm.public.PayablePayment.where({
+            organizationId,
+            expenseId: current.expenseId,
+            reversedAt: null,
+          }).all();
+          if (direct.length)
+            throw new ConflictException(
+              "Reverse existing direct expense payments before paying this linked bill",
+            );
+        }
+      }
       const payments =
         input.targetType === "VENDOR_BILL"
           ? await tx.orm.public.PayablePayment.where({ organizationId, vendorBillId }).all()
@@ -642,6 +711,49 @@ export class AccountsPayableService {
       return payment;
     });
   }
+  async expenseSettlement(id: string) {
+    const organizationId = this.tenant.organizationId;
+    const expense = await this.db.orm.public.Expense.where({ organizationId, id }).first();
+    if (!expense) throw new NotFoundException("Expense not found");
+    const [linkedBill, organization] = await Promise.all([
+      this.db.orm.public.VendorBill.where({ organizationId, expenseId: id }).first(),
+      this.db.orm.public.Organization.where({ id: organizationId }).first(),
+    ]);
+    const currency = linkedBill?.currency ?? organization?.currency ?? "USD";
+    const total = linkedBill?.totalAmount ?? expense.amount;
+    const payments = await this.db.orm.public.PayablePayment.where({
+      organizationId,
+      ...(linkedBill ? { vendorBillId: linkedBill.id } : { expenseId: id }),
+    })
+      .orderBy((row) => row.paymentDate.desc())
+      .all();
+    const directPayments = linkedBill
+      ? await this.db.orm.public.PayablePayment.where({ organizationId, expenseId: id })
+          .orderBy((row) => row.paymentDate.desc())
+          .all()
+      : [];
+    const canReadBill = hasPermission(this.tenant.role, "accounts-payable:read");
+    return {
+      expenseId: id,
+      approvalStatus: expense.approvalStatus,
+      expenseAmount: expense.amount,
+      expenseCurrency: organization?.currency ?? "USD",
+      basis: linkedBill ? "BILL" : "EXPENSE",
+      ...settlementSummary(total, currency, payments),
+      linked: !!linkedBill,
+      linkedBill:
+        linkedBill && canReadBill
+          ? {
+              id: linkedBill.id,
+              billNumber: linkedBill.billNumber,
+              status: linkedBill.status,
+            }
+          : null,
+      // Linked payment audit is subject to AP read permission, not just expense read.
+      payments: !linkedBill || canReadBill ? payments : [],
+      directPayments,
+    };
+  }
   listPayments(targetType: "VENDOR_BILL" | "EXPENSE", targetId: string) {
     return this.db.orm.public.PayablePayment.where({
       organizationId: this.tenant.organizationId,
@@ -650,7 +762,11 @@ export class AccountsPayableService {
       .orderBy((row) => row.paymentDate.desc())
       .all();
   }
-  async reversePayment(id: string, input: ReversePayablePaymentDto) {
+  async reversePayment(
+    id: string,
+    input: ReversePayablePaymentDto,
+    targetType?: "VENDOR_BILL" | "EXPENSE",
+  ) {
     return this.db.transaction(async (tx) => {
       const reconciliation = await tx.orm.public.BankReconciliation.where({
         organizationId: this.tenant.organizationId,
@@ -665,6 +781,7 @@ export class AccountsPayableService {
         id,
         version: input.expectedVersion,
         reversedAt: null,
+        ...(targetType ? { targetType } : {}),
       }).updateAll({
         reversedAt: now(),
         reversedById: this.tenant.userId,

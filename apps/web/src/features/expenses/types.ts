@@ -20,6 +20,10 @@ export interface ApprovalEvent {
 }
 
 export interface Expense {
+  settlement?: Pick<
+    ExpenseSettlement,
+    "linked" | "basis" | "currency" | "totalAmount" | "paidAmount" | "balance" | "settlementStatus"
+  >;
   id: string;
   title: string;
   description: string | null;
@@ -59,4 +63,27 @@ export interface ExpenseFilters {
   period: string;
   sort: string;
   order: string;
+}
+
+export interface ExpenseSettlement {
+  expenseId: string;
+  approvalStatus: ApprovalStatus;
+  expenseAmount: string;
+  expenseCurrency: string;
+  basis: "BILL" | "EXPENSE";
+  currency: string;
+  totalAmount: string;
+  paidAmount: string;
+  balance: string;
+  settlementStatus: "UNPAID" | "PARTIALLY_PAID" | "PAID";
+  linked: boolean;
+  linkedBill: { id: string; billNumber: string; status: string } | null;
+  payments: import("../accounts-payable/types").PayablePayment[];
+  directPayments?: import("../accounts-payable/types").PayablePayment[];
+}
+export interface ExpenseSettlementInput {
+  amount: string;
+  paymentDate: string;
+  method: string;
+  reference: string;
 }

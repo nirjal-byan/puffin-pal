@@ -188,7 +188,7 @@ export class CashFlowService {
         ? this.salaryEvents(organizationId, organization.currency, from, to, events)
         : Promise.resolve(),
       configuration.includeApprovedExpenses
-        ? this.expenseEvents(organizationId, from, to, events)
+        ? this.expenseEvents(organizationId, organization.currency, from, to, events)
         : Promise.resolve(),
     ]);
     if (configuration.includeApprovedExpenses)
@@ -415,13 +415,14 @@ export class CashFlowService {
 
   private async expenseEvents(
     organizationId: string,
+    currency: string,
     from: string,
     to: string,
     events: ForecastEvent[],
   ) {
     const [expenses, bills, payments] = await Promise.all([
       this.db.orm.public.Expense.where({ organizationId, approvalStatus: "APPROVED" }).all(),
-      this.db.orm.public.VendorBill.where({ organizationId, status: "APPROVED" }).all(),
+      this.db.orm.public.VendorBill.where({ organizationId }).all(),
       this.db.orm.public.PayablePayment.where({ organizationId }).all(),
     ]);
     const linkedExpenseIds = new Set(bills.map((bill) => bill.expenseId).filter(Boolean));
@@ -429,6 +430,8 @@ export class CashFlowService {
     for (const payment of activePayments) {
       const paymentDate = date(payment.paymentDate);
       if (paymentDate < from || paymentDate > to) continue;
+      if (payment.currency !== currency)
+        throw new ConflictException("Cash flow forecasting requires one organization currency");
       events.push({
         id: `payable-payment:${payment.id}`,
         source: "APPROVED_EXPENSE",
@@ -440,6 +443,9 @@ export class CashFlowService {
       });
     }
     for (const bill of bills) {
+      if (bill.status !== "APPROVED") continue;
+      if (bill.currency !== currency)
+        throw new ConflictException("Cash flow forecasting requires one organization currency");
       const paid = activePayments
         .filter((payment) => payment.vendorBillId === bill.id)
         .reduce((sum, payment) => sum + moneyToCents(payment.amount), 0n);

@@ -131,6 +131,82 @@ Manual checks:
 Expense settlements, first-100 list pagination, new expense linking, and rejected-field reopening
 remain deferred. No schema, financial calculation, authorization, or infrastructure changes are made.
 
+## Expense settlement integration — Batch 3
+
+The existing relationship is one expense to at most one bill (`vendor_bill_expense_key`), and a
+bill references at most one expense. Expense cost and bill obligation are separate views of the
+same linked cost. No expense or payment is automatically cloned when navigating between them.
+Standalone approved expenses use `PayablePayment` with target `EXPENSE`; linked expenses use the
+bill's `VENDOR_BILL` payments. Approval and settlement remain independent states.
+
+`GET /expenses/:id/settlement` adds the missing read-side integration: organization-scoped
+expense/bill authority, currency, original cost, obligation amount, active paid amount, outstanding
+balance, status, and retained payment history. Bill metadata/payment audit requires AP read
+permission; expense read permits the expense settlement amounts and its direct payment history.
+Expense list/detail responses also include settlement badges and server-calculated balances.
+All amounts remain exact decimal strings derived with integer cents on the server.
+
+The Expenses **Settlement** action records partial/full payments only for approved standalone
+expenses with `expenses:pay`. Submission is guarded, and retries within the same payment form keep
+the same idempotency key and submitted values. Following an uncertain response, reload history
+before starting a different payment. Confirmed reversals require a reason and current payment
+version. Existing reconciliation restrictions remain enforced. List, detail, and settlement
+history reload after success. Related reporting/forecast views load fresh on navigation; no
+frontend financial balances or secondary settlement records are maintained.
+
+Linked expenses expose **Open bill** instead of direct payment creation. Bill activity exposes
+its linked expense with approval and settlement information, guarded by expense read permission.
+The links open the specific record even if it is outside the current list page. Missing linked
+records produce an error, not an invented zero balance. Reversing a bill payment reloads the
+linked expense view alongside bill history and the AP list/summary.
+
+Linking and direct payment writes serialize on the expense row. A bill cannot be attached to an
+expense with active direct payments, and direct-payment creation rechecks the link after locking.
+Earlier direct payments on a historically linked expense remain visible separately and may be
+reversed using expense-payment permissions. Active legacy direct payments block further payment
+of the linked bill until corrected. Reversal routes now constrain the payment target type as well
+as tenant/version; an expense reversal route cannot reverse a vendor bill payment.
+
+Financial consistency fixes:
+
+- Forecasting excludes standalone events for expenses linked to bills in **any** state. Only an
+  approved bill emits its remaining payable obligation; draft/rejected/voided bills do not silently
+  turn back into standalone expense obligations. Active payment outflows remain separate events.
+- Forecasting rejects mixed-currency payable sources, consistent with its one-currency model.
+- Expense report costs belong to the organization's currency, and settlement sums filter payment
+  currency. Requesting another currency no longer labels these costs with the requested currency.
+- Report cost totals count an approved expense once. Paid expense costs are capped at the expense
+  amount, AP balances use bill amounts, and cash movement uses active payment rows. Reversals leave
+  cost history intact and remove the reversed payment from active cash/paid totals.
+- The Overview expense/net cash flow cards retain their existing approved-expense-date basis.
+  Settlement cash reports use payment dates; the settlement dialog explains the distinction.
+
+A linked bill may have a different amount/currency than its original expense. The UI explicitly
+separates original expense cost from the bill obligation and performs no currency conversion.
+Creating new links through a picker, rejected-bill field reopening, vendor restoration, and
+server pagination remain outside this batch. Expenses inherit the organization's currency;
+there is no separate historical expense-currency model or general ledger.
+
+Verification: focused API, frontend service and actual dialog-handler tests, AP/report integration
+in disposable PostgreSQL, TypeScript checks, and targeted lint. Integration checks cover partial
+and full settlement, tenant isolation, linked payment/reversal history, reporting without duplicate
+costs/cash, and currency filtering. Interactive browser verification remains manual.
+
+Manual checks:
+
+1. Open an approved standalone expense's **Settlement** dialog; record a partial payment, then the
+   remainder. Verify list/details show partial then paid status and zero balance.
+2. Reverse a payment with a reason. Verify it stays in history and the outstanding balance returns.
+   Try a reconciled payment and check the instruction to reverse reconciliation first.
+3. Open a linked expense and follow **Open bill**. Verify there is no direct settlement action.
+   Pay/reverse the bill, then check its linked expense status and follow the expense link back.
+4. Verify read-only users can inspect history but cannot pay/reverse; missing/other-tenant IDs fail.
+5. Compare expense cost, paid/unpaid expense totals, AP outstanding, and cash movement reports after
+   a partial payment/reversal. A linked bill must not create a second approved expense cost.
+
+Run `pnpm test:accounts-payable` in `apps/web`, and `pnpm test:expense-settlement` in `apps/api`.
+The latter owns disposable test databases and does not reset or seed the development database.
+
 ## Known limitation
 
 PuffinPal records payments but does not initiate bank transfers. Foreign-exchange conversion is not performed; bills and payments must use the same currency.

@@ -15,6 +15,7 @@ import { DATABASE } from "../../infrastructure/database/database.module.js";
 import type { Database } from "../../infrastructure/database/client.js";
 import type { AuthenticatedRequest } from "../../common/types/auth.types.js";
 import type { CreateExpenseDto, ExpenseQueryDto, UpdateExpenseDto } from "./expense.dto.js";
+import { settlementSummary } from "../accounts-payable/settlement-summary.js";
 import { expenseAmount } from "./expense-money.js";
 import { ReceiptStorageService } from "./receipt-storage.service.js";
 import { validateReceipt } from "./receipt-validation.js";
@@ -129,6 +130,28 @@ export class ExpensesService {
     };
   }
 
+  private async settlements() {
+    const organizationId = this.organizationId;
+    const [bills, payments, organization] = await Promise.all([
+      this.db.orm.public.VendorBill.where({ organizationId }).all(),
+      this.db.orm.public.PayablePayment.where({ organizationId }).all(),
+      this.db.orm.public.Organization.where({ id: organizationId }).first(),
+    ]);
+    return (expense: { id: string; amount: string }) => {
+      const bill = bills.find((row) => row.expenseId === expense.id);
+      return {
+        linked: !!bill,
+        basis: bill ? "BILL" : "EXPENSE",
+        ...settlementSummary(
+          bill?.totalAmount ?? expense.amount,
+          bill?.currency ?? organization?.currency ?? "USD",
+          payments.filter((payment) =>
+            bill ? payment.vendorBillId === bill.id : payment.expenseId === expense.id,
+          ),
+        ),
+      };
+    };
+  }
   async list(query: ExpenseQueryDto) {
     let rows = await this.db.orm.public.Expense.where({
       organizationId: this.organizationId,
@@ -160,8 +183,14 @@ export class ExpensesService {
       return av < bv ? -direction : av > bv ? direction : 0;
     });
     const selected = rows.slice(query.offset, query.offset + query.limit);
+    const settlement = await this.settlements();
     return {
-      items: await Promise.all(selected.map((row) => this.details(row))),
+      items: await Promise.all(
+        selected.map(async (row) => ({
+          ...(await this.details(row)),
+          settlement: settlement(row),
+        })),
+      ),
       total: rows.length,
       pendingCount,
       limit: query.limit,
@@ -169,7 +198,9 @@ export class ExpensesService {
     };
   }
   async get(id: string) {
-    return this.details(await this.find(id), true);
+    const expense = await this.find(id);
+    const settlement = await this.settlements();
+    return { ...(await this.details(expense, true)), settlement: settlement(expense) };
   }
   async create(input: CreateExpenseDto) {
     const expense = await this.db.orm.public.Expense.create({

@@ -1,6 +1,8 @@
 "use client";
 import type { Permission } from "@puffinpal/permissions";
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
+import { useSearchParams } from "next/navigation";
+import { ExpenseSettlementDialog } from "./expense-settlement-dialog";
 import { errorMessage, type WorkspaceApi } from "@/lib/api";
 import { validateExpense, validateReceiptFile } from "../../expenses/schemas/expense.schema";
 import { FormModal } from "@/components/ui/form-modal";
@@ -28,6 +30,9 @@ export default function ExpensesPage({
   onSaved: (message: string) => void;
   onError: (error: unknown) => void;
 }) {
+  const search = useSearchParams();
+  const initialExpenseId = search.get("expense");
+  const [settlementId, setSettlementId] = useState<string | null>(null);
   const canCreate = permissions.includes("expenses:create"),
     canUpdate = permissions.includes("expenses:update"),
     canDelete = permissions.includes("expenses:delete"),
@@ -51,6 +56,20 @@ export default function ExpensesPage({
     [creating, setCreating] = useState(false),
     [deleting, setDeleting] = useState<Expense | null>(null);
   const [selected, setSelected] = useState<Expense | null>(null);
+  useEffect(() => {
+    if (!initialExpenseId) return;
+    const controller = new AbortController();
+    void api<Expense>(`/expenses/${encodeURIComponent(initialExpenseId)}`, {
+      signal: controller.signal,
+    })
+      .then((expense) => {
+        if (!controller.signal.aborted) setSelected(expense);
+      })
+      .catch((error) => {
+        if (!controller.signal.aborted) onError(error);
+      });
+    return () => controller.abort();
+  }, [api, initialExpenseId, onError]);
   const [workflow, setWorkflow] = useState<ExpenseWorkflow | null>(null);
   const [rejectionReason, setRejectionReason] = useState("");
   const [busy, setBusy] = useState(false);
@@ -242,6 +261,7 @@ export default function ExpensesPage({
           approve: canApprove,
         }}
         money={money}
+        onSettlement={(expense) => setSettlementId(expense.id)}
         onPending={showPending}
         onDetails={(expense) => void openDetails(expense)}
         onReceipt={(expense) => void openReceipt(expense)}
@@ -254,10 +274,24 @@ export default function ExpensesPage({
       />
       {selected && (
         <ExpenseDetails
+          onSettlement={() => setSettlementId(selected.id)}
           expense={selected}
           money={money}
           onClose={() => setSelected(null)}
           onReceipt={(expense, download) => void openReceipt(expense, download)}
+        />
+      )}
+      {settlementId && (
+        <ExpenseSettlementDialog
+          id={settlementId}
+          api={api}
+          permissions={permissions}
+          onClose={() => setSettlementId(null)}
+          onSaved={async () => {
+            onSaved("Expense settlement updated.");
+            await load();
+            if (selected) setSelected(await api<Expense>(`/expenses/${selected.id}`));
+          }}
         />
       )}
       {workflow && (

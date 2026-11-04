@@ -5,7 +5,9 @@ export function ExpenseDetails({
   money,
   onClose,
   onReceipt,
+  onSettlement,
 }: {
+  onSettlement?: () => void;
   expense: Expense;
   money: (amount: string) => string;
   onClose: () => void;
@@ -22,6 +24,17 @@ export function ExpenseDetails({
           ×
         </button>
       </div>
+      {onSettlement && (
+        <button className="button secondary compact" onClick={onSettlement}>
+          Settlement / linked bill
+        </button>
+      )}
+      {expense.settlement && (
+        <p>
+          Settlement: {expense.settlement.settlementStatus.replaceAll("_", " ")} · Outstanding:{" "}
+          {expense.settlement.currency} {expense.settlement.balance}
+        </p>
+      )}
       <dl>
         <dt>Status</dt>
         <dd>

@@ -202,6 +202,11 @@ export class AccountsPayableController {
       targetId: id,
     });
   }
+  @Get("expenses/:id/settlement")
+  @RequirePermissions("expenses:read")
+  expenseSettlement(@Param("id", ParseUUIDPipe) id: string) {
+    return this.service.expenseSettlement(id);
+  }
   @Get("expenses/:id/payments")
   @RequirePermissions("expenses:read")
   expensePayments(@Param("id", ParseUUIDPipe) id: string) {
@@ -223,12 +228,12 @@ export class AccountsPayableController {
     @Param("id", ParseUUIDPipe) id: string,
     @Body() input: ReversePayablePaymentDto,
   ) {
-    return this.service.reversePayment(id, input);
+    return this.service.reversePayment(id, input, "EXPENSE");
   }
   @Post("accounts-payable/payments/:id/reverse")
   @HttpCode(200)
   @RequirePermissions("accounts-payable:pay")
   reverse(@Param("id", ParseUUIDPipe) id: string, @Body() input: ReversePayablePaymentDto) {
-    return this.service.reversePayment(id, input);
+    return this.service.reversePayment(id, input, "VENDOR_BILL");
   }
 }

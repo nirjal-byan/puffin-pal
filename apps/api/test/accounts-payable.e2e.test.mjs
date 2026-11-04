@@ -326,10 +326,25 @@ test("accounts payable enforces tenant, lifecycle, idempotency, and concurrent b
       "POST",
       201,
     );
+    const expenseSettlement = await request(`/expenses/${standaloneExpense.id}/settlement`, owner.accessToken, undefined, "GET");
+    assert.equal(expenseSettlement.settlementStatus, "PARTIALLY_PAID");
+    assert.equal(expenseSettlement.balance, "5.00");
+    await request(`/expenses/${standaloneExpense.id}/settlement`, other.accessToken, undefined, "GET", 404);
+    await request(`/accounts-payable/payments/${expensePayment.id}/reverse`, owner.accessToken, { expectedVersion: expensePayment.version, reason: "Wrong payment endpoint" }, "POST", 409);
+    await request(`/expenses/${standaloneExpense.id}/payments`, owner.accessToken, { amount: "5.00", paymentDate: "2026-10-20", method: "CASH", idempotencyKey: "standalone-expense-full" }, "POST", 201);
+    const full = await request(`/expenses/${standaloneExpense.id}/settlement`, owner.accessToken, undefined, "GET");
+    assert.equal(full.settlementStatus, "PAID");
+    assert.equal(full.balance, "0.00");
     await request(`/expense-payments/${expensePayment.id}/reverse`, owner.accessToken, {
       expectedVersion: expensePayment.version,
       reason: "Cash entry correction",
     });
+    const restoredExpense = await request(`/expenses/${standaloneExpense.id}/settlement`, owner.accessToken, undefined, "GET");
+    assert.equal(restoredExpense.balance, "3.00");
+    assert.equal(restoredExpense.payments.length, 2);
+    assert.ok(restoredExpense.payments.find((row) => row.id === expensePayment.id).reversedAt);
+    const details = await request(`/expenses/${standaloneExpense.id}`, owner.accessToken, undefined, "GET");
+    assert.equal(details.settlement.balance, "3.00");
     const expense = await db.orm.public.Expense.create({
       organizationId: owner.organization.id,
       title: "Linked expense",

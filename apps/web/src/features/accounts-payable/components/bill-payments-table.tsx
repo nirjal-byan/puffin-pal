@@ -4,21 +4,27 @@ import { canReversePayment } from "../services/bill-workflow-api";
 import type { PayablePayment } from "../types";
 
 export function BillPaymentsTable({
+  canReverse,
+  caption = "Bill payment history",
+  emptyMessage = "No payments recorded for this bill.",
   payments,
   permissions,
   busy,
   onReverse,
 }: {
+  canReverse?: (payment: PayablePayment) => boolean;
+  caption?: string;
+  emptyMessage?: string;
   payments: PayablePayment[];
   permissions: readonly Permission[];
   busy: boolean;
   onReverse: (payment: PayablePayment) => void;
 }) {
-  if (!payments.length) return <p>No payments recorded for this bill.</p>;
+  if (!payments.length) return <p>{emptyMessage}</p>;
   return (
     <div className="table-scroll">
       <table className="ap-table">
-        <caption>Bill payment history</caption>
+        <caption>{caption}</caption>
         <thead>
           <tr>
             <th>Date</th>
@@ -55,7 +61,7 @@ export function BillPaymentsTable({
                 )}
               </td>
               <td>
-                {canReversePayment(payment, permissions) && (
+                {(canReverse ? canReverse(payment) : canReversePayment(payment, permissions)) && (
                   <button
                     className="button secondary compact"
                     disabled={busy}

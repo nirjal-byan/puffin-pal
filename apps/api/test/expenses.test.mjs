@@ -59,7 +59,7 @@ test("expense service scopes reads and writes to the authenticated organization"
   const storage = { async delete() {}, async put() {}, async get() { return Buffer.from("receipt"); } };
   const users = { where() { return { select() { return { async all() { return [{ id: "user-a", fullName: "User A" }]; } }; } }; } };
   const history = { where() { return { async first() { return null; }, orderBy() { return { async all() { return []; } }; } }; } };
-  const service = new ExpensesService({ orm: { public: { Expense: model, User: users, ExpenseApprovalHistory: history } } }, { auth: { organizationId: "org-a", userId: "user-a", role: "PROJECT_MANAGER" } }, storage);
+  const service = new ExpensesService({ orm: { public: { Expense: model, User: users, ExpenseApprovalHistory: history, VendorBill: { where: () => ({ all: async () => [] }) }, PayablePayment: { where: () => ({ all: async () => [] }) }, Organization: { where: () => ({ first: async () => ({ currency: "USD" }) }) } } } }, { auth: { organizationId: "org-a", userId: "user-a", role: "PROJECT_MANAGER" } }, storage);
   const listed = await service.list({ limit: 20, offset: 0, sort: "date", order: "desc" });
   assert.equal(listed.total, 1);
   assert.equal("receiptKey" in listed.items[0], false);

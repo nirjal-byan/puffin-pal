@@ -52,6 +52,7 @@ export type BillTransition = "submit" | "approve" | "reject" | "resubmit" | "voi
 export interface PayablePayment {
   id: string;
   vendorBillId: string | null;
+  expenseId?: string | null;
   targetType: "VENDOR_BILL" | "EXPENSE";
   amount: string;
   currency: string;

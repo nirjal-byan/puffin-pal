@@ -1,3 +1,4 @@
+import { LinkedExpense } from "../components/linked-expense";
 import { useState } from "react";
 import type { Permission } from "@puffinpal/permissions";
 import { FormField, FormModal } from "@/components/ui/form-modal";
@@ -208,6 +209,14 @@ export function BillActivityDialog({
             </div>
             {bill.status === "APPROVED" && bill.settlementStatus !== "UNPAID" && (
               <p>Reverse active payments before voiding this bill.</p>
+            )}
+            {bill.expenseId && (
+              <LinkedExpense
+                key={`${bill.expenseId}:${bill.version}:${bill.paidAmount}`}
+                id={bill.expenseId}
+                api={api}
+                canRead={permissions.includes("expenses:read")}
+              />
             )}
             <h3>Payment history</h3>
             <BillPaymentsTable
