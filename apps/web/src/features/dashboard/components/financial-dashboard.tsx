@@ -15,6 +15,8 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import type { Permission } from "@puffinpal/permissions";
+import type { Tab } from "@/lib/navigation";
 import type { WorkspaceApi } from "@/lib/api";
 import type { DashboardPreset as Preset } from "../types";
 import {
@@ -26,7 +28,11 @@ import {
 import { useFinancialSummary } from "../hooks/use-financial-summary";
 import { DashboardPeriodFilter } from "./dashboard-period-filter";
 
-export function FinancialDashboard({ api }: { api: WorkspaceApi }) {
+export function FinancialDashboard({ api, permissions = [], navigate }: {
+  api: WorkspaceApi;
+  permissions?: readonly Permission[];
+  navigate?: (tab: Tab) => void;
+}) {
   const initial = useMemo(() => presetRange("30"), []);
   const [preset, setPreset] = useState<Preset>("30");
   const [draftRange, setDraftRange] = useState(initial);
@@ -39,6 +45,7 @@ export function FinancialDashboard({ api }: { api: WorkspaceApi }) {
       revenue: Number(point.revenue),
       collections: Number(point.collections),
       expenses: Number(point.expenses),
+      outflows: point.outflows === null ? undefined : Number(point.outflows),
     })) ?? [];
   const categories =
     summary?.expenseCategories.map((item) => ({
@@ -49,7 +56,8 @@ export function FinancialDashboard({ api }: { api: WorkspaceApi }) {
   const empty =
     summary &&
     Object.values(summary.metrics).every((value) => Number(value) === 0) &&
-    summary.invoiceStatuses.every((item) => item.count === 0);
+    summary.invoiceStatuses.every((item) => item.count === 0) &&
+    Object.values(summary.attention).every((value) => Number(value) === 0);
   const currency = summary?.currency ?? "USD";
   const tooltipFormatter = (value: unknown) =>
     money(String(Array.isArray(value) ? (value[0] ?? 0) : (value ?? 0)), currency);
@@ -59,7 +67,7 @@ export function FinancialDashboard({ api }: { api: WorkspaceApi }) {
       <div className="dashboard-heading-row" data-tour="page-heading">
         <div>
           <h1 id="financial-dashboard-title">Financial overview</h1>
-          <p>Track billing and cash flow at a glance.</p>
+          <p>Track billing and recorded cash movement at a glance.</p>
         </div>
         <DashboardPeriodFilter
           preset={preset}
@@ -83,14 +91,16 @@ export function FinancialDashboard({ api }: { api: WorkspaceApi }) {
             Try again
           </button>
         </div>
-      ) : loading && !summary ? (
+      ) : loading ? (
         <div className="dashboard-kpi-grid" aria-label="Loading financial summary">
-          {Array.from({ length: 6 }, (_, index) => (
+          {Array.from({ length: 8 }, (_, index) => (
             <div className="panel dashboard-kpi skeleton" key={index} />
           ))}
         </div>
       ) : summary ? (
         <>
+          <p className="muted">{summary.range.from} – {summary.range.to} · {currency} only; no currency conversion.
+            Expenses use the organization currency. Other invoice, bill and payroll currencies are excluded.</p>
           <div
             className="dashboard-kpi-grid"
             aria-label="Financial summary"
@@ -98,21 +108,42 @@ export function FinancialDashboard({ api }: { api: WorkspaceApi }) {
           >
             {(
               [
-                ["Invoiced revenue", summary.metrics.invoicedRevenue, "Finalized in this period"],
+                ["Invoiced revenue", summary.metrics.invoicedRevenue, "Issued invoice value in this period"],
                 ["Payments received", summary.metrics.paymentsReceived, "Collected in this period"],
                 ["Outstanding", summary.metrics.outstandingBalance, `As of ${summary.range.to}`],
                 ["Overdue", summary.metrics.overdueBalance, `Past due as of ${summary.range.to}`],
-                ["Expenses", summary.metrics.expenses, "Recorded in this period"],
-                ["Net cash flow", summary.metrics.netCashFlow, "Collections minus expenses"],
+                ["Approved expenses", summary.metrics.expenses, "Approved costs by expense date; not cash paid"],
+                ["Cash outflows", summary.metrics.cashOutflows, "Active payable payments + payroll payments"],
+                ["Outstanding payables", summary.metrics.outstandingPayables, `Approved bill balances as of ${summary.range.to}`],
+                ["Net cash flow", summary.metrics.netCashFlow, "Collections minus recorded cash outflows"],
               ] as const
             ).map(([label, value, detail]) => (
               <article className="dashboard-kpi" key={label}>
                 <span>{label}</span>
-                <strong>{money(value, currency)}</strong>
+                <strong>{value === null ? "Unavailable" : money(value, currency)}</strong>
                 <small>{detail}</small>
               </article>
             ))}
           </div>
+          <section className="panel" aria-label="Financial attention">
+            <h3>Needs attention</h3>
+            <p className="muted">Records dated through {summary.range.to}, using current approval and reversal states.
+              Balances include payments through that date. These are not immutable historical snapshots.</p>
+            <div className="overview-links">
+              {([
+                ["Overdue invoices", summary.attention.overdueInvoices, summary.metrics.overdueBalance, "invoices", "invoices:read"],
+                ["Unpaid bills", summary.attention.unpaidBills, summary.metrics.outstandingPayables, "accounts-payable", "accounts-payable:read"],
+                ["Expenses awaiting approval", summary.attention.pendingExpenses, null, "expenses", "expenses:approve"],
+                ["Standalone expenses awaiting settlement", summary.attention.unsettledExpenses, summary.attention.unsettledExpenseAmount, "expenses", "expenses:read"],
+              ] as const).filter(([, count, , , permission]) => count !== null && permissions.includes(permission)).map(([label, count, amount, tab]) => (
+                <button type="button" className="overview-link" key={label} disabled={!navigate} onClick={() => navigate?.(tab)}>
+                  <span><strong>{label}: {count}</strong>{amount !== null && <small> · {money(amount, currency)}</small>}</span>
+                  <span aria-hidden="true">→</span>
+                </button>
+              ))}
+            </div>
+            <small>Linked expenses are included in bill balances and excluded from standalone settlements.</small>
+          </section>
           {empty ? (
             <div className="panel dashboard-state">
               <h3>No financial activity yet</h3>
@@ -125,12 +156,12 @@ export function FinancialDashboard({ api }: { api: WorkspaceApi }) {
               <article
                 className="panel dashboard-chart dashboard-chart-wide"
                 role="img"
-                aria-label="Invoiced revenue and payment collections trend"
+                aria-label="Invoiced revenue, collections and recorded cash outflows trend"
               >
                 <header>
                   <div>
-                    <span className="dashboard-chart-kicker">Cash flow</span>
-                    <h3>Revenue and collections</h3>
+                    <span className="dashboard-chart-kicker">Issued value and recorded payments</span>
+                    <h3>Billing and cash movement ({currency})</h3>
                   </div>
                   <span>{title(summary.range.granularity)} view</span>
                 </header>
@@ -145,7 +176,7 @@ export function FinancialDashboard({ api }: { api: WorkspaceApi }) {
                     <YAxis width={52} />
                     <Tooltip formatter={tooltipFormatter} />
                     <Line
-                      type="monotone"
+                      type="linear"
                       dataKey="revenue"
                       name="Invoiced"
                       stroke="#478d6d"
@@ -154,7 +185,7 @@ export function FinancialDashboard({ api }: { api: WorkspaceApi }) {
                       activeDot={{ r: 4 }}
                     />
                     <Line
-                      type="monotone"
+                      type="linear"
                       dataKey="collections"
                       name="Collected"
                       stroke="#3178c6"
@@ -162,9 +193,11 @@ export function FinancialDashboard({ api }: { api: WorkspaceApi }) {
                       dot={false}
                       activeDot={{ r: 4 }}
                     />
+                    {summary.metrics.cashOutflows !== null && <Line type="linear" dataKey="outflows" name="Cash outflows" stroke="#d16a62" strokeWidth={2.5} dot={false} />}
                   </LineChart>
                 </ResponsiveContainer>
                 <div className="dashboard-chart-key">
+                  {summary.metrics.cashOutflows !== null && <span>Cash outflows (red)</span>}
                   <span>
                     <i className="revenue" />
                     Invoiced
@@ -223,7 +256,7 @@ export function FinancialDashboard({ api }: { api: WorkspaceApi }) {
                     <span className="dashboard-chart-kicker">Spending</span>
                     <h3>Expense categories</h3>
                   </div>
-                  <span>Current period</span>
+                  <span>Approved costs · {currency}</span>
                 </header>
                 <ResponsiveContainer width="100%" height={260}>
                   <BarChart data={categories} layout="vertical" margin={{ left: 18 }}>

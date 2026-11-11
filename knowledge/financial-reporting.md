@@ -25,7 +25,7 @@ PuffinPal's financial reporting module aggregates existing tenant-owned records.
 | Payroll cost        | Finalized payroll-run snapshots, by payment date                       |
 | Payroll paid        | Payroll payment records, by payment date                               |
 | Cash inflow         | Recorded invoice payments                                              |
-| Cash outflow        | Recorded payroll payments                                              |
+| Cash outflow        | Active payable payments plus recorded payroll payments, by payment date |
 | Reconciled movement | Recorded payments linked to a non-reversed bank reconciliation         |
 
 Draft invoices are excluded. Partial invoice and payroll payments are summed once. Bank imports do not create additional cash movement; reconciliation only confirms an existing payment.
@@ -47,8 +47,7 @@ This report is not GAAP- or IFRS-compliant. PuffinPal has no general ledger, jou
 
 ## Known data limitations
 
-- Expenses do not have payment records, so approved expenses are not presented as paid expenses or historical cash outflows.
-- Vendor bills and accounts-payable payments are not modeled. The payable endpoint reports that it is unavailable rather than returning invented zero totals.
+- Approved expense costs and cash outflows are distinct. Standalone expenses and linked bills settle through active payable payments; linked costs are counted once from expenses. Unlinked bills are obligations and cash evidence, but do not automatically become an expense in operational profitability.
 - Invoice-payment reversal records are not modeled. Deleting or reversing an invoice payment is therefore not inferred.
 - Projects are not linked to invoices, so revenue by project is unavailable.
 - Forecast values are excluded from historical cash movement.
@@ -82,6 +81,46 @@ All endpoints accept `from`, `to`, `currency`, and `groupBy=month|quarter|year`.
 General reports contain organization-level payroll totals because payroll is an operating cost. Employee-level payroll is not exposed by the overview endpoint.
 
 CSV cells that begin with spreadsheet formula characters are prefixed safely. CSV and PDF exports include the reporting period, currency, basis, and limitations.
+
+## Batch 5 dashboard and reporting improvements (2026-11-11)
+
+The existing `GET /dashboard/financial-summary` adds `metrics.cashOutflows`,
+`metrics.outstandingPayables`, `trend[].outflows`, and an `attention` object containing
+counts of overdue invoices, unpaid approved bills, pending expenses, and unsettled
+approved standalone expenses, with the standalone balance amount. All aggregates
+execute in tenant-scoped PostgreSQL; no financial directories are fetched by the dashboard.
+
+Dashboard invoiced revenue uses issue dates, collections use payment dates, and approved
+expenses use expense dates. Net cash flow now means collections minus active payable
+payments minus payroll payments in the selected inclusive date range. Approval alone
+never implies a cash outflow. Reversed payments are excluded; linked expense/bill
+payments are counted once. Outstanding invoice and bill balances include payments
+through the end date, independently of the range start. Standalone expense settlement
+counts exclude every expense with a linked bill. Pending approval counts use current
+approval state for expenses dated through the end date.
+
+The dashboard uses organization currency only and explicitly excludes other invoice,
+bill, and payroll currencies. Expense records inherit organization currency. No exchange
+rates are used. Cash aggregates require financial-report and AP read permission;
+AP balances require AP read permission, enforced in the backend. Unavailable aggregates
+are null, not invented zeros. Navigation additionally checks the relevant frontend
+permission; expense approval navigation requires approval permission.
+
+Trend buckets clip their first and last periods to the selected range and fill missing
+periods with zero. Reports add `trend[].employerContributions`; `trend[].payroll` retains
+its gross-payroll meaning. Trend profit and chart costs now include employer contributions,
+matching the existing headline profitability calculation. Zero-value chart bars no longer
+imply activity. Report presets use UTC calendar dates, matching dashboard presets.
+Invalid/reversed ranges and ranges exceeding 1,826 days are rejected before report requests.
+Dashboard custom Apply uses the same validation. Both loaders ignore aborted responses;
+reports hide old results when dates/currency change, show retryable errors, and catch
+export errors. Exports are disabled while report data is unavailable or loading.
+
+These are operational views using current approval and reversal state, not immutable
+historical accounting snapshots. Dashboard attention links open the relevant module;
+users can apply that module's server filters to examine the records. Forecast scenarios,
+upcoming recurring projections, payment correction policy, and exchange-rate conversion
+remain unchanged. Interactive browser verification remains manual.
 
 ## Manual testing
 

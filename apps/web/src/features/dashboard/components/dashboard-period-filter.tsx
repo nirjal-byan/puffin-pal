@@ -2,6 +2,8 @@ import type { Dispatch, SetStateAction } from "react";
 import type { DashboardPreset } from "../types";
 import { dashboardPresetRange } from "../utils";
 
+import { validReportingRange } from "../../financial-reports/utils";
+
 type Range = { from: string; to: string };
 export function DashboardPeriodFilter({
   preset,
@@ -77,7 +79,7 @@ export function DashboardPeriodFilter({
           <button
             type="button"
             className="button primary compact"
-            disabled={!draftRange.from || !draftRange.to || draftRange.from > draftRange.to}
+            disabled={!validReportingRange(draftRange.from, draftRange.to)}
             onClick={() => setRange(draftRange)}
           >
             Apply

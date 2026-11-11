@@ -5,6 +5,7 @@ import {
   Scope,
   UnauthorizedException,
 } from "@nestjs/common";
+import { hasPermission } from "@puffinpal/permissions";
 import { REQUEST } from "@nestjs/core";
 import { Temporal } from "temporal-polyfill";
 import { DATABASE } from "../../infrastructure/database/database.module.js";
@@ -40,6 +41,8 @@ export class FinancialSummaryService {
     if (!this.request.auth) throw new UnauthorizedException();
     const organizationId = this.request.auth.organizationId;
     const { granularity } = reportingRange(input.from, input.to);
+    const canReadPayables = hasPermission(this.request.auth.role, "accounts-payable:read");
+    const canReadCash = canReadPayables && hasPermission(this.request.auth.role, "financial-reports:read");
     const plan = this.db.raw.sql`
       WITH bounds AS (
         SELECT ${input.from}::date AS from_date,
@@ -70,6 +73,7 @@ export class FinancialSummaryService {
         WHERE i."organizationId" = ${organizationId}
           AND i."issuedAt" IS NOT NULL
           AND i."issuedAt" < b.end_exclusive
+          AND i."issueDate" < b.end_exclusive
           AND i.status IN ('ISSUED', 'PAID', 'OVERDUE')
           AND i.currency = o.currency
       ),
@@ -78,7 +82,7 @@ export class FinancialSummaryService {
         FROM finalized
       ),
       buckets AS (
-        SELECT series::date AS bucket_start,
+        SELECT GREATEST(series::date, b.from_date) AS bucket_start,
                LEAST(
                  (series + CASE b.grain
                    WHEN 'day' THEN interval '1 day'
@@ -98,6 +102,49 @@ export class FinancialSummaryService {
           END
         ) series
       ),
+      cash_outflows AS (
+        SELECT pp.amount, pp."paymentDate" AS payment_date
+        FROM payable_payments pp, bounds b, organization o
+        WHERE pp."organizationId" = ${organizationId} AND pp.currency = o.currency
+          AND pp."reversedAt" IS NULL AND ${canReadCash}::boolean
+          AND pp."paymentDate" >= b.from_date AND pp."paymentDate" < b.end_exclusive
+        UNION ALL
+        SELECT pp.amount, pp."paymentDate" AS payment_date
+        FROM payroll_payments pp
+        JOIN payroll_entries pe ON pe."organizationId" = pp."organizationId" AND pe.id = pp."payrollEntryId"
+        JOIN payroll_runs pr ON pr."organizationId" = pe."organizationId" AND pr.id = pe."payrollRunId"
+        CROSS JOIN bounds b CROSS JOIN organization o
+        WHERE pp."organizationId" = ${organizationId} AND pr.currency = o.currency
+          AND ${canReadCash}::boolean
+          AND pp."paymentDate" >= b.from_date AND pp."paymentDate" < b.end_exclusive
+      ),
+      bill_balances AS (
+        SELECT vb.*, GREATEST(vb."totalAmount" - COALESCE(p.paid, 0), 0) AS balance
+        FROM vendor_bills vb CROSS JOIN bounds b CROSS JOIN organization o
+        LEFT JOIN LATERAL (
+          SELECT SUM(pp.amount) AS paid FROM payable_payments pp
+          WHERE pp."organizationId" = vb."organizationId" AND pp."vendorBillId" = vb.id
+            AND pp."reversedAt" IS NULL AND pp.currency = o.currency
+            AND pp."paymentDate" < b.end_exclusive
+        ) p ON true
+        WHERE vb."organizationId" = ${organizationId} AND vb.currency = o.currency
+          AND vb.status = 'APPROVED' AND vb."issueDate" < b.end_exclusive
+          AND ${canReadPayables}::boolean
+      ),
+      unsettled_expenses AS (
+        SELECT e.id, GREATEST(e.amount - COALESCE(p.paid, 0), 0) AS balance
+        FROM expenses e CROSS JOIN bounds b CROSS JOIN organization o
+        LEFT JOIN LATERAL (
+          SELECT SUM(pp.amount) AS paid FROM payable_payments pp
+          WHERE pp."organizationId" = e."organizationId" AND pp."expenseId" = e.id
+            AND pp.currency = o.currency AND pp."reversedAt" IS NULL
+            AND pp."paymentDate" < b.end_exclusive
+        ) p ON true
+        WHERE e."organizationId" = ${organizationId} AND e."approvalStatus" = 'APPROVED'
+          AND e.date < b.end_exclusive
+          AND NOT EXISTS (SELECT 1 FROM vendor_bills vb
+            WHERE vb."organizationId" = e."organizationId" AND vb."expenseId" = e.id)
+      ),
       trend AS (
         SELECT k.bucket_start,
           COALESCE((SELECT SUM(f.total) FROM finalized f
@@ -111,14 +158,17 @@ export class FinancialSummaryService {
           COALESCE((SELECT SUM(e.amount) FROM expenses e
                     WHERE e."organizationId" = ${organizationId}
                       AND e."approvalStatus" = 'APPROVED'
-                      AND e.date >= k.bucket_start AND e.date < k.bucket_end), 0) AS expenses
+                      AND e.date >= k.bucket_start AND e.date < k.bucket_end), 0) AS expenses,
+          COALESCE((SELECT SUM(amount) FROM cash_outflows
+                    WHERE payment_date >= k.bucket_start AND payment_date < k.bucket_end), 0) AS outflows
         FROM buckets k
       ),
       status_counts AS (
         SELECT status, COUNT(*)::int AS count FROM (
           SELECT 'DRAFT'::text AS status
-          FROM invoices i, bounds b
+          FROM invoices i, bounds b, organization o
           WHERE i."organizationId" = ${organizationId}
+            AND i.currency = o.currency
             AND i."createdAt" < b.end_exclusive
             AND (i.status = 'DRAFT' OR i."issuedAt" >= b.end_exclusive)
           UNION ALL
@@ -144,7 +194,7 @@ export class FinancialSummaryService {
       ),
       aging AS (
         SELECT bucket, COALESCE(SUM(outstanding), 0) AS amount,
-               COUNT(*)::int AS count
+               COUNT(b.id)::int AS count
         FROM (VALUES ('CURRENT'), ('1_30'), ('31_60'), ('61_90'), ('OVER_90')) labels(bucket)
         LEFT JOIN balances b ON b.outstanding > 0 AND labels.bucket = CASE
           WHEN b.due_date >= (SELECT to_date FROM bounds) THEN 'CURRENT'
@@ -173,23 +223,33 @@ export class FinancialSummaryService {
             WHERE e."organizationId" = ${organizationId}
               AND e."approvalStatus" = 'APPROVED'
               AND e.date >= b.from_date AND e.date < b.end_exclusive), 0), 'FM999999999999990.00'),
-          'netCashFlow', to_char(
+          'cashOutflows', CASE WHEN ${canReadCash}::boolean THEN
+            round(COALESCE((SELECT SUM(amount) FROM cash_outflows), 0), 2)::text ELSE NULL END,
+          'outstandingPayables', CASE WHEN ${canReadPayables}::boolean THEN
+            round(COALESCE((SELECT SUM(balance) FROM bill_balances), 0), 2)::text ELSE NULL END,
+          'netCashFlow', CASE WHEN ${canReadCash}::boolean THEN to_char(
             COALESCE((SELECT SUM(p.amount) FROM payments p
               JOIN invoices i ON i.id = p."invoiceId" AND i."organizationId" = p."organizationId"
               CROSS JOIN bounds b CROSS JOIN organization o
               WHERE p."organizationId" = ${organizationId} AND i.currency = o.currency
                 AND p."paymentDate" >= b.from_date AND p."paymentDate" < b.end_exclusive), 0)
-            - COALESCE((SELECT SUM(e.amount) FROM expenses e, bounds b
-              WHERE e."organizationId" = ${organizationId}
-                AND e."approvalStatus" = 'APPROVED'
-                AND e.date >= b.from_date AND e.date < b.end_exclusive), 0),
-            'FM999999999999990.00')
+            - COALESCE((SELECT SUM(amount) FROM cash_outflows), 0),
+            'FM999999999999990.00') ELSE NULL END
+        ),
+        'attention', json_build_object(
+          'overdueInvoices', (SELECT COUNT(*)::int FROM balances, bounds WHERE outstanding > 0 AND due_date < to_date),
+          'unpaidBills', CASE WHEN ${canReadPayables}::boolean THEN (SELECT COUNT(*)::int FROM bill_balances WHERE balance > 0) ELSE NULL END,
+          'pendingExpenses', (SELECT COUNT(*)::int FROM expenses e, bounds b WHERE e."organizationId" = ${organizationId}
+            AND e."approvalStatus" = 'PENDING_APPROVAL' AND e.date < b.end_exclusive),
+          'unsettledExpenses', (SELECT COUNT(*)::int FROM unsettled_expenses WHERE balance > 0),
+          'unsettledExpenseAmount', round(COALESCE((SELECT SUM(balance) FROM unsettled_expenses), 0), 2)::text
         ),
         'trend', COALESCE((SELECT json_agg(json_build_object(
           'date', bucket_start::text,
           'revenue', to_char(revenue, 'FM999999999999990.00'),
           'collections', to_char(collections, 'FM999999999999990.00'),
-          'expenses', to_char(expenses, 'FM999999999999990.00')
+          'expenses', to_char(expenses, 'FM999999999999990.00'),
+          'outflows', CASE WHEN ${canReadCash}::boolean THEN round(outflows, 2)::text ELSE NULL END
         ) ORDER BY bucket_start) FROM trend), '[]'::json),
         'invoiceStatuses', COALESCE((SELECT json_agg(json_build_object('status', status, 'count', count) ORDER BY status)
           FROM status_counts), '[]'::json),

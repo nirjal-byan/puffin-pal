@@ -58,7 +58,7 @@ export class FinancialReportsService {
         WHERE i."organizationId" = ${organizationId} AND i."issuedAt" IS NOT NULL
           AND i.status IN ('ISSUED','PAID','OVERDUE')
           AND COALESCE(i.currency, b.currency) = b.currency
-          AND i."issueDate" < b.end_exclusive
+          AND i."issueDate" < b.end_exclusive AND i."issuedAt" < b.end_exclusive
       ),
       invoice_period AS (
         SELECT * FROM issued, bounds b
@@ -148,7 +148,11 @@ export class FinancialReportsService {
           COALESCE((SELECT SUM(total) FROM invoice_period WHERE date_trunc(CASE (SELECT grain FROM bounds) WHEN 'year' THEN 'year' WHEN 'quarter' THEN 'quarter' ELSE 'month' END, "issueDate")::date = bucket),0) invoiced,
           COALESCE((SELECT SUM(amount) FROM payment_period WHERE date_trunc(CASE (SELECT grain FROM bounds) WHEN 'year' THEN 'year' WHEN 'quarter' THEN 'quarter' ELSE 'month' END, "paymentDate")::date = bucket),0) collected,
           COALESCE((SELECT SUM(amount) FROM expense_period WHERE "approvalStatus"='APPROVED' AND date_trunc(CASE (SELECT grain FROM bounds) WHEN 'year' THEN 'year' WHEN 'quarter' THEN 'quarter' ELSE 'month' END, date)::date = bucket),0) expenses,
-          COALESCE((SELECT SUM("totalGross") FROM finalized_payroll WHERE date_trunc(CASE (SELECT grain FROM bounds) WHEN 'year' THEN 'year' WHEN 'quarter' THEN 'quarter' ELSE 'month' END, "paymentDate")::date = bucket),0) payroll
+          COALESCE((SELECT SUM("totalGross") FROM finalized_payroll WHERE date_trunc(CASE (SELECT grain FROM bounds) WHEN 'year' THEN 'year' WHEN 'quarter' THEN 'quarter' ELSE 'month' END, "paymentDate")::date = bucket),0) payroll,
+          COALESCE((SELECT SUM(c.amount) FROM payroll_entry_components c
+            JOIN payroll_entries pe ON pe."organizationId"=c."organizationId" AND pe.id=c."payrollEntryId"
+            JOIN finalized_payroll pr ON pr.id=pe."payrollRunId"
+            WHERE c.type='EMPLOYER_CONTRIBUTION' AND date_trunc(CASE (SELECT grain FROM bounds) WHEN 'year' THEN 'year' WHEN 'quarter' THEN 'quarter' ELSE 'month' END, pr."paymentDate")::date=bucket),0) employer_contributions
         FROM periods
       )
       SELECT json_build_object(
@@ -240,7 +244,7 @@ export class FinancialReportsService {
           'reconciledOutflows',to_char(COALESCE((SELECT SUM(amount) FROM payroll_paid WHERE reconciled),0)+COALESCE((SELECT SUM(amount) FROM payable_payment_period WHERE reconciled),0),'FM999999999999990.00'),
           'forecastIncluded',false
         ),
-        'trend', COALESCE((SELECT json_agg(json_build_object('period',bucket::text,'invoiced',to_char(invoiced,'FM999999999999990.00'),'collected',to_char(collected,'FM999999999999990.00'),'expenses',to_char(expenses,'FM999999999999990.00'),'payroll',to_char(payroll,'FM999999999999990.00'),'profit',to_char(invoiced-expenses-payroll,'FM999999999999990.00')) ORDER BY bucket) FROM trend),'[]'::json)
+        'trend', COALESCE((SELECT json_agg(json_build_object('period',bucket::text,'invoiced',to_char(invoiced,'FM999999999999990.00'),'collected',to_char(collected,'FM999999999999990.00'),'expenses',to_char(expenses,'FM999999999999990.00'),'payroll',to_char(payroll,'FM999999999999990.00'),'employerContributions',to_char(employer_contributions,'FM999999999999990.00'),'profit',to_char(invoiced-expenses-payroll-employer_contributions,'FM999999999999990.00')) ORDER BY bucket) FROM trend),'[]'::json)
       )::text payload
     `
       .returnsRow({ payload: "pg/text@1" })

@@ -20,7 +20,7 @@ export default function OverviewPage({
   return (
     <OverviewLayout>
       <div className="overview-dashboard-grid">
-        <FinancialDashboard api={api} />
+        <FinancialDashboard api={api} permissions={session.permissions} navigate={navigate} />
         <aside className="panel overview-explore-panel" aria-labelledby="overview-sections">
           <header>
             <span className="eyebrow">Quick access</span>

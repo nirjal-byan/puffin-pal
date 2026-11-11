@@ -6,6 +6,7 @@ export type ReportTrend = {
   collected: string;
   expenses: string;
   payroll: string;
+  employerContributions: string;
   profit: string;
 };
 export type FinancialReport = {

@@ -1,3 +1,4 @@
+import type { ReportTrend } from "../types";
 import type { ReactNode } from "react";
 
 export function CurrencyDisplay({ currency, value }: { currency: string; value: string }) {
@@ -70,24 +71,26 @@ export function ReportChart({
   rows,
   currency,
 }: {
-  rows: Array<{ period: string; invoiced: string; expenses: string; payroll: string }>;
+  rows: ReportTrend[];
   currency: string;
 }) {
+  const operatingCosts = (row: ReportTrend) =>
+    Number(row.expenses) + Number(row.payroll) + Number(row.employerContributions ?? 0);
   const maximum = Math.max(
     1,
-    ...rows.flatMap((row) => [Number(row.invoiced), Number(row.expenses) + Number(row.payroll)]),
+    ...rows.flatMap((row) => [Number(row.invoiced), operatingCosts(row)]),
   );
-  if (!rows.length)
+  if (!rows.length || rows.every((row) => Number(row.invoiced) === 0 && operatingCosts(row) === 0))
     return <ReportEmptyState>No activity to chart in this period.</ReportEmptyState>;
   return (
     <div>
       <div
         className="report-chart"
         role="img"
-        aria-label="Issued revenue and supported operating costs by period"
+        aria-label={`Issued revenue and supported operating costs by period (${currency})`}
       >
         {rows.map((row) => {
-          const costs = Number(row.expenses) + Number(row.payroll);
+          const costs = operatingCosts(row);
           return (
             <div
               className="report-chart-group"
@@ -97,11 +100,11 @@ export function ReportChart({
               <div className="report-chart-bars">
                 <span
                   className="revenue"
-                  style={{ height: `${Math.max(2, (Number(row.invoiced) / maximum) * 100)}%` }}
+                  style={{ height: `${Math.max(0, (Number(row.invoiced) / maximum) * 100)}%` }}
                 />
                 <span
                   className="cost"
-                  style={{ height: `${Math.max(2, (costs / maximum) * 100)}%` }}
+                  style={{ height: `${Math.max(0, (costs / maximum) * 100)}%` }}
                 />
               </div>
               <small>{row.period.slice(0, 7)}</small>
@@ -129,7 +132,7 @@ export function ReportChart({
                 <td>
                   <CurrencyDisplay
                     currency={currency}
-                    value={(Number(row.expenses) + Number(row.payroll)).toFixed(2)}
+                    value={operatingCosts(row).toFixed(2)}
                   />
                 </td>
               </tr>

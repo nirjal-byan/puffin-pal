@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import type { Permission } from "@puffinpal/permissions";
 import type { WorkspaceApi } from "@/lib/api";
 import {
@@ -9,26 +9,11 @@ import {
   ReportDataTable,
   ReportSummaryCard,
 } from "./report-components";
-import type { FinancialReport } from "../types";
+import { useFinancialReport } from "../hooks/use-financial-report";
+import { reportPresetRange as rangeFor, validReportingRange } from "../utils";
 import { DatePicker } from "@/components/ui/date-picker";
 
 type Preset = "month" | "previous-month" | "quarter" | "year" | "custom";
-const iso = (date: Date) => date.toISOString().slice(0, 10);
-function rangeFor(preset: Exclude<Preset, "custom">) {
-  const now = new Date();
-  if (preset === "previous-month") {
-    return {
-      from: iso(new Date(now.getFullYear(), now.getMonth() - 1, 1)),
-      to: iso(new Date(now.getFullYear(), now.getMonth(), 0)),
-    };
-  }
-  if (preset === "quarter") {
-    const month = Math.floor(now.getMonth() / 3) * 3;
-    return { from: iso(new Date(now.getFullYear(), month, 1)), to: iso(now) };
-  }
-  if (preset === "year") return { from: `${now.getFullYear()}-01-01`, to: iso(now) };
-  return { from: iso(new Date(now.getFullYear(), now.getMonth(), 1)), to: iso(now) };
-}
 
 export default function FinancialReportsPage({
   api,
@@ -43,50 +28,39 @@ export default function FinancialReportsPage({
 }) {
   const [preset, setPreset] = useState<Preset>("year");
   const [range, setRange] = useState(() => rangeFor("year"));
-  const [report, setReport] = useState<FinancialReport | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [exporting, setExporting] = useState(false);
   const query = useMemo(
     () => new URLSearchParams({ ...range, currency, groupBy: "month" }).toString(),
     [range, currency],
   );
-  useEffect(() => {
-    const controller = new AbortController();
-    api<FinancialReport>(`/financial-reports/overview?${query}`, { signal: controller.signal })
-      .then(setReport)
-      .catch((error) => {
-        if (!controller.signal.aborted) onError(error);
-      })
-      .finally(() => {
-        if (!controller.signal.aborted) setLoading(false);
-      });
-    return () => controller.abort();
-  }, [api, onError, query]);
+  const validRange = validReportingRange(range.from, range.to);
+  const { report, loading, error, reload } = useFinancialReport(api, query, validRange);
   const selectPreset = (next: Exclude<Preset, "custom">) => {
     setPreset(next);
     setRange(rangeFor(next));
   };
   const download = async (format: "csv" | "pdf") => {
-    const blob = await api<Blob>(`/financial-reports/export?${query}&format=${format}`, {
-      responseType: "file",
-    });
-    const url = URL.createObjectURL(blob);
-    const anchor = document.createElement("a");
-    anchor.href = url;
-    anchor.download = `operational-report-${range.from}-${range.to}.${format}`;
-    anchor.click();
-    URL.revokeObjectURL(url);
+    if (exporting || loading || !validRange || error || !report) return;
+    setExporting(true);
+    try {
+      const blob = await api<Blob>(`/financial-reports/export?${query}&format=${format}`, {
+        responseType: "file",
+      });
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement("a");
+      anchor.href = url;
+      anchor.download = `operational-report-${range.from}-${range.to}.${format}`;
+      anchor.click();
+      URL.revokeObjectURL(url);
+    } catch (failure) {
+      onError(failure);
+    } finally {
+      setExporting(false);
+    }
   };
-  if (loading && !report)
-    return (
-      <section className="panel loading">
-        <span className="spinner" />
-        Loading financial reports…
-      </section>
-    );
-  if (!report) return null;
-  const positive = Number(report.profitability.profit) >= 0;
+  const positive = Number(report?.profitability.profit ?? 0) >= 0;
   return (
-    <div className="financial-reports">
+    <div className="financial-reports" aria-busy={loading || exporting}>
       <section className="panel report-filter-bar">
         <div>
           <strong>Reporting period</strong>
@@ -132,15 +106,21 @@ export default function FinancialReportsPage({
         </div>
         {permissions.includes("financial-reports:export") && (
           <div className="report-export-actions">
-            <button className="button secondary compact" onClick={() => void download("csv")}>
+            <button disabled={loading || exporting || !validRange || !!error || !report} className="button secondary compact" onClick={() => void download("csv")}>
               Export CSV
             </button>
-            <button className="button secondary compact" onClick={() => void download("pdf")}>
+            <button disabled={loading || exporting || !validRange || !!error || !report} className="button secondary compact" onClick={() => void download("pdf")}>
               Export PDF
             </button>
           </div>
         )}
       </section>
+      {!validRange ? <div className="panel" role="alert">Choose valid dates in order, within five years.</div>
+        : error ? <div className="panel" role="alert"><p>{error}</p><button className="button secondary" onClick={reload}>Try again</button></div>
+        : loading ? <section className="panel loading" role="status">Loading financial reports…</section>
+        : report ? <>
+      <p className="muted">{report.period.from} – {report.period.to} · {report.currency}. Balances are through the end date;
+        approval and reversal states reflect current records.</p>
       <section className="report-summary-grid" aria-label="Financial summary">
         <ReportSummaryCard
           label="Issued revenue"
@@ -157,7 +137,7 @@ export default function FinancialReportsPage({
           value={
             <CurrencyDisplay currency={currency} value={report.profitability.operatingCosts} />
           }
-          note="Approved expenses + payroll cost"
+          note="Approved expenses + gross payroll + employer contributions"
         />
         <ReportSummaryCard
           label="Operational profit"
@@ -171,11 +151,11 @@ export default function FinancialReportsPage({
       </section>
       <section className="panel report-disclosure">
         <strong>{report.basis.name}</strong>
-        <p>{report.basis.disclosures[0]}</p>
+        {report.basis.disclosures.map((disclosure) => <p key={disclosure}>{disclosure}</p>)}
       </section>
       <section className="panel report-trend">
         <h3>Financial performance over time</h3>
-        <p>Issued revenue compared with approved expenses and finalized gross payroll.</p>
+        <p>Issued revenue compared with approved expenses and finalized gross payroll plus employer contributions.</p>
         <ReportChart rows={report.trend} currency={currency} />
       </section>
       <div className="report-two-column">
@@ -258,6 +238,7 @@ export default function FinancialReportsPage({
           period.
         </p>
       </section>
+      </> : null}
     </div>
   );
 }

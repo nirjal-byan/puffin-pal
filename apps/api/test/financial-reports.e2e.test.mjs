@@ -146,6 +146,22 @@ test("financial reports aggregate authoritative tenant records without cross-ten
     assert.equal(report.payables.outstanding, "6.00");
     assert.equal(report.payables.payments, "4.00");
     assert.equal(report.cashMovement.outflows, "4.00");
+    const dashboard = await request("/dashboard/financial-summary?from=2026-06-01&to=2026-06-30", owner.accessToken, undefined, "GET");
+    assert.equal(dashboard.metrics.cashOutflows, "4.00");
+    assert.equal(dashboard.metrics.netCashFlow, "21.00");
+    assert.equal(dashboard.metrics.expenses, "10.00");
+    assert.equal(dashboard.metrics.outstandingPayables, "6.00");
+    assert.equal(dashboard.attention.unpaidBills, 1);
+    assert.equal(dashboard.attention.unsettledExpenses, 0); // linked cost belongs to its bill
+    assert.equal(dashboard.trend.reduce((sum, p) => sum + Number(p.outflows), 0), 4);
+    const clipped = await request("/dashboard/financial-summary?from=2026-06-16&to=2026-08-01", owner.accessToken, undefined, "GET");
+    assert.equal(clipped.range.granularity, "week");
+    assert.equal(clipped.trend[0].date, "2026-06-16");
+    assert.equal(clipped.trend.reduce((sum, p) => sum + Number(p.collections) + Number(p.expenses) + Number(p.revenue) + Number(p.outflows), 0), 0);
+    const emptyDashboard = await request("/dashboard/financial-summary?from=2026-06-01&to=2026-06-30", other.accessToken, undefined, "GET");
+    assert.equal(emptyDashboard.metrics.netCashFlow, "0.00");
+    assert.equal(emptyDashboard.attention.unpaidBills, 0);
+    assert.ok(emptyDashboard.aging.every((bucket) => bucket.count === 0));
     const isolated = await request(
       `/financial-reports/overview?${query}`,
       other.accessToken,
@@ -169,6 +185,33 @@ test("financial reports aggregate authoritative tenant records without cross-ten
     const history = await request(`/expenses/${expense.id}/settlement`, owner.accessToken, undefined, "GET");
     assert.equal(history.balance, "10.00");
     assert.ok(history.payments[0].reversedAt);
+
+    const reversedDashboard = await request("/dashboard/financial-summary?from=2026-06-01&to=2026-06-30", owner.accessToken, undefined, "GET");
+    assert.equal(reversedDashboard.metrics.netCashFlow, "25.00");
+    assert.equal(reversedDashboard.metrics.outstandingPayables, "10.00");
+
+    const standalone = await db.orm.public.Expense.create({ organizationId: owner.organization.id, title: "Standalone", amount: "5.00", category: "OTHER", date: instant, approvalStatus: "APPROVED", createdByUserId: owner.user.id });
+    await db.orm.public.PayablePayment.create({ organizationId: owner.organization.id, targetType: "EXPENSE", expenseId: standalone.id, amount: "1.50", currency: "USD", paymentDate: instant, method: "CASH", idempotencyKey: "standalone-dashboard", recordedById: owner.user.id });
+    const employee = await db.orm.public.Employee.create({ organizationId: owner.organization.id, employeeCode: "DASH-1", firstName: "Dash", lastName: "Employee", jobTitle: "Test", employmentType: "FULL_TIME", hireDate: instant });
+    const salary = await db.orm.public.SalaryStructure.create({ organizationId: owner.organization.id, employeeId: employee.id, effectiveFrom: instant, compensationType: "FIXED_SALARY", payFrequency: "MONTHLY", currency: "USD", baseAmount: "20.00", createdById: owner.user.id });
+    const run = await db.orm.public.PayrollRun.create({ organizationId: owner.organization.id, name: "Dashboard run", periodStart: instant, periodEnd: instant, paymentDate: instant, status: "FINALIZED", currency: "USD", organizationName: "Reports", totalGross: "20.00", totalNet: "20.00", createdById: owner.user.id });
+    const entry = await db.orm.public.PayrollEntry.create({ organizationId: owner.organization.id, payrollRunId: run.id, employeeId: employee.id, salaryStructureId: salary.id, employeeName: "Dash Employee", employeeCode: "DASH-1", jobTitle: "Test", compensationType: "FIXED_SALARY", payFrequency: "MONTHLY", baseAmount: "20.00", grossPay: "20.00", totalDeductions: "0.00", netPay: "20.00" });
+    await db.orm.public.PayrollEntryComponent.create({ organizationId: owner.organization.id, payrollEntryId: entry.id, name: "Employer contribution", type: "EMPLOYER_CONTRIBUTION", amount: "2.00" });
+    await db.orm.public.PayrollPayment.create({ organizationId: owner.organization.id, payrollEntryId: entry.id, amount: "3.00", paymentDate: instant, reference: "Dashboard", idempotencyKey: "dashboard-payroll", recordedById: owner.user.id });
+    const foreignInvoice = await db.orm.public.Invoice.create({ organizationId: owner.organization.id, clientId: client.id, invoiceNumber: "REPORT-EUR", status: "ISSUED", issueDate: instant, dueDate: instant, issuedAt: instant, subtotal: "1000.00", tax: "0.00", total: "1000.00", currency: "EUR" });
+    await db.orm.public.Payment.create({ organizationId: owner.organization.id, invoiceId: foreignInvoice.id, amount: "100.00", paymentDate: instant, method: "BANK_TRANSFER", recordedByUserId: owner.user.id });
+    const finalDashboard = await request("/dashboard/financial-summary?from=2026-06-01&to=2026-06-30", owner.accessToken, undefined, "GET");
+    assert.equal(finalDashboard.metrics.paymentsReceived, "25.00");
+    assert.equal(finalDashboard.metrics.cashOutflows, "4.50");
+    assert.equal(finalDashboard.metrics.netCashFlow, "20.50");
+    assert.equal(finalDashboard.attention.unsettledExpenses, 1);
+    assert.equal(finalDashboard.attention.unsettledExpenseAmount, "3.50");
+    const finalReport = await request(`/financial-reports/overview?${query}`, owner.accessToken, undefined, "GET");
+    assert.equal(finalReport.profitability.operatingCosts, "37.00");
+    assert.equal(finalReport.trend[0].payroll, "20.00");
+    assert.equal(finalReport.trend[0].employerContributions, "2.00");
+    assert.equal(finalReport.trend[0].profit, finalReport.profitability.profit);
+    assert.equal(finalReport.cashMovement.net, finalDashboard.metrics.netCashFlow);
 
   } finally {
     await app.close();

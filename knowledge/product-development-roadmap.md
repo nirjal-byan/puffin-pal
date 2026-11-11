@@ -182,6 +182,26 @@ No P0 was proven by static inspection. Any runtime finding involving tenant leak
 | Advanced shift rostering, GPS, and biometrics | Workforce product positioning and privacy requirements | Very Large |
 | Project profitability and time billing | New project/time domain and links to invoices/payroll | Large |
 
+## Verified delivery updates — 2026-11-11
+
+Batch 4 is committed as `984c968`: vendors, bills, expenses, and payment histories use
+server-side pagination/search/filtering with bounded requests. The first-100 AP limitation
+in the original audit above is superseded. Interactive browser verification remains manual.
+
+Batch 5 improves the existing dashboard and reporting surfaces: actual recorded cash
+outflows/net movement, approved bill balances, permission-aware attention counts and
+module navigation, clipped/zero-filled trends, explicit single-currency scope, safer
+range/request/error/export behavior, and employer-contribution parity between report
+charts and headline costs. See `financial-reporting.md` for metric and period definitions.
+Focused PostgreSQL integration verifies partial payments, linked-cost deduplication,
+reversals, standalone settlements, payroll, currencies, empty data, tenant isolation,
+and partial-period chart boundaries. Interactive browser verification remains manual.
+
+Dashboard/reporting polish is supported by the current architecture. The higher-priority
+payment-batch semantics, invoice/payroll reversal, invitation/recovery, and hourly payroll
+items still require their stated product decisions or provider dependencies; Batch 5
+does not resolve them or change financial lifecycle policy.
+
 ## Immediate next task
 
 **Complete the Accounts Payable frontend using the already implemented API.** This is the best next task because it closes the largest verified UI/backend gap, unlocks existing safe server behavior, and does not require a schema or API redesign.
