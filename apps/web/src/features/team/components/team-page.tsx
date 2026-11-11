@@ -107,7 +107,7 @@ export default function TeamPage({
           ))}
         </div>
       </section>
-      <section className="panel form-panel">
+      {assignable.length > 0 && <section className="panel form-panel">
         <span className="eyebrow">Grow your team</span>
         <h3>Add a team member</h3>
         <p className="muted form-description">Create an account for this organization.</p>
@@ -155,7 +155,7 @@ export default function TeamPage({
           </fieldset>
         </form>
         <p className="field-hint">Share the credentials privately with your colleague.</p>
-      </section>
+      </section>}
     </PageLayout>
   );
 }

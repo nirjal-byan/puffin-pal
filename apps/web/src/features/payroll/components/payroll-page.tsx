@@ -20,6 +20,7 @@ export default function PayrollPage({
   onSaved: (message: string) => void;
 }) {
   const [creating, setCreating] = useState(false);
+  const [draftToCalculate, setDraftToCalculate] = useState<PayrollRun | null>(null);
   const [employees, setEmployees] = useState<EmployeeOption[]>([]);
   const [employeeIds, setEmployeeIds] = useState<string[]>([]);
   const [form, setForm] = useState(() => ({ name: "", ...initialPayrollDates() }));
@@ -87,10 +88,15 @@ export default function PayrollPage({
     }
   }
   async function create() {
+    if (busy) return;
     setBusy(true);
     setError("");
     try {
-      const run = await api<PayrollRun>("/payroll/runs", { method: "POST", body: form });
+      // Persist the identity before calculation so retry cannot create another draft.
+      const run = draftToCalculate
+        ? await api<PayrollRun>(`/payroll/runs/${draftToCalculate.id}`)
+        : await api<PayrollRun>("/payroll/runs", { method: "POST", body: form });
+      setDraftToCalculate(run);
       const calculated = await api<PayrollRun>(`/payroll/runs/${run.id}/calculate`, {
         method: "POST",
         body: { expectedVersion: run.version, employeeIds },
@@ -107,6 +113,21 @@ export default function PayrollPage({
   }
   async function action(name: "calculate" | "submit" | "approve" | "finalize") {
     if (!selected) return;
+    if (name === "calculate" && selected.entries.length === 0) {
+      setDraftToCalculate(selected);
+      setEmployees([]);
+      setEmployeeIds([]);
+      setForm({
+        name: selected.name,
+        periodStart: selected.periodStart.slice(0, 10),
+        periodEnd: selected.periodEnd.slice(0, 10),
+        paymentDate: selected.paymentDate.slice(0, 10),
+      });
+      setSelected(null);
+      setError("");
+      setCreating(true);
+      return;
+    }
     if (
       name !== "calculate" &&
       !window.confirm(
@@ -240,7 +261,13 @@ export default function PayrollPage({
           <p className="muted">Review totals before approval and finalization.</p>
         </div>
         {can("payroll:create") && (
-          <button className="button primary" onClick={() => setCreating(true)}>
+          <button className="button primary" onClick={() => {
+            setDraftToCalculate(null);
+            setEmployees([]);
+            setEmployeeIds([]);
+            setError("");
+            setCreating(true);
+          }}>
             + New pay run
           </button>
         )}
@@ -254,12 +281,17 @@ export default function PayrollPage({
       {creating && (
         <CreatePayrollDialog
           form={form}
+          existingDraft={!!draftToCalculate}
+          error={error}
           employees={employees}
           employeeIds={employeeIds}
           busy={busy}
           onFormChange={setForm}
           onEmployeeIdsChange={setEmployeeIds}
-          onClose={() => setCreating(false)}
+          onClose={() => {
+            setCreating(false);
+            if (draftToCalculate) void load().catch((failure) => setError(errorMessage(failure)));
+          }}
           onCreate={() => void create()}
         />
       )}

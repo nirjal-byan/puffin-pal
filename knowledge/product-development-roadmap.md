@@ -202,9 +202,25 @@ payment-batch semantics, invoice/payroll reversal, invitation/recovery, and hour
 items still require their stated product decisions or provider dependencies; Batch 5
 does not resolve them or change financial lifecycle policy.
 
-## Immediate next task
+## Immediate next task — release readiness
 
-**Complete the Accounts Payable frontend using the already implemented API.** This is the best next task because it closes the largest verified UI/backend gap, unlocks existing safe server behavior, and does not require a schema or API redesign.
+Feature expansion is frozen by [the MVP scope freeze](mvp-scope-freeze.md). It supersedes
+unfinished feature recommendations in the original audit; those recommendations are
+historical context, not a mandatory launch checklist.
+
+Batch 6 fixes three existing-workflow gaps: payroll calculation failures now preserve the
+saved draft for retry and empty saved drafts can reopen employee selection; banking
+payment-checklist completion requires explicit confirmation and clearly leaves payroll
+balances unchanged; read-only team views no longer expose account provisioning.
+Existing APIs, backend permissions, audit and financial rules remain unchanged. No new
+modules, schemas, dependencies, commits or production changes are introduced.
+
+Focused event-handler tests cover calculation failure/retry with one draft and fresh
+version, empty-draft recovery, checklist cancellation/confirmation, and provisioning for
+all four roles. Web TypeScript, targeted lint, existing workflow contract checks and diff
+checks pass. Browser and deployed-worker verification remain release-readiness work.
+
+### Historical AP delivery notes
 
 Batch 1 implemented (2026-11-03): vendor editing and confirmed archiving, draft bill editing with all lines/tax/discounts/reference and preserved expense links, and private attachment management. Existing API endpoints and backend lifecycle/RBAC rules are reused unchanged. No restoration endpoint exists. Focused frontend service/hook/contract tests, web type checks, and AP lint pass; browser workflows and HTTP integration against Docker still need local verification. The overall AP work item remains **Partial** pending the later criteria below.
 
@@ -224,13 +240,13 @@ Completion criteria:
 8. Focused API, component, and browser tests cover happy paths, invalid transitions, stale versions, duplicate/lost-response safety, and another-tenant IDs.
 9. Existing reports and aging totals are verified after bill payment and reversal.
 
-## Recommended delivery sequence
+## Frozen delivery sequence
 
-1. AP frontend completeness.
-2. Expense settlement UI.
-3. Payment-batch semantics and payment reversals.
-4. Auth invitation/recovery.
-5. Pagination, audit visibility, and dialog consistency.
-6. Decide hourly/proration and broader accounting/payment scope before starting those large programs.
-
-This sequence favors completing already-modeled workflows before adding new domains or external integrations.
+1. Verify the three Batch 6 fixes and existing core workflows in the browser with owner,
+   administrator and read-only roles.
+2. Validate release configuration, normal migration deployment, worker/PDF/export recovery,
+   backup/restore evidence and operational runbooks. Do not reset development data.
+3. Confirm initial-password provisioning, recovery support, immutable-payment correction
+   procedures and launch customer size against remaining capped lists.
+4. Release only after those readiness gates pass. All optional feature work remains deferred
+   under `mvp-scope-freeze.md`; do not begin another feature-development batch.

@@ -1,5 +1,6 @@
 "use client";
 
+import { FormModal } from "@/components/ui/form-modal";
 import { useState } from "react";
 import type { Permission } from "@puffinpal/permissions";
 import type { WorkspaceApi } from "@/lib/api";
@@ -59,6 +60,8 @@ export default function BankingPage({
   const [importModal, setImportModal] = useState(false);
   const [batchModal, setBatchModal] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [checklistUpdate, setChecklistUpdate] = useState<{ batch: Batch; item: BatchItem } | null>(null);
+  const [paymentReference, setPaymentReference] = useState("");
   const [account, setAccount] = useState({
     displayName: "",
     bankName: "",
@@ -170,19 +173,35 @@ export default function BankingPage({
   }
 
   async function updateBatchItem(batch: Batch, item: BatchItem, status: BatchItem["status"]) {
+    if (busy) return;
+    if (status === "PAID") {
+      setPaymentReference("");
+      setChecklistUpdate({ batch, item });
+      return;
+    }
+    await saveChecklistItem(batch, item, status);
+  }
+
+  async function saveChecklistItem(batch: Batch, item: BatchItem, status: BatchItem["status"]) {
+    if (busy) return;
+    setBusy(true);
+    setError("");
     try {
-      const paymentReference =
-        status === "PAID"
-          ? window.prompt("Payment reference (optional)", "") || undefined
-          : undefined;
       await api(`/banking/payment-batches/${batch.id}/items/${item.id}`, {
         method: "PATCH",
-        body: { status, paymentReference, expectedVersion: batch.version },
+        body: {
+          status,
+          ...(status === "PAID" ? { paymentReference: paymentReference.trim() || undefined } : {}),
+          expectedVersion: batch.version,
+        },
       });
-      onSaved(`Payment item marked ${status.toLowerCase()}.`);
+      setChecklistUpdate(null);
+      onSaved("Payment checklist updated. Payroll balances are unchanged; record payments in Payroll.");
       await load();
     } catch (failure) {
       setError(errorMessage(failure));
+    } finally {
+      setBusy(false);
     }
   }
 
@@ -231,9 +250,26 @@ export default function BankingPage({
       ) : (
         <PaymentBatchesPanel
           batches={batches}
-          canManage={canManage}
+          canManage={canManage && !busy}
+          canReadPayroll={permissions.includes("payroll:read")}
           onUpdateItem={(batch, item, status) => void updateBatchItem(batch, item, status)}
         />
+      )}
+      {checklistUpdate && (
+        <FormModal
+          title="Complete payment checklist item"
+          submitting={busy}
+          onClose={() => setChecklistUpdate(null)}
+          onSubmit={() => saveChecklistItem(checklistUpdate.batch, checklistUpdate.item, "PAID")}
+          submitLabel="Confirm checklist completion"
+        >
+          <p>{checklistUpdate.item.employeeName} · {checklistUpdate.batch.currency} {checklistUpdate.item.amount}</p>
+          <p>This updates tracking only. It does not transfer money, record a payroll payment, or reduce the payroll balance. Record the actual payment in Payroll.</p>
+          {error && <p className="alert" role="alert">{error}</p>}
+          <label>Payment reference (optional)
+            <input maxLength={120} value={paymentReference} disabled={busy} onChange={(event) => setPaymentReference(event.target.value)} />
+          </label>
+        </FormModal>
       )}
       {accountModal && (
         <BankAccountDialog

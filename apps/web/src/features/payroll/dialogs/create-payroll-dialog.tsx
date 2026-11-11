@@ -11,6 +11,8 @@ export interface PayrollCreationForm {
 
 export function CreatePayrollDialog({
   form,
+  existingDraft = false,
+  error = "",
   employees,
   employeeIds,
   busy,
@@ -20,6 +22,8 @@ export function CreatePayrollDialog({
   onCreate,
 }: {
   form: PayrollCreationForm;
+  existingDraft?: boolean;
+  error?: string;
   employees: PayrollEmployeeOption[];
   employeeIds: string[];
   busy: boolean;
@@ -29,8 +33,11 @@ export function CreatePayrollDialog({
   onCreate: () => void;
 }) {
   return (
-    <FormModal title="New pay run" onClose={onClose}>
+    <FormModal title={existingDraft ? "Calculate saved draft" : "New pay run"} onClose={onClose} submitting={busy}>
+      {error && <p className="alert" role="alert">{error}</p>}
+      {existingDraft && <p className="muted">This draft is saved. Correct salary configuration if needed, then select employees and retry calculation. A retry uses the same draft.</p>}
       <div className="payroll-form">
+        <fieldset disabled={busy || existingDraft} className="form-fields">
         <label>
           Name
           <input
@@ -67,7 +74,8 @@ export function CreatePayrollDialog({
             ariaLabel="Payroll payment date"
           />
         </label>
-        <fieldset className="payroll-employees">
+        </fieldset>
+        <fieldset className="payroll-employees" disabled={busy}>
           <legend>Employees</legend>
           {employees.length === 0 ? (
             <p className="muted">No eligible employees found.</p>
@@ -94,7 +102,7 @@ export function CreatePayrollDialog({
           )}
         </fieldset>
         <div className="form-actions">
-          <button className="button secondary" onClick={onClose}>
+          <button className="button secondary" disabled={busy} onClick={onClose}>
             Cancel
           </button>
           <button
@@ -102,7 +110,7 @@ export function CreatePayrollDialog({
             disabled={busy || !form.name.trim() || employeeIds.length === 0}
             onClick={onCreate}
           >
-            Create draft
+            {busy ? "Calculating…" : existingDraft ? "Calculate saved draft" : "Create draft"}
           </button>
         </div>
       </div>

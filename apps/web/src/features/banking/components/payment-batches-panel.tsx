@@ -1,12 +1,15 @@
+import Link from "next/link";
 import type { PaymentBatch, PaymentBatchItem } from "../types";
 
 export function PaymentBatchesPanel({
   batches,
   canManage,
+  canReadPayroll = false,
   onUpdateItem,
 }: {
   batches: PaymentBatch[];
   canManage: boolean;
+  canReadPayroll?: boolean;
   onUpdateItem: (
     batch: PaymentBatch,
     item: PaymentBatchItem,
@@ -15,6 +18,11 @@ export function PaymentBatchesPanel({
 }) {
   return (
     <section className="banking-batches">
+      <div className="panel">
+        <h3>Payroll payment checklists</h3>
+        <p>Checklist statuses track external processing only. They do not record payroll payments, reduce outstanding balances, or move money.</p>
+        {canReadPayroll && <Link className="text-button" href="/?section=payroll">Open Payroll to record or review payments →</Link>}
+      </div>
       {batches.map((batch) => (
         <article className="panel banking-batch" key={batch.id}>
           <header>
@@ -34,7 +42,7 @@ export function PaymentBatchesPanel({
                   {batch.currency} {item.amount}
                 </span>
                 <span className={`status-pill ${item.status === "PAID" ? "matched" : "pending"}`}>
-                  {item.status}
+                  {item.status === "PAID" ? "Checklist complete" : item.status}
                 </span>
                 {canManage && item.status !== "PAID" && (
                   <div className="batch-item-actions">
@@ -45,7 +53,7 @@ export function PaymentBatchesPanel({
                         onClick={() => onUpdateItem(batch, item, status)}
                       >
                         {status === "PAID"
-                          ? "Mark paid"
+                          ? "Complete checklist"
                           : status[0] + status.slice(1).toLowerCase()}
                       </button>
                     ))}
