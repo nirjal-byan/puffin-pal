@@ -11,7 +11,7 @@ export function PayrollRunsTable({
     <section className="panel">
       <div className="panel-heading">
         <h3>Payroll history</h3>
-        <span className="muted">{runs.length} total</span>
+        <span className="muted">{runs.length} loaded</span>
       </div>
       {runs.length === 0 ? (
         <div className="empty-state">

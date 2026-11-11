@@ -8,9 +8,16 @@ export function usePayrollRuns(api: WorkspaceApi) {
   const [selected, setSelected] = useState<PayrollDetails | null>(null);
   const [workforceReview, setWorkforceReview] = useState<WorkforceReview[]>([]);
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(true);
   const load = useCallback(async () => {
-    const data = await api<{ items: PayrollRun[] }>("/payroll/runs?limit=100&offset=0");
-    setRuns(data.items);
+    setLoading(true);
+    setError("");
+    try {
+      const data = await api<{ items: PayrollRun[] }>("/payroll/runs?limit=100&offset=0");
+      setRuns(data.items);
+    } finally {
+      setLoading(false);
+    }
   }, [api]);
   const open = useCallback(
     async (run: PayrollRun) => {
@@ -31,6 +38,11 @@ export function usePayrollRuns(api: WorkspaceApi) {
     },
     [api],
   );
+  const close = useCallback(() => {
+    openVersion.current += 1;
+    setSelected(null);
+    setWorkforceReview([]);
+  }, []);
   useEffect(() => {
     let active = true;
     api<{ items: PayrollRun[] }>("/payroll/runs?limit=100&offset=0")
@@ -39,11 +51,25 @@ export function usePayrollRuns(api: WorkspaceApi) {
       })
       .catch((failure: unknown) => {
         if (active) setError(errorMessage(failure));
+      })
+      .finally(() => {
+        if (active) setLoading(false);
       });
     return () => {
       active = false;
       openVersion.current += 1;
     };
   }, [api]);
-  return { runs, selected, setSelected, workforceReview, error, setError, load, open };
+  return {
+    runs,
+    loading,
+    close,
+    selected,
+    setSelected,
+    workforceReview,
+    error,
+    setError,
+    load,
+    open,
+  };
 }

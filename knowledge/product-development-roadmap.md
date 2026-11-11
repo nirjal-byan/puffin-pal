@@ -202,23 +202,28 @@ payment-batch semantics, invoice/payroll reversal, invitation/recovery, and hour
 items still require their stated product decisions or provider dependencies; Batch 5
 does not resolve them or change financial lifecycle policy.
 
-## Immediate next task — release readiness
+## Portfolio completion — active feature development closed
 
-Feature expansion is frozen by [the MVP scope freeze](mvp-scope-freeze.md). It supersedes
-unfinished feature recommendations in the original audit; those recommendations are
-historical context, not a mandatory launch checklist.
+PuffinPal is a personal portfolio project, not a commercial launch. Batch 7 closes active
+feature development. The original audit and Batch 6 release language below are historical;
+unfinished ideas are optional limitations, not prerequisites for presenting this project.
 
-Batch 6 fixes three existing-workflow gaps: payroll calculation failures now preserve the
-saved draft for retry and empty saved drafts can reopen employee selection; banking
-payment-checklist completion requires explicit confirmation and clearly leaves payroll
-balances unchanged; read-only team views no longer expose account provisioning.
-Existing APIs, backend permissions, audit and financial rules remain unchanged. No new
-modules, schemas, dependencies, commits or production changes are introduced.
+Completed scope includes invoicing/payment/PDF workflows, Accounts Payable and expense
+settlements, financial dashboards/reports, fixed-salary payroll/workforce, tenant/RBAC
+boundaries, private storage and background processing. Batches 1–6 details remain below.
+Batch 7 adds payroll loading/retry feedback, payslip refresh and busy-state protection,
+and a permission summary covering current areas. README, architecture flows and the
+[portfolio demo guide](portfolio-demo-guide.md) describe the actual implementation and
+its tradeoffs. No new modules, dependencies, financial rules or infrastructure are added.
 
-Focused event-handler tests cover calculation failure/retry with one draft and fresh
-version, empty-draft recovery, checklist cancellation/confirmation, and provisioning for
-all four roles. Web TypeScript, targeted lint, existing workflow contract checks and diff
-checks pass. Browser and deployed-worker verification remain release-readiness work.
+**Portfolio completion gate:** capture genuine screenshots and manually rehearse the demo
+with fictional data, owner/approver/read-only roles and the local worker/storage running.
+Automated focused checks are recorded in the final batch report; they do not imply visual
+browser verification or a public deployment.
+
+Known limitations remain: invoice/payroll payment reversals, email invitations/recovery,
+hourly/prorated payroll, some capped lists, no FX conversion and no general ledger.
+See [the frozen scope](mvp-scope-freeze.md). No further feature batch is planned.
 
 ### Historical AP delivery notes
 
@@ -240,13 +245,13 @@ Completion criteria:
 8. Focused API, component, and browser tests cover happy paths, invalid transitions, stale versions, duplicate/lost-response safety, and another-tenant IDs.
 9. Existing reports and aging totals are verified after bill payment and reversal.
 
-## Frozen delivery sequence
+## Remaining portfolio tasks (manual only)
 
-1. Verify the three Batch 6 fixes and existing core workflows in the browser with owner,
-   administrator and read-only roles.
-2. Validate release configuration, normal migration deployment, worker/PDF/export recovery,
-   backup/restore evidence and operational runbooks. Do not reset development data.
-3. Confirm initial-password provisioning, recovery support, immutable-payment correction
-   procedures and launch customer size against remaining capped lists.
-4. Release only after those readiness gates pass. All optional feature work remains deferred
-   under `mvp-scope-freeze.md`; do not begin another feature-development batch.
+1. Follow `portfolio-demo-guide.md`, rehearse the five-minute walkthrough and check browser
+   navigation, responsive tables, permission visibility and generated documents.
+2. Capture the README screenshot checklist with fictional data and add real image links.
+3. Present the project with its documented limitations. Public deployment and commercial
+   release preparation are optional separate decisions, not part of portfolio completion.
+
+Earlier roadmap recommendations are preserved as historical context. Do not begin another
+feature-development batch from this document.

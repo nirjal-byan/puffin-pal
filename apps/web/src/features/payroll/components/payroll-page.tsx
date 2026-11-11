@@ -26,7 +26,7 @@ export default function PayrollPage({
   const [form, setForm] = useState(() => ({ name: "", ...initialPayrollDates() }));
   const [busy, setBusy] = useState(false);
   const can = (permission: Permission) => permissions.includes(permission);
-  const { runs, selected, setSelected, workforceReview, error, setError, load, open } =
+  const { runs, loading, selected, close, workforceReview, error, setError, load, open } =
     usePayrollRuns(api);
   useEffect(() => {
     if (!creating) return;
@@ -123,7 +123,7 @@ export default function PayrollPage({
         periodEnd: selected.periodEnd.slice(0, 10),
         paymentDate: selected.paymentDate.slice(0, 10),
       });
-      setSelected(null);
+      close();
       setError("");
       setCreating(true);
       return;
@@ -261,13 +261,16 @@ export default function PayrollPage({
           <p className="muted">Review totals before approval and finalization.</p>
         </div>
         {can("payroll:create") && (
-          <button className="button primary" onClick={() => {
-            setDraftToCalculate(null);
-            setEmployees([]);
-            setEmployeeIds([]);
-            setError("");
-            setCreating(true);
-          }}>
+          <button
+            className="button primary"
+            onClick={() => {
+              setDraftToCalculate(null);
+              setEmployees([]);
+              setEmployeeIds([]);
+              setError("");
+              setCreating(true);
+            }}
+          >
             + New pay run
           </button>
         )}
@@ -275,9 +278,23 @@ export default function PayrollPage({
       {error && (
         <p className="alert" role="alert">
           {error}
+          <button
+            type="button"
+            className="text-button"
+            disabled={loading || busy}
+            onClick={() => void load().catch((failure) => setError(errorMessage(failure)))}
+          >
+            Retry payroll list
+          </button>
         </p>
       )}
-      <PayrollRunsTable runs={runs} onOpen={(run) => void open(run)} />
+      {loading ? (
+        <section className="panel loading" role="status" aria-live="polite">
+          Loading pay runs…
+        </section>
+      ) : !error || runs.length > 0 ? (
+        <PayrollRunsTable runs={runs} onOpen={(run) => void open(run)} />
+      ) : null}
       {creating && (
         <CreatePayrollDialog
           form={form}
@@ -299,10 +316,11 @@ export default function PayrollPage({
         <PayrollRunDetails
           api={api}
           run={selected}
+          error={error}
           reviews={workforceReview}
           permissions={permissions}
           busy={busy}
-          onClose={() => setSelected(null)}
+          onClose={close}
           onAction={(nextAction) => void action(nextAction)}
           onReject={() => void reject()}
           onImportOvertime={(entry, overtimeId) => void importOvertime(entry, overtimeId)}

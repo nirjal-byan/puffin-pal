@@ -64,14 +64,18 @@ export function PayrollEntriesTable({
                 {run.status === "FINALIZED" &&
                   entry.outstandingAmount !== "0.00" &&
                   canRecordPayments && (
-                    <button className="text-button" onClick={() => onPayment(entry)}>
+                    <button
+                      className="text-button"
+                      disabled={busy}
+                      onClick={() => onPayment(entry)}
+                    >
                       Record
                     </button>
                   )}
               </td>
               <td>
                 {entry.payslipStatus === "COMPLETED" ? (
-                  <button className="text-button" onClick={() => onDownload(entry)}>
+                  <button className="text-button" disabled={busy} onClick={() => onDownload(entry)}>
                     Download
                   </button>
                 ) : entry.payslipStatus === "FAILED" && canManage ? (

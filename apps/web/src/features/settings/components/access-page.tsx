@@ -10,6 +10,30 @@ export default function AccessPage({
   refreshAccess: () => void;
   refreshing: boolean;
 }) {
+  const rows: Array<[string, Permission, Permission | null, Permission | null]> = [
+    ["Clients", "clients:read", "clients:create", "clients:update"],
+    ["Invoices", "invoices:read", "invoices:create", "invoices:update"],
+    ["Expenses", "expenses:read", "expenses:create", "expenses:update"],
+    ["Recurring invoices", "retainers:read", "retainers:create", "retainers:update"],
+    ["Vendors", "vendors:read", "vendors:manage", "vendors:manage"],
+    [
+      "Accounts payable",
+      "accounts-payable:read",
+      "accounts-payable:manage",
+      "accounts-payable:manage",
+    ],
+    ["Employees", "employees:read", "employees:create", "employees:update"],
+    ["Salary structures", "salaries:read", "salaries:manage", "salaries:manage"],
+    ["Payroll", "payroll:read", "payroll:create", "payroll:manage"],
+    ["Attendance", "attendance:read", "attendance:manage", "attendance:manage"],
+    ["Leave", "leave:read", "leave:request", "leave:manage"],
+    ["Overtime", "overtime:read", "overtime:request", "overtime:manage"],
+    ["Cash flow", "cash-flow:read", null, "cash-flow:manage"],
+    ["Banking", "banking:read", "banking:manage", "banking:manage"],
+    ["Financial reports", "financial-reports:read", null, null],
+    ["Team", "members:read", "members:manage", "members:manage"],
+    ["Organization", "organization:read", null, "organization:update"],
+  ];
   const can = (permission: Permission) => session.permissions.includes(permission);
   return (
     <AccessLayout>
@@ -38,21 +62,23 @@ export default function AccessPage({
               <th>Area</th>
               <th>View</th>
               <th>Create</th>
-              <th>Edit</th>
+              <th>Edit/manage</th>
             </tr>
           </thead>
           <tbody>
-            {["clients", "invoices", "expenses", "retainers"].map((area) => (
+            {rows.map(([area, ...permissions]) => (
               <tr key={area}>
-                <td className="capitalize">{area}</td>
-                {["read", "create", "update"].map((action) => (
-                  <td key={action}>
+                <td>{area}</td>
+                {permissions.map((permission, index) => (
+                  <td key={index}>
                     <span
-                      className={
-                        can(`${area}:${action}` as Permission) ? "permission-yes" : "permission-no"
-                      }
+                      className={permission && can(permission) ? "permission-yes" : "permission-no"}
                     >
-                      {can(`${area}:${action}` as Permission) ? "✓ Allowed" : "— Not allowed"}
+                      {permission === null
+                        ? "Not applicable"
+                        : can(permission)
+                          ? "✓ Allowed"
+                          : "— Not allowed"}
                     </span>
                   </td>
                 ))}
@@ -63,7 +89,8 @@ export default function AccessPage({
       </div>
       <p className="field-hint">
         Team management: {can("members:manage") ? "Allowed" : "Not allowed"}. Refresh access after
-        your role is changed.
+        your role is changed. This table summarizes area access; issuing, approvals, payments and
+        exports have separate permissions enforced by the API.
       </p>
     </AccessLayout>
   );

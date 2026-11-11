@@ -14,6 +14,7 @@ export function PayrollRunDetails({
   reviews,
   permissions,
   busy,
+  error = "",
   onClose,
   onAction,
   onReject,
@@ -30,6 +31,7 @@ export function PayrollRunDetails({
   reviews: WorkforceReview[];
   permissions: readonly Permission[];
   busy: boolean;
+  error?: string;
   onClose: () => void;
   onAction: (action: PayrollAction) => void;
   onReject: () => void;
@@ -43,8 +45,19 @@ export function PayrollRunDetails({
 }) {
   const can = (permission: Permission) => permissions.includes(permission);
   return (
-    <AppModal wide title={run.name} badge={run.status.replaceAll("_", " ")} onClose={onClose}>
+    <AppModal
+      wide
+      title={run.name}
+      badge={run.status.replaceAll("_", " ")}
+      onClose={onClose}
+      dismissible={!busy}
+    >
       <div className="payroll-detail">
+        {error && (
+          <p className="alert" role="alert">
+            {error}
+          </p>
+        )}
         <div className="payroll-summary">
           <div>
             <small>Gross</small>
@@ -66,6 +79,14 @@ export function PayrollRunDetails({
           </div>
         </div>
         <div className="form-actions payroll-actions">
+          <button
+            type="button"
+            className="button secondary"
+            disabled={busy}
+            onClick={() => void onRefresh()}
+          >
+            Refresh details and payslips
+          </button>
           {run.status === "DRAFT" && can("payroll:manage") && (
             <>
               <button

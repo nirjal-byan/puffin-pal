@@ -1,5 +1,10 @@
 # MVP scope freeze — Batch 6 (2026-11-11)
 
+Batch 7 clarification: this is a personal portfolio project, not a commercial launch.
+The scope remains frozen. “Before release” and “post-launch” below describe the earlier
+planning categories; optional deferred features are not required for portfolio completion.
+Use [the demo guide](portfolio-demo-guide.md) for the final presentation checks.
+
 The MVP is an operational finance and workforce workspace: organization-scoped accounts
 and roles, clients, draft/issued invoices and recorded partial payments/PDFs, recurring
 invoices, vendors and bill approvals/payments/reversals, expense approvals/settlements,

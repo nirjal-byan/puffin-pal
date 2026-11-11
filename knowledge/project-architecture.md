@@ -58,6 +58,51 @@ The web font lives with the root layout in `apps/web/src/app/fonts`. Invoice PDF
 - Tenant-owned reads and writes include `organizationId`; cross-tenant identifiers fail validation or resolve as not found.
 - Money uses fixed-scale database values and integer minor-unit calculations rather than floating point.
 
+## Request, job and document flows
+
+```mermaid
+sequenceDiagram
+    participant UI as Next.js UI
+    participant API as NestJS guards/controller/service
+    participant DB as PostgreSQL
+    participant Queue as Redis/BullMQ
+    participant Worker as Worker process
+    participant S3 as Private S3 storage
+    UI->>API: Authenticated domain request
+    API->>API: Resolve membership/tenant, check permissions and DTO
+    API->>DB: Organization-scoped read or transactional mutation
+    Note over API,DB: Versions, row locks and lifecycle checks where required
+    API-->>UI: Safe response with decimal money strings
+    API->>Queue: Queue supported asynchronous work
+    Worker->>Queue: Consume/retry job
+    Worker->>DB: Load tenant-owned source and durable job state
+    Worker->>S3: Store document/archive
+    Worker->>DB: Persist completion or failure
+    UI->>API: Request authorized document download
+    API->>DB: Check tenant ownership and file reference
+    API->>S3: Read private object and validate required metadata
+    API-->>UI: Authenticated file response
+```
+
+The queue portion applies to asynchronous workflows, not every request. Invoice issuance
+renders/stores its immutable PDF synchronously within the issuance workflow; payslips
+and invoice ZIP exports use the worker. Redis is not the authoritative financial store.
+Database and object storage do not share an atomic transaction; invoice upload cleanup is
+best-effort after a failed commit. See [invoice storage](invoice-pdf-storage.md) and
+[background jobs](background-jobs.md) for detailed failure behavior.
+
+`apps/api/prisma` owns the Prisma 8 contract, emitted types and migration history.
+`packages/database` supplies the PostgreSQL runtime instantiated with that contract.
+Domain services use its typed ORM and bound SQL for aggregates/locking. The pinned
+release-candidate toolchain uses contract emission and migration packages, rather than
+legacy generated Prisma Client conventions. Tenant isolation is application-enforced;
+composite keys constrain relationships, but do not replace scoped service queries.
+
+The API modules cover auth/members/settings, clients/invoices/recurring invoices,
+expenses/accounts payable, banking/cash-flow/reporting, employees/workforce and payroll.
+They share technical adapters while retaining domain-owned financial state machines.
+No external payment rails, analytics database or general ledger is present.
+
 ## Naming and placement
 
 - Use kebab-case file names and descriptive domain names.
